@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal - Gemini Ambiental Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        /* Sidebar - Same as previous modules */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text h2 {
+            font-size: 1.2em;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-text p {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.5rem 1rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-icon {
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+
+        .logout-section {
+            position: absolute;
+            bottom: 2rem;
+            left: 1rem;
+            right: 1rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255,107,107,0.2);
+            color: #ff6b6b;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,107,107,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            color: #718096;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-tab:hover, .nav-tab.active {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            color: #2c5f41;
+            font-size: 2.5em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-title p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 139, 100, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-color);
+        }
+
+        .stat-card.primary { --accent-color: #4a8b64; }
+        .stat-card.warning { --accent-color: #f6ad55; }
+        .stat-card.success { --accent-color: #48bb78; }
+        .stat-card.info { --accent-color: #4299e1; }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            color: white;
+        }
+
+        .stat-icon.primary { background: linear-gradient(135deg, #4a8b64, #2c5f41); }
+        .stat-icon.warning { background: linear-gradient(135deg, #f6ad55, #ed8936); }
+        .stat-icon.success { background: linear-gradient(135deg, #48bb78, #38a169); }
+        .stat-icon.info { background: linear-gradient(135deg, #4299e1, #3182ce); }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        /* Personnel Grid */
+        .personnel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .personnel-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .personnel-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .personnel-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            margin: 0 auto 1rem;
+            border: 4px solid rgba(255,255,255,0.3);
+        }
+
+        .personnel-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .personnel-role {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .status-indicator.active { background: #48bb78; }
+        .status-indicator.inactive { background: #f56565; }
+        .status-indicator.busy { background: #f6ad55; }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #718096;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .card-actions {
+            padding: 1rem 2rem 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9em;
+            flex: 1;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a8b64;
+            color: #4a8b64;
+        }
+
+        .btn-outline:hover {
+            background: #4a8b64;
+            color: white;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4a8b64;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .personnel-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-tabs {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🌿</div>
+                <div class="logo-text">
+                    <h2>Gemini Admin</h2>
+                    <p>Panel de Control</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="inventario.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    <span>Inventario</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="agenda.html" class="nav-link">
+                    <span class="nav-icon">📅</span>
+                    <span>Agenda</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="personal.html" class="nav-link active">
+                    <span class="nav-icon">👥</span>
+                    <span>Personal</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="cotizaciones.html" class="nav-link">
+                    <span class="nav-icon">💰</span>
+                    <span>Cotizaciones</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="facturas.html" class="nav-link">
+                    <span class="nav-icon">📄</span>
+                    <span>Facturas</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="coordinacion-servicios.html" class="nav-link">
+                    <span class="nav-icon">🔧</span>
+                    <span>Coordinación</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="logout-section">
+            <a href="inicio.html" class="logout-btn">
+                <span class="nav-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <div class="nav-tabs">
+                <a href="#" class="nav-tab active" onclick="showView('all')">👥 Todo el Personal</a>
+                <a href="#" class="nav-tab" onclick="showView('technicians')">🔧 Técnicos</a>
+                <a href="#" class="nav-tab" onclick="showView('admin')">💼 Administrativo</a>
+                <a href="#" class="nav-tab" onclick="showView('performance')">📈 Rendimiento</a>
+            </div>
+            <div>
+                <button class="btn btn-secondary">📊 Reportes</button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <h1>Gestión de Personal</h1>
+                <p>Administración del equipo de trabajo</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary">📤 Exportar</button>
+                <button class="btn btn-primary" onclick="openAddPersonnelModal()">
+                    ➕ Agregar Personal
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-header">
+                    <div class="stat-icon primary">👥</div>
+                </div>
+                <div class="stat-number">12</div>
+                <div class="stat-label">Total Empleados</div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div class="stat-icon success">✅</div>
+                </div>
+                <div class="stat-number">8</div>
+                <div class="stat-label">Activos Hoy</div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div class="stat-icon warning">🔧</div>
+                </div>
+                <div class="stat-number">6</div>
+                <div class="stat-label">Técnicos</div>
+            </div>
+
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div class="stat-icon info">🎯</div>
+                </div>
+                <div class="stat-number">94%</div>
+                <div class="stat-label">Eficiencia Promedio</div>
+            </div>
+        </div>
+
+        <!-- Personnel Grid -->
+        <div class="personnel-grid">
+            <!-- Técnico 1 -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">👨‍🔧</div>
+                    <div class="personnel-name">Juan Pérez</div>
+                    <div class="personnel-role">Técnico Senior</div>
+                </div>
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-888-9999</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">ana.lopez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">55.666.777</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📋 Registro INVIMA:</span>
+                        <span class="info-value">TC-2024-004</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🚗 Servicios Hoy:</span>
+                        <span class="info-value">4 programados</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewProfile('ana')">👁️ Ver Perfil</button>
+                    <button class="btn btn-primary btn-sm" onclick="assignService('ana')">📅 Asignar</button>
+                </div>
+            </div>
+
+            <!-- Personal Administrativo 1 -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">👨‍💼</div>
+                    <div class="personnel-name">Diego Martínez</div>
+                    <div class="personnel-role">Coordinador de Servicios</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-111-2222</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">diego.martinez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">99.888.777</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">💼 Departamento:</span>
+                        <span class="info-value">Operaciones</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📊 Servicios Coordinados:</span>
+                        <span class="info-value">15 esta semana</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewProfile('diego')">👁️ Ver Perfil</button>
+                    <button class="btn btn-primary btn-sm" onclick="contactEmployee('diego')">📞 Contactar</button>
+                </div>
+            </div>
+
+            <!-- Personal Administrativo 2 -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator inactive"></div>
+                    <div class="personnel-avatar">👩‍💼</div>
+                    <div class="personnel-name">Lucía Hernández</div>
+                    <div class="personnel-role">Asistente Administrativa</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-333-4444</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">lucia.hernandez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">44.555.666</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">💼 Departamento:</span>
+                        <span class="info-value">Administración</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📄 Facturas Procesadas:</span>
+                        <span class="info-value">8 hoy</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewProfile('lucia')">👁️ Ver Perfil</button>
+                    <button class="btn btn-primary btn-sm" onclick="contactEmployee('lucia')">📞 Contactar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Personnel Modal -->
+    <div class="modal" id="addPersonnelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Agregar Nuevo Personal</h2>
+                <button class="close-btn" onclick="closeModal('addPersonnelModal')">&times;</button>
+            </div>
+            
+            <form>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Nombres</label>
+                        <input type="text" class="form-control" placeholder="Nombres completos" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text" class="form-control" placeholder="Apellidos completos" required>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Cédula</label>
+                        <input type="text" class="form-control" placeholder="12.345.678" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" class="form-control" placeholder="300-123-4567" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" placeholder="nombre@gemini.com" required>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <select class="form-control" required>
+                            <option>Seleccionar cargo</option>
+                            <option>Técnico Senior</option>
+                            <option>Técnico Especializado</option>
+                            <option>Técnico Junior</option>
+                            <option>Coordinador de Servicios</option>
+                            <option>Asistente Administrativo</option>
+                            <option>Supervisor</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento</label>
+                        <select class="form-control" required>
+                            <option>Seleccionar departamento</option>
+                            <option>Operaciones</option>
+                            <option>Administración</option>
+                            <option>Ventas</option>
+                            <option>Técnico</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha de Ingreso</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Salario</label>
+                        <input type="number" class="form-control" placeholder="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Registro INVIMA (Solo técnicos)</label>
+                    <input type="text" class="form-control" placeholder="TC-2024-XXX">
+                </div>
+
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <textarea class="form-control" rows="2" placeholder="Dirección de residencia"></textarea>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Contacto de Emergencia</label>
+                        <input type="text" class="form-control" placeholder="Nombre completo">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono de Emergencia</label>
+                        <input type="tel" class="form-control" placeholder="300-000-0000">
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonnelModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar Personal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showView(view) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            console.log('Showing view:', view);
+            // Here you would implement filtering logic based on the view
+        }
+
+        function openAddPersonnelModal() {
+            document.getElementById('addPersonnelModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function viewProfile(employeeId) {
+            alert('Viendo perfil de: ' + employeeId);
+            // Here you would implement profile viewing logic
+        }
+
+        function assignService(employeeId) {
+            alert('Asignando servicio a: ' + employeeId);
+            // Here you would implement service assignment logic
+        }
+
+        function contactEmployee(employeeId) {
+            alert('Contactando a: ' + employeeId);
+            // Here you would implement contact logic
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.classList.remove('show');
+                }
+            }
+        }
+    </script>
+</body>
+</html>item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-123-4567</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">juan.perez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">12.345.678</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📋 Registro INVIMA:</span>
+                        <span class="info-value">TC-2024-001</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🚗 Servicios Hoy:</span>
+                        <span class="info-value">3 programados</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewProfile('juan')">👁️ Ver Perfil</button>
+                    <button class="btn btn-primary btn-sm" onclick="assignService('juan')">📅 Asignar</button>
+                </div>
+            </div>
+
+            <!-- Técnico 2 -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">👩‍🔧</div>
+                    <div class="personnel-name">María González</div>
+                    <div class="personnel-role">Técnico Especializado</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-765-4321</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">maria.gonzalez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">87.654.321</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📋 Registro INVIMA:</span>
+                        <span class="info-value">TC-2024-002</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🚗 Servicios Hoy:</span>
+                        <span class="info-value">2 programados</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewProfile('maria')">👁️ Ver Perfil</button>
+                    <button class="btn btn-primary btn-sm" onclick="assignService('maria')">📅 Asignar</button>
+                </div>
+            </div>
+
+            <!-- Técnico 3 -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator busy"></div>
+                    <div class="personnel-avatar">👨‍🔧</div>
+                    <div class="personnel-name">Carlos Rodríguez</div>
+                    <div class="personnel-role">Técnico Junior</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-555-0123</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">carlos.rodriguez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">11.222.333</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📋 Registro INVIMA:</span>
+                        <span class="info-value">TC-2024-003</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🚗 Servicios Hoy:</span>
+                        <span class="info-value">1 en progreso</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewProfile('carlos')">👁️ Ver Perfil</button>
+                    <button class="btn btn-primary btn-sm" onclick="assignService('carlos')">📅 Asignar</button>
+                </div>
+            </div>
+
+            <!-- Técnico 4 -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">👩‍🔧</div>
+                    <div class="personnel-name">Ana López</div>
+                    <div class="personnel-role">Técnico Especializado</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-
+                    <!-- ...existing code... -->
+            <!-- Técnico 4 -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">👩‍🔧</div>
+                    <div class="personnel-name">Ana López</div>
+                    <div class="personnel-role">Técnico Especializado</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-888-9999</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">ana.lopez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">55.666.777</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📋 Registro INVIMA:</span>
+                        <span class="info-value">TC-2024-004</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🚗 Servicios Hoy:</span>
+                        <span class="info-value">4 programados</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewProfile('ana')">👁️ Ver Perfil</button>
+                    <button class="btn btn-primary btn-sm" onclick="assignService('ana')">📅 Asignar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Personnel Modal -->
+    <div class="modal" id="addPersonnelModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Agregar Nuevo Personal</h2>
+                <button class="close-btn" onclick="closeModal('addPersonnelModal')">&times;</button>
+            </div>
+            
+            <form>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Nombres</label>
+                        <input type="text" class="form-control" placeholder="Nombres completos" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Apellidos</label>
+                        <input type="text" class="form-control" placeholder="Apellidos completos" required>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Cédula</label>
+                        <input type="text" class="form-control" placeholder="12.345.678" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" class="form-control" placeholder="300-123-4567" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" class="form-control" placeholder="nombre@gemini.com" required>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <select class="form-control" required>
+                            <option>Seleccionar cargo</option>
+                            <option>Técnico Senior</option>
+                            <option>Técnico Especializado</option>
+                            <option>Técnico Junior</option>
+                            <option>Coordinador de Servicios</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Departamento</label>
+                        <select class="form-control" required>
+                            <option>Operaciones</option>
+                            <option>Administración</option>
+                            <option>Servicios Técnicos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha de Ingreso</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Salario</label>
+                        <input type="number" class="form-control" placeholder="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Registro INVIMA (Solo técnicos)</label>
+                    <input type="text" class="form-control" placeholder="TC-2024-XXX">
+                </div>
+
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <textarea class="form-control" rows="2" placeholder="Dirección de residencia"></textarea>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Contacto de Emergencia</label>
+                        <input type="text" class="form-control" placeholder="Nombre completo">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono de Emergencia</label>
+                        <input type="tel" class="form-control" placeholder="300-000-0000">
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonnelModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar Personal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showView(view) {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            console.log('Showing view:', view);
+        }
+
+        function openAddPersonnelModal() {
+            document.getElementById('addPersonnelModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function viewProfile(employeeId) {
+            alert('Viendo perfil de: ' + employeeId);
+        }
+
+        function assignService(employeeId) {
+            alert('Asignando servicio a: ' + employeeId);
+        }
+
+        function contactEmployee(employeeId) {
+            alert('Contactando a: ' + employeeId);
+        }
+
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.classList.remove('show');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
+<!-- ...end of

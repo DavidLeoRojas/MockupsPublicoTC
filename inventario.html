@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario - Gemini Ambiental Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        /* Sidebar - Same as dashboard */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text h2 {
+            font-size: 1.2em;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-text p {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.5rem 1rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-icon {
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+
+        .logout-section {
+            position: absolute;
+            bottom: 2rem;
+            left: 1rem;
+            right: 1rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255,107,107,0.2);
+            color: #ff6b6b;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,107,107,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            color: #2c5f41;
+            font-size: 2.5em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-title p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 139, 100, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            border-color: #4a8b64;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--accent-color);
+        }
+
+        .stat-card.primary { --accent-color: #4a8b64; }
+        .stat-card.warning { --accent-color: #f6ad55; }
+        .stat-card.danger { --accent-color: #f56565; }
+        .stat-card.info { --accent-color: #4299e1; }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3em;
+            color: white;
+        }
+
+        .stat-icon.primary { background: linear-gradient(135deg, #4a8b64, #2c5f41); }
+        .stat-icon.warning { background: linear-gradient(135deg, #f6ad55, #ed8936); }
+        .stat-icon.danger { background: linear-gradient(135deg, #f56565, #e53e3e); }
+        .stat-icon.info { background: linear-gradient(135deg, #4299e1, #3182ce); }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        /* Filters and Search */
+        .filters-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-control {
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4a8b64;
+        }
+
+        /* Inventory Table */
+        .inventory-section {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .inventory-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inventory-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .inventory-table th {
+            background: #f7fafc;
+            color: #4a5568;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .inventory-table tr:hover {
+            background: #f7fafc;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.disponible {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .status-badge.bajo {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .status-badge.agotado {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8em;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-edit {
+            background: #4299e1;
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #3182ce;
+        }
+
+        .btn-delete {
+            background: #f56565;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #e53e3e;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .form-grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                font-size: 0.9em;
+            }
+        }
+        .form-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        .form-grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .filters-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .table-container {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🌿</div>
+                <div class="logo-text">
+                    <h2>Gemini Admin</h2>
+                    <p>Panel de Control</p>
+                </div>
+            </div>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="inventario.html" class="nav-link active">
+                    <span class="nav-icon">📦</span>
+                    <span>Inventario</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="agenda.html" class="nav-link">
+                    <span class="nav-icon">📅</span>
+                    <span>Agenda</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="personal.html" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    <span>Personal</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="cotizaciones.html" class="nav-link">
+                    <span class="nav-icon">💰</span>
+                    <span>Cotizaciones</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="facturas.html" class="nav-link">
+                    <span class="nav-icon">📄</span>
+                    <span>Facturas</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="coordinacion-servicios.html" class="nav-link">
+                    <span class="nav-icon">🔧</span>
+                    <span>Coordinación</span>
+                </a>
+            </div>
+        </nav>
+        <div class="logout-section">
+            <a href="inicio.html" class="logout-btn">
+                <span class="nav-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <h1>Inventario</h1>
+                <p>Gestión y control de productos y materiales</p>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary">📤 Exportar</button>
+                <button class="btn btn-primary" onclick="openAddProductModal()">➕ Agregar Producto</button>
+            </div>
+        </div>
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card primary">
+                <div class="stat-header">
+                    <div class="stat-icon primary">📦</div>
+                </div>
+                <div class="stat-number">156</div>
+                <div class="stat-label">Productos en Stock</div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div class="stat-icon warning">⚠️</div>
+                </div>
+                <div class="stat-number">5</div>
+                <div class="stat-label">Stock Bajo</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-header">
+                    <div class="stat-icon danger">❌</div>
+                </div>
+                <div class="stat-number">2</div>
+                <div class="stat-label">Agotados</div>
+            </div>
+            <div class="stat-card info">
+                <div class="stat-header">
+                    <div class="stat-icon info">🔄</div>
+                </div>
+                <div class="stat-number">12</div>
+                <div class="stat-label">Movimientos Hoy</div>
+            </div>
+        </div>
+        <!-- Filtros -->
+        <div class="filters-section">
+            <form>
+                <div class="filters-grid">
+                    <div class="form-group">
+                        <label>Buscar producto</label>
+                        <input type="text" class="form-control" placeholder="Nombre, código o lote">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select class="form-control">
+                            <option>Todos</option>
+                            <option>Plaguicidas</option>
+                            <option>Desinfectantes</option>
+                            <option>Materiales</option>
+                            <option>Equipos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Estado</label>
+                        <select class="form-control">
+                            <option>Todos</option>
+                            <option>Disponible</option>
+                            <option>Bajo</option>
+                            <option>Agotado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Proveedor</label>
+                        <select class="form-control">
+                            <option>Todos</option>
+                            <option>Química Andina</option>
+                            <option>BioSafe</option>
+                            <option>EcoPlag</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" type="submit">🔍 Filtrar</button>
+                </div>
+            </form>
+        </div>
+        <!-- Tabla de Inventario -->
+        <div class="inventory-section">
+            <div class="inventory-header">
+                <span class="inventory-title">Listado de Productos</span>
+                <span>
+                    <button class="btn btn-secondary">⬇️ Descargar</button>
+                </span>
+            </div>
+            <div class="table-container">
+                <table class="inventory-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Código</th>
+                            <th>Lote</th>
+                            <th>Stock</th>
+                            <th>Estado</th>
+                            <th>Proveedor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Plaguicida X</td>
+                            <td>Plaguicidas</td>
+                            <td>PX-001</td>
+                            <td>LT-2025</td>
+                            <td>25</td>
+                            <td><span class="status-badge disponible">Disponible</span></td>
+                            <td>Química Andina</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-sm btn-edit">✏️ Editar</button>
+                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Desinfectante Y</td>
+                            <td>Desinfectantes</td>
+                            <td>DY-002</td>
+                            <td>LT-2024</td>
+                            <td>3</td>
+                            <td><span class="status-badge bajo">Bajo</span></td>
+                            <td>BioSafe</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-sm btn-edit">✏️ Editar</button>
+                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Guantes Nitrilo</td>
+                            <td>Materiales</td>
+                            <td>GN-003</td>
+                            <td>LT-2023</td>
+                            <td>0</td>
+                            <td><span class="status-badge agotado">Agotado</span></td>
+                            <td>EcoPlag</td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-sm btn-edit">✏️ Editar</button>
+                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Más productos aquí -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Agregar Producto -->
+    <div class="modal" id="addProductModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Agregar Nuevo Producto</h2>
+                <button class="close-btn" onclick="closeModal('addProductModal')">&times;</button>
+            </div>
+            <form>
+                <div class="form-grid form-grid-2">
+                    <div class="form-group">
+                        <label>Nombre del Producto</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select class="form-control" required>
+                            <option>Plaguicidas</option>
+                            <option>Desinfectantes</option>
+                            <option>Materiales</option>
+                            <option>Equipos</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Código</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Lote</label>
+                        <input type="text" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Stock</label>
+                        <input type="number" class="form-control" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Proveedor</label>
+                        <select class="form-control">
+                            <option>Química Andina</option>
+                            <option>BioSafe</option>
+                            <option>EcoPlag</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea class="form-control" rows="2"></textarea>
+                </div>
+                <div class="form-grid form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addProductModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar Producto</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        function openAddProductModal() {
+            document.getElementById('addProductModal').classList.add('show');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        // Cerrar modal al hacer clic fuera
+        window.onclick = function(event) {
+            const modal = document.getElementById('addProductModal');
+            if (event.target === modal) {
+                modal.classList.remove('show');
+            }
+        }
+    </script>
+</body>
+</html>
+<!-- ...end of file... -->

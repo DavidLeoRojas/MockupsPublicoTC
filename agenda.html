@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agenda - Gemini Ambiental Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        /* Sidebar - Same as previous modules */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text h2 {
+            font-size: 1.2em;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-text p {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.5rem 1rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-icon {
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+
+        .logout-section {
+            position: absolute;
+            bottom: 2rem;
+            left: 1rem;
+            right: 1rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255,107,107,0.2);
+            color: #ff6b6b;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255,107,107,0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Top Navigation Menu */
+        .top-nav {
+            background: white;
+            padding: 1rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-tab {
+            padding: 0.75rem 1.5rem;
+            text-decoration: none;
+            color: #718096;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .nav-tab:hover, .nav-tab.active {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            color: #2c5f41;
+            font-size: 2.5em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-title p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 139, 100, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+        }
+
+        /* Calendar Layout */
+        .calendar-layout {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        /* Calendar Section */
+        .calendar-section {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+
+        .calendar-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calendar-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .calendar-nav {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .nav-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: #f7fafc;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: #4a8b64;
+            color: white;
+        }
+
+        .month-year {
+            font-weight: 600;
+            color: #2d3748;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        /* Calendar Grid */
+        .calendar-container {
+            padding: 2rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .calendar-day-header {
+            background: #f7fafc;
+            padding: 1rem;
+            text-align: center;
+            font-weight: 600;
+            color: #4a5568;
+            font-size: 0.9em;
+        }
+
+        .calendar-day {
+            background: white;
+            min-height: 100px;
+            padding: 0.5rem;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .calendar-day:hover {
+            background: #f7fafc;
+        }
+
+        .calendar-day.today {
+            background: #e6fffa;
+        }
+
+        .calendar-day.other-month {
+            background: #f7fafc;
+            color: #a0aec0;
+        }
+
+        .day-number {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .day-events {
+            font-size: 0.8em;
+        }
+
+        .event-item {
+            background: var(--event-color);
+            color: white;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            margin-bottom: 0.2rem;
+            font-size: 0.7em;
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .event-item.control-plagas { --event-color: #4a8b64; }
+        .event-item.lavado-tanques { --event-color: #4299e1; }
+        .event-item.inspeccion { --event-color: #f6ad55; }
+        .event-item.seguimiento { --event-color: #9f7aea; }
+
+        /* Sidebar Calendar */
+        .sidebar-calendar {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Today's Schedule */
+        .today-schedule {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 2rem;
+        }
+
+        .schedule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .schedule-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .schedule-date {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .schedule-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-time {
+            min-width: 80px;
+            font-weight: 600;
+            color: #4a8b64;
+            text-align: center;
+            background: #f0fff4;
+            border-radius: 8px;
+            padding: 0.5rem;
+        }
+
+        .schedule-details {
+            flex: 1;
+        }
+
+        .schedule-service {
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+
+        .schedule-client {
+            color: #718096;
+            font-size: 0.9em;
+            margin-bottom: 0.2rem;
+        }
+
+        .schedule-technician {
+            color: #4a8b64;
+            font-size: 0.8em;
+        }
+
+        /* Quick Add */
+        .quick-add {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4a8b64;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .calendar-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .top-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-tabs {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🌿</div>
+                <div class="logo-text">
+                    <h2>Gemini Admin</h2>
+                    <p>Panel de Control</p>
+                </div>
+            </div>
+        </div>
+        
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="inventario.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    <span>Inventario</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="agenda.html" class="nav-link active">
+                    <span class="nav-icon">📅</span>
+                    <span>Agenda</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="personal.html" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    <span>Personal</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="cotizaciones.html" class="nav-link">
+                    <span class="nav-icon">💰</span>
+                    <span>Cotizaciones</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="facturas.html" class="nav-link">
+                    <span class="nav-icon">📄</span>
+                    <span>Facturas</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="coordinacion-servicios.html" class="nav-link">
+                    <span class="nav-icon">🔧</span>
+                    <span>Coordinación</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="logout-section">
+            <a href="inicio.html" class="logout-btn">
+                <span class="nav-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Navigation -->
+        <div class="top-nav">
+            <div class="nav-tabs">
+                <a href="#" class="nav-tab active" onclick="showView('calendar')">📅 Calendario</a>
+                <a href="#" class="nav-tab" onclick="showView('list')">📋 Lista</a>
+                <a href="#" class="nav-tab" onclick="showView('timeline')">⏰ Cronograma</a>
+                <a href="#" class="nav-tab" onclick="showView('map')">🗺️ Mapa</a>
+            </div>
+            <div class="nav-actions">
+                <select class="form-control" style="width: auto;">
+                    <option>Todos los técnicos</option>
+                    <option>Juan Pérez</option>
+                    <option>María González</option>
+                    <option>Carlos Rodríguez</option>
+                </select>
+                <button class="btn btn-secondary">📊 Reportes</button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <h1>Agenda de Servicios</h1>
+                <p>Programación y seguimiento de actividades</p>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="exportSchedule()">
+                    📤 Exportar
+                </button>
+                <button class="btn btn-primary" onclick="openAddServiceModal()">
+                    ➕ Programar Servicio
+                </button>
+            </div>
+        </div>
+
+        <!-- Calendar Layout -->
+        <div class="calendar-layout">
+            <!-- Main Calendar -->
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <h2 class="calendar-title">Enero 2025</h2>
+                    <div class="calendar-nav">
+                        <button class="nav-btn" onclick="previousMonth()">‹</button>
+                        <div class="month-year">Enero 2025</div>
+                        <button class="nav-btn" onclick="nextMonth()">›</button>
+                    </div>
+                </div>
+                
+                <div class="calendar-container">
+                    <div class="calendar-grid">
+                        <!-- Headers -->
+                        <div class="calendar-day-header">Dom</div>
+                        <div class="calendar-day-header">Lun</div>
+                        <div class="calendar-day-header">Mar</div>
+                        <div class="calendar-day-header">Mié</div>
+                        <div class="calendar-day-header">Jue</div>
+                        <div class="calendar-day-header">Vie</div>
+                        <div class="calendar-day-header">Sáb</div>
+                        
+                        <!-- Days -->
+                        <div class="calendar-day other-month">
+                            <div class="day-number">29</div>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <div class="day-number">30</div>
+                        </div>
+                        <div class="calendar-day other-month">
+                            <div class="day-number">31</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">1</div>
+                            <div class="day-events">
+                                <div class="event-item control-plagas">Control Plagas</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">2</div>
+                            <div class="day-events">
+                                <div class="event-item lavado-tanques">Lavado Tanque</div>
+                                <div class="event-item inspeccion">Inspección</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">3</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">4</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">5</div>
+                            <div class="day-events">
+                                <div class="event-item control-plagas">Control Plagas</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">6</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">7</div>
+                            <div class="day-events">
+                                <div class="event-item seguimiento">Seguimiento</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">8</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">9</div>
+                            <div class="day-events">
+                                <div class="event-item control-plagas">Control Plagas</div>
+                                <div class="event-item lavado-tanques">Lavado Tanque</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">10</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">11</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">12</div>
+                            <div class="day-events">
+                                <div class="event-item inspeccion">Inspección</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">13</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">14</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">15</div>
+                            <div class="day-events">
+                                <div class="event-item control-plagas">Control Plagas</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">16</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">17</div>
+                            <div class="day-events">
+                                <div class="event-item lavado-tanques">Lavado Tanque</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">18</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">19</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">20</div>
+                            <div class="day-events">
+                                <div class="event-item seguimiento">Seguimiento</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">21</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">22</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">23</div>
+                            <div class="day-events">
+                                <div class="event-item control-plagas">Control Plagas</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">24</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">25</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">26</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">27</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">28</div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">29</div>
+                        </div>
+                        <div class="calendar-day today">
+                            <div class="day-number">30</div>
+                            <div class="day-events">
+                                <div class="event-item inspeccion">Inspección</div>
+                            </div>
+                        </div>
+                        <div class="calendar-day">
+                            <div class="day-number">31</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar-calendar">
+                <!-- Today's Schedule -->
+                <div class="today-schedule">
+                    <div class="schedule-header">
+                        <h3 class="schedule-title">Agenda de Hoy</h3>
+                        <div class="schedule-date">30 Enero 2025</div>
+                    </div>
+                    
+                    <div class="schedule-item">
+                        <div class="schedule-time">08:00</div>
+                        <div class="schedule-details">
+                            <div class="schedule-service">Inspección General</div>
+                            <div class="schedule-client">Hotel Plaza Real</div>
+                            <div class="schedule-technician">👨‍🔧 Juan Pérez</div>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="schedule-time">10:30</div>
+                        <div class="schedule-details">
+                            <div class="schedule-service">Control de Plagas</div>
+                            <div class="schedule-client">Restaurante El Buen Sabor</div>
+                            <div class="schedule-technician">👩‍🔧 María González</div>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="schedule-time">14:00</div>
+                        <div class="schedule-details">
+                            <div class="schedule-service">Lavado de Tanque</div>
+                            <div class="schedule-client">Colegio San Patricio</div>
+                            <div class="schedule-technician">👨‍🔧 Carlos Rodríguez</div>
+                        </div>
+                    </div>
+
+                    <div class="schedule-item">
+                        <div class="schedule-time">16:30</div>
+                        <div class="schedule-details">
+                            <div class="schedule-service">Seguimiento</div>
+                            <div class="schedule-client">Clínica San Rafael</div>
+                            <div class="schedule-technician">👩‍🔧 María González</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Add Service -->
+                <div class="quick-add">
+                    <h3 style="color: #2c5f41; margin-bottom: 1.5rem;">Programar Rápido</h3>
+                    
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select class="form-control">
+                            <option>Seleccionar cliente</option>
+                            <option>Hotel Plaza Real</option>
+                            <option>Restaurante El Buen Sabor</option>
+                            <option>Colegio San Patricio</option>
+                            <option>Clínica San Rafael</option>
+                            <option>Panadería Central</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Servicio</label>
+                        <select class="form-control" required>
+                            <option>Control de Plagas</option>
+                            <option>Lavado de Tanques</option>
+                            <option>Inspección General</option>
+                            <option>Seguimiento</option>
+                            <option>Mantenimiento Preventivo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora de Inicio</label>
+                        <input type="time" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Duración Estimada</label>
+                        <select class="form-control">
+                            <option>1 hora</option>
+                            <option>2 horas</option>
+                            <option>3 horas</option>
+                            <option>4 horas</option>
+                            <option>Día completo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Técnico Asignado</label>
+                        <select class="form-control" required>
+                            <option>Juan Pérez</option>
+                            <option>María González</option>
+                            <option>Carlos Rodríguez</option>
+                            <option>Ana López</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea class="form-control" rows="3" placeholder="Instrucciones especiales, materiales necesarios, etc."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select class="form-control">
+                        <option>Normal</option>
+                        <option>Alta</option>
+                        <option>Urgente</option>
+                    </select>
+                </div>
+
+                <div class="form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Programar Servicio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showView(view) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Here you would implement the logic to show different views
+            console.log('Showing view:', view);
+        }
+
+        function previousMonth() {
+            console.log('Previous month');
+            // Implement month navigation logic
+        }
+
+        function nextMonth() {
+            console.log('Next month');
+            // Implement month navigation logic
+        }
+
+        function openAddServiceModal() {
+            document.getElementById('addServiceModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function exportSchedule() {
+            alert('Exportando agenda...');
+            // Implement export logic
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.classList.remove('show');
+                }
+            }
+        }
+
+        // Add click events to calendar days
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.addEventListener('click', function() {
+                const dayNumber = this.querySelector('.day-number').textContent;
+                console.log('Clicked on day:', dayNumber);
+                // Here you could open a day detail modal or add a new event
+            });
+        });
+    </script>
+</body>
+</html>gio San Patricio</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Servicio</label>
+                        <select class="form-control">
+                            <option>Control de Plagas</option>
+                            <option>Lavado de Tanques</option>
+                            <option>Inspección</option>
+                            <option>Seguimiento</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" class="form-control" value="2025-01-31">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Hora</label>
+                        <input type="time" class="form-control" value="09:00">
+                    </div>
+
+                    <button class="btn btn-primary" style="width: 100%;">
+                        ➕ Programar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Service Modal -->
+    <div class="modal" id="addServiceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Programar Nuevo Servicio</h2>
+                <button class="close-btn" onclick="closeModal('addServiceModal')">&times;</button>
+            </div>
+            
+            <form>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select class="form-control" required>
+                            <option>Seleccionar cliente</option>
+                            <option>Hotel Plaza Real</option>
+                            <option>Restaurante El Buen Sabor</option>
+                            <!-- ...existing code... -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Programar Servicio -->
+    <div class="modal" id="addServiceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Programar Nuevo Servicio</h2>
+                <button class="close-btn" onclick="closeModal('addServiceModal')">&times;</button>
+            </div>
+            <form>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Cliente</label>
+                        <select class="form-control" required>
+                            <option>Seleccionar cliente</option>
+                            <option>Hotel Plaza Real</option>
+                            <option>Restaurante El Buen Sabor</option>
+                            <option>Colegio San Patricio</option>
+                            <option>Clínica San Rafael</option>
+                            <option>Panadería Central</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo de Servicio</label>
+                        <select class="form-control" required>
+                            <option>Control de Plagas</option>
+                            <option>Lavado de Tanques</option>
+                            <option>Inspección General</option>
+                            <option>Seguimiento</option>
+                            <option>Mantenimiento Preventivo</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha</label>
+                        <input type="date" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora de Inicio</label>
+                        <input type="time" class="form-control" required>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Duración Estimada</label>
+                        <select class="form-control">
+                            <option>1 hora</option>
+                            <option>2 horas</option>
+                            <option>3 horas</option>
+                            <option>4 horas</option>
+                            <option>Día completo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Técnico Asignado</label>
+                        <select class="form-control" required>
+                            <option>Juan Pérez</option>
+                            <option>María González</option>
+                            <option>Carlos Rodríguez</option>
+                            <option>Ana López</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea class="form-control" rows="3" placeholder="Instrucciones especiales, materiales necesarios, etc."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select class="form-control">
+                        <option>Normal</option>
+                        <option>Alta</option>
+                        <option>Urgente</option>
+                    </select>
+                </div>
+                <div class="form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Programar Servicio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showView(view) {
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            // Aquí iría la lógica para mostrar diferentes vistas
+            console.log('Showing view:', view);
+        }
+
+        function previousMonth() {
+            console.log('Previous month');
+            // Lógica para navegar al mes anterior
+        }
+
+        function nextMonth() {
+            console.log('Next month');
+            // Lógica para navegar al mes siguiente
+        }
+
+        function openAddServiceModal() {
+            document.getElementById('addServiceModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function exportSchedule() {
+            alert('Exportando agenda...');
+            // Lógica de exportación
+        }
+
+        // Cerrar modales al hacer clic fuera
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    modal.classList.remove('show');
+                }
+            }
+        }
+
+        // Click en días del calendario
+        document.querySelectorAll('.calendar-day').forEach(day => {
+            day.addEventListener('click', function() {
+                const dayNumber = this.querySelector('.day-number').textContent;
+                console.log('Clicked on day:', dayNumber);
+                // Aquí podrías abrir un modal de detalle o agregar evento
+            });
+        });
+    </script>
+</body>
+</html>
+<!-- ...end of file... --
