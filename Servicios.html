@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicios - Gemini Ambiental</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Header y Navegación */
+        .header {
+            background: linear-gradient(135deg, #7bce9e 0%, #4a8b64 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #2c5f41;
+        }
+
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .admin-btn {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)), 
+                        linear-gradient(135deg, #e8f5e8 0%, #c8e8c8 100%);
+            padding: 4rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-alt {
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            font-size: 2.5em;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: #2c5f41;
+        }
+
+        /* Services Grid */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .service-header {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .service-icon {
+            font-size: 4em;
+            margin-bottom: 1rem;
+        }
+
+        .service-header h3 {
+            font-size: 1.5em;
+            margin-bottom: 0.5rem;
+        }
+
+        .service-content {
+            padding: 2rem;
+        }
+
+        .service-features {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .service-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .service-features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #4a8b64;
+            font-weight: bold;
+        }
+
+        .price-tag {
+            background: #4a8b64;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            display: inline-block;
+            margin-top: 1rem;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        .cta-button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        /* Process Section */
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .step-card {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .step-number {
+            background: #4a8b64;
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 0 auto 1rem;
+        }
+
+        .step-card h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+        }
+
+        /* Industries Section */
+        .industries-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .industry-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .industry-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .industry-icon {
+            font-size: 3em;
+            margin-bottom: 1rem;
+            color: #4a8b64;
+        }
+
+        .industry-card h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+        }
+
+        /* FAQ Section */
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: white;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: #4a8b64;
+            color: white;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            font-weight: bold;
+        }
+
+        .faq-question:hover {
+            background: #2c5f41;
+        }
+
+        .faq-answer {
+            padding: 1.5rem;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a2f23;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #4a8b64;
+        }
+
+        .footer-section p,
+        .footer-section li {
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #4a8b64;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #333;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 1rem;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 2em;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="Logo.png" width="300" height="80" alt="Logo">
+
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="inicio.html">Inicio</a></li>
+                    <li><a href="acerca.html">Acerca de</a></li>
+                    <li><a href="servicios.html" class="active">Servicios</a></li>
+                    <li><a href="testimonios.html">Testimonios</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                </ul>
+            </nav>
+            <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Nuestros Servicios</h1>
+            <p>Soluciones integrales en control de plagas y saneamiento ambiental para tu empresa</p>
+        </div>
+    </section>
+
+    <!-- Servicios Principales -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Servicios Especializados</h2>
+            <div class="services-grid">
+                <!-- Control de Plagas -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🐛</div>
+                        <h3>Control de Plagas</h3>
+                        <p>Eliminación efectiva y prevención</p>
+                    </div>
+                    <div class="service-content">
+                        <p>Servicio integral para el control y eliminación de insectos, roedores y otras plagas en establecimientos comerciales e industriales.</p>
+                        <ul class="service-features">
+                            <li>Inspección técnica especializada</li>
+                            <li>Tratamiento con productos certificados</li>
+                            <li>Seguimiento y monitoreo continuo</li>
+                            <li>Certificación sanitaria oficial</li>
+                            <li>Plan de manejo integrado de plagas (MIP)</li>
+                        </ul>
+                        <div class="price-tag">Desde $280,000/mes</div>
+                        <a href="contacto.html" class="cta-button">Solicitar Cotización</a>
+                    </div>
+                </div>
+
+                <!-- Lavado de Tanques -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">🚿</div>
+                        <h3>Lavado de Tanques</h3>
+                        <p>Limpieza y desinfección profesional</p>
+                    </div>
+                    <div class="service-content">
+                        <p>Limpieza y desinfección de tanques de agua potable, garantizando la calidad del agua para consumo humano.</p>
+                        <ul class="service-features">
+                            <li>Vaciado y limpieza profunda</li>
+                            <li>Desinfección con químicos aprobados</li>
+                            <li>Análisis fisicoquímico del agua</li>
+                            <li>Certificado de potabilidad</li>
+                            <li>Mantenimiento preventivo programado</li>
+                        </ul>
+                        <div class="price-tag">Desde $450,000/servicio</div>
+                        <a href="contacto.html" class="cta-button">Solicitar Cotización</a>
+                    </div>
+                </div>
+
+                <!-- Certificaciones -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <div class="service-icon">📋</div>
+                        <h3>Certificaciones</h3>
+                        <p>Documentación oficial y legal</p>
+                    </div>
+                    <div class="service-content">
+                        <p>Emisión de certificados y documentación oficial que acredita el cumplimiento de normativas sanitarias.</p>
+                        <ul class="service-features">
+                            <li>Certificados de fumigación</li>
+                            <li>Actas de lavado y desinfección</li>
+                            <li>Reportes técnicos detallados</li>
+                            <li>Registro fotográfico del proceso</li>
+                            <li>Cronograma de servicios futuros</li>
+                        </ul>
+                        <div class="price-tag">Incluido en servicios</div>
+                        <a href="contacto.html" class="cta-button">Más Información</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Proceso de Trabajo -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Nuestro Proceso de Trabajo</h2>
+            <div class="process-steps">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Inspección</h3>
+                    <p>Evaluación técnica completa de las instalaciones y identificación de problemáticas.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Diagnóstico</h3>
+                    <p>Análisis detallado y diseño del plan de tratamiento personalizado.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Tratamiento</h3>
+                    <p>Aplicación de productos y técnicas especializadas con equipos profesionales.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Seguimiento</h3>
+                    <p>Monitoreo continuo y ajustes del plan según resultados obtenidos.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">5</div>
+                    <h3>Certificación</h3>
+                    <p>Entrega de documentación oficial y programación de próximos servicios.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sectores que Atendemos -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Sectores que Atendemos</h2>
+            <div class="industries-grid">
+                <div class="industry-card">
+                    <div class="industry-icon">🍽️</div>
+                    <h3>Restaurantes</h3>
+                    <p>Cocinas, comedores, bodegas de alimentos y áreas de preparación.</p>
+                </div>
+                <div class="industry-card">
+                    <div class="industry-icon">🏫</div>
+                    <h3>Instituciones Educativas</h3>
+                    <p>Colegios, universidades, guarderías y centros de formación.</p>
+                </div>
+                <div class="industry-card">
+                    <div class="industry-icon">🏨</div>
+                    <h3>Hoteles</h3>
+                    <p>Habitaciones, restaurantes, spas y áreas comunes.</p>
+                </div>
+                <div class="industry-card">
+                    <div class="industry-icon">🏭</div>
+                    <h3>Industria Alimentaria</h3>
+                    <p>Plantas de procesamiento, almacenes y centros de distribución.</p>
+                </div>
+                <div class="industry-card">
+                    <div class="industry-icon">🏥</div>
+                    <h3>Centros de Salud</h3>
+                    <p>Hospitales, clínicas y laboratorios médicos.</p>
+                </div>
+                <div class="industry-card">
+                    <div class="industry-icon">🏢</div>
+                    <h3>Oficinas</h3>
+                    <p>Edificios corporativos, centros comerciales y espacios de trabajo.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <div class="faq-container">
+                <div class="faq-item">
+                    <div class="faq-question">¿Con qué frecuencia debo solicitar el servicio de control de plagas?</div>
+                    <div class="faq-answer">La frecuencia depende del tipo de establecimiento y nivel de riesgo. Para restaurantes recomendamos servicio mensual, mientras que oficinas pueden requerir servicio trimestral. Realizamos una evaluación inicial para determinar la frecuencia óptima.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">¿Los productos que utilizan son seguros para personas y alimentos?</div>
+                    <div class="faq-answer">Sí, todos nuestros productos están aprobados por INVIMA y son seguros para uso en establecimientos con manipulación de alimentos. Seguimos protocolos estrictos de aplicación y tiempos de espera antes del reingreso.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">¿Qué incluye el certificado sanitario?</div>
+                    <div class="faq-answer">El certificado incluye: fecha y tipo de servicio realizado, productos aplicados, áreas tratadas, recomendaciones técnicas, validez del tratamiento y firma del técnico responsable con registro INVIMA.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">¿Atienden emergencias fuera del horario laboral?</div>
+                    <div class="faq-answer">Sí, contamos con servicio de emergencias 24/7 para situaciones críticas. Este servicio tiene un recargo adicional y está sujeto a disponibilidad de personal técnico.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Gemini Ambiental S.A.S.</h3>
+                <p>Empresa líder en control de plagas y saneamiento ambiental en Boyacá.</p>
+                <p><strong>NIT:</strong> 123.456.789-0</p>
+                <p><strong>Registro Sanitario:</strong> BOYACA-12345</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Tunja, Boyacá - Colombia</p>
+                <p>📞 (+57) 300 123 4567</p>
+                <p>✉️ info@geminiambiental.com</p>
+                <p>🌐 www.geminiambiental.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <ul>
+                    <li><a href="servicios.html">Control de Plagas</a></li>
+                    <li><a href="servicios.html">Lavado de Tanques</a></li>
+                    <li><a href="servicios.html">Certificaciones</a></li>
+                    <li><a href="servicios.html">Mantenimiento Preventivo</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Términos y Condiciones</a></li>
+                    <li><a href="#">Política de Privacidad</a></li>
+                    <li><a href="#">Certificaciones</a></li>
+                    <li><a href="#">HSEQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2025 Gemini Ambiental S.A.S. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

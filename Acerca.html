@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acerca de Nosotros - Gemini Ambiental</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Header y Navegación */
+        .header {
+            background: linear-gradient(135deg, #7bce9e 0%, #4a8b64 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #2c5f41;
+        }
+
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .admin-btn {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)), 
+                        linear-gradient(135deg, #e8f5e8 0%, #c8e8c8 100%);
+            padding: 4rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3em;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.2em;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Content Sections */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-alt {
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            font-size: 2.5em;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #2c5f41;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+            margin: 3rem 0;
+        }
+
+        .content-text h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+            font-size: 1.5em;
+        }
+
+        .content-text p {
+            margin-bottom: 1rem;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .value-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid #4a8b64;
+        }
+
+        .value-icon {
+            font-size: 3em;
+            margin-bottom: 1rem;
+        }
+
+        .value-card h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+        }
+
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .team-photo {
+            height: 200px;
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 4em;
+        }
+
+        .team-info {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .team-info h3 {
+            color: #2c5f41;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-info p {
+            color: #666;
+        }
+
+        .certifications {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .cert-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .cert-icon {
+            font-size: 2.5em;
+            color: #4a8b64;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a2f23;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #4a8b64;
+        }
+
+        .footer-section p,
+        .footer-section li {
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #4a8b64;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #333;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 1rem;
+                justify-content: center;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="Logo.png" width="300" height="80" alt="Logo">
+
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="inicio.html">Inicio</a></li>
+                    <li><a href="acerca.html" class="active">Acerca de</a></li>
+                    <li><a href="servicios.html">Servicios</a></li>
+                    <li><a href="testimonios.html">Testimonios</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                </ul>
+            </nav>
+            <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Acerca de Gemini Ambiental</h1>
+            <p>Más de 15 años de experiencia brindando soluciones profesionales en control de plagas y saneamiento ambiental</p>
+        </div>
+    </section>
+
+    <!-- Quiénes Somos -->
+    <section class="section">
+        <div class="container">
+            <div class="content-grid">
+                <div class="content-text">
+                    <h3>¿Quiénes Somos?</h3>
+                    <p>Gemini Ambiental S.A.S. es una empresa líder en servicios de control de plagas y saneamiento ambiental en Boyacá, especializada en el sector alimentario, educativo y hotelero.</p>
+                    <p>Fundada en 2010, hemos construido una sólida reputación basada en la calidad de nuestros servicios, el cumplimiento normativo y la satisfacción del cliente.</p>
+                </div>
+                <div class="content-visual">
+                    <div style="background: linear-gradient(135deg, #4a8b64, #2c5f41); height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 4em;">🏢</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Misión y Visión -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Nuestra Misión y Visión</h2>
+            <div class="content-grid">
+                <div class="value-card">
+                    <div class="value-icon">🎯</div>
+                    <h3>Misión</h3>
+                    <p>Brindar soluciones integrales en control de plagas y saneamiento ambiental, garantizando ambientes seguros y saludables para nuestros clientes, cumpliendo con los más altos estándares de calidad y normatividad vigente.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">👁️</div>
+                    <h3>Visión</h3>
+                    <p>Ser la empresa líder en servicios ambientales en la región andina, reconocida por nuestra excelencia técnica, innovación constante y compromiso con la sostenibilidad ambiental.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Valores -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Nuestros Valores</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">✅</div>
+                    <h3>Calidad</h3>
+                    <p>Comprometidos con la excelencia en cada servicio que brindamos.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🛡️</div>
+                    <h3>Confianza</h3>
+                    <p>Construimos relaciones duraderas basadas en la transparencia y honestidad.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🌱</div>
+                    <h3>Sostenibilidad</h3>
+                    <p>Cuidamos el medio ambiente en todos nuestros procesos.</p>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🎓</div>
+                    <h3>Innovación</h3>
+                    <p>Adoptamos las mejores tecnologías y métodos del sector.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Equipo -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Nuestro Equipo</h2>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-photo">👨‍💼</div>
+                    <div class="team-info">
+                        <h3>Carlos Rodríguez</h3>
+                        <p>Director General</p>
+                        <p>Ing. Ambiental - 20+ años experiencia</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-photo">👩‍🔬</div>
+                    <div class="team-info">
+                        <h3>María González</h3>
+                        <p>Jefe Técnico</p>
+                        <p>Bióloga - Especialista en Control de Plagas</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-photo">👨‍🔧</div>
+                    <div class="team-info">
+                        <h3>Juan Pérez</h3>
+                        <p>Técnico Senior</p>
+                        <p>15 años de experiencia en campo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificaciones -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Certificaciones y Registros</h2>
+            <div class="certifications">
+                <div class="cert-card">
+                    <div class="cert-icon">📜</div>
+                    <h3>INVIMA</h3>
+                    <p>Registro Sanitario Vigente</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">🏅</div>
+                    <h3>ISO 9001</h3>
+                    <p>Gestión de Calidad</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">🌿</div>
+                    <h3>ISO 14001</h3>
+                    <p>Gestión Ambiental</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">⚡</div>
+                    <h3>OHSAS 18001</h3>
+                    <p>Seguridad y Salud Ocupacional</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Gemini Ambiental S.A.S.</h3>
+                <p>Empresa líder en control de plagas y saneamiento ambiental en Boyacá.</p>
+                <p><strong>NIT:</strong> 123.456.789-0</p>
+                <p><strong>Registro Sanitario:</strong> BOYACA-12345</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Tunja, Boyacá - Colombia</p>
+                <p>📞 (+57) 300 123 4567</p>
+                <p>✉️ info@geminiambiental.com</p>
+                <p>🌐 www.geminiambiental.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <ul>
+                    <li><a href="servicios.html">Control de Plagas</a></li>
+                    <li><a href="servicios.html">Lavado de Tanques</a></li>
+                    <li><a href="servicios.html">Certificaciones</a></li>
+                    <li><a href="servicios.html">Mantenimiento Preventivo</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Términos y Condiciones</a></li>
+                    <li><a href="#">Política de Privacidad</a></li>
+                    <li><a href="#">Certificaciones</a></li>
+                    <li><a href="#">HSEQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2025 Gemini Ambiental S.A.S. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
