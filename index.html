@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Ambiental - Control de Plagas y Saneamiento Ambiental</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* Header y Navegación */
+        .header {
+            background: linear-gradient(135deg, #7bce9e 0%, #4a8b64 100%);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #2c5f41;
+        }
+
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+
+        .admin-btn {
+            background: #ff6b6b;
+            color: white;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-btn:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)), 
+                        linear-gradient(135deg, #e8f5e8 0%, #c8e8c8 100%);
+            padding: 6rem 0;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5em;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.3em;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn-primary {
+            background: #ff6b6b;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+        }
+
+        .btn-primary:hover {
+            background: #ff5252;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255,107,107,0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: bold;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: white;
+            color: #2c5f41;
+        }
+
+        /* Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        .section-alt {
+            background: #f8f9fa;
+        }
+
+        .section-title {
+            font-size: 2.5em;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: #2c5f41;
+        }
+
+        /* About Section */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-text h3 {
+            color: #2c5f41;
+            font-size: 1.5em;
+            margin-bottom: 1rem;
+        }
+
+        .about-text p {
+            margin-bottom: 1.5rem;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4a8b64;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Services Preview */
+        .services-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .service-preview-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .service-preview-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .service-preview-header {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .service-preview-icon {
+            font-size: 3em;
+            margin-bottom: 1rem;
+        }
+
+        .service-preview-content {
+            padding: 2rem;
+        }
+
+        /* Why Choose Us */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 1rem;
+            color: #4a8b64;
+        }
+
+        .feature-card h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(135deg, #2c5f41, #4a8b64);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5em;
+            margin-bottom: 1rem;
+        }
+
+        .cta-section p {
+            font-size: 1.2em;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Contact Info */
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .contact-item {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .contact-icon {
+            width: 60px;
+            height: 60px;
+            background: #4a8b64;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            color: white;
+            margin: 0 auto 1rem;
+        }
+
+        .contact-item h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: #1a2f23;
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: #4a8b64;
+        }
+
+        .footer-section p,
+        .footer-section li {
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: #4a8b64;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #333;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            text-align: center;
+            opacity: 0.7;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-menu {
+                flex-wrap: wrap;
+                gap: 1rem;
+                justify-content: center;
+            }
+
+            .hero h1 {
+                font-size: 2.5em;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .about-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="Logo.png" width="300" height="80" alt="Logo">
+
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="inicio.html" class="active">Inicio</a></li>
+                    <li><a href="acerca.html">Acerca de</a></li>
+                    <li><a href="servicios.html">Servicios</a></li>
+                    <li><a href="testimonios.html">Testimonios</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                </ul>
+            </nav>
+            <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1>Gemini Ambiental S.A.S</h1>
+            <p>Empresa líder en control de plagas y saneamiento ambiental en Boyacá. Protegemos tu negocio con soluciones profesionales y certificadas para restaurantes, instituciones educativas y empresas del sector alimentario.</p>
+            <div class="hero-buttons">
+                <a href="servicios.html" class="btn-primary">Conoce Nuestros Servicios</a>
+                <a href="contacto.html" class="btn-secondary">Solicita tu Cotización</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">¿Quiénes Somos?</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <h3>Experiencia y Confianza</h3>
+                    <p>Somos una empresa especializada en control de plagas y lavado de tanques de agua, con enfoque en clientes corporativos. Nuestro compromiso es brindar soluciones integrales que garanticen ambientes seguros y saludables.</p>
+                    <p>Contamos con personal técnico certificado, productos aprobados por INVIMA y procesos que cumplen con todas las normativas sanitarias vigentes.</p>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number">100+</div>
+                            <div class="stat-label">Clientes Satisfechos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">5+</div>
+                            <div class="stat-label">Años de Experiencia</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">24/7</div>
+                            <div class="stat-label">Servicio de Emergencia</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">Productos Certificados</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div class="contact-info">
+                        <div class="contact-item">
+                            <div class="contact-icon">🎯</div>
+                            <h3>Misión</h3>
+                            <p>Brindar soluciones efectivas en control de plagas y saneamiento ambiental.</p>
+                        </div>
+                        <div class="contact-item">
+                            <div class="contact-icon">👁️</div>
+                            <h3>Visión</h3>
+                            <p>Ser la empresa líder en servicios ambientales en la región de Boyacá.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Preview -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Nuestros Servicios Principales</h2>
+            <div class="services-preview">
+                <div class="service-preview-card">
+                    <div class="service-preview-header">
+                        <div class="service-preview-icon">🐛</div>
+                        <h3>Control de Plagas</h3>
+                    </div>
+                    <div class="service-preview-content">
+                        <p>Eliminación efectiva y prevención de insectos, roedores y otras plagas. Servicio integral con productos certificados y seguimiento continuo.</p>
+                        <ul style="list-style: none; margin: 1rem 0;">
+                            <li style="margin: 0.5rem 0;">✓ Inspección técnica especializada</li>
+                            <li style="margin: 0.5rem 0;">✓ Tratamiento con productos certificados</li>
+                            <li style="margin: 0.5rem 0;">✓ Certificación sanitaria oficial</li>
+                        </ul>
+                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $280,000/mes</div>
+                    </div>
+                </div>
+
+                <div class="service-preview-card">
+                    <div class="service-preview-header">
+                        <div class="service-preview-icon">🚿</div>
+                        <h3>Lavado de Tanques</h3>
+                    </div>
+                    <div class="service-preview-content">
+                        <p>Limpieza y desinfección profesional de tanques de agua potable, garantizando la calidad del agua para consumo humano.</p>
+                        <ul style="list-style: none; margin: 1rem 0;">
+                            <li style="margin: 0.5rem 0;">✓ Vaciado y limpieza profunda</li>
+                            <li style="margin: 0.5rem 0;">✓ Desinfección con químicos aprobados</li>
+                            <li style="margin: 0.5rem 0;">✓ Certificado de potabilidad</li>
+                        </ul>
+                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $450,000/servicio</div>
+                    </div>
+                </div>
+
+                <div class="service-preview-card">
+                    <div class="service-preview-header">
+                        <div class="service-preview-icon">📋</div>
+                        <h3>Certificaciones</h3>
+                    </div>
+                    <div class="service-preview-content">
+                        <p>Documentación oficial que acredita el cumplimiento de normativas sanitarias para tu establecimiento.</p>
+                        <ul style="list-style: none; margin: 1rem 0;">
+                            <li style="margin: 0.5rem 0;">✓ Certificados de fumigación</li>
+                            <li style="margin: 0.5rem 0;">✓ Actas de lavado y desinfección</li>
+                            <li style="margin: 0.5rem 0;">✓ Reportes técnicos detallados</li>
+                        </ul>
+                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Incluido en servicios</div>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="servicios.html" class="btn-primary">Ver Todos los Servicios</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">¿Por Qué Elegir Gemini Ambiental?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🏆</div>
+                    <h3>Experiencia Comprobada</h3>
+                    <p>Años de experiencia atendiendo empresas del sector alimentario y educativo con resultados excepcionales.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔬</div>
+                    <h3>Productos Certificados</h3>
+                    <p>Utilizamos únicamente productos aprobados por INVIMA, seguros para personas y alimentos.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">👨‍🔬</div>
+                    <h3>Personal Calificado</h3>
+                    <p>Técnicos certificados con registro INVIMA y capacitación continua en las últimas técnicas.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Servicio 24/7</h3>
+                    <p>Disponibilidad para emergencias las 24 horas del día, los 7 días de la semana.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Documentación Legal</h3>
+                    <p>Entregamos toda la certificación requerida por entes de control y normativas sanitarias.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Soluciones Personalizadas</h3>
+                    <p>Planes de manejo adaptados a las necesidades específicas de cada tipo de establecimiento.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>¿Listo para Proteger tu Negocio?</h2>
+            <p>Contáctanos hoy mismo y obtén una cotización gratuita personalizada para tu empresa. Nuestro equipo de expertos está listo para brindarte la mejor solución.</p>
+            <div class="hero-buttons">
+                <a href="contacto.html" class="btn-primary">Solicita tu Cotización Gratuita</a>
+                <a href="tel:+573001234567" class="btn-secondary">Llámanos Ahora</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Info -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Información de Contacto</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <div class="contact-icon">📞</div>
+                    <h3>Teléfono</h3>
+                    <p><strong>Principal:</strong> (+57) 300 123 4567</p>
+                    <p><strong>Emergencias:</strong> 24/7</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <h3>Email</h3>
+                    <p><strong>General:</strong> info@geminiambiental.com</p>
+                    <p><strong>Ventas:</strong> ventas@geminiambiental.com</p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <h3>Ubicación</h3>
+                    <p><strong>Dirección:</strong> Tunja, Boyacá</p>
+                    <p><strong>Colombia</strong></p>
+                </div>
+                <div class="contact-item">
+                    <div class="contact-icon">🕒</div>
+                    <h3>Horarios</h3>
+                    <p><strong>Lun - Vie:</strong> 8:00 AM - 6:00 PM</p>
+                    <p><strong>Sáb:</strong> 8:00 AM - 2:00 PM</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Gemini Ambiental S.A.S.</h3>
+                <p>Empresa líder en control de plagas y saneamiento ambiental en Boyacá.</p>
+                <p><strong>NIT:</strong> 123.456.789-0</p>
+                <p><strong>Registro Sanitario:</strong> BOYACA-12345</p>
+            </div>
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <p>📍 Tunja, Boyacá - Colombia</p>
+                <p>📞 (+57) 300 123 4567</p>
+                <p>✉️ info@geminiambiental.com</p>
+                <p>🌐 www.geminiambiental.com</p>
+            </div>
+            <div class="footer-section">
+                <h3>Servicios</h3>
+                <ul>
+                    <li><a href="servicios.html">Control de Plagas</a></li>
+                    <li><a href="servicios.html">Lavado de Tanques</a></li>
+                    <li><a href="servicios.html">Certificaciones</a></li>
+                    <li><a href="servicios.html">Mantenimiento Preventivo</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Legal</h3>
+                <ul>
+                    <li><a href="#">Términos y Condiciones</a></li>
+                    <li><a href="#">Política de Privacidad</a></li>
+                    <li><a href="#">Certificaciones</a></li>
+                    <li><a href="#">HSEQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2025 Gemini Ambiental S.A.S. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
