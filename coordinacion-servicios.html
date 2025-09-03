@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel - Administrar Servicios</title>
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2d3748;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .logo-text h2 {
+            font-size: 1.2em;
+            margin-bottom: 0.2rem;
+        }
+
+        .logo-text p {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .nav-menu {
+            padding: 1rem 0;
+        }
+
+        .nav-item {
+            margin: 0.5rem 1rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-icon {
+            font-size: 1.2em;
+            width: 24px;
+            text-align: center;
+        }
+
+        .logout-section {
+            position: absolute;
+            bottom: 2rem;
+            left: 1rem;
+            right: 1rem;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 2rem;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title h1 {
+            color: #2c5f41;
+            font-size: 2.5em;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-title p {
+            color: #718096;
+            font-size: 1.1em;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 139, 100, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #4a8b64;
+            color: #4a8b64;
+        }
+
+        .btn-outline:hover {
+            background: #4a8b64;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.9em;
+            flex: 1;
+        }
+
+        /* Cards Grid */
+        .personnel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .personnel-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .personnel-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .personnel-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            margin: 0 auto 1rem;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .personnel-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .personnel-role {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .status-indicator.active {
+            background: #48bb78;
+        }
+
+        .status-indicator.inactive {
+            background: #f56565;
+        }
+
+        .status-indicator.busy {
+            background: #f6ad55;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .info-label {
+            color: #718096;
+            font-weight: 600;
+        }
+
+        .info-value {
+            color: #2d3748;
+            font-weight: 600;
+        }
+
+        .card-actions {
+            padding: 1rem 2rem 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .modal-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #718096;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4a8b64;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .personnel-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🌿</div>
+                <div class="logo-text">
+                    <h2>Gemini Admin</h2>
+                    <p>Panel de Control</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="nav-item"><a href="dashboard.html" class="nav-link"><span
+                        class="nav-icon">📊</span><span>Dashboard</span></a></div>
+            <div class="nav-item"><a href="inventario.html" class="nav-link"><span
+                        class="nav-icon">📦</span><span>Inventario</span></a></div>
+            <div class="nav-item"><a href="agenda.html" class="nav-link"><span
+                        class="nav-icon">📅</span><span>Agenda</span></a></div>
+            <div class="nav-item"><a href="personas.html" class="nav-link"><span
+                        class="nav-icon">👥</span><span>Personas</span></a></div>
+            <div class="nav-item"><a href="cotizaciones.html" class="nav-link"><span
+                        class="nav-icon">💰</span><span>Cotizaciones</span></a></div>
+            <div class="nav-item"><a href="facturas.html" class="nav-link"><span
+                        class="nav-icon">📄</span><span>Facturas</span></a></div>
+            <div class="nav-item"><a href="servicios.html" class="nav-link active"><span
+                        class="nav-icon">🚀</span><span>Servicios</span></a></div>
+        </nav>
+
+        <div class="logout-section">
+            <a href="index.html" class="logout-btn">
+                <span class="nav-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-title">
+                <h1>Gestión de Servicios</h1>
+                <p>Administración de servicios ofrecidos por la empresa</p>
+            </div>
+            <div style="display:flex; gap:1rem;">
+                <button class="btn btn-secondary">📤 Exportar</button>
+                <button class="btn btn-primary" onclick="openAddServiceModal()">➕ Agregar Servicio</button>
+            </div>
+        </div>
+
+        <!-- Grid de Servicios -->
+        <div class="personnel-grid">
+            <!-- Ejemplo Servicio -->
+            <div class="personnel-card">
+                <div class="card-header">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">🧹</div>
+                    <div class="personnel-name">Limpieza Industrial</div>
+                    <div class="personnel-role">Categoría: Aseo</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item"><span class="info-label">💲 Costo:</span><span
+                            class="info-value">$500.000</span></div>
+                    <div class="info-item"><span class="info-label">⏱ Duración:</span><span class="info-value">4
+                            horas</span></div>
+                    <div class="info-item"><span class="info-label">📅 Frecuencia:</span><span
+                            class="info-value">Mensual</span></div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm" onclick="viewService('limpieza')">👁️ Ver</button>
+                    <button class="btn btn-primary btn-sm" onclick="editService('limpieza')">✏️ Editar</button>
+                    <button class="btn btn-secondary btn-sm" onclick="deleteService('limpieza')">🗑️ Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Agregar Servicio -->
+    <div class="modal" id="addServiceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Agregar Nuevo Servicio</h2>
+                <button class="close-btn" onclick="closeModal('addServiceModal')">&times;</button>
+            </div>
+            <form>
+                <div class="form-group"><label>Nombre del Servicio</label>
+                    <input type="text" class="form-control" placeholder="Ej: Limpieza Industrial" required>
+                </div>
+                <div class="form-group"><label>Categoría</label>
+                    <input type="text" class="form-control" placeholder="Ej: Aseo, Mantenimiento" required>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group"><label>Costo</label>
+                        <input type="number" class="form-control" placeholder="Valor en pesos" required>
+                    </div>
+                    <div class="form-group"><label>Duración</label>
+                        <input type="text" class="form-control" placeholder="Ej: 2 horas, 1 día" required>
+                    </div>
+                </div>
+                <div class="form-group"><label>Frecuencia</label>
+                    <input type="text" class="form-control" placeholder="Ej: Diario, Mensual">
+                </div>
+                <div class="form-group"><label>Descripción</label>
+                    <textarea class="form-control" rows="3" placeholder="Describe el servicio..." required></textarea>
+                </div>
+                <div class="form-grid-2" style="margin-top:2rem;">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('addServiceModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Agregar Servicio</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openAddServiceModal() {
+            document.getElementById('addServiceModal').classList.add('show');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+        }
+        function viewService(id) {
+            alert('Viendo servicio: ' + id);
+        }
+        function editService(id) {
+            alert('Editando servicio: ' + id);
+        }
+        function deleteService(id) {
+            if (confirm('¿Seguro que quieres eliminar este servicio?')) {
+                alert('Servicio eliminado: ' + id);
+            }
+        }
+        window.onclick = function (e) {
+            document.querySelectorAll('.modal').forEach(modal => {
+                if (e.target === modal) modal.classList.remove('show');
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personal - Gemini Ambiental Admin</title>
+    <title>Personas - Gemini Ambiental Admin</title>
     <style>
         * {
             margin: 0;
@@ -13,8 +14,31 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            background: #f8fafc;
             color: #2d3748;
+        }
+
+        /* Variables de colores por rol */
+        :root {
+            --cliente-primary: #4299e1;
+            --cliente-secondary: #63b3ed;
+            --cliente-light: #ebf8ff;
+            --cliente-dark: #2c5282;
+
+            --empleado-primary: #48bb78;
+            --empleado-secondary: #68d391;
+            --empleado-light: #f0fff4;
+            --empleado-dark: #276749;
+
+            --proveedor-primary: #ed8936;
+            --proveedor-secondary: #f6ad55;
+            --proveedor-light: #fffaf0;
+            --proveedor-dark: #c05621;
+
+            --admin-primary: #805ad5;
+            --admin-secondary: #9f7aea;
+            --admin-light: #faf5ff;
+            --admin-dark: #553c9a;
         }
 
         /* Sidebar - Same as previous modules */
@@ -32,7 +56,7 @@
 
         .sidebar-header {
             padding: 2rem;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .logo {
@@ -44,7 +68,7 @@
         .logo-icon {
             width: 45px;
             height: 45px;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 12px;
             display: flex;
             align-items: center;
@@ -75,14 +99,15 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem 1.5rem;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.8);
             text-decoration: none;
             border-radius: 12px;
             transition: all 0.3s ease;
         }
 
-        .nav-link:hover, .nav-link.active {
-            background: rgba(255,255,255,0.1);
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.1);
             color: white;
             transform: translateX(5px);
         }
@@ -105,7 +130,7 @@
             align-items: center;
             gap: 1rem;
             padding: 1rem 1.5rem;
-            background: rgba(255,107,107,0.2);
+            background: rgba(255, 107, 107, 0.2);
             color: #ff6b6b;
             text-decoration: none;
             border-radius: 12px;
@@ -114,7 +139,7 @@
         }
 
         .logout-btn:hover {
-            background: rgba(255,107,107,0.3);
+            background: rgba(255, 107, 107, 0.3);
             transform: translateY(-2px);
         }
 
@@ -128,18 +153,21 @@
         /* Top Navigation */
         .top-nav {
             background: white;
-            padding: 1rem 2rem;
+            padding: 1.5rem 2rem;
             border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .nav-tabs {
             display: flex;
-            gap: 2rem;
+            gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .nav-tab {
@@ -149,10 +177,66 @@
             border-radius: 12px;
             transition: all 0.3s ease;
             font-weight: 600;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
         }
 
-        .nav-tab:hover, .nav-tab.active {
-            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .nav-tab:hover::before {
+            left: 0;
+        }
+
+        .nav-tab.all {
+            border-color: #e2e8f0;
+        }
+
+        .nav-tab.all:hover,
+        .nav-tab.all.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.clientes {
+            border-color: var(--cliente-light);
+        }
+
+        .nav-tab.clientes:hover,
+        .nav-tab.clientes.active {
+            background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.empleados {
+            border-color: var(--empleado-light);
+        }
+
+        .nav-tab.empleados:hover,
+        .nav-tab.empleados.active {
+            background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-tab.proveedores {
+            border-color: var(--proveedor-light);
+        }
+
+        .nav-tab.proveedores:hover,
+        .nav-tab.proveedores.active {
+            background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
             color: white;
             transform: translateY(-2px);
         }
@@ -162,11 +246,13 @@
             background: white;
             padding: 2rem;
             border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .header-title h1 {
@@ -206,13 +292,18 @@
         .btn-secondary {
             background: #f7fafc;
             color: #2d3748;
-            border: 1px solid #e2e8f0;
+            border: 2px solid #e2e8f0;
         }
 
-        /* Stats Cards */
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+        }
+
+        /* Stats Cards con colores por rol */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
         }
@@ -221,9 +312,14 @@
             background: white;
             padding: 2rem;
             border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             position: relative;
             overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         .stat-card::before {
@@ -233,13 +329,23 @@
             left: 0;
             right: 0;
             height: 4px;
-            background: var(--accent-color);
         }
 
-        .stat-card.primary { --accent-color: #4a8b64; }
-        .stat-card.warning { --accent-color: #f6ad55; }
-        .stat-card.success { --accent-color: #48bb78; }
-        .stat-card.info { --accent-color: #4299e1; }
+        .stat-card.clientes::before {
+            background: linear-gradient(90deg, var(--cliente-primary), var(--cliente-secondary));
+        }
+
+        .stat-card.empleados::before {
+            background: linear-gradient(90deg, var(--empleado-primary), var(--empleado-secondary));
+        }
+
+        .stat-card.proveedores::before {
+            background: linear-gradient(90deg, var(--proveedor-primary), var(--proveedor-secondary));
+        }
+
+        .stat-card.total::before {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
 
         .stat-header {
             display: flex;
@@ -249,23 +355,35 @@
         }
 
         .stat-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3em;
+            font-size: 1.5em;
             color: white;
+            position: relative;
         }
 
-        .stat-icon.primary { background: linear-gradient(135deg, #4a8b64, #2c5f41); }
-        .stat-icon.warning { background: linear-gradient(135deg, #f6ad55, #ed8936); }
-        .stat-icon.success { background: linear-gradient(135deg, #48bb78, #38a169); }
-        .stat-icon.info { background: linear-gradient(135deg, #4299e1, #3182ce); }
+        .stat-icon.clientes {
+            background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
+        }
+
+        .stat-icon.empleados {
+            background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
+        }
+
+        .stat-icon.proveedores {
+            background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
+        }
+
+        .stat-icon.total {
+            background: linear-gradient(135deg, #667eea, #553c9a);
+        }
 
         .stat-number {
-            font-size: 2em;
+            font-size: 2.2em;
             font-weight: bold;
             color: #2d3748;
             margin-bottom: 0.5rem;
@@ -273,13 +391,30 @@
 
         .stat-label {
             color: #718096;
-            font-size: 0.9em;
+            font-size: 1em;
+            font-weight: 600;
         }
 
-        /* Personnel Grid */
+        .stat-trend {
+            font-size: 0.8em;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .trend-up {
+            color: #48bb78;
+        }
+
+        .trend-down {
+            color: #f56565;
+        }
+
+        /* Personnel Grid con colores por rol */
         .personnel-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
         }
@@ -287,60 +422,91 @@
         .personnel-card {
             background: white;
             border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             overflow: hidden;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+            position: relative;
         }
 
         .personnel-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
 
         .card-header {
-            background: linear-gradient(135deg, #4a8b64, #2c5f41);
             color: white;
             padding: 2rem;
             text-align: center;
             position: relative;
         }
 
+        .card-header.cliente {
+            background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
+        }
+
+        .card-header.empleado {
+            background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
+        }
+
+        .card-header.proveedor {
+            background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
+        }
+
         .personnel-avatar {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2em;
+            font-size: 2.2em;
             margin: 0 auto 1rem;
-            border: 4px solid rgba(255,255,255,0.3);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
         }
 
         .personnel-name {
-            font-size: 1.3em;
+            font-size: 1.4em;
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
 
         .personnel-role {
             opacity: 0.9;
-            font-size: 0.9em;
+            font-size: 1em;
+            font-weight: 500;
         }
 
         .status-indicator {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
-            width: 15px;
-            height: 15px;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 18px;
+            height: 18px;
             border-radius: 50%;
             border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        .status-indicator.active { background: #48bb78; }
-        .status-indicator.inactive { background: #f56565; }
-        .status-indicator.busy { background: #f6ad55; }
+        .status-indicator.active {
+            background: #48bb78;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.inactive {
+            background: #f56565;
+        }
+
+        .status-indicator.busy {
+            background: #f6ad55;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
+        }
 
         .card-body {
             padding: 2rem;
@@ -377,20 +543,94 @@
         }
 
         .btn-sm {
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             font-size: 0.9em;
             flex: 1;
         }
 
         .btn-outline {
             background: transparent;
-            border: 2px solid #4a8b64;
-            color: #4a8b64;
+            border: 2px solid;
+            transition: all 0.3s ease;
         }
 
-        .btn-outline:hover {
-            background: #4a8b64;
+        .btn-outline.cliente {
+            border-color: var(--cliente-primary);
+            color: var(--cliente-primary);
+        }
+
+        .btn-outline.cliente:hover {
+            background: var(--cliente-primary);
             color: white;
+        }
+
+        .btn-outline.empleado {
+            border-color: var(--empleado-primary);
+            color: var(--empleado-primary);
+        }
+
+        .btn-outline.empleado:hover {
+            background: var(--empleado-primary);
+            color: white;
+        }
+
+        .btn-outline.proveedor {
+            border-color: var(--proveedor-primary);
+            color: var(--proveedor-primary);
+        }
+
+        .btn-outline.proveedor:hover {
+            background: var(--proveedor-primary);
+            color: white;
+        }
+
+        .btn-filled {
+            border: none;
+            color: white;
+        }
+
+        .btn-filled.cliente {
+            background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
+        }
+
+        .btn-filled.empleado {
+            background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
+        }
+
+        .btn-filled.proveedor {
+            background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
+        }
+
+        .btn-filled:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Role Badge */
+        .role-badge {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-badge.cliente {
+            background: var(--cliente-dark);
+        }
+
+        .role-badge.empleado {
+            background: var(--empleado-dark);
+        }
+
+        .role-badge.proveedor {
+            background: var(--proveedor-dark);
         }
 
         /* Modal */
@@ -401,10 +641,11 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 2000;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(5px);
         }
 
         .modal.show {
@@ -415,10 +656,11 @@
             background: white;
             border-radius: 20px;
             padding: 2rem;
-            max-width: 600px;
+            max-width: 700px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
 
         .modal-header {
@@ -426,10 +668,12 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e2e8f0;
         }
 
         .modal-title {
-            font-size: 1.3em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #2c5f41;
         }
@@ -437,13 +681,18 @@
         .close-btn {
             background: none;
             border: none;
-            font-size: 1.5em;
+            font-size: 2em;
             cursor: pointer;
             color: #718096;
+            transition: color 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #f56565;
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-group label {
@@ -455,16 +704,17 @@
 
         .form-control {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 1rem;
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             font-size: 1rem;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
         }
 
         .form-control:focus {
             outline: none;
             border-color: #4a8b64;
+            box-shadow: 0 0 0 3px rgba(74, 139, 100, 0.1);
         }
 
         .form-grid-2 {
@@ -473,7 +723,33 @@
             gap: 1rem;
         }
 
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 1.5rem 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
         /* Responsive */
+        @media (max-width: 1024px) {
+            .personnel-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            }
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -490,6 +766,10 @@
                 text-align: center;
             }
 
+            .header-title h1 {
+                font-size: 2em;
+            }
+
             .personnel-grid {
                 grid-template-columns: 1fr;
             }
@@ -503,9 +783,29 @@
                 justify-content: center;
                 flex-wrap: wrap;
             }
+
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hidden class for filtering */
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
+
 <body>
     <!-- Sidebar -->
     <div class="sidebar">
@@ -518,50 +818,22 @@
                 </div>
             </div>
         </div>
-        
+
         <nav class="nav-menu">
-            <div class="nav-item">
-                <a href="dashboard.html" class="nav-link">
-                    <span class="nav-icon">📊</span>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="inventario.html" class="nav-link">
-                    <span class="nav-icon">📦</span>
-                    <span>Inventario</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="agenda.html" class="nav-link">
-                    <span class="nav-icon">📅</span>
-                    <span>Agenda</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="personal.html" class="nav-link active">
-                    <span class="nav-icon">👥</span>
-                    <span>Personal</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="cotizaciones.html" class="nav-link">
-                    <span class="nav-icon">💰</span>
-                    <span>Cotizaciones</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="facturas.html" class="nav-link">
-                    <span class="nav-icon">📄</span>
-                    <span>Facturas</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a href="coordinacion-servicios.html" class="nav-link">
-                    <span class="nav-icon">🔧</span>
-                    <span>Coordinación</span>
-                </a>
-            </div>
+            <div class="nav-item"><a href="dashboard.html" class="nav-link"><span
+                        class="nav-icon">📊</span><span>Dashboard</span></a></div>
+            <div class="nav-item"><a href="inventario.html" class="nav-link"><span
+                        class="nav-icon">📦</span><span>Inventario</span></a></div>
+            <div class="nav-item"><a href="agenda.html" class="nav-link"><span
+                        class="nav-icon">📅</span><span>Agenda</span></a></div>
+            <div class="nav-item"><a href="personas.html" class="nav-link active"><span
+                        class="nav-icon">👥</span><span>Personas</span></a></div>
+            <div class="nav-item"><a href="cotizaciones.html" class="nav-link"><span
+                        class="nav-icon">💰</span><span>Cotizaciones</span></a></div>
+            <div class="nav-item"><a href="facturas.html" class="nav-link"><span
+                        class="nav-icon">📄</span><span>Facturas</span></a></div>
+            <div class="nav-item"><a href="coordinacion-servicios.html" class="nav-link"><span
+                        class="nav-icon">🔧</span><span>Servicios</span></a></div>
         </nav>
 
         <div class="logout-section">
@@ -577,107 +849,179 @@
         <!-- Top Navigation -->
         <div class="top-nav">
             <div class="nav-tabs">
-                <a href="#" class="nav-tab active" onclick="showView('all')">👥 Todo el Personal</a>
-                <a href="#" class="nav-tab" onclick="showView('technicians')">🔧 Técnicos</a>
-                <a href="#" class="nav-tab" onclick="showView('admin')">💼 Administrativo</a>
-                <a href="#" class="nav-tab" onclick="showView('performance')">📈 Rendimiento</a>
+                <a href="#" class="nav-tab all active" onclick="showView('all', this)">
+                    🏢 Todas las Personas
+                </a>
+                <a href="#" class="nav-tab clientes" onclick="showView('cliente', this)">
+                    🛒 Clientes <span style="background: var(--cliente-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">25</span>
+                </a>
+                <a href="#" class="nav-tab empleados" onclick="showView('empleado', this)">
+                    💼 Empleados <span style="background: var(--empleado-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">12</span>
+                </a>
+                <a href="#" class="nav-tab proveedores" onclick="showView('proveedor', this)">
+                    📦 Proveedores <span style="background: var(--proveedor-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">7</span>
+                </a>
             </div>
-            <div>
+            <div style="display: flex; gap: 1rem;">
                 <button class="btn btn-secondary">📊 Reportes</button>
+                <button class="btn btn-secondary">🔍 Búsqueda Avanzada</button>
             </div>
         </div>
 
         <!-- Header -->
         <div class="header">
             <div class="header-title">
-                <h1>Gestión de Personal</h1>
-                <p>Administración del equipo de trabajo</p>
+                <h1>Gestión de Personas</h1>
+                <p>Administración inteligente de clientes, empleados y proveedores con diferenciación visual</p>
             </div>
-            <div style="display: flex; gap: 1rem;">
+            <div style="display:flex; gap:1rem; flex-wrap: wrap;">
                 <button class="btn btn-secondary">📤 Exportar</button>
-                <button class="btn btn-primary" onclick="openAddPersonnelModal()">
-                    ➕ Agregar Personal
-                </button>
+                <button class="btn btn-secondary">📥 Importar</button>
+                <button class="btn btn-primary" onclick="openAddPersonModal()">➕ Agregar Persona</button>
             </div>
         </div>
 
-        <!-- Stats Grid -->
+        <!-- Stats -->
         <div class="stats-grid">
-            <div class="stat-card primary">
+            <div class="stat-card clientes">
                 <div class="stat-header">
-                    <div class="stat-icon primary">👥</div>
+                    <div class="stat-icon clientes">🛒</div>
+                </div>
+                <div class="stat-number">25</div>
+                <div class="stat-label">Clientes Activos</div>
+                <div class="stat-trend trend-up">↗️ +3 este mes</div>
+            </div>
+            <div class="stat-card empleados">
+                <div class="stat-header">
+                    <div class="stat-icon empleados">💼</div>
                 </div>
                 <div class="stat-number">12</div>
-                <div class="stat-label">Total Empleados</div>
+                <div class="stat-label">Empleados</div>
+                <div class="stat-trend trend-up">↗️ +1 este mes</div>
             </div>
-
-            <div class="stat-card success">
+            <div class="stat-card proveedores">
                 <div class="stat-header">
-                    <div class="stat-icon success">✅</div>
+                    <div class="stat-icon proveedores">📦</div>
                 </div>
-                <div class="stat-number">8</div>
-                <div class="stat-label">Activos Hoy</div>
+                <div class="stat-number">7</div>
+                <div class="stat-label">Proveedores</div>
+                <div class="stat-trend">➡️ Sin cambios</div>
             </div>
-
-            <div class="stat-card warning">
+            <div class="stat-card total">
                 <div class="stat-header">
-                    <div class="stat-icon warning">🔧</div>
+                    <div class="stat-icon total">👥</div>
                 </div>
-                <div class="stat-number">6</div>
-                <div class="stat-label">Técnicos</div>
+                <div class="stat-number">44</div>
+                <div class="stat-label">Total Personas</div>
+                <div class="stat-trend trend-up">↗️ +4 este mes</div>
             </div>
+        </div>
 
-            <div class="stat-card info">
-                <div class="stat-header">
-                    <div class="stat-icon info">🎯</div>
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label>🔍 Buscar</label>
+                    <input type="text" class="form-control" placeholder="Nombre, documento, email..." oninput="filterPersons()" id="searchInput">
                 </div>
-                <div class="stat-number">94%</div>
-                <div class="stat-label">Eficiencia Promedio</div>
+                <div class="form-group">
+                    <label>🏢 Estado</label>
+                    <select class="form-control" onchange="filterPersons()" id="statusFilter">
+                        <option value="">Todos los estados</option>
+                        <option value="active">Activo</option>
+                        <option value="inactive">Inactivo</option>
+                        <option value="busy">Ocupado</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>📍 Ciudad</label>
+                    <select class="form-control" onchange="filterPersons()" id="cityFilter">
+                        <option value="">Todas las ciudades</option>
+                        <option value="bogota">Bogotá</option>
+                        <option value="tunja">Tunja</option>
+                        <option value="duitama">Duitama</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="clearFilters()">🗑️ Limpiar Filtros</button>
+                </div>
             </div>
         </div>
 
         <!-- Personnel Grid -->
-        <div class="personnel-grid">
-            <!-- Técnico 1 -->
-            <div class="personnel-card">
-                <div class="card-header">
+        <div class="personnel-grid" id="personnelGrid">
+            <!-- Cliente 1 -->
+            <div class="personnel-card" data-role="cliente" data-status="active" data-city="bogota">
+                <div class="role-badge cliente">Cliente</div>
+                <div class="card-header cliente">
                     <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">👨‍🔧</div>
-                    <div class="personnel-name">Juan Pérez</div>
-                    <div class="personnel-role">Técnico Senior</div>
+                    <div class="personnel-avatar">🛒</div>
+                    <div class="personnel-name">Empresa ABC Ltda.</div>
+                    <div class="personnel-role">Cliente Corporativo</div>
                 </div>
+                <div class="card-body">
                     <div class="info-item">
                         <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-888-9999</span>
+                        <span class="info-value">601-555-1122</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">📧 Email:</span>
-                        <span class="info-value">ana.lopez@gemini.com</span>
+                        <span class="info-value">contacto@abc.com</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">55.666.777</span>
+                        <span class="info-label">🆔 NIT:</span>
+                        <span class="info-value">900123456-7</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">📋 Registro INVIMA:</span>
-                        <span class="info-value">TC-2024-004</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🚗 Servicios Hoy:</span>
-                        <span class="info-value">4 programados</span>
+                        <span class="info-label">📍 Ciudad:</span>
+                        <span class="info-value">Bogotá</span>
                     </div>
                 </div>
                 <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewProfile('ana')">👁️ Ver Perfil</button>
-                    <button class="btn btn-primary btn-sm" onclick="assignService('ana')">📅 Asignar</button>
+                    <button class="btn btn-outline btn-sm cliente" onclick="viewProfile('cliente1')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm cliente" onclick="contactPerson('cliente1')">📞 Contactar</button>
                 </div>
             </div>
 
-            <!-- Personal Administrativo 1 -->
-            <div class="personnel-card">
-                <div class="card-header">
+            <!-- Cliente 2 -->
+            <div class="personnel-card" data-role="cliente" data-status="busy" data-city="tunja">
+                <div class="role-badge cliente">Cliente</div>
+                <div class="card-header cliente">
+                    <div class="status-indicator busy"></div>
+                    <div class="personnel-avatar">🏢</div>
+                    <div class="personnel-name">María González</div>
+                    <div class="personnel-role">Cliente Individual</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-444-5555</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">maria.gonzalez@email.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">52.123.456</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📍 Ciudad:</span>
+                        <span class="info-value">Tunja</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm cliente" onclick="viewProfile('cliente2')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm cliente" onclick="contactPerson('cliente2')">📞 Contactar</button>
+                </div>
+            </div>
+
+            <!-- Empleado 1 -->
+            <div class="personnel-card" data-role="empleado" data-status="active" data-city="tunja">
+                <div class="role-badge empleado">Empleado</div>
+                <div class="card-header empleado">
                     <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">👨‍💼</div>
+                    <div class="personnel-avatar">💼</div>
                     <div class="personnel-name">Diego Martínez</div>
                     <div class="personnel-role">Coordinador de Servicios</div>
                 </div>
@@ -695,27 +1039,24 @@
                         <span class="info-value">99.888.777</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">💼 Departamento:</span>
-                        <span class="info-value">Operaciones</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📊 Servicios Coordinados:</span>
-                        <span class="info-value">15 esta semana</span>
+                        <span class="info-label">📍 Oficina:</span>
+                        <span class="info-value">Tunja</span>
                     </div>
                 </div>
                 <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewProfile('diego')">👁️ Ver Perfil</button>
-                    <button class="btn btn-primary btn-sm" onclick="contactEmployee('diego')">📞 Contactar</button>
+                    <button class="btn btn-outline btn-sm empleado" onclick="viewProfile('diego')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm empleado" onclick="contactPerson('diego')">💬 Contactar</button>
                 </div>
             </div>
 
-            <!-- Personal Administrativo 2 -->
-            <div class="personnel-card">
-                <div class="card-header">
-                    <div class="status-indicator inactive"></div>
-                    <div class="personnel-avatar">👩‍💼</div>
-                    <div class="personnel-name">Lucía Hernández</div>
-                    <div class="personnel-role">Asistente Administrativa</div>
+            <!-- Empleado 2 -->
+            <div class="personnel-card" data-role="empleado" data-status="busy" data-city="bogota">
+                <div class="role-badge empleado">Empleado</div>
+                <div class="card-header empleado">
+                    <div class="status-indicator busy"></div>
+                    <div class="personnel-avatar">👩‍💻</div>
+                    <div class="personnel-name">Ana Rodríguez</div>
+                    <div class="personnel-role">Especialista Ambiental</div>
                 </div>
                 <div class="card-body">
                     <div class="info-item">
@@ -724,461 +1065,377 @@
                     </div>
                     <div class="info-item">
                         <span class="info-label">📧 Email:</span>
-                        <span class="info-value">lucia.hernandez@gemini.com</span>
+                        <span class="info-value">ana.rodriguez@gemini.com</span>
                     </div>
                     <div class="info-item">
                         <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">44.555.666</span>
+                        <span class="info-value">88.777.666</span>
                     </div>
                     <div class="info-item">
-                        <span class="info-label">💼 Departamento:</span>
-                        <span class="info-value">Administración</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📄 Facturas Procesadas:</span>
-                        <span class="info-value">8 hoy</span>
+                        <span class="info-label">📍 Oficina:</span>
+                        <span class="info-value">Bogotá</span>
                     </div>
                 </div>
                 <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewProfile('lucia')">👁️ Ver Perfil</button>
-                    <button class="btn btn-primary btn-sm" onclick="contactEmployee('lucia')">📞 Contactar</button>
+                    <button class="btn btn-outline btn-sm empleado" onclick="viewProfile('ana')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm empleado" onclick="contactPerson('ana')">💬 Contactar</button>
+                </div>
+            </div>
+
+            <!-- Proveedor 1 -->
+            <div class="personnel-card" data-role="proveedor" data-status="inactive" data-city="duitama">
+                <div class="role-badge proveedor">Proveedor</div>
+                <div class="card-header proveedor">
+                    <div class="status-indicator inactive"></div>
+                    <div class="personnel-avatar">📦</div>
+                    <div class="personnel-name">Suministros XYZ</div>
+                    <div class="personnel-role">Proveedor de Equipos</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-999-8888</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">ventas@xyz.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 NIT:</span>
+                        <span class="info-value">800654321-0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📍 Ciudad:</span>
+                        <span class="info-value">Duitama</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm proveedor" onclick="viewProfile('proveedor1')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm proveedor" onclick="contactPerson('proveedor1')">📞 Contactar</button>
+                </div>
+            </div>
+
+            <!-- Proveedor 2 -->
+            <div class="personnel-card" data-role="proveedor" data-status="active" data-city="bogota">
+                <div class="role-badge proveedor">Proveedor</div>
+                <div class="card-header proveedor">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">🚚</div>
+                    <div class="personnel-name">Logística Verde S.A.S</div>
+                    <div class="personnel-role">Proveedor de Transporte</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">601-777-9999</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">info@logisticaverde.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 NIT:</span>
+                        <span class="info-value">901234567-8</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📍 Ciudad:</span>
+                        <span class="info-value">Bogotá</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm proveedor" onclick="viewProfile('proveedor2')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm proveedor" onclick="contactPerson('proveedor2')">📞 Contactar</button>
+                </div>
+            </div>
+
+            <!-- Cliente 3 -->
+            <div class="personnel-card" data-role="cliente" data-status="active" data-city="tunja">
+                <div class="role-badge cliente">Cliente</div>
+                <div class="card-header cliente">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">🏭</div>
+                    <div class="personnel-name">Industrias del Valle</div>
+                    <div class="personnel-role">Cliente Industrial</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">608-123-4567</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">gerencia@industriasvalle.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 NIT:</span>
+                        <span class="info-value">890123456-9</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📍 Ciudad:</span>
+                        <span class="info-value">Tunja</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm cliente" onclick="viewProfile('cliente3')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm cliente" onclick="contactPerson('cliente3')">📞 Contactar</button>
+                </div>
+            </div>
+
+            <!-- Empleado 3 -->
+            <div class="personnel-card" data-role="empleado" data-status="active" data-city="duitama">
+                <div class="role-badge empleado">Empleado</div>
+                <div class="card-header empleado">
+                    <div class="status-indicator active"></div>
+                    <div class="personnel-avatar">🔬</div>
+                    <div class="personnel-name">Carlos López</div>
+                    <div class="personnel-role">Técnico de Laboratorio</div>
+                </div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <span class="info-label">📞 Teléfono:</span>
+                        <span class="info-value">300-555-7777</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📧 Email:</span>
+                        <span class="info-value">carlos.lopez@gemini.com</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🆔 Cédula:</span>
+                        <span class="info-value">77.666.555</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📍 Oficina:</span>
+                        <span class="info-value">Duitama</span>
+                    </div>
+                </div>
+                <div class="card-actions">
+                    <button class="btn btn-outline btn-sm empleado" onclick="viewProfile('carlos')">👁️ Ver Perfil</button>
+                    <button class="btn btn-filled btn-sm empleado" onclick="contactPerson('carlos')">💬 Contactar</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add Personnel Modal -->
-    <div class="modal" id="addPersonnelModal">
+    <!-- Modal de Agregar Persona -->
+    <div class="modal" id="addPersonModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Agregar Nuevo Personal</h2>
-                <button class="close-btn" onclick="closeModal('addPersonnelModal')">&times;</button>
+                <h2 class="modal-title">➕ Agregar Nueva Persona</h2>
+                <button class="close-btn" onclick="closeModal('addPersonModal')">&times;</button>
             </div>
-            
-            <form>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Nombres</label>
-                        <input type="text" class="form-control" placeholder="Nombres completos" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Apellidos</label>
-                        <input type="text" class="form-control" placeholder="Apellidos completos" required>
-                    </div>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Cédula</label>
-                        <input type="text" class="form-control" placeholder="12.345.678" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono</label>
-                        <input type="tel" class="form-control" placeholder="300-123-4567" required>
-                    </div>
-                </div>
-
+            <form onsubmit="addPerson(event)">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" class="form-control" placeholder="nombre@gemini.com" required>
+                    <label>🏷️ Tipo de Persona</label>
+                    <select class="form-control" required id="personType" onchange="updateFormFields()">
+                        <option value="">Seleccionar tipo</option>
+                        <option value="cliente">🛒 Cliente</option>
+                        <option value="empleado">💼 Empleado</option>
+                        <option value="proveedor">📦 Proveedor</option>
+                    </select>
                 </div>
-
+                
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label>Cargo</label>
-                        <select class="form-control" required>
-                            <option>Seleccionar cargo</option>
-                            <option>Técnico Senior</option>
-                            <option>Técnico Especializado</option>
-                            <option>Técnico Junior</option>
-                            <option>Coordinador de Servicios</option>
-                            <option>Asistente Administrativo</option>
-                            <option>Supervisor</option>
-                        </select>
+                        <label>👤 Nombre/Razón Social</label>
+                        <input type="text" class="form-control" placeholder="Nombre completo o empresa" required id="personName">
                     </div>
                     <div class="form-group">
-                        <label>Departamento</label>
-                        <select class="form-control" required>
-                            <option>Seleccionar departamento</option>
-                            <option>Operaciones</option>
-                            <option>Administración</option>
-                            <option>Ventas</option>
-                            <option>Técnico</option>
+                        <label>💼 Cargo/Especialidad</label>
+                        <input type="text" class="form-control" placeholder="Cargo o tipo de servicio" required id="personRole">
+                    </div>
+                </div>
+                
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>🆔 Documento</label>
+                        <input type="text" class="form-control" placeholder="Cédula/NIT" required id="personDoc">
+                    </div>
+                    <div class="form-group">
+                        <label>📞 Teléfono</label>
+                        <input type="tel" class="form-control" placeholder="300-123-4567" required id="personPhone">
+                    </div>
+                </div>
+                
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>📧 Email</label>
+                        <input type="email" class="form-control" placeholder="correo@ejemplo.com" required id="personEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>📍 Ciudad</label>
+                        <select class="form-control" required id="personCity">
+                            <option value="">Seleccionar ciudad</option>
+                            <option value="bogota">Bogotá</option>
+                            <option value="tunja">Tunja</option>
+                            <option value="duitama">Duitama</option>
+                            <option value="otra">Otra ciudad</option>
                         </select>
                     </div>
                 </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Fecha de Ingreso</label>
-                        <input type="date" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Salario</label>
-                        <input type="number" class="form-control" placeholder="0" required>
-                    </div>
-                </div>
-
+                
                 <div class="form-group">
-                    <label>Registro INVIMA (Solo técnicos)</label>
-                    <input type="text" class="form-control" placeholder="TC-2024-XXX">
+                    <label>📍 Dirección</label>
+                    <textarea class="form-control" rows="2" placeholder="Dirección completa" id="personAddress"></textarea>
                 </div>
-
+                
                 <div class="form-group">
-                    <label>Dirección</label>
-                    <textarea class="form-control" rows="2" placeholder="Dirección de residencia"></textarea>
+                    <label>📝 Observaciones</label>
+                    <textarea class="form-control" rows="3" placeholder="Notas adicionales..." id="personNotes"></textarea>
                 </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Contacto de Emergencia</label>
-                        <input type="text" class="form-control" placeholder="Nombre completo">
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono de Emergencia</label>
-                        <input type="tel" class="form-control" placeholder="300-000-0000">
-                    </div>
-                </div>
-
-                <div class="form-grid-2" style="margin-top: 2rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonnelModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Agregar Personal</button>
+                
+                <div class="form-grid-2" style="margin-top:2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonModal')">❌ Cancelar</button>
+                    <button type="submit" class="btn btn-primary">✅ Agregar Persona</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        function showView(view) {
-            // Remove active class from all tabs
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
+        let currentView = 'all';
+        let persons = [];
+
+        function showView(view, element) {
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Filter cards
+            const cards = document.querySelectorAll('.personnel-card');
+            cards.forEach(card => {
+                if (view === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = card.dataset.role === view ? 'block' : 'none';
+                }
             });
             
-            // Add active class to clicked tab
-            event.target.classList.add('active');
+            currentView = view;
+            console.log('Mostrando vista:', view);
+        }
+
+        function filterPersons() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const cityFilter = document.getElementById('cityFilter').value;
             
-            console.log('Showing view:', view);
-            // Here you would implement filtering logic based on the view
-        }
-
-        function openAddPersonnelModal() {
-            document.getElementById('addPersonnelModal').classList.add('show');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-        }
-
-        function viewProfile(employeeId) {
-            alert('Viendo perfil de: ' + employeeId);
-            // Here you would implement profile viewing logic
-        }
-
-        function assignService(employeeId) {
-            alert('Asignando servicio a: ' + employeeId);
-            // Here you would implement service assignment logic
-        }
-
-        function contactEmployee(employeeId) {
-            alert('Contactando a: ' + employeeId);
-            // Here you would implement contact logic
-        }
-
-        // Close modals when clicking outside
-        window.onclick = function(event) {
-            const modals = document.getElementsByClassName('modal');
-            for (let modal of modals) {
-                if (event.target === modal) {
-                    modal.classList.remove('show');
+            const cards = document.querySelectorAll('.personnel-card');
+            
+            cards.forEach(card => {
+                const name = card.querySelector('.personnel-name').textContent.toLowerCase();
+                const email = card.querySelector('.info-value').textContent.toLowerCase();
+                const status = card.dataset.status;
+                const city = card.dataset.city;
+                const role = card.dataset.role;
+                
+                let showCard = true;
+                
+                // Apply current view filter
+                if (currentView !== 'all' && role !== currentView) {
+                    showCard = false;
                 }
-            }
-        }
-    </script>
-</body>
-</html>item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-123-4567</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">juan.perez@gemini.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">12.345.678</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📋 Registro INVIMA:</span>
-                        <span class="info-value">TC-2024-001</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🚗 Servicios Hoy:</span>
-                        <span class="info-value">3 programados</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewProfile('juan')">👁️ Ver Perfil</button>
-                    <button class="btn btn-primary btn-sm" onclick="assignService('juan')">📅 Asignar</button>
-                </div>
-            </div>
-
-            <!-- Técnico 2 -->
-            <div class="personnel-card">
-                <div class="card-header">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">👩‍🔧</div>
-                    <div class="personnel-name">María González</div>
-                    <div class="personnel-role">Técnico Especializado</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-765-4321</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">maria.gonzalez@gemini.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">87.654.321</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📋 Registro INVIMA:</span>
-                        <span class="info-value">TC-2024-002</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🚗 Servicios Hoy:</span>
-                        <span class="info-value">2 programados</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewProfile('maria')">👁️ Ver Perfil</button>
-                    <button class="btn btn-primary btn-sm" onclick="assignService('maria')">📅 Asignar</button>
-                </div>
-            </div>
-
-            <!-- Técnico 3 -->
-            <div class="personnel-card">
-                <div class="card-header">
-                    <div class="status-indicator busy"></div>
-                    <div class="personnel-avatar">👨‍🔧</div>
-                    <div class="personnel-name">Carlos Rodríguez</div>
-                    <div class="personnel-role">Técnico Junior</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-555-0123</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">carlos.rodriguez@gemini.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">11.222.333</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📋 Registro INVIMA:</span>
-                        <span class="info-value">TC-2024-003</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🚗 Servicios Hoy:</span>
-                        <span class="info-value">1 en progreso</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewProfile('carlos')">👁️ Ver Perfil</button>
-                    <button class="btn btn-primary btn-sm" onclick="assignService('carlos')">📅 Asignar</button>
-                </div>
-            </div>
-
-            <!-- Técnico 4 -->
-            <div class="personnel-card">
-                <div class="card-header">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">👩‍🔧</div>
-                    <div class="personnel-name">Ana López</div>
-                    <div class="personnel-role">Técnico Especializado</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-
-                    <!-- ...existing code... -->
-            <!-- Técnico 4 -->
-            <div class="personnel-card">
-                <div class="card-header">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">👩‍🔧</div>
-                    <div class="personnel-name">Ana López</div>
-                    <div class="personnel-role">Técnico Especializado</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-888-9999</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">ana.lopez@gemini.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">55.666.777</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📋 Registro INVIMA:</span>
-                        <span class="info-value">TC-2024-004</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🚗 Servicios Hoy:</span>
-                        <span class="info-value">4 programados</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="viewProfile('ana')">👁️ Ver Perfil</button>
-                    <button class="btn btn-primary btn-sm" onclick="assignService('ana')">📅 Asignar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add Personnel Modal -->
-    <div class="modal" id="addPersonnelModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Agregar Nuevo Personal</h2>
-                <button class="close-btn" onclick="closeModal('addPersonnelModal')">&times;</button>
-            </div>
-            
-            <form>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Nombres</label>
-                        <input type="text" class="form-control" placeholder="Nombres completos" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Apellidos</label>
-                        <input type="text" class="form-control" placeholder="Apellidos completos" required>
-                    </div>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Cédula</label>
-                        <input type="text" class="form-control" placeholder="12.345.678" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono</label>
-                        <input type="tel" class="form-control" placeholder="300-123-4567" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" class="form-control" placeholder="nombre@gemini.com" required>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Cargo</label>
-                        <select class="form-control" required>
-                            <option>Seleccionar cargo</option>
-                            <option>Técnico Senior</option>
-                            <option>Técnico Especializado</option>
-                            <option>Técnico Junior</option>
-                            <option>Coordinador de Servicios</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Departamento</label>
-                        <select class="form-control" required>
-                            <option>Operaciones</option>
-                            <option>Administración</option>
-                            <option>Servicios Técnicos</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Fecha de Ingreso</label>
-                        <input type="date" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Salario</label>
-                        <input type="number" class="form-control" placeholder="0" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Registro INVIMA (Solo técnicos)</label>
-                    <input type="text" class="form-control" placeholder="TC-2024-XXX">
-                </div>
-
-                <div class="form-group">
-                    <label>Dirección</label>
-                    <textarea class="form-control" rows="2" placeholder="Dirección de residencia"></textarea>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Contacto de Emergencia</label>
-                        <input type="text" class="form-control" placeholder="Nombre completo">
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono de Emergencia</label>
-                        <input type="tel" class="form-control" placeholder="300-000-0000">
-                    </div>
-                </div>
-
-                <div class="form-grid-2" style="margin-top: 2rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonnelModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Agregar Personal</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <script>
-        function showView(view) {
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
+                
+                // Apply search filter
+                if (searchTerm && !name.includes(searchTerm) && !email.includes(searchTerm)) {
+                    showCard = false;
+                }
+                
+                // Apply status filter
+                if (statusFilter && status !== statusFilter) {
+                    showCard = false;
+                }
+                
+                // Apply city filter
+                if (cityFilter && city !== cityFilter) {
+                    showCard = false;
+                }
+                
+                card.style.display = showCard ? 'block' : 'none';
             });
-            event.target.classList.add('active');
-            console.log('Showing view:', view);
         }
 
-        function openAddPersonnelModal() {
-            document.getElementById('addPersonnelModal').classList.add('show');
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('cityFilter').value = '';
+            filterPersons();
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
+        function openAddPersonModal() {
+            document.getElementById('addPersonModal').classList.add('show');
         }
 
-        function viewProfile(employeeId) {
-            alert('Viendo perfil de: ' + employeeId);
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+            // Clear form
+            document.querySelector('#' + id + ' form').reset();
         }
 
-        function assignService(employeeId) {
-            alert('Asignando servicio a: ' + employeeId);
-        }
-
-        function contactEmployee(employeeId) {
-            alert('Contactando a: ' + employeeId);
-        }
-
-        window.onclick = function(event) {
-            const modals = document.getElementsByClassName('modal');
-            for (let modal of modals) {
-                if (event.target === modal) {
-                    modal.classList.remove('show');
-                }
+        function updateFormFields() {
+            const type = document.getElementById('personType').value;
+            const roleField = document.getElementById('personRole');
+            
+            switch(type) {
+                case 'cliente':
+                    roleField.placeholder = 'Ej: Cliente Corporativo, Individual';
+                    break;
+                case 'empleado':
+                    roleField.placeholder = 'Ej: Coordinador, Especialista, Técnico';
+                    break;
+                case 'proveedor':
+                    roleField.placeholder = 'Ej: Proveedor de Equipos, Transporte';
+                    break;
+                default:
+                    roleField.placeholder = 'Cargo o tipo de servicio';
             }
         }
+
+        function addPerson(event) {
+            event.preventDefault();
+            
+            const formData = {
+                type: document.getElementById('personType').value,
+                name: document.getElementById('personName').value,
+                role: document.getElementById('personRole').value,
+                document: document.getElementById('personDoc').value,
+                phone: document.getElementById('personPhone').value,
+                email: document.getElementById('personEmail').value,
+                city: document.getElementById('personCity').value,
+                address: document.getElementById('personAddress').value,
+                notes: document.getElementById('personNotes').value
+            };
+            
+            console.log('Nueva persona agregada:', formData);
+            
+            // Show success message
+            alert('✅ Persona agregada exitosamente!\n\nNombre: ' + formData.name + '\nTipo: ' + formData.type.charAt(0).toUpperCase() + formData.type.slice(1));
+            
+            closeModal('addPersonModal');
+            
+            // Here you would typically send the data to a server
+            // For demo purposes, we'll just log it
+        }
+
+        function viewProfile(id) {
+            alert('👁️ Visualizando perfil completo de: ' + id + '\n\n• Información detallada\n• Historial de interacciones\n• Documentos asociados\n• Actividad reciente');
+        }
+
+        function contactPerson(id) {
+            alert('📞 Opciones de contacto para: ' + id + '\n\n• Llamar por teléfono\n• Enviar WhatsApp\n• Escribir email\n• Programar reunión');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function (e) {
+            document.querySelectorAll('.modal').forEach(modal => {
+                if (e.target === modal) modal.classList.remove('show');
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Sistema de Gestión de Personas cargado exitosamente');
+        });
     </script>
 </body>
+
 </html>
-<!-- ...end of
