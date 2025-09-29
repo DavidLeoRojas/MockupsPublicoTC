@@ -637,5 +637,159 @@
             </div>
         </div>
     </footer>
+    <script>
+    // === CONFIGURACIÓN ===
+    const API_BASE_URL = 'http://localhost:8080/api'; // Asegúrate que sea la URL correcta de tu backend
+
+    // === FUNCIONES PRINCIPALES ===
+
+    // 1. Cargar todos los datos iniciales
+    async function loadData() {
+        console.log("Iniciando carga de datos desde el backend...");
+        try {
+            // Cargar tipos de servicio (servicios principales)
+            const tiposServicioRes = await fetch(`${API_BASE_URL}/tipos-servicio`);
+            if (!tiposServicioRes.ok) throw new Error(`HTTP error! status: ${tiposServicioRes.status} al cargar tipos de servicio`);
+            const tiposServicioData = await tiposServicioRes.json();
+
+            const tiposServicio = Array.isArray(tiposServicioData) ? tiposServicioData : [];
+            console.log(`Datos cargados - Tipos de Servicio: ${tiposServicio.length}`);
+
+            // Actualizar la interfaz con los datos reales
+            renderizarServiciosPrincipales(tiposServicio);
+            // Las secciones de proceso, industrias y FAQ permanecen igual por ahora
+            // Si decides crear endpoints para ellas, puedes aplicar la misma lógica aquí
+
+        } catch (error) {
+            console.error("Error crítico al cargar datos:", error);
+            alert("❌ Error al cargar los datos de servicios. Por favor, revise la consola y asegúrese de que el backend esté corriendo.");
+            // Opcional: Mostrar un mensaje en la UI
+            document.querySelector('.services-grid').innerHTML = '<p style="text-align:center; color:red; grid-column: 1/-1;">Error al cargar servicios. ¿Está el backend encendido?</p>';
+        }
+    }
+
+    // 2. Renderizar las tarjetas de servicios principales
+    function renderizarServiciosPrincipales(tiposServicio) {
+        const servicesGrid = document.querySelector('.services-grid');
+        if (!servicesGrid) {
+            console.error("No se encontró el contenedor .services-grid");
+            return;
+        }
+
+        // Limpiar el grid
+        servicesGrid.innerHTML = '';
+
+        if (tiposServicio.length === 0) {
+            servicesGrid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron servicios disponibles.</p>';
+            return;
+        }
+
+        // Generar una tarjeta para cada tipo de servicio
+        tiposServicio.forEach(tipo => {
+            const card = crearTarjetaServicio(tipo);
+            servicesGrid.appendChild(card);
+        });
+    }
+
+    // 3. Crear un elemento DOM para una tarjeta de servicio
+    function crearTarjetaServicio(tipo) {
+        // Determinar icono y color basado en el nombre del servicio (puedes hacerlo más dinámico)
+        let icono = '🔧'; // Icono por defecto
+        let colorClass = '4a8b64'; // Color por defecto
+        const nombreLower = (tipo.nombreServicio || '').toLowerCase();
+
+        if (nombreLower.includes('plaga')) {
+            icono = '🐛';
+            colorClass = '4a8b64';
+        } else if (nombreLower.includes('tanque')) {
+            icono = '🚿';
+            colorClass = '4299e1'; // Azul para lavado
+        } else if (nombreLower.includes('certificado') || nombreLower.includes('inspeccion')) {
+            icono = '📋';
+            colorClass = 'f6ad55'; // Amarillo para documentos
+        }
+
+        // Crear la tarjeta
+        const card = document.createElement('div');
+        card.className = 'service-card';
+        
+        // Generar características falsas o reales si las tienes en el modelo
+        // Aquí generamos algunas genéricas basadas en el nombre
+        let caracteristicasHtml = '';
+        if (nombreLower.includes('plaga')) {
+            caracteristicasHtml = `
+                <li>Inspección técnica especializada</li>
+                <li>Tratamiento con productos certificados</li>
+                <li>Seguimiento y monitoreo continuo</li>
+                <li>Certificación sanitaria oficial</li>
+                <li>Plan de manejo integrado de plagas (MIP)</li>
+            `;
+        } else if (nombreLower.includes('tanque')) {
+             caracteristicasHtml = `
+                <li>Vaciado y limpieza profunda</li>
+                <li>Desinfección con químicos aprobados</li>
+                <li>Análisis fisicoquímico del agua</li>
+                <li>Certificado de potabilidad</li>
+                <li>Mantenimiento preventivo programado</li>
+            `;
+        } else {
+             caracteristicasHtml = `
+                <li>Evaluación y diagnóstico personalizado</li>
+                <li>Documentación oficial y legal</li>
+                <li>Reportes técnicos detallados</li>
+                <li>Registro fotográfico del proceso</li>
+                <li>Cronograma de servicios futuros</li>
+            `;
+        }
+
+        card.innerHTML = `
+            <div class="service-header" style="background: linear-gradient(135deg, #${colorClass}, #${darkenColor(colorClass, 20)});">
+                <div class="service-icon">${icono}</div>
+                <h3>${tipo.nombreServicio || 'Servicio sin nombre'}</h3>
+                <p>${tipo.descripcion || 'Descripción no disponible'}</p>
+            </div>
+            <div class="service-content">
+                <p>${tipo.descripcionExtendida || 'Obtén resultados profesionales con nuestro servicio especializado.'}</p>
+                <ul class="service-features">
+                    ${caracteristicasHtml}
+                </ul>
+                <div class="price-tag">Desde $${(tipo.costo || 0).toLocaleString('es-CO')} ${tipo.frecuencia ? `/${tipo.frecuencia}` : ''}</div>
+                <a href="contacto.html?id=${encodeURIComponent(tipo.idTipoServicio || '')}" class="cta-button">Solicitar Cotización</a>
+            </div>
+        `;
+        return card;
+    }
+
+    // Función auxiliar para oscurecer un color hexadecimal (muy básica)
+    function darkenColor(color, percent) {
+        // Convertir hex a RGB
+        let R = parseInt(color.substring(0,2),16);
+        let G = parseInt(color.substring(2,4),16);
+        let B = parseInt(color.substring(4,6),16);
+
+        // Oscurecer
+        R = Math.floor(R * (100 - percent) / 100);
+        G = Math.floor(G * (100 - percent) / 100);
+        B = Math.floor(B * (100 - percent) / 100);
+
+        // Convertir de vuelta a hex
+        R = (R<255)?R:255;  
+        G = (G<255)?G:255;  
+        B = (B<255)?B:255;  
+
+        let RR = ((R.toString(16).length==1)?"0"+R.toString(16):R.toString(16));
+        let GG = ((G.toString(16).length==1)?"0"+G.toString(16):G.toString(16));
+        let BB = ((B.toString(16).length==1)?"0"+B.toString(16):B.toString(16));
+
+        return RR + GG + BB;
+    }
+
+    // === INICIALIZACIÓN ===
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('Página de Servicios cargada. Iniciando carga de datos desde la API...');
+        loadData();
+    });
+
+</script>
 </body>
 </html>

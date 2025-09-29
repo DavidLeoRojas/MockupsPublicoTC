@@ -91,6 +91,33 @@
             transform: translateY(-2px);
         }
 
+        /* Connection Status */
+        .connection-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .disconnected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .verifying {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
         /* Hero Section */
         .hero {
             background: linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)), 
@@ -130,6 +157,8 @@
             font-weight: bold;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(255,107,107,0.3);
+            border: none;
+            cursor: pointer;
         }
 
         .btn-primary:hover {
@@ -174,6 +203,141 @@
             margin-bottom: 3rem;
             text-align: center;
             color: #2c5f41;
+        }
+
+        /* AI Sections */
+        .ai-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
+        }
+
+        .ai-section h3 {
+            color: #2c5f41;
+            margin-bottom: 1.5rem;
+            font-size: 1.8em;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+            color: #2c5f41;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #4a8b64;
+            box-shadow: 0 0 0 2px rgba(74, 139, 100, 0.2);
+        }
+
+        .resultado-exitoso {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border-left: 5px solid #28a745;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da 0%, #f1c2c7 100%);
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            color: #721c24;
+            border-left: 5px solid #dc3545;
+        }
+
+        .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #721c24;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4a8b64;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .respuesta-content,
+        .analisis-content,
+        .cotizacion-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            line-height: 1.6;
+            border-left: 4px solid #4a8b64;
+        }
+
+        .timestamp {
+            color: #666;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        .cotizacion-actions {
+            text-align: center;
+            margin: 1rem 0;
+        }
+
+        .btn-descargar,
+        .btn-imprimir {
+            background: #4a8b64;
+            color: white;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 0.5rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-descargar:hover,
+        .btn-imprimir:hover {
+            background: #2c5f41;
         }
 
         /* About Section */
@@ -424,6 +588,10 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+
+            .ai-section {
+                padding: 1rem;
+            }
         }
     </style>
 </head>
@@ -433,7 +601,6 @@
         <div class="nav-container">
             <div class="logo-section">
                 <img src="Logo.png" width="300" height="80" alt="Logo">
-
             </div>
             <nav>
                 <ul class="nav-menu">
@@ -448,7 +615,10 @@
         </div>
     </header>
 
-    <!-- Hero Section  -->
+    <!-- Connection Status -->
+    <div id="connection-status" class="connection-status verifying">🔄 Verificando conexión...</div>
+
+    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <h1>Gemini Ambiental S.A.S</h1>
@@ -456,6 +626,28 @@
             <div class="hero-buttons">
                 <a href="servicios.html" class="btn-primary">Conoce Nuestros Servicios</a>
                 <a href="contacto.html" class="btn-secondary">Solicita tu Cotización</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Consultation Section -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">🤖 Consulta con Gemini AI</h2>
+            <p style="text-align: center; margin-bottom: 2rem; color: #666;">Obtén asesoría especializada en control de plagas y saneamiento ambiental con nuestra IA</p>
+            
+            <div class="ai-section">
+                <h3>💬 Pregúntale a nuestro experto virtual</h3>
+                <div class="form-group">
+                    <label for="consulta-input">¿Qué necesitas saber sobre control de plagas o saneamiento?</label>
+                    <textarea id="consulta-input" rows="4" placeholder="Ejemplo: ¿Cuál es el mejor método para controlar cucarachas en mi restaurante? ¿Con qué frecuencia debo hacer fumigación?"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="contexto-input">Contexto adicional (opcional)</label>
+                    <textarea id="contexto-input" rows="2" placeholder="Describe tu establecimiento, tipo de plaga, ubicación, etc..."></textarea>
+                </div>
+                <button onclick="realizarConsulta()" class="btn-primary">🚀 Consultar con IA</button>
+                <div id="resultado-consulta" style="display: none;"></div>
             </div>
         </div>
     </section>
@@ -506,8 +698,40 @@
         </div>
     </section>
 
-    <!-- Services Preview -->
+    <!-- Document Analysis Section -->
     <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">📄 Análisis de Documentos con IA</h2>
+            <p style="text-align: center; margin-bottom: 2rem; color: #666;">Analiza reportes, certificados y documentos relacionados con control de plagas</p>
+            
+            <div class="ai-section">
+                <h3>📊 Analiza tu documentación</h3>
+                <div class="form-group">
+                    <label for="archivo-input">Subir documento (PDF, TXT, CSV, XLSX, DOCX - Máx. 10MB)</label>
+                    <input type="file" id="archivo-input" accept=".pdf,.txt,.csv,.xlsx,.docx">
+                </div>
+                <div class="form-group">
+                    <label for="tipo-analisis">Tipo de análisis</label>
+                    <select id="tipo-analisis">
+                        <option value="general">Análisis General</option>
+                        <option value="riesgos">Identificación de Riesgos</option>
+                        <option value="cumplimiento">Revisión de Cumplimiento Normativo</option>
+                        <option value="recomendaciones">Recomendaciones de Mejora</option>
+                        <option value="certificaciones">Validación de Certificaciones</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="instrucciones-analisis">Instrucciones específicas (opcional)</label>
+                    <textarea id="instrucciones-analisis" rows="2" placeholder="¿Qué aspectos específicos quieres que analice la IA?"></textarea>
+                </div>
+                <button onclick="realizarAnalisis()" class="btn-primary">🔍 Analizar Documento</button>
+                <div id="resultado-analisis" style="display: none;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Preview -->
+    <section class="section">
         <div class="container">
             <h2 class="section-title">Nuestros Servicios Principales</h2>
             <div class="services-preview">
@@ -561,6 +785,81 @@
             </div>
             <div style="text-align: center; margin-top: 2rem;">
                 <a href="servicios.html" class="btn-primary">Ver Todos los Servicios</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quotation AI Section -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">💰 Cotizaciones Inteligentes</h2>
+            <p style="text-align: center; margin-bottom: 2rem; color: #666;">Genera cotizaciones personalizadas con nuestra IA especializada</p>
+            
+            <div class="ai-section">
+                <h3>📝 Generar cotización personalizada</h3>
+                <form id="form-cotizacion">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label for="tipoServicio">Tipo de servicio *</label>
+                            <select name="tipoServicio" required>
+                                <option value="">Seleccionar servicio...</option>
+                                <option value="control-plagas">Control de Plagas Integral</option>
+                                <option value="lavado-tanques">Lavado y Desinfección de Tanques</option>
+                                <option value="desinfeccion">Desinfección de Espacios</option>
+                                <option value="fumigacion">Fumigación Especializada</option>
+                                <option value="saneamiento">Saneamiento Ambiental</option>
+                                <option value="mantenimiento">Mantenimiento Preventivo</option>
+                                <option value="certificaciones">Certificaciones Sanitarias</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ubicacion">Ubicación del servicio *</label>
+                            <input type="text" name="ubicacion" required placeholder="Ej: Tunja, Boyacá">
+                        </div>
+                        <div class="form-group">
+                            <label for="tamaño">Tamaño del área (m²)</label>
+                            <input type="text" name="tamaño" placeholder="Ej: 500 m²">
+                        </div>
+                        <div class="form-group">
+                            <label for="frecuencia">Frecuencia del servicio</label>
+                            <select name="frecuencia">
+                                <option value="">Seleccionar frecuencia...</option>
+                                <option value="una-vez">Una sola vez</option>
+                                <option value="mensual">Mensual</option>
+                                <option value="bimestral">Bimestral</option>
+                                <option value="trimestral">Trimestral</option>
+                                <option value="semestral">Semestral</option>
+                                <option value="anual">Anual</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="descripcion">Descripción detallada del requerimiento</label>
+                        <textarea name="descripcion" rows="3" placeholder="Describe el tipo de establecimiento, problemas específicos, áreas críticas, etc..."></textarea>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                        <div class="form-group">
+                            <label for="nombre">Nombre del contacto</label>
+                            <input type="text" name="nombre" placeholder="Tu nombre completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="empresa">Empresa</label>
+                            <input type="text" name="empresa" placeholder="Nombre de tu empresa">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" placeholder="tu@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefono">Teléfono</label>
+                            <input type="tel" name="telefono" placeholder="(+57) 300 123 4567">
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <button type="button" onclick="realizarCotizacion()" class="btn-primary">🚀 Generar Cotización con IA</button>
+                    </div>
+                </form>
+                <div id="resultado-cotizacion" style="display: none;"></div>
             </div>
         </div>
     </section>
@@ -690,5 +989,322 @@
             </div>
         </div>
     </footer>
+
+    <!-- JavaScript para conectar con el backend -->
+    <script>
+        // Configuración de conexión con tu backend Spring Boot
+        const API_BASE_URL = 'http://localhost:8080';
+
+        // Función para verificar conexión
+        async function verificarConexion() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/public/info`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Backend conectado:', data);
+                    mostrarEstadoConexion('conectado', data.service || 'Backend Spring Boot');
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ Error de conexión:', error);
+                mostrarEstadoConexion('desconectado');
+                return false;
+            }
+        }
+
+        // Mostrar estado de conexión en la UI
+        function mostrarEstadoConexion(estado, servicio = '') {
+            const statusElement = document.getElementById('connection-status');
+            
+            if (estado === 'conectado') {
+                statusElement.innerHTML = `🟢 ${servicio} Conectado`;
+                statusElement.className = 'connection-status connected';
+            } else {
+                statusElement.innerHTML = '🔴 Backend Sin Conexión';
+                statusElement.className = 'connection-status disconnected';
+            }
+        }
+
+        // Función para realizar consultas a Gemini
+        async function consultarGemini(consulta, contexto = '') {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/consulta`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        consulta: consulta,
+                        contexto: contexto
+                    })
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error en la consulta');
+                }
+            } catch (error) {
+                console.error('Error en consulta:', error);
+                throw error;
+            }
+        }
+
+        // Función para analizar documentos
+        async function analizarDocumento(archivo, tipoAnalisis = 'general', instrucciones = '') {
+            try {
+                const formData = new FormData();
+                formData.append('documento', archivo);
+                formData.append('tipoAnalisis', tipoAnalisis);
+                formData.append('instrucciones', instrucciones);
+
+                const response = await fetch(`${API_BASE_URL}/api/analizar-documento`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error analizando documento');
+                }
+            } catch (error) {
+                console.error('Error en análisis:', error);
+                throw error;
+            }
+        }
+
+        // Función para generar cotizaciones
+        async function generarCotizacion(datos) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/cotizacion`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(datos)
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Error generando cotización');
+                }
+            } catch (error) {
+                console.error('Error en cotización:', error);
+                throw error;
+            }
+        }
+
+        // Funciones para la interfaz de usuario
+        function mostrarLoading(elemento) {
+            elemento.innerHTML = `
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>🤖 Procesando con Gemini AI...</p>
+                </div>
+            `;
+            elemento.style.display = 'block';
+        }
+
+        function mostrarError(mensaje, elemento) {
+            elemento.innerHTML = `
+                <div class="error-message">
+                    <strong>❌ Error:</strong> ${mensaje}
+                    <button onclick="this.parentElement.style.display='none'" class="close-btn">&times;</button>
+                </div>
+            `;
+            elemento.style.display = 'block';
+        }
+
+        function mostrarResultado(contenido, elemento) {
+            elemento.innerHTML = `
+                <div class="resultado-exitoso">
+                    ${contenido}
+                </div>
+            `;
+            elemento.style.display = 'block';
+        }
+
+        // Funciones para manejar los formularios
+        async function realizarConsulta() {
+            const consulta = document.getElementById('consulta-input').value.trim();
+            const contexto = document.getElementById('contexto-input').value.trim();
+            const resultadoDiv = document.getElementById('resultado-consulta');
+            
+            if (!consulta) {
+                mostrarError('Por favor ingrese una consulta', resultadoDiv);
+                return;
+            }
+            
+            try {
+                mostrarLoading(resultadoDiv);
+                const respuesta = await consultarGemini(consulta, contexto);
+                mostrarResultado(`
+                    <h4>🤖 Respuesta de Gemini AI:</h4>
+                    <div class="respuesta-content">${respuesta.respuesta.replace(/\n/g, '<br>')}</div>
+                    <small class="timestamp">⏰ ${new Date(respuesta.timestamp).toLocaleString('es-CO')}</small>
+                `, resultadoDiv);
+                
+                // Limpiar formulario
+                document.getElementById('consulta-input').value = '';
+                document.getElementById('contexto-input').value = '';
+            } catch (error) {
+                mostrarError(error.message, resultadoDiv);
+            }
+        }
+
+        async function realizarAnalisis() {
+            const archivo = document.getElementById('archivo-input').files[0];
+            const tipoAnalisis = document.getElementById('tipo-analisis').value;
+            const instrucciones = document.getElementById('instrucciones-analisis').value;
+            const resultadoDiv = document.getElementById('resultado-analisis');
+            
+            if (!archivo) {
+                mostrarError('Por favor seleccione un archivo', resultadoDiv);
+                return;
+            }
+            
+            if (archivo.size > 10 * 1024 * 1024) {
+                mostrarError('El archivo es demasiado grande. Máximo 10MB', resultadoDiv);
+                return;
+            }
+            
+            try {
+                mostrarLoading(resultadoDiv);
+                const respuesta = await analizarDocumento(archivo, tipoAnalisis, instrucciones);
+                mostrarResultado(`
+                    <h4>📄 Análisis del documento: ${archivo.name}</h4>
+                    <div class="analisis-content">${respuesta.analisis.replace(/\n/g, '<br>')}</div>
+                    <small class="timestamp">⏰ ${new Date(respuesta.timestamp).toLocaleString('es-CO')}</small>
+                `, resultadoDiv);
+                
+                // Limpiar formulario
+                document.getElementById('archivo-input').value = '';
+                document.getElementById('instrucciones-analisis').value = '';
+            } catch (error) {
+                mostrarError(error.message, resultadoDiv);
+            }
+        }
+
+        async function realizarCotizacion() {
+            const form = document.getElementById('form-cotizacion');
+            const formData = new FormData(form);
+            const resultadoDiv = document.getElementById('resultado-cotizacion');
+            
+            const datos = {
+                tipoServicio: formData.get('tipoServicio'),
+                ubicacion: formData.get('ubicacion'),
+                tamaño: formData.get('tamaño'),
+                frecuencia: formData.get('frecuencia'),
+                descripcion: formData.get('descripcion'),
+                contacto: {
+                    nombre: formData.get('nombre'),
+                    email: formData.get('email'),
+                    telefono: formData.get('telefono'),
+                    empresa: formData.get('empresa')
+                }
+            };
+            
+            if (!datos.tipoServicio || !datos.ubicacion) {
+                mostrarError('Por favor complete al menos el tipo de servicio y la ubicación', resultadoDiv);
+                return;
+            }
+            
+            try {
+                mostrarLoading(resultadoDiv);
+                const respuesta = await generarCotizacion(datos);
+                mostrarResultado(`
+                    <h4>💰 Cotización Generada</h4>
+                    <div class="cotizacion-content">${respuesta.cotizacion.replace(/\n/g, '<br>')}</div>
+                    <div class="cotizacion-actions">
+                        <button onclick="descargarCotizacion()" class="btn-descargar">📥 Descargar TXT</button>
+                        <button onclick="imprimirCotizacion()" class="btn-imprimir">🖨️ Imprimir</button>
+                    </div>
+                    <small class="timestamp">⏰ ${new Date(respuesta.timestamp).toLocaleString('es-CO')}</small>
+                `, resultadoDiv);
+                
+                // Limpiar formulario
+                form.reset();
+            } catch (error) {
+                mostrarError(error.message, resultadoDiv);
+            }
+        }
+
+        // Funciones adicionales
+        function descargarCotizacion() {
+            const contenido = document.querySelector('.cotizacion-content');
+            if (contenido) {
+                const texto = contenido.innerText;
+                const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `cotizacion_gemini_ambiental_${new Date().getTime()}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        }
+
+        function imprimirCotizacion() {
+            const contenido = document.querySelector('.cotizacion-content');
+            if (contenido) {
+                const ventanaImpresion = window.open('', '_blank');
+                ventanaImpresion.document.write(`
+                    <html>
+                        <head>
+                            <title>Cotización - Gemini Ambiental S.A.S</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+                                h1 { color: #2c5f41; }
+                                .header { border-bottom: 2px solid #4a8b64; padding-bottom: 10px; margin-bottom: 20px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="header">
+                                <h1>Gemini Ambiental S.A.S</h1>
+                                <p>Control de Plagas y Saneamiento Ambiental</p>
+                            </div>
+                            ${contenido.innerHTML}
+                        </body>
+                    </html>
+                `);
+                ventanaImpresion.document.close();
+                ventanaImpresion.print();
+            }
+        }
+
+        // Inicializar cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            verificarConexion();
+            console.log('🌿 Gemini Ambiental S.A.S - Sistema iniciado');
+        });
+
+        // Función de debug
+        window.testConnection = async function() {
+            try {
+                const result = await verificarConexion();
+                if (result) {
+                    alert('✅ Conexión exitosa con el backend Spring Boot!');
+                }
+            } catch (error) {
+                alert('❌ Error de conexión: ' + error.message);
+            }
+        };
+    </script>
+    <script>
+        fetch('http://localhost:8080/api/public/info')
+        .then(res => res.json())
+        .then(data => {
+            document.getEleamentById('nombre').textContent = data.nombre;
+            // ...otros datos
+        });
+    </script>
 </body>
 </html>

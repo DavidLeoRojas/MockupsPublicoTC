@@ -950,492 +950,800 @@
 
         <!-- Personnel Grid -->
         <div class="personnel-grid" id="personnelGrid">
-            <!-- Cliente 1 -->
-            <div class="personnel-card" data-role="cliente" data-status="active" data-city="bogota">
-                <div class="role-badge cliente">Cliente</div>
-                <div class="card-header cliente">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">🛒</div>
-                    <div class="personnel-name">Empresa ABC Ltda.</div>
-                    <div class="personnel-role">Cliente Corporativo</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">601-555-1122</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">contacto@abc.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 NIT:</span>
-                        <span class="info-value">900123456-7</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Ciudad:</span>
-                        <span class="info-value">Bogotá</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm cliente" onclick="viewProfile('cliente1')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm cliente" onclick="contactPerson('cliente1')">📞 Contactar</button>
-                </div>
-            </div>
-
-            <!-- Cliente 2 -->
-            <div class="personnel-card" data-role="cliente" data-status="busy" data-city="tunja">
-                <div class="role-badge cliente">Cliente</div>
-                <div class="card-header cliente">
-                    <div class="status-indicator busy"></div>
-                    <div class="personnel-avatar">🏢</div>
-                    <div class="personnel-name">María González</div>
-                    <div class="personnel-role">Cliente Individual</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-444-5555</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">maria.gonzalez@email.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">52.123.456</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Ciudad:</span>
-                        <span class="info-value">Tunja</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm cliente" onclick="viewProfile('cliente2')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm cliente" onclick="contactPerson('cliente2')">📞 Contactar</button>
-                </div>
-            </div>
-
-            <!-- Empleado 1 -->
-            <div class="personnel-card" data-role="empleado" data-status="active" data-city="tunja">
-                <div class="role-badge empleado">Empleado</div>
-                <div class="card-header empleado">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">💼</div>
-                    <div class="personnel-name">Diego Martínez</div>
-                    <div class="personnel-role">Coordinador de Servicios</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-111-2222</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">diego.martinez@gemini.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">99.888.777</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Oficina:</span>
-                        <span class="info-value">Tunja</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm empleado" onclick="viewProfile('diego')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm empleado" onclick="contactPerson('diego')">💬 Contactar</button>
-                </div>
-            </div>
-
-            <!-- Empleado 2 -->
-            <div class="personnel-card" data-role="empleado" data-status="busy" data-city="bogota">
-                <div class="role-badge empleado">Empleado</div>
-                <div class="card-header empleado">
-                    <div class="status-indicator busy"></div>
-                    <div class="personnel-avatar">👩‍💻</div>
-                    <div class="personnel-name">Ana Rodríguez</div>
-                    <div class="personnel-role">Especialista Ambiental</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-333-4444</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">ana.rodriguez@gemini.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">88.777.666</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Oficina:</span>
-                        <span class="info-value">Bogotá</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm empleado" onclick="viewProfile('ana')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm empleado" onclick="contactPerson('ana')">💬 Contactar</button>
-                </div>
-            </div>
-
-            <!-- Proveedor 1 -->
-            <div class="personnel-card" data-role="proveedor" data-status="inactive" data-city="duitama">
-                <div class="role-badge proveedor">Proveedor</div>
-                <div class="card-header proveedor">
-                    <div class="status-indicator inactive"></div>
-                    <div class="personnel-avatar">📦</div>
-                    <div class="personnel-name">Suministros XYZ</div>
-                    <div class="personnel-role">Proveedor de Equipos</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-999-8888</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">ventas@xyz.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 NIT:</span>
-                        <span class="info-value">800654321-0</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Ciudad:</span>
-                        <span class="info-value">Duitama</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm proveedor" onclick="viewProfile('proveedor1')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm proveedor" onclick="contactPerson('proveedor1')">📞 Contactar</button>
-                </div>
-            </div>
-
-            <!-- Proveedor 2 -->
-            <div class="personnel-card" data-role="proveedor" data-status="active" data-city="bogota">
-                <div class="role-badge proveedor">Proveedor</div>
-                <div class="card-header proveedor">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">🚚</div>
-                    <div class="personnel-name">Logística Verde S.A.S</div>
-                    <div class="personnel-role">Proveedor de Transporte</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">601-777-9999</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">info@logisticaverde.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 NIT:</span>
-                        <span class="info-value">901234567-8</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Ciudad:</span>
-                        <span class="info-value">Bogotá</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm proveedor" onclick="viewProfile('proveedor2')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm proveedor" onclick="contactPerson('proveedor2')">📞 Contactar</button>
-                </div>
-            </div>
-
-            <!-- Cliente 3 -->
-            <div class="personnel-card" data-role="cliente" data-status="active" data-city="tunja">
-                <div class="role-badge cliente">Cliente</div>
-                <div class="card-header cliente">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">🏭</div>
-                    <div class="personnel-name">Industrias del Valle</div>
-                    <div class="personnel-role">Cliente Industrial</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">608-123-4567</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">gerencia@industriasvalle.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 NIT:</span>
-                        <span class="info-value">890123456-9</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Ciudad:</span>
-                        <span class="info-value">Tunja</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm cliente" onclick="viewProfile('cliente3')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm cliente" onclick="contactPerson('cliente3')">📞 Contactar</button>
-                </div>
-            </div>
-
-            <!-- Empleado 3 -->
-            <div class="personnel-card" data-role="empleado" data-status="active" data-city="duitama">
-                <div class="role-badge empleado">Empleado</div>
-                <div class="card-header empleado">
-                    <div class="status-indicator active"></div>
-                    <div class="personnel-avatar">🔬</div>
-                    <div class="personnel-name">Carlos López</div>
-                    <div class="personnel-role">Técnico de Laboratorio</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">📞 Teléfono:</span>
-                        <span class="info-value">300-555-7777</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📧 Email:</span>
-                        <span class="info-value">carlos.lopez@gemini.com</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🆔 Cédula:</span>
-                        <span class="info-value">77.666.555</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📍 Oficina:</span>
-                        <span class="info-value">Duitama</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm empleado" onclick="viewProfile('carlos')">👁️ Ver Perfil</button>
-                    <button class="btn btn-filled btn-sm empleado" onclick="contactPerson('carlos')">💬 Contactar</button>
-                </div>
-            </div>
+           
         </div>
     </div>
 
-    <!-- Modal de Agregar Persona -->
-    <div class="modal" id="addPersonModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">➕ Agregar Nueva Persona</h2>
-                <button class="close-btn" onclick="closeModal('addPersonModal')">&times;</button>
+<!-- Modal de Agregar Persona -->
+<div class="modal" id="addPersonModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">➕ Agregar Nueva Persona</h2>
+            <button class="close-btn" onclick="closeModal('addPersonModal')">&times;</button>
+        </div>
+        <!-- Añadido id="addPersonForm" al formulario -->
+        <form id="addPersonForm">
+            <div class="form-group">
+                <label>🏷️ Tipo de Persona</label>
+                <!-- Añadido name="personType" -->
+                <select class="form-control" required id="personType" name="personType" onchange="updateFormFields()">
+                    <option value="">Seleccionar tipo</option>
+                    <option value="cliente">🛒 Cliente</option>
+                    <option value="empleado">💼 Empleado</option>
+                    <option value="proveedor">📦 Proveedor</option>
+                </select>
             </div>
-            <form onsubmit="addPerson(event)">
+            <div class="form-grid-2">
                 <div class="form-group">
-                    <label>🏷️ Tipo de Persona</label>
-                    <select class="form-control" required id="personType" onchange="updateFormFields()">
-                        <option value="">Seleccionar tipo</option>
-                        <option value="cliente">🛒 Cliente</option>
-                        <option value="empleado">💼 Empleado</option>
-                        <option value="proveedor">📦 Proveedor</option>
+                    <label>👤 Nombre/Razón Social</label>
+                    <input type="text" class="form-control" placeholder="Nombre completo o empresa" required id="personName" name="personName">
+                </div>
+                <div class="form-group">
+                    <label>💼 Cargo/Especialidad</label>
+                    <input type="text" class="form-control" placeholder="Cargo o tipo de servicio" required id="personRole" name="personRole">
+                </div>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>🆔 Documento</label>
+                    <input type="text" class="form-control" placeholder="Cédula/NIT" required id="personDoc" name="personDoc">
+                </div>
+                <div class="form-group">
+                    <label>📞 Teléfono</label>
+                    <input type="tel" class="form-control" placeholder="300-123-4567" required id="personPhone" name="personPhone">
+                </div>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>📧 Email</label>
+                    <input type="email" class="form-control" placeholder="correo@ejemplo.com" required id="personEmail" name="personEmail">
+                </div>
+                <div class="form-group">
+                    <label>📍 Ciudad</label>
+                    <!-- Añadido name="personCity" -->
+                    <select class="form-control" required id="personCity" name="personCity">
+                        <option value="">Seleccionar ciudad</option>
+                        <option value="5413">Bogotá</option>
+                        <option value="5414">Medellín</option>
+                        <option value="5415">Tunja</option>
+                        <option value="otra">Otra ciudad</option>
                     </select>
                 </div>
-                
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>👤 Nombre/Razón Social</label>
-                        <input type="text" class="form-control" placeholder="Nombre completo o empresa" required id="personName">
-                    </div>
-                    <div class="form-group">
-                        <label>💼 Cargo/Especialidad</label>
-                        <input type="text" class="form-control" placeholder="Cargo o tipo de servicio" required id="personRole">
-                    </div>
-                </div>
-                
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>🆔 Documento</label>
-                        <input type="text" class="form-control" placeholder="Cédula/NIT" required id="personDoc">
-                    </div>
-                    <div class="form-group">
-                        <label>📞 Teléfono</label>
-                        <input type="tel" class="form-control" placeholder="300-123-4567" required id="personPhone">
-                    </div>
-                </div>
-                
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>📧 Email</label>
-                        <input type="email" class="form-control" placeholder="correo@ejemplo.com" required id="personEmail">
-                    </div>
-                    <div class="form-group">
-                        <label>📍 Ciudad</label>
-                        <select class="form-control" required id="personCity">
-                            <option value="">Seleccionar ciudad</option>
-                            <option value="bogota">Bogotá</option>
-                            <option value="tunja">Tunja</option>
-                            <option value="duitama">Duitama</option>
-                            <option value="otra">Otra ciudad</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label>📍 Dirección</label>
-                    <textarea class="form-control" rows="2" placeholder="Dirección completa" id="personAddress"></textarea>
-                </div>
-                
-                <div class="form-group">
-                    <label>📝 Observaciones</label>
-                    <textarea class="form-control" rows="3" placeholder="Notas adicionales..." id="personNotes"></textarea>
-                </div>
-                
-                <div class="form-grid-2" style="margin-top:2rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonModal')">❌ Cancelar</button>
-                    <button type="submit" class="btn btn-primary">✅ Agregar Persona</button>
-                </div>
-            </form>
-        </div>
+            </div>
+            <div class="form-group">
+                <label>📍 Dirección</label>
+                <textarea class="form-control" rows="2" placeholder="Dirección completa" id="personAddress" name="personAddress"></textarea>
+            </div>
+            <div class="form-group">
+                <label>📝 Observaciones</label>
+                <textarea class="form-control" rows="3" placeholder="Notas adicionales..." id="personNotes" name="personNotes"></textarea>
+            </div>
+            <div class="form-grid-2" style="margin-top:2rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonModal')">❌ Cancelar</button>
+                <button type="submit" class="btn btn-primary">✅ Agregar Persona</button>
+            </div>
+        </form>
     </div>
-
+</div>
     <script>
-        let currentView = 'all';
-        let persons = [];
+    // === CONFIGURACIÓN ===
+    const API_BASE_URL = 'http://localhost:8080/api'; // Asegúrate que sea la URL correcta de tu backend
 
-        function showView(view, element) {
-            // Update active tab
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            element.classList.add('active');
-            
-            // Filter cards
-            const cards = document.querySelectorAll('.personnel-card');
-            cards.forEach(card => {
-                if (view === 'all') {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = card.dataset.role === view ? 'block' : 'none';
+    // === VARIABLES GLOBALES ===
+    let todasLasPersonas = []; // Almacenará todos los datos de personas cargados
+    let direcciones = []; // Almacenará datos de direcciones si es necesario
+    let currentView = 'all'; // Vista actual ('all', 'cliente', 'empleado', 'proveedor')
+
+    // === FUNCIONES PRINCIPALES ===
+
+    // 1. Cargar todos los datos iniciales
+    async function loadData() {
+        console.log("Iniciando carga de datos desde el backend...");
+        try {
+            // Cargar personas y direcciones en paralelo
+            const [personasRes, direccionesRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/personas`).then(r => {
+                    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
+                    return r.json();
+                }),
+                fetch(`${API_BASE_URL}/direcciones`).then(r => {
+                     // Manejar si el endpoint no existe o falla
+                     if (!r.ok) {
+                         console.warn(`No se pudo cargar direcciones: ${r.status}. Continuando sin ellas.`);
+                         return []; // Devolvemos un array vacío
+                     }
+                     return r.json();
+                 }).catch(err => {
+                     console.warn("Error al cargar direcciones (puede que el endpoint no exista):", err);
+                     return []; // Devolvemos un array vacío en caso de error
+                 })
+            ]);
+
+            todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+            direcciones = Array.isArray(direccionesRes) ? direccionesRes : [];
+            console.log(`Datos cargados: ${todasLasPersonas.length} personas, ${direcciones.length} direcciones.`);
+
+            // Actualizar la interfaz
+            actualizarEstadisticas(todasLasPersonas);
+            renderizarPersonas(todasLasPersonas); // Muestra todas inicialmente
+            poblarFiltrosCiudad(todasLasPersonas); // Llena el filtro de ciudad
+
+        } catch (error) {
+            console.error("Error crítico al cargar datos:", error);
+            alert("❌ Error al cargar los datos de personas. Por favor, revise la consola y asegúrese de que el backend esté corriendo.");
+            // Opcional: Mostrar un mensaje en la UI
+            document.getElementById('personnelGrid').innerHTML = '<p style="text-align:center; color:red; grid-column: 1/-1;">Error al cargar datos. ¿Está el backend encendido?</p>';
+        }
+    }
+
+
+
+
+
+    // Función para agregar una nueva persona (enviar al backend)
+    function addPerson(event) {
+        event.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
+
+        // Recoger los datos del formulario y validarlos
+        const dni = document.getElementById('personDoc').value.trim();
+        const tipoDni = document.getElementById('personType').value.trim();
+        const nombre = document.getElementById('personName').value.trim();
+        const telefono = document.getElementById('personPhone').value.trim();
+        const correo = document.getElementById('personEmail').value.trim();
+
+        // Validación básica: asegurarse de que los campos obligatorios tengan valores
+        if (!dni || !tipoDni || !nombre || !telefono || !correo) {
+            alert("❌ Por favor, complete todos los campos obligatorios.");
+            return; // Detener la ejecución si hay campos vacíos
+        }
+
+        // Crear el objeto de datos
+        const formData = {
+            dni: dni,
+            tipoDni: tipoDni === 'cliente' ? 'NIT/Cédula' : 'Cédula',
+            nombre: nombre,
+            telefono: telefono,
+            correo: correo,
+            rol: tipoDni.charAt(0).toUpperCase() + tipoDni.slice(1), // Capitalizar
+            idDireccion: null, // Necesitarías mapear la ciudad seleccionada a un ID de dirección
+            idCargoEspecialidad: null // Opcional
+        };
+
+        console.log("Datos a enviar al backend:", formData);
+
+        try {
+            // Hacer la solicitud POST al backend
+            fetch(`${API_BASE_URL}/personas`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json' // ¡Importante! Indicar que se envía JSON
+                },
+                body: JSON.stringify(formData) // ¡Importante! Convertir el objeto a string JSON
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                return response.json();
+            })
+            .then(personaCreada => {
+                console.log("Persona creada:", personaCreada);
+                alert("✅ Persona agregada exitosamente!");
+                closeModal('addPersonModal');
+                document.querySelector('#addPersonModal form').reset(); // Limpiar el formulario
+
+                // Recargar los datos para mostrar el nuevo registro
+                loadData();
+
+            })
+            .catch(error => {
+                console.error("Error al agregar persona:", error);
+                alert(`❌ Error al agregar persona: ${error.message}`);
             });
-            
-            currentView = view;
-            console.log('Mostrando vista:', view);
+
+        } catch (error) {
+            console.error("Error en addPerson:", error);
+            alert(`❌ Error inesperado: ${error.message}`);
+        }
+    }
+    // Función para enviar los datos ACTUALIZADOS al backend
+    async function updatePerson(dniOriginal) {
+        // Recoger los datos del formulario y validarlos
+        const nombre = document.getElementById('personName').value.trim();
+        const telefono = document.getElementById('personPhone').value.trim();
+        const correo = document.getElementById('personEmail').value.trim();
+        const tipoDni = document.getElementById('personType').value.trim();
+
+        // Validación básica: asegurarse de que los campos obligatorios tengan valores
+        if (!nombre || !telefono || !correo || !tipoDni) {
+            alert("❌ Por favor, complete todos los campos obligatorios.");
+            return; // Detener la ejecución si hay campos vacíos
         }
 
-        function filterPersons() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('statusFilter').value;
-            const cityFilter = document.getElementById('cityFilter').value;
-            
-            const cards = document.querySelectorAll('.personnel-card');
-            
-            cards.forEach(card => {
-                const name = card.querySelector('.personnel-name').textContent.toLowerCase();
-                const email = card.querySelector('.info-value').textContent.toLowerCase();
-                const status = card.dataset.status;
-                const city = card.dataset.city;
-                const role = card.dataset.role;
-                
-                let showCard = true;
-                
-                // Apply current view filter
-                if (currentView !== 'all' && role !== currentView) {
-                    showCard = false;
-                }
-                
-                // Apply search filter
-                if (searchTerm && !name.includes(searchTerm) && !email.includes(searchTerm)) {
-                    showCard = false;
-                }
-                
-                // Apply status filter
-                if (statusFilter && status !== statusFilter) {
-                    showCard = false;
-                }
-                
-                // Apply city filter
-                if (cityFilter && city !== cityFilter) {
-                    showCard = false;
-                }
-                
-                card.style.display = showCard ? 'block' : 'none';
+        // Crear el objeto de datos actualizados
+        const formData = {
+            // dni NO se actualiza, se mantiene el dniOriginal
+            tipoDni: tipoDni === 'cliente' ? 'NIT/Cédula' : 'Cédula', // Ajustar según tu lógica
+            nombre: nombre,
+            telefono: telefono,
+            correo: correo,
+            rol: tipoDni.charAt(0).toUpperCase() + tipoDni.slice(1), // Capitalizar
+            // idDireccion: ..., // Necesitarías mapear la ciudad seleccionada a un ID de dirección
+            // idCargoEspecialidad: ... // Opcional
+        };
+
+        console.log("Datos a enviar para ACTUALIZAR:", formData);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/personas/${dniOriginal}`, {
+                method: 'PUT', // O PATCH si tu backend lo prefiere
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
             });
-        }
 
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('statusFilter').value = '';
-            document.getElementById('cityFilter').value = '';
-            filterPersons();
-        }
-
-        function openAddPersonModal() {
-            document.getElementById('addPersonModal').classList.add('show');
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('show');
-            // Clear form
-            document.querySelector('#' + id + ' form').reset();
-        }
-
-        function updateFormFields() {
-            const type = document.getElementById('personType').value;
-            const roleField = document.getElementById('personRole');
-            
-            switch(type) {
-                case 'cliente':
-                    roleField.placeholder = 'Ej: Cliente Corporativo, Individual';
-                    break;
-                case 'empleado':
-                    roleField.placeholder = 'Ej: Coordinador, Especialista, Técnico';
-                    break;
-                case 'proveedor':
-                    roleField.placeholder = 'Ej: Proveedor de Equipos, Transporte';
-                    break;
-                default:
-                    roleField.placeholder = 'Cargo o tipo de servicio';
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Error ${response.status}: ${errorText}`);
             }
-        }
 
-        function addPerson(event) {
-            event.preventDefault();
-            
-            const formData = {
-                type: document.getElementById('personType').value,
-                name: document.getElementById('personName').value,
-                role: document.getElementById('personRole').value,
-                document: document.getElementById('personDoc').value,
-                phone: document.getElementById('personPhone').value,
-                email: document.getElementById('personEmail').value,
-                city: document.getElementById('personCity').value,
-                address: document.getElementById('personAddress').value,
-                notes: document.getElementById('personNotes').value
-            };
-            
-            console.log('Nueva persona agregada:', formData);
-            
-            // Show success message
-            alert('✅ Persona agregada exitosamente!\n\nNombre: ' + formData.name + '\nTipo: ' + formData.type.charAt(0).toUpperCase() + formData.type.slice(1));
-            
+            // Si la respuesta es exitosa, intentar parsear como JSON
+            let responseData;
+            const contentType = response.headers.get("content-type");
+            if (contentType && contentType.indexOf("application/json") !== -1) {
+                responseData = await response.json();
+            } else {
+                // Si no es JSON, leer como texto
+                const responseText = await response.text();
+                console.warn("La respuesta del servidor no es JSON:", responseText);
+                responseData = { message: responseText || "Persona actualizada exitosamente (respuesta no JSON)" };
+            }
+
+            console.log("Persona actualizada:", responseData);
+            alert("✅ Persona actualizada exitosamente!");
+
+            // Cerrar el modal y limpiar el formulario
             closeModal('addPersonModal');
+            const form = document.querySelector('#addPersonModal form');
+            if (form) {
+                form.reset();
+                // Rehabilitar el campo DNI
+                document.getElementById('personDoc').disabled = false;
+                // Restaurar título y botón
+                document.querySelector('#addPersonModal .modal-title').textContent = 'Agregar Nueva Persona';
+                document.querySelector('#addPersonModal .btn-primary').textContent = '✅ Agregar Persona';
+                // Restaurar el evento onSubmit original
+                form.onsubmit = handleAddPersonForm;
+            }
+
+            // Recargar datos para mostrar los cambios
+            await loadData();
+
+        } catch (error) {
+            console.error("Error al actualizar persona:", error);
+            alert(`❌ Error al actualizar persona: ${error.message}`);
+        }
+    }
+        // Función para eliminar una persona
+    function eliminarPersona(dni) {
+        const persona = todasLasPersonas.find(p => p.dni === dni);
+        if (persona) {
+            if (confirm(`🗑️ ¿Está seguro de que desea eliminar a ${persona.nombre}?\n\n¡Esta acción no se puede deshacer!`)) {
+                console.log(`Eliminando persona con DNI: ${dni}`);
+                // Aquí iría la lógica para enviar una solicitud DELETE al backend
+                fetch(`${API_BASE_URL}/personas/${dni}`, { method: 'DELETE' })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text(); // El backend podría devolver un mensaje de texto
+                    })
+                    .then(message => {
+                        console.log("Persona eliminada:", message);
+                        alert(`✅ Persona ${persona.nombre} eliminada exitosamente.`);
+                        // Después de eliminar, recargar los datos
+                        loadData();
+                    })
+                    .catch(error => {
+                        console.error("Error al eliminar persona:", error);
+                        alert(`❌ Error al eliminar persona: ${error.message}`);
+                    });
+            }
+        } else {
+            alert("❌ Persona no encontrada para eliminar.");
+        }
+    }
+        // Función para actualizar los campos del formulario según el tipo de persona
+    function updateFormFields() {
+        const type = document.getElementById('personType').value;
+        const roleField = document.getElementById('personRole');
+
+        // Cambiar el placeholder del campo Cargo/Especialidad según el tipo de persona
+        switch(type) {
+            case 'cliente':
+                roleField.placeholder = 'Ej: Cliente Corporativo, Individual';
+                break;
+            case 'empleado':
+                roleField.placeholder = 'Ej: Coordinador, Especialista, Técnico';
+                break;
+            case 'proveedor':
+                roleField.placeholder = 'Ej: Proveedor de Equipos, Transporte';
+                break;
+            default:
+                roleField.placeholder = 'Cargo o tipo de servicio';
+        }
+    }
+    // 2. Renderizar las tarjetas de personas en el grid
+    
+    function renderizarPersonas(personasParaMostrar) {
+        const grid = document.getElementById('personnelGrid');
+        if (!grid) {
+            console.error("No se encontró el contenedor #personnelGrid");
+            return;
+        }
+
+        // Limpiar el grid
+        grid.innerHTML = '';
+
+        if (personasParaMostrar.length === 0) {
+            grid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron personas que coincidan con los filtros.</p>';
+            return;
+        }
+
+        // Generar una tarjeta para cada persona
+        personasParaMostrar.forEach(persona => {
+            const card = crearTarjetaPersona(persona);
+            grid.appendChild(card);
+        });
+    }
+
+    // 3. Crear un elemento DOM para una tarjeta de persona
+    function crearTarjetaPersona(persona) {
+        const rol = (persona.rol || 'Desconocido').toLowerCase();
+        const estado = (persona.estado || 'Activo').toLowerCase(); // Asumimos un campo 'estado' en Persona.java
+        const nombre = persona.nombre || 'Nombre no disponible';
+        const telefono = persona.telefono || 'N/A';
+        const correo = persona.correo || 'N/A';
+        const dni = persona.dni || 'N/A';
+        // Para ciudad, asumimos que hay una relación con Direccion
+        let ciudad = 'N/A';
+        if (persona.direccion && persona.direccion.nombre) {
+             ciudad = persona.direccion.nombre;
+        } else if(persona.idDireccion) { // Si solo tenemos el ID
+            const dir = direcciones.find(d => d.idDireccion === persona.idDireccion);
+            ciudad = dir ? dir.nombre : 'ID Dirección: ' + persona.idDireccion;
+        }
+
+        // Determinar icono y color basado en el rol
+        let icono, colorClass, badgeText;
+        switch (rol) {
+            case 'cliente':
+                icono = '🛒';
+                colorClass = 'cliente';
+                badgeText = 'Cliente';
+                break;
+            case 'empleado':
+                icono = '💼';
+                colorClass = 'empleado';
+                badgeText = 'Empleado';
+                break;
+            case 'proveedor':
+                icono = '📦';
+                colorClass = 'proveedor';
+                badgeText = 'Proveedor';
+                break;
+            default:
+                icono = '👥';
+                colorClass = 'cliente'; // Por defecto
+                badgeText = 'Persona';
+        }
+
+        // Determinar estado para el indicador
+        let estadoClass = 'active'; // Por defecto
+        // Puedes mapear otros estados si los tienes (ej: 'inactivo' -> 'inactive')
+        if (estado === 'inactivo') estadoClass = 'inactive';
+
+        const card = document.createElement('div');
+        card.className = `personnel-card`;
+        card.dataset.role = rol;
+        card.dataset.status = estado; // Para filtros futuros
+        card.dataset.city = ciudad.toLowerCase().replace(/\s+/g, '-'); // Normalizar para filtros
+
+        card.innerHTML = `
+            <div class="role-badge ${colorClass}">${badgeText}</div>
+            <div class="card-header ${colorClass}">
+                <div class="status-indicator ${estadoClass}"></div>
+                <div class="personnel-avatar">${icono}</div>
+                <div class="personnel-name">${nombre}</div>
+                <div class="personnel-role">${persona.cargoEspecialidad ? persona.cargoEspecialidad.nombre : 'Sin cargo/especialidad'}</div>
+            </div>
+            <div class="card-body">
+                <div class="info-item">
+                    <span class="info-label">📞 Teléfono:</span>
+                    <span class="info-value">${telefono}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">📧 Email:</span>
+                    <span class="info-value">${correo}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">🆔 ${persona.tipoDni || 'Documento'}:</span>
+                    <span class="info-value">${dni}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">📍 Ciudad:</span>
+                    <span class="info-value">${ciudad}</span>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="btn btn-outline btn-sm ${colorClass}" onclick="viewProfile('${persona.dni}')">👁️ Ver Perfil</button>
+                <button class="btn btn-outline btn-sm ${colorClass}" onclick="actualizarPersona('${persona.dni}')">✏️ Actualizar</button>
+                <button class="btn btn-outline btn-sm ${colorClass}" onclick="eliminarPersona('${persona.dni}')">🗑️ Eliminar</button>
+                <button class="btn btn-filled btn-sm ${colorClass}" onclick="contactar('${persona.dni}')">📞 Contactar</button>
+            </div>
+        `;
+        return card;
+    }
+
+        // Función para ACTUALIZAR una persona (abrir modal de edición)
+    function actualizarPersona(dni) {
+        const persona = todasLasPersonas.find(p => p.dni === dni);
+        if (persona) {
+            console.log("Editando persona:", persona);
+
+            // 1. Abrir el modal de agregar/editar
+            openAddPersonModal();
+
+            // 2. Cambiar el título del modal
+            const modalTitle = document.querySelector('#addPersonModal .modal-title');
+            if (modalTitle) {
+                modalTitle.textContent = 'Editar Persona';
+            }
+
+            // 3. Precargar los datos de la persona en el formulario
+            document.getElementById('personDoc').value = persona.dni || '';
+            // Deshabilitar el campo DNI para evitar cambios
+            document.getElementById('personDoc').disabled = true;
+
+            // Mapear el rol al valor del select
+            let tipoPersonaValue = '';
+            if (persona.rol) {
+                const rolLower = persona.rol.toLowerCase();
+                if (rolLower.includes('cliente')) tipoPersonaValue = 'cliente';
+                else if (rolLower.includes('empleado')) tipoPersonaValue = 'empleado';
+                else if (rolLower.includes('proveedor')) tipoPersonaValue = 'proveedor';
+                // Puedes añadir más mapeos si es necesario
+            }
+            document.getElementById('personType').value = tipoPersonaValue;
+            updateFormFields(); // Actualizar placeholders
+
+            document.getElementById('personName').value = persona.nombre || '';
+            document.getElementById('personPhone').value = persona.telefono || '';
+            document.getElementById('personEmail').value = persona.correo || '';
+            // Si tienes un campo para cargoEspecialidad.nombre, puedes precargarlo
+            // document.getElementById('personRole').value = persona.cargoEspecialidad ? persona.cargoEspecialidad.nombre : '';
+            // Para otros campos como dirección, ciudad, necesitarías lógica adicional
             
-            // Here you would typically send the data to a server
-            // For demo purposes, we'll just log it
+            // 4. Cambiar el texto del botón de submit
+            const submitButton = document.querySelector('#addPersonModal .btn-primary');
+            if (submitButton) {
+                submitButton.textContent = '💾 Guardar Cambios';
+                // Cambiar el evento onSubmit del formulario para usar updatePerson
+                const form = document.getElementById('addPersonForm');
+                if (form) {
+                    form.onsubmit = function(event) {
+                        event.preventDefault();
+                        updatePerson(dni); // Pasar el DNI original
+                    };
+                }
+            }
+
+        } else {
+            alert("❌ Persona no encontrada para actualizar.");
+        }
+    }
+    // 4. Actualizar las tarjetas de estadísticas
+    function actualizarEstadisticas(personas) {
+        const clientes = personas.filter(p => (p.rol || '').toLowerCase() === 'cliente').length;
+        const empleados = personas.filter(p => (p.rol || '').toLowerCase() === 'empleado').length;
+        const proveedores = personas.filter(p => (p.rol || '').toLowerCase() === 'proveedor').length;
+        const total = personas.length;
+
+        // Actualizar números en las tarjetas de estadísticas
+        document.querySelector('.stat-card.clientes .stat-number').textContent = clientes;
+        document.querySelector('.stat-card.empleados .stat-number').textContent = empleados;
+        document.querySelector('.stat-card.proveedores .stat-number').textContent = proveedores;
+        document.querySelector('.stat-card.total .stat-number').textContent = total;
+
+        // Actualizar números en las pestañas de navegación superior
+        // Asumiendo que los spans están dentro de los enlaces .nav-tab
+        const clienteTab = document.querySelector('.nav-tab.clientes span');
+        const empleadoTab = document.querySelector('.nav-tab.empleados span');
+        const proveedorTab = document.querySelector('.nav-tab.proveedores span');
+
+        if (clienteTab) clienteTab.textContent = clientes;
+        if (empleadoTab) empleadoTab.textContent = empleados;
+        if (proveedorTab) proveedorTab.textContent = proveedores;
+    }
+
+    // 5. Poblar el filtro de ciudad con las ciudades únicas de las personas
+    function poblarFiltrosCiudad(personas) {
+        const ciudadesUnicas = [...new Set(
+            personas
+                .filter(p => p.direccion && p.direccion.nombre)
+                .map(p => p.direccion.nombre)
+        )];
+
+        const selectCiudad = document.getElementById('cityFilter');
+        if (!selectCiudad) return;
+
+        // Guardar la selección actual si existe
+        const valorActual = selectCiudad.value;
+
+        // Limpiar y repoblar
+        selectCiudad.innerHTML = '<option value="">Todas las ciudades</option>';
+        ciudadesUnicas.forEach(ciudad => {
+            const option = document.createElement('option');
+            option.value = ciudad.toLowerCase().replace(/\s+/g, '-');
+            option.textContent = ciudad;
+            selectCiudad.appendChild(option);
+        });
+
+        // Restaurar la selección si sigue siendo válida
+        if (ciudadesUnicas.map(c => c.toLowerCase().replace(/\s+/g, '-')).includes(valorActual)) {
+             selectCiudad.value = valorActual;
+        }
+    }
+
+    // === FUNCIONES DE INTERACCIÓN/UI ===
+
+    // Cambiar la vista (Todas, Clientes, Empleados, Proveedores)
+    function showView(view, element) {
+        // Actualizar pestaña activa
+        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+        element.classList.add('active');
+
+        currentView = view;
+        aplicarFiltros(); // Aplicar el nuevo filtro de vista junto con otros filtros
+    }
+
+    // Aplicar todos los filtros (vista, búsqueda, estado, ciudad)
+    function aplicarFiltros() {
+        let personasFiltradas = [...todasLasPersonas]; // Copia
+
+        // 1. Filtro por Vista/Rol
+        if (currentView !== 'all') {
+            personasFiltradas = personasFiltradas.filter(p => (p.rol || '').toLowerCase() === currentView);
         }
 
-        function viewProfile(id) {
-            alert('👁️ Visualizando perfil completo de: ' + id + '\n\n• Información detallada\n• Historial de interacciones\n• Documentos asociados\n• Actividad reciente');
+        // 2. Filtro por Búsqueda
+        const terminoBusqueda = document.getElementById('searchInput').value.toLowerCase();
+        if (terminoBusqueda) {
+            personasFiltradas = personasFiltradas.filter(p =>
+                (p.nombre && p.nombre.toLowerCase().includes(terminoBusqueda)) ||
+                (p.correo && p.correo.toLowerCase().includes(terminoBusqueda)) ||
+                (p.dni && p.dni.toLowerCase().includes(terminoBusqueda))
+            );
         }
 
-        function contactPerson(id) {
-            alert('📞 Opciones de contacto para: ' + id + '\n\n• Llamar por teléfono\n• Enviar WhatsApp\n• Escribir email\n• Programar reunión');
+        // 3. Filtro por Estado (simplificado, asumes un campo 'estado')
+        const filtroEstado = document.getElementById('statusFilter').value;
+        if (filtroEstado) {
+            personasFiltradas = personasFiltradas.filter(p => (p.estado || 'Activo').toLowerCase() === filtroEstado);
         }
 
-        // Close modal when clicking outside
-        window.onclick = function (e) {
-            document.querySelectorAll('.modal').forEach(modal => {
-                if (e.target === modal) modal.classList.remove('show');
+        // 4. Filtro por Ciudad
+        const filtroCiudad = document.getElementById('cityFilter').value;
+        if (filtroCiudad) {
+            personasFiltradas = personasFiltradas.filter(p => {
+                if (p.direccion && p.direccion.nombre) {
+                    return p.direccion.nombre.toLowerCase().replace(/\s+/g, '-') === filtroCiudad;
+                }
+                return false;
             });
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Sistema de Gestión de Personas cargado exitosamente');
+        renderizarPersonas(personasFiltradas);
+        // Opcional: actualizar estadísticas con el conteo filtrado
+        // actualizarEstadisticas(personasFiltradas);
+    }
+
+    // Limpiar todos los filtros
+    function clearFilters() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('cityFilter').value = '';
+        // Volver a mostrar la vista 'all'
+        currentView = 'all';
+        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+        document.querySelector('.nav-tab.all').classList.add('active');
+        renderizarPersonas(todasLasPersonas);
+        actualizarEstadisticas(todasLasPersonas);
+    }
+
+
+    // Abrir modal para agregar persona
+    function openAddPersonModal() {
+        document.getElementById('addPersonModal').classList.add('show');
+        // Limpiar formulario y resetear estado
+        const form = document.querySelector('#addPersonModal form');
+        if (form) {
+            form.reset();
+            // Asegurarse de que el campo DNI esté habilitado por si acaso
+            document.getElementById('personDoc').disabled = false;
+            // Restaurar título y botón por defecto
+            document.querySelector('#addPersonModal .modal-title').textContent = 'Agregar Nueva Persona';
+            document.querySelector('#addPersonModal .btn-primary').textContent = '✅ Agregar Persona';
+            // Restaurar el evento onSubmit original
+            form.onsubmit = handleAddPersonForm;
+        }
+        updateFormFields(); // Actualizar placeholders iniciales
+    }
+
+    // Cerrar cualquier modal
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('show');
+        }
+        // Limpiar formulario al cerrar, incluyendo estado
+        const form = modal ? modal.querySelector('form') : document.querySelector('#addPersonModal form');
+        if (form) {
+            form.reset();
+            document.getElementById('personDoc').disabled = false; // Rehabilitar DNI
+            document.querySelector('#addPersonModal .modal-title').textContent = 'Agregar Nueva Persona';
+            document.querySelector('#addPersonModal .btn-primary').textContent = '✅ Agregar Persona';
+            form.onsubmit = handleAddPersonForm; // Restaurar evento
+        }
+    }
+
+    // Cerrar cualquier modal
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.classList.remove('show');
+        }
+        // Limpiar formulario si es necesario
+        // const form = modal.querySelector('form');
+        // if(form) form.reset();
+    }
+
+    // Simular ver perfil (por ahora)
+    function verPerfil(dni) {
+        const persona = todasLasPersonas.find(p => p.dni === dni);
+        if (persona) {
+            alert(`ℹ️ Detalles del perfil para:\nNombre: ${persona.nombre}\nRol: ${persona.rol}\nDNI: ${persona.dni}\n\n(Ventana de detalle completa por implementar)`);
+        } else {
+            alert("❌ Persona no encontrada.");
+        }
+    }
+
+    // Simular contactar (por ahora)
+    function contactar(dni) {
+        const persona = todasLasPersonas.find(p => p.dni === dni);
+        if (persona) {
+             alert(`📞 Opciones de contacto para ${persona.nombre}:\n- Email: ${persona.correo}\n- Tel: ${persona.telefono}\n\n(Implementar acciones reales: llamada, email, etc.)`);
+        } else {
+             alert("❌ Persona no encontrada.");
+        }
+    }
+
+// Manejar envío del formulario de agregar persona
+async function handleAddPersonForm(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const datosPersona = Object.fromEntries(formData.entries());
+
+    // VALIDACIÓN: Verificar si el DNI ya existe en la lista local
+    const dniIngresado = datosPersona.personDoc.trim();
+    if (todasLasPersonas.some(p => p.dni === dniIngresado)) {
+        alert(`❌ El DNI "${dniIngresado}" ya está registrado. Por favor, ingrese un DNI único.`);
+        return; // Detener el proceso
+    }
+
+    // Transformar datos al formato esperado por el backend
+    // Mapear la ciudad seleccionada a id_direccion
+    let idDireccion = null;
+    if (datosPersona.personCity && datosPersona.personCity !== 'otra') {
+        idDireccion = datosPersona.personCity; // Ya es el ID
+    }
+    // Si es 'otra', podrías crear una nueva dirección, pero por ahora lo dejamos null
+
+    const datosParaEnviar = {
+        dni: dniIngresado,
+        tipo_dni: datosPersona.personType === 'cliente' ? 'NIT/Cédula' : 'Cédula',
+        nombre: datosPersona.personName,
+        telefono: datosPersona.personPhone,
+        correo: datosPersona.personEmail,
+        rol: datosPersona.personType.charAt(0).toUpperCase() + datosPersona.personType.slice(1),
+        id_direccion: idDireccion, // ¡Ahora se envía la dirección!
+        // id_cargo_especialidad: ... // Opcional
+    };
+
+    console.log("Datos a enviar al backend:", datosParaEnviar);
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/personas`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(datosParaEnviar)
         });
-    </script>
+
+        // Verificar si la respuesta es exitosa (status 2xx)
+        if (!response.ok) {
+            let errorMessage = `Error HTTP: ${response.status} ${response.statusText}`;
+            try {
+                const errorData = await response.json(); // Intentar parsear error como JSON
+                errorMessage = errorData.error || errorData.message || errorMessage;
+            } catch (parseError) {
+                // Si no se puede parsear como JSON, leer como texto
+                try {
+                    errorMessage = await response.text();
+                } catch (textError) {
+                    // Si tampoco se puede leer como texto, usar el mensaje genérico
+                }
+            }
+            throw new Error(errorMessage);
+        }
+
+        // Si la respuesta es exitosa, intentar parsear el cuerpo como JSON
+        let responseData;
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.indexOf("application/json") !== -1) {
+            responseData = await response.json(); // Parsear como JSON
+        } else {
+            // Si no es JSON, leer como texto
+            const responseText = await response.text();
+            console.warn("La respuesta del servidor no es JSON:", responseText);
+            // Crear un objeto de respuesta simulado
+            responseData = { message: responseText || "Persona creada exitosamente (respuesta no JSON)" };
+        }
+
+        console.log("Persona creada:", responseData);
+        alert("✅ Persona agregada exitosamente!");
+        closeModal('addPersonModal');
+        form.reset(); // Limpiar el formulario
+        // Recargar los datos para mostrar el nuevo registro con su ciudad
+        await loadData(); // Esto ahora mostrará la ciudad correctamente
+
+    } catch (error) {
+        console.error("Error al agregar persona:", error);
+        alert(`❌ Error al agregar persona: ${error.message}`);
+    }
+}
+    // === INICIALIZACIÓN ===
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM cargado. Iniciando aplicación de gestión de personas...');
+        loadData();
+
+        // Añadir event listeners a elementos que no son estáticos o que necesitan estar aquí
+        const formAgregarPersona = document.getElementById('addPersonForm'); // Asegúrate de que tu form tenga este ID
+        if (formAgregarPersona) {
+            formAgregarPersona.addEventListener('submit', handleAddPersonForm);
+        }
+
+        // Añadir listeners a los filtros
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+        const cityFilter = document.getElementById('cityFilter');
+
+        if (searchInput) searchInput.addEventListener('input', aplicarFiltros);
+        if (statusFilter) statusFilter.addEventListener('change', aplicarFiltros);
+        if (cityFilter) cityFilter.addEventListener('change', aplicarFiltros);
+
+    });
+
+    // Cerrar modales al hacer clic fuera
+    window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.classList.remove('show');
+        }
+    };
+</script>
 </body>
 
 </html>

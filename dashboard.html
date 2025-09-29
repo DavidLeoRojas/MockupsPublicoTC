@@ -759,6 +759,175 @@
             </div>
         </div>
     </div>
+<script>
+    // URL base de la API
+    const API_BASE_URL = 'http://localhost:8080/api';
+
+    // Función para cargar datos del dashboard
+    async function loadDashboardData() {
+        console.log("Iniciando carga de datos del dashboard...");
+        try {
+            // Cargar todas las promesas en paralelo para mayor eficiencia
+            const [
+                clientesRes,
+                serviciosRes,
+                facturasRes,
+                productosRes
+            ] = await Promise.all([
+                fetch(`${API_BASE_URL}/personas?rol=Cliente`).then(r => r.json()),
+                fetch(`${API_BASE_URL}/servicios`).then(r => r.json()),
+                fetch(`${API_BASE_URL}/facturas`).then(r => r.json()),
+                fetch(`${API_BASE_URL}/productos`).then(r => r.json())
+            ]);
+
+            const clientes = Array.isArray(clientesRes) ? clientesRes : [];
+            const servicios = Array.isArray(serviciosRes) ? serviciosRes : [];
+            const facturas = Array.isArray(facturasRes) ? facturasRes : [];
+            const productos = Array.isArray(productosRes) ? productosRes : [];
+
+            console.log("Datos recibidos - Clientes:", clientes.length, "Servicios:", servicios.length, "Facturas:", facturas.length, "Productos:", productos.length);
+
+            // --- Actualizar Estadísticas ---
+            updateStatCard('primary', clientes.length); // Clientes Activos
+            updateStatCard('warning', servicios.filter(s => s.estado === 'Programado' || s.estado === 'En_Progreso').length); // Servicios Pendientes
+
+            // Calcular facturación mensual (simplificado: sumar montos de facturas del mes actual)
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const facturacionMensual = facturas
+                .filter(f => {
+                    const fechaFactura = new Date(f.fechaEmision);
+                    return fechaFactura.getMonth() === currentMonth && fechaFactura.getFullYear() === currentYear;
+                })
+                .reduce((sum, f) => sum + (f.montoTotal || 0), 0);
+
+            updateStatCard('success', formatCurrency(facturacionMensual)); // Facturación Mensual
+            updateStatCard('info', productos.filter(p => p.stock > 0).length); // Productos en Stock
+
+            // --- Actualizar Actividades Recientes ---
+            // Para este ejemplo, simularemos actividades recientes combinando servicios y facturas recientes.
+            // En una implementación real, podrías tener un endpoint específico para actividades o combinar más entidades.
+            renderRecentActivities(servicios, facturas);
+
+        } catch (error) {
+            console.error('Error al cargar datos del dashboard:', error);
+            // Opcional: Mostrar mensaje de error en la UI
+            document.querySelector('.stat-number').textContent = 'Error';
+            // Limpiar actividades
+            const activitiesContainer = document.querySelector('.card'); // Primer .card es el de actividades
+            if (activitiesContainer) {
+                const existingItems = activitiesContainer.querySelectorAll('.activity-item');
+                existingItems.forEach(item => item.remove());
+                activitiesContainer.innerHTML += '<p style="color: #f56565;">Error al cargar actividades</p>';
+            }
+        }
+    }
+
+    // Función para actualizar una tarjeta de estadística
+    function updateStatCard(cardClass, value) {
+        // Seleccionamos la primera tarjeta que coincida con la clase. 
+        // Esto puede ser frágil si el orden cambia. Idealmente, usa IDs únicos.
+        const card = document.querySelector(`.stat-card.${cardClass}`);
+        if (card) {
+            const numberElement = card.querySelector('.stat-number');
+            if (numberElement) {
+                numberElement.textContent = value;
+            }
+        }
+    }
+
+    // Función para formatear números como moneda (simplificado)
+    function formatCurrency(value) {
+        // Asegurarse de que el valor sea un número
+        const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
+        // Este es un ejemplo simple. Puedes usar Intl.NumberFormat para más precisión y localización.
+        return '$' + numValue.toLocaleString('es-CO', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    }
+
+    // Función para renderizar actividades recientes (simulación)
+    function renderRecentActivities(servicios, facturas) {
+        const activitiesContainer = document.querySelector('.card'); // Asumimos que el primer .card es el de actividades
+        if (!activitiesContainer) {
+            console.error("No se encontró el contenedor de actividades recientes.");
+            return;
+        }
+
+        // Limpiar actividades existentes
+        const existingItems = activitiesContainer.querySelectorAll('.activity-item');
+        existingItems.forEach(item => item.remove());
+
+        // Combinar y ordenar servicios y facturas por fecha (ejemplo simplificado)
+        const actividades = [
+            ...servicios.slice(0, 3).map(s => ({ type: 'service', data: s })), // Tomar 3 servicios más recientes
+            ...facturas.slice(0, 2).map(f => ({ type: 'invoice', data: f }))  // Tomar 2 facturas más recientes
+        ].sort((a, b) => {
+            // Obtener fechas para ordenar (esto es una simplificación, ajusta según tus modelos)
+            let dateA, dateB;
+            if (a.type === 'service') {
+                // Asumiendo que 'servicios' tiene una propiedad 'fecha'
+                dateA = new Date(a.data.fecha + 'T' + (a.data.hora || '00:00')); 
+            } else { // invoice
+                 // Asumiendo que 'facturas' tiene una propiedad 'fechaEmision'
+                dateA = new Date(a.data.fechaEmision); 
+            }
+            
+            if (b.type === 'service') {
+                dateB = new Date(b.data.fecha + 'T' + (b.data.hora || '00:00'));
+            } else { // invoice
+                dateB = new Date(b.data.fechaEmision);
+            }
+            
+            return dateB - dateA; // Descendente
+        }).slice(0, 5); // Tomar las 5 más recientes
+
+
+        if (actividades.length === 0) {
+            activitiesContainer.innerHTML += '<div class="activity-item"><p style="color: #718096; text-align: center;">No hay actividades recientes.</p></div>';
+            return;
+        }
+
+        actividades.forEach(({ type, data }) => {
+            const activityItem = document.createElement('div');
+            activityItem.className = 'activity-item';
+
+            let icon, title, meta;
+
+            if (type === 'service') {
+                icon = '🔧';
+                // Ajusta estos campos según tu modelo de Servicio
+                title = data.descripcion || 'Servicio sin descripción';
+                // Asumiendo relaciones cargadas correctamente
+                const clienteNombre = data.cotizacion?.cliente?.nombre || 'Cliente desconocido';
+                const tecnicoNombre = data.empleadoAsignado?.nombre || 'Técnico no asignado';
+                meta = `Cliente: ${clienteNombre} • Técnico: ${tecnicoNombre}`;
+            } else if (type === 'invoice') {
+                icon = '📄';
+                // Ajusta estos campos según tu modelo de Factura
+                title = `Factura #${data.idFactura || 'N/A'}`;
+                const clienteNombre = data.cliente?.nombre || 'Cliente desconocido';
+                const monto = formatCurrency(data.montoTotal || 0);
+                meta = `Cliente: ${clienteNombre} • Monto: ${monto}`;
+            }
+
+            activityItem.innerHTML = `
+                <div class="activity-icon ${type}">${icon}</div>
+                <div class="activity-content">
+                    <div class="activity-title">${title}</div>
+                    <div class="activity-meta">${meta}</div>
+                </div>
+            `;
+            activitiesContainer.appendChild(activityItem);
+        });
+    }
+
+
+    // Inicialización: Carga los datos cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard cargado. Iniciando carga de datos desde la API...');
+        loadDashboardData();
+    });
+
+</script>
 </body>
 
 </html>
