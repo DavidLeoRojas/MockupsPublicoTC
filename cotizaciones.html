@@ -17,7 +17,6 @@
             color: #2d3748;
         }
 
-        /* Sidebar - Same as previous modules */
         .sidebar {
             position: fixed;
             left: 0;
@@ -118,14 +117,12 @@
             transform: translateY(-2px);
         }
 
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
         }
 
-        /* Top Navigation */
         .top-nav {
             background: white;
             padding: 1rem 2rem;
@@ -157,7 +154,6 @@
             transform: translateY(-2px);
         }
 
-        /* Header */
         .header {
             background: white;
             padding: 2rem;
@@ -209,7 +205,6 @@
             border: 1px solid #e2e8f0;
         }
 
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -276,7 +271,6 @@
             font-size: 0.9em;
         }
 
-        /* Filters Section */
         .filters-section {
             background: white;
             padding: 2rem;
@@ -316,7 +310,6 @@
             border-color: #4a8b64;
         }
 
-        /* Quotes Table */
         .quotes-section {
             background: white;
             border-radius: 20px;
@@ -367,7 +360,6 @@
             background: #f7fafc;
         }
 
-        /* Status Badges */
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
@@ -381,25 +373,25 @@
             color: #c53030;
         }
 
-        .status-badge.enviado {
-            background: #bee3f8;
-            color: #2b6cb0;
-        }
-
-        .status-badge.aprobado {
+        .status-badge.aprobada {
             background: #c6f6d5;
             color: #22543d;
         }
 
-        .status-badge.rechazado {
+        .status-badge.rechazada {
             background: #e2e8f0;
             color: #4a5568;
         }
 
-        /* Action Buttons */
+        .status-badge.finalizada {
+            background: #bee3f8;
+            color: #2b6cb0;
+        }
+
         .action-buttons {
             display: flex;
             gap: 0.5rem;
+            flex-wrap: wrap;
         }
 
         .btn-sm {
@@ -429,15 +421,6 @@
             background: #ed8936;
         }
 
-        .btn-send {
-            background: #48bb78;
-            color: white;
-        }
-
-        .btn-send:hover {
-            background: #38a169;
-        }
-
         .btn-delete {
             background: #f56565;
             color: white;
@@ -447,7 +430,6 @@
             background: #e53e3e;
         }
 
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -469,7 +451,7 @@
             background: white;
             border-radius: 20px;
             padding: 2rem;
-            max-width: 800px;
+            max-width: 900px;
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
@@ -500,69 +482,21 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+            margin-bottom: 1rem;
         }
 
-        .form-grid-3 {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            gap: 1rem;
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #718096;
         }
 
-        /* Service Items in Quote */
-        .service-items {
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 1rem;
-            margin: 1rem 0;
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #718096;
         }
 
-        .service-item {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr auto;
-            gap: 1rem;
-            align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .service-item:last-child {
-            border-bottom: none;
-        }
-
-        .remove-item-btn {
-            background: #f56565;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .quote-summary {
-            background: #f7fafc;
-            padding: 1.5rem;
-            border-radius: 12px;
-            margin-top: 2rem;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-        }
-
-        .summary-row.total {
-            font-weight: bold;
-            font-size: 1.2em;
-            border-top: 2px solid #e2e8f0;
-            padding-top: 0.5rem;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -581,15 +515,10 @@
 
             .filters-grid {
                 grid-template-columns: 1fr;
-                gap: 1rem;
             }
 
             .stats-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .table-container {
-                font-size: 0.9em;
             }
 
             .top-nav {
@@ -601,11 +530,14 @@
                 justify-content: center;
                 flex-wrap: wrap;
             }
+
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -655,7 +587,7 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="coordinacion-servicios.html" class="nav-link">
+                <a href="servicios.html" class="nav-link">
                     <span class="nav-icon">🔧</span>
                     <span>Servicios</span>
                 </a>
@@ -666,14 +598,11 @@
             <a href="index.html" class="logout-btn">
                 <span class="nav-icon">🚪</span>
                 <span>Cerrar Sesión</span>
-                <!-- ...existing code... -->
-                </span>
             </a>
         </div>
     </div>
-    <!-- Main Content -->
+
     <div class="main-content">
-        <!-- Top Navigation -->
         <div class="top-nav">
             <div class="nav-tabs">
                 <a href="#" class="nav-tab active">📄 Cotizaciones</a>
@@ -681,89 +610,83 @@
                 <a href="#" class="nav-tab">📋 Servicios</a>
             </div>
             <div>
-                <button class="btn btn-secondary">📤 Exportar</button>
+                <button class="btn btn-secondary" onclick="exportarCotizaciones()">📤 Exportar</button>
                 <button class="btn btn-primary" onclick="openAddQuoteModal()">➕ Nueva Cotización</button>
             </div>
         </div>
-        <!-- Header -->
+
         <div class="header">
             <div class="header-title">
                 <h1>Cotizaciones</h1>
                 <p>Gestión y seguimiento de propuestas comerciales</p>
             </div>
         </div>
-        <!-- Stats -->
+
         <div class="stats-grid">
             <div class="stat-card primary">
                 <div class="stat-header">
                     <div class="stat-icon primary">💰</div>
                 </div>
-                <div class="stat-number">42</div>
+                <div class="stat-number" id="statPendientes">0</div>
                 <div class="stat-label">Cotizaciones Pendientes</div>
             </div>
             <div class="stat-card warning">
                 <div class="stat-header">
                     <div class="stat-icon warning">📤</div>
                 </div>
-                <div class="stat-number">18</div>
-                <div class="stat-label">Enviadas</div>
+                <div class="stat-number" id="statAprobadas">0</div>
+                <div class="stat-label">Aprobadas</div>
             </div>
             <div class="stat-card success">
                 <div class="stat-header">
                     <div class="stat-icon success">✔️</div>
                 </div>
-                <div class="stat-number">27</div>
-                <div class="stat-label">Aprobadas</div>
+                <div class="stat-number" id="statFinalizadas">0</div>
+                <div class="stat-label">Finalizadas</div>
             </div>
             <div class="stat-card danger">
                 <div class="stat-header">
                     <div class="stat-icon danger">❌</div>
                 </div>
-                <div class="stat-number">5</div>
+                <div class="stat-number" id="statRechazadas">0</div>
                 <div class="stat-label">Rechazadas</div>
             </div>
         </div>
-        <!-- Filtros -->
+
         <div class="filters-section">
-            <form>
+            <form id="filterForm">
                 <div class="filters-grid">
                     <div class="form-group">
                         <label>Buscar cliente</label>
-                        <input type="text" class="form-control" placeholder="Nombre, empresa o NIT">
+                        <input type="text" name="search" class="form-control" placeholder="Nombre o DNI">
                     </div>
                     <div class="form-group">
-                        <label>Estado</label>
-                        <select class="form-control">
-                            <option>Todos</option>
-                            <option>Pendiente</option>
-                            <option>Enviado</option>
-                            <option>Aprobado</option>
-                            <option>Rechazado</option>
-                        </select>
+                    <label>Estado</label>
+                    <select name="estado" class="form-control" id="estadoSelect" >
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                        <option value="Finalizada">Finalizada</option>
+                    </select>
                     </div>
                     <div class="form-group">
-                        <label>Servicio</label>
-                        <select class="form-control">
-                            <option>Todos</option>
-                            <option>Control de Plagas</option>
-                            <option>Lavado de Tanques</option>
-                            <option>Certificaciones</option>
-                        </select>
+                        <label>Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" class="form-control">
+                        <label>Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control">
                     </div>
                     <button class="btn btn-primary" type="submit">🔍 Filtrar</button>
                 </div>
             </form>
         </div>
-        <!-- Tabla de Cotizaciones -->
+
         <div class="quotes-section">
             <div class="quotes-header">
                 <span class="quotes-title">Listado de Cotizaciones</span>
                 <span>
-                    <button class="btn btn-secondary">⬇️ Descargar</button>
+                    <button class="btn btn-secondary" onclick="exportarCotizaciones()">⬇️ Descargar CSV</button>
                 </span>
             </div>
             <div class="table-container">
@@ -772,142 +695,569 @@
                         <tr>
                             <th>#</th>
                             <th>Cliente</th>
-                            <th>Servicio</th>
-                            <th>Fecha</th>
-                            <th>Monto</th>
+                            <th>Fecha Solicitud</th>
+                            <th>Fecha Preferida</th>
+                            <th>Costo Total</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="cotizacionesTableBody">
                         <tr>
-                            <td>2025-001</td>
-                            <td>Hotel Plaza Real</td>
-                            <td>Control de Plagas</td>
-                            <td>2025-01-15</td>
-                            <td>$850,000</td>
-                            <td><span class="status-badge pendiente">Pendiente</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
+                            <td colspan="7" class="loading">Cargando cotizaciones...</td>
                         </tr>
-                        <tr>
-                            <td>2025-002</td>
-                            <td>Restaurante El Buen Sabor</td>
-                            <td>Lavado de Tanques</td>
-                            <td>2025-01-18</td>
-                            <td>$450,000</td>
-                            <td><span class="status-badge enviado">Enviado</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2025-003</td>
-                            <td>Colegio San Patricio</td>
-                            <td>Certificaciones</td>
-                            <td>2025-01-20</td>
-                            <td>$320,000</td>
-                            <td><span class="status-badge aprobado">Aprobado</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>2025-004</td>
-                            <td>Panadería Central</td>
-                            <td>Control de Plagas</td>
-                            <td>2025-01-22</td>
-                            <td>$520,000</td>
-                            <td><span class="status-badge rechazado">Rechazado</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Más cotizaciones aquí -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-    <!-- Modal Nueva Cotización -->
+
     <div class="modal" id="addQuoteModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Nueva Cotización</h2>
+                <h2 class="modal-title" id="quoteModalTitle">Nueva Cotización</h2>
                 <button class="close-btn" onclick="closeModal('addQuoteModal')">&times;</button>
             </div>
-            <form>
+            <form id="quoteForm">
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label>Cliente</label>
-                        <input type="text" class="form-control" required>
+                        <label>Tipo Cliente *</label>
+                        <select id="clienteTipo" class="form-control" onchange="toggleClienteInput()" required>
+                            <option value="existente">Cliente Existente</option>
+                            <option value="nuevo">Nuevo Cliente</option>
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <label>Servicio</label>
-                        <select class="form-control" required>
-                            <option>Control de Plagas</option>
-                            <option>Lavado de Tanques</option>
-                            <option>Certificaciones</option>
+                    <div class="form-group" id="clienteExistenteGroup">
+                        <label>Seleccionar Cliente *</label>
+                        <select name="dni_cliente" id="clienteSelect" class="form-control" required>
+                            <option value="">Cargando clientes...</option>
                         </select>
                     </div>
                 </div>
+
+                <div id="nuevoClienteFields" style="display: none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>DNI *</label>
+                            <input type="text" name="dni_nuevo" class="form-control" placeholder="123456789">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo DNI *</label>
+                            <select name="tipo_dni" class="form-control">
+                                <option value="CC">CC - Cédula</option>
+                                <option value="NIT">NIT - Empresa</option>
+                                <option value="CE">CE - Extranjería</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Nombre Completo *</label>
+                            <input type="text" name="nombre_nuevo" class="form-control" placeholder="Nombre del cliente">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="tel" name="telefono_nuevo" class="form-control" placeholder="3001234567">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo</label>
+                        <input type="email" name="correo_nuevo" class="form-control" placeholder="cliente@email.com">
+                    </div>
+                </div>
+
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" class="form-control" required>
+                        <label>Fecha Preferida *</label>
+                        <input type="date" name="fecha_preferida" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Monto</label>
-                        <input type="number" class="form-control" min="0" required>
+                        <label>Prioridad</label>
+                        <select name="prioridad" class="form-control">
+                            <option value="Media">Media</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Baja">Baja</option>
+                        </select>
                     </div>
                 </div>
+
                 <div class="form-group">
-                    <label>Observaciones</label>
-                    <textarea class="form-control" rows="2"></textarea>
+                    <label>Descripción del Problema *</label>
+                    <textarea name="descripcion" class="form-control" rows="3" required placeholder="Describa el servicio requerido..."></textarea>
                 </div>
+
+                <div class="form-group">
+                    <label>Notas Internas</label>
+                    <textarea name="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
+                </div>
+
                 <div class="form-grid-2" style="margin-top: 2rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addQuoteModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Cotización</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Cotización</button>
                 </div>
             </form>
         </div>
     </div>
+
     <script>
+        // === CONFIGURACIÓN ===
+        const API_BASE_URL = 'http://localhost:8080/api';
+        const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
+        const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
+
+        // === VARIABLES GLOBALES ===
+        let allCotizaciones = [];
+        let clientesData = [];
+        let currentEditId = null;
+        let isSubmitting = false; // Bandera para prevenir dobles envíos
+
+        // === FUNCIONES PRINCIPALES ===
+        function handleError(error) {
+            console.error('Error:', error);
+            alert('Error: ' + (error.message || 'Por favor, intente nuevamente.'));
+        }
+
+        function toggleClienteInput() {
+            const tipo = document.getElementById('clienteTipo').value;
+            const existenteGroup = document.getElementById('clienteExistenteGroup');
+            const nuevoFields = document.getElementById('nuevoClienteFields');
+            
+            if (tipo === 'nuevo') {
+                existenteGroup.style.display = 'none';
+                nuevoFields.style.display = 'block';
+                document.getElementById('clienteSelect').removeAttribute('required');
+            } else {
+                existenteGroup.style.display = 'block';
+                nuevoFields.style.display = 'none';
+                document.getElementById('clienteSelect').setAttribute('required', 'required');
+            }
+        }
+
+        async function loadClientes() {
+            try {
+                const response = await fetch(`${API_PERSONAS_URL}?rol=cliente`); // Filtrar solo clientes si el backend lo soporta
+                if (!response.ok) throw new Error('Error al cargar clientes');
+                
+                const personas = await response.json();
+                clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
+                
+                const select = document.getElementById('clienteSelect');
+                select.innerHTML = '<option value="">Seleccione un cliente</option>';
+                
+                clientesData.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.dni;
+                    option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error cargando clientes:', error);
+                document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+
+        function generateQuoteId() {
+            const year = new Date().getFullYear();
+            const timestamp = Date.now().toString().slice(-6);
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `COT-${year}-${timestamp}${random}`;
+        }
+
+        async function createPersona(personaData) {
+            try {
+                const response = await fetch(API_PERSONAS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(personaData)
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Error al crear cliente');
+                }
+                return personaData.dni;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        async function handleQuoteFormSubmit(event) {
+            event.preventDefault();
+
+            // --- GUARD PARA PREVENIR ENVÍOS DUPLICADOS ---
+            if (isSubmitting) {
+                console.log("DEBUG: handleQuoteFormSubmit llamado mientras ya se estaba procesando. Ignorando.");
+                return;
+            }
+
+            isSubmitting = true;
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Procesando...';
+
+            try {
+                const formData = new FormData(event.target);
+                const clienteTipo = document.getElementById('clienteTipo').value;
+                
+                let dniCliente;
+                
+                if (clienteTipo === 'nuevo') {
+                    const nuevoCliente = {
+                        dni: formData.get('dni_nuevo'),
+                        tipo_dni: formData.get('tipo_dni'), // Asegúrate que el backend espere tipo_dni
+                        nombre: formData.get('nombre_nuevo'),
+                        telefono: formData.get('telefono_nuevo') || null,
+                        correo: formData.get('correo_nuevo') || null,
+                        rol: 'Cliente',
+                        id_direccion: '5413', // Asumiendo un ID fijo o usar uno del backend
+                        id_cargo_especialidad: '9874' // Asumiendo un ID fijo o usar uno del backend
+                    };
+                    
+                    dniCliente = await createPersona(nuevoCliente);
+                    await loadClientes(); // Recargar lista de clientes para incluir al nuevo
+                } else {
+                    dniCliente = formData.get('dni_cliente');
+                }
+                
+                if (!dniCliente) {
+                    alert('Por favor seleccione un cliente');
+                    return;
+                }
+                
+                const cotizacionData = {
+                    dniCliente: dniCliente,
+                    dniEmpleado: null, // Se puede asignar después
+                    estado: currentEditId ? formData.get('estado') : 'Pendiente',
+                    fechaSolicitud: new Date().toISOString(), // Backend debería generar esta fecha
+                    fechaPreferida: formData.get('fecha_preferida'),
+                    fechaRespuesta: null,
+                    prioridad: formData.get('prioridad') || 'Media',
+                    descripcionProblema: formData.get('descripcion'),
+                    notasInternas: formData.get('notas') || null,
+                    costoTotalCotizacion: 0 // Se puede calcular o actualizar después
+                };
+
+                console.log("Datos de cotización a enviar:", cotizacionData);
+
+                let response;
+                let message;
+
+                if (currentEditId) {
+                    // Actualizar
+                    response = await fetch(`${API_COTIZACIONES_URL}/${currentEditId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(cotizacionData)
+                    });
+                    message = "Cotización actualizada exitosamente!";
+                } else {
+                    // Crear
+                    response = await fetch(API_COTIZACIONES_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(cotizacionData)
+                    });
+                    message = "Cotización creada exitosamente!";
+                }
+
+                const responseText = await response.text();
+
+                if (!response.ok) {
+                    let errorMessage = `Error HTTP ${response.status}`;
+                    try {
+                        const errorData = JSON.parse(responseText);
+                        errorMessage = errorData.error || errorData.message || responseText;
+                    } catch (e) {
+                        errorMessage = responseText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                console.log("Respuesta del servidor:", responseText);
+                alert(message);
+                closeModal('addQuoteModal');
+                await getAllCotizaciones(); // Recargar datos
+
+            } catch (error) {
+                console.error("Error al procesar la cotización:", error);
+                alert(`Error: ${error.message}`);
+            } finally {
+                // --- LIMPIAR EL ESTADO DE ENVÍO ---
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Cotización';
+            }
+        }
+
+        async function getAllCotizaciones() {
+            try {
+                const response = await fetch(API_COTIZACIONES_URL);
+                if (!response.ok) throw new Error('Error al obtener cotizaciones');
+                allCotizaciones = await response.json();
+                renderCotizaciones(allCotizaciones);
+                updateStats(allCotizaciones);
+            } catch (error) {
+                handleError(error);
+                document.getElementById('cotizacionesTableBody').innerHTML = 
+                    '<tr><td colspan="7" class="empty-state">Error al cargar. Verifique que el backend esté funcionando.</td></tr>';
+            }
+        }
+
+        function renderCotizaciones(cotizaciones) {
+            const tbody = document.getElementById('cotizacionesTableBody');
+            
+            if (cotizaciones.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay cotizaciones</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = '';
+            cotizaciones.forEach(cot => {
+                const row = document.createElement('tr');
+                const clienteNombre = cot.cliente?.nombre || cot.dniCliente || 'N/A';
+                
+                row.innerHTML = `
+                    <td>${cot.idCotizacion || 'N/A'}</td>
+                    <td>${clienteNombre}</td>
+                    <td>${formatDate(cot.fechaSolicitud)}</td>
+                    <td>${formatDate(cot.fechaPreferida)}</td>
+                    <td>${formatCurrency(cot.costoTotalCotizacion)}</td>
+                    <td><span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">${cot.estado || 'Pendiente'}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-sm btn-view" onclick="viewCotizacion('${cot.idCotizacion}')">Ver</button>
+                            <button class="btn-sm btn-edit" onclick="editCotizacion('${cot.idCotizacion}')">Editar</button>
+                            <button class="btn-sm btn-delete" onclick="deleteCotizacion('${cot.idCotizacion}')">Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateStats(cotizaciones) {
+            const pendientes = cotizaciones.filter(c => c.estado === 'Pendiente').length;
+            const aprobadas = cotizaciones.filter(c => c.estado === 'Aprobada').length;
+            const finalizadas = cotizaciones.filter(c => c.estado === 'Finalizada').length;
+            const rechazadas = cotizaciones.filter(c => c.estado === 'Rechazada').length;
+            
+            document.getElementById('statPendientes').textContent = pendientes;
+            document.getElementById('statAprobadas').textContent = aprobadas;
+            document.getElementById('statFinalizadas').textContent = finalizadas;
+            document.getElementById('statRechazadas').textContent = rechazadas;
+        }
+
+        async function viewCotizacion(id) {
+            try {
+                const response = await fetch(`${API_COTIZACIONES_URL}/${id}`);
+                if (!response.ok) throw new Error('Cotización no encontrada');
+                const cot = await response.json();
+                
+                const detalles = `
+COTIZACIÓN: ${cot.idCotizacion || 'N/A'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cliente: ${cot.cliente?.nombre || cot.dniCliente}
+DNI: ${cot.dniCliente}
+Estado: ${cot.estado || 'Pendiente'}
+Fecha Solicitud: ${formatDate(cot.fechaSolicitud)}
+Fecha Preferida: ${formatDate(cot.fechaPreferida)}
+Prioridad: ${cot.prioridad || 'N/A'}
+Costo Total: ${formatCurrency(cot.costoTotalCotizacion)}
+
+Descripción:
+${cot.descripcionProblema || 'Sin descripción'}
+
+Notas Internas:
+${cot.notasInternas || 'Sin notas'}
+                `;
+                alert(detalles);
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        async function editCotizacion(id) {
+            const cot = allCotizaciones.find(c => c.idCotizacion === id);
+            if (!cot) {
+                alert("Cotización no encontrada.");
+                return;
+            }
+            console.log("Editando cotización:", cot);
+
+            openAddQuoteModal();
+            document.getElementById('estadoSelect').style.display = 'block'; // Mostrar en edición
+            document.getElementById('estadoSelect').value = cot.estado; // Cargar estado actual
+            document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
+            document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
+
+            // Pre-seleccionar cliente existente
+            document.getElementById('clienteTipo').value = 'existente';
+            toggleClienteInput(); // Actualizar campos visibles
+            document.getElementById('clienteSelect').value = cot.dniCliente;
+
+            // Llenar campos
+            document.querySelector('input[name="fecha_preferida"]').value = cot.fechaPreferida.split('T')[0];
+            document.querySelector('select[name="prioridad"]').value = cot.prioridad || 'Media';
+            document.querySelector('textarea[name="descripcion"]').value = cot.descripcionProblema || '';
+            document.querySelector('textarea[name="notas"]').value = cot.notasInternas || '';
+
+            currentEditId = id; // Guardar ID para la actualización
+        }
+
+        async function deleteCotizacion(id) {
+            if (!confirm('¿Está seguro de eliminar esta cotización?')) return;
+            
+            try {
+                const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Error al eliminar');
+                alert('Cotización eliminada exitosamente');
+                await getAllCotizaciones(); // Recargar datos
+            } catch (error) {
+                handleError(error);
+            }
+        }
+
+        // === FUNCIONES DE AYUDA ===
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-CO', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function formatCurrency(amount) {
+            if (!amount && amount !== 0) return '$0';
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
+
         function openAddQuoteModal() {
+            document.getElementById('estadoSelect').style.display = 'none'; 
             document.getElementById('addQuoteModal').classList.add('show');
+            const form = document.getElementById('quoteForm');
+            form.reset();
+            document.getElementById('clienteTipo').value = 'existente';
+            toggleClienteInput();
+            document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
+            document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
+            currentEditId = null; // Limpiar ID de edición
         }
+
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            const form = document.getElementById('quoteForm');
+            form.reset();
+            document.getElementById('clienteTipo').value = 'existente';
+            toggleClienteInput();
+            document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
+            document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
+            currentEditId = null; // Limpiar ID de edición
         }
-        // Cerrar modal al hacer clic fuera
+
+        // === EVENTOS ===
+        document.getElementById('quoteForm').addEventListener('submit', handleQuoteFormSubmit);
+
+        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const searchText = formData.get('search').toLowerCase();
+            const estadoFilter = formData.get('estado');
+            const fechaDesde = formData.get('fecha_desde');
+            const fechaHasta = formData.get('fecha_hasta');
+            
+            let filtered = [...allCotizaciones];
+            
+            if (searchText) {
+                filtered = filtered.filter(c => 
+                    c.dniCliente?.toLowerCase().includes(searchText) ||
+                    c.cliente?.nombre?.toLowerCase().includes(searchText)
+                );
+            }
+            
+            if (estadoFilter) {
+                filtered = filtered.filter(c => c.estado === estadoFilter);
+            }
+            
+            if (fechaDesde) {
+                filtered = filtered.filter(c => {
+                    const fecha = new Date(c.fechaSolicitud);
+                    return fecha >= new Date(fechaDesde);
+                });
+            }
+            
+            if (fechaHasta) {
+                filtered = filtered.filter(c => {
+                    const fecha = new Date(c.fechaSolicitud);
+                    return fecha <= new Date(fechaHasta);
+                });
+            }
+            
+            renderCotizaciones(filtered);
+            updateStats(filtered);
+        });
+
         window.onclick = function(event) {
             const modal = document.getElementById('addQuoteModal');
             if (event.target === modal) {
-                modal.classList.remove('show');
+                closeModal('addQuoteModal');
             }
         }
+
+        function exportarCotizaciones() {
+            if (allCotizaciones.length === 0) {
+                alert('No hay cotizaciones para exportar');
+                return;
+            }
+
+            let csv = 'ID,Cliente,DNI_Cliente,Estado,Fecha_Solicitud,Fecha_Preferida,Prioridad,Costo_Total,Descripcion\n';
+            
+            allCotizaciones.forEach(c => {
+                csv += `"${c.idCotizacion || ''}",`;
+                csv += `"${c.cliente?.nombre || ''}",`;
+                csv += `"${c.dniCliente || ''}",`;
+                csv += `"${c.estado || 'Pendiente'}",`;
+                csv += `"${c.fechaSolicitud || ''}",`;
+                csv += `"${c.fechaPreferida || ''}",`;
+                csv += `"${c.prioridad || ''}",`;
+                csv += `"${c.costoTotalCotizacion || 0}",`;
+                csv += `"${(c.descripcionProblema || '').replace(/"/g, '""')}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            
+            link.setAttribute('href', url);
+            link.setAttribute('download', `cotizaciones_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // === INICIALIZACIÓN ===
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Cargando cotizaciones...');
+            getAllCotizaciones();
+            loadClientes();
+            
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toISOString().split('T')[0];
+            document.querySelector('input[name="fecha_preferida"]').value = tomorrowStr;
+        });
     </script>
 </body>
 </html>
-<!-- ...end of file...

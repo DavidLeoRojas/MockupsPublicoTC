@@ -15,7 +15,6 @@
             background: #f5f7fa;
             color: #2d3748;
         }
-        /* Sidebar - Same as previous modules */
         .sidebar {
             position: fixed;
             left: 0;
@@ -102,13 +101,11 @@
             background: rgba(255,107,107,0.3);
             transform: translateY(-2px);
         }
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
         }
-        /* Top Navigation Menu */
         .top-nav {
             background: white;
             padding: 1rem 2rem;
@@ -130,6 +127,7 @@
             border-radius: 12px;
             transition: all 0.3s ease;
             font-weight: 600;
+            cursor: pointer;
         }
         .nav-tab:hover, .nav-tab.active {
             background: linear-gradient(135deg, #4a8b64, #2c5f41);
@@ -141,7 +139,6 @@
             gap: 1rem;
             align-items: center;
         }
-        /* Header */
         .header {
             background: white;
             padding: 2rem;
@@ -186,13 +183,11 @@
             color: #2d3748;
             border: 1px solid #e2e8f0;
         }
-        /* Calendar Layout */
         .calendar-layout {
             display: grid;
             grid-template-columns: 1fr 350px;
             gap: 2rem;
         }
-        /* Calendar Section */
         .calendar-section {
             background: white;
             border-radius: 20px;
@@ -238,7 +233,6 @@
             min-width: 150px;
             text-align: center;
         }
-        /* Calendar Grid */
         .calendar-container {
             padding: 2rem;
         }
@@ -299,13 +293,11 @@
         .event-item.lavado-tanques { --event-color: #4299e1; }
         .event-item.inspeccion { --event-color: #f6ad55; }
         .event-item.seguimiento { --event-color: #9f7aea; }
-        /* Sidebar Calendar */
         .sidebar-calendar {
             display: flex;
             flex-direction: column;
             gap: 2rem;
         }
-        /* Today's Schedule */
         .today-schedule {
             background: white;
             border-radius: 20px;
@@ -361,7 +353,6 @@
             color: #4a8b64;
             font-size: 0.8em;
         }
-        /* Quick Add */
         .quick-add {
             background: white;
             border-radius: 20px;
@@ -389,7 +380,6 @@
             outline: none;
             border-color: #4a8b64;
         }
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -437,7 +427,6 @@
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
-        /* Responsive */
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -461,7 +450,6 @@
     </style>
 </head>
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -510,7 +498,7 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="coordinacion-servicios.html" class="nav-link">
+                <a href="servicios.html" class="nav-link">
                     <span class="nav-icon">🔧</span>
                     <span>Servicios</span>
                 </a>
@@ -523,42 +511,35 @@
             </a>
         </div>
     </div>
-    <!-- Main Content -->
+
     <div class="main-content">
-        <!-- Top Navigation -->
         <div class="top-nav">
             <div class="nav-tabs">
-                <a href="#" class="nav-tab active" onclick="showView('calendar')">📅 Calendario</a>
-                <a href="#" class="nav-tab" onclick="showView('list')">📋 Lista</a>
-                <a href="#" class="nav-tab" onclick="showView('timeline')">⏰ Cronograma</a>
-                <a href="#" class="nav-tab" onclick="showView('map')">🗺️ Mapa</a>
+                <a class="nav-tab active" onclick="showView('calendar')">📅 Calendario</a>
+                <a class="nav-tab" onclick="showView('list')">📋 Lista</a>
+                <a class="nav-tab" onclick="showView('timeline')">⏰ Cronograma</a>
+                <a class="nav-tab" onclick="showView('map')">🗺️ Mapa</a>
             </div>
             <div class="nav-actions">
                 <select class="form-control" style="width: auto;" id="filterTecnico">
                     <option value="">Todos los técnicos</option>
-                    <!-- Opciones se llenan dinámicamente -->
                 </select>
                 <button class="btn btn-secondary">📊 Reportes</button>
             </div>
         </div>
-        <!-- Header -->
+
         <div class="header">
             <div class="header-title">
                 <h1>Agenda de Servicios</h1>
                 <p>Programación y seguimiento de actividades</p>
             </div>
             <div style="display: flex; gap: 1rem;">
-                <button class="btn btn-secondary" onclick="exportSchedule()">
-                    📤 Exportar
-                </button>
-                <button class="btn btn-primary" onclick="openAddServiceModal()">
-                    ➕ Programar Servicio
-                </button>
+                <button class="btn btn-secondary" onclick="exportSchedule()">📤 Exportar</button>
+                <button class="btn btn-primary" onclick="openAddServiceModal()">➕ Programar Servicio</button>
             </div>
         </div>
-        <!-- Calendar Layout -->
+
         <div class="calendar-layout">
-            <!-- Main Calendar -->
             <div class="calendar-section">
                 <div class="calendar-header">
                     <h2 class="calendar-title">Enero 2025</h2>
@@ -570,7 +551,6 @@
                 </div>
                 <div class="calendar-container">
                     <div class="calendar-grid" id="calendarGrid">
-                        <!-- Headers -->
                         <div class="calendar-day-header">Dom</div>
                         <div class="calendar-day-header">Lun</div>
                         <div class="calendar-day-header">Mar</div>
@@ -578,55 +558,48 @@
                         <div class="calendar-day-header">Jue</div>
                         <div class="calendar-day-header">Vie</div>
                         <div class="calendar-day-header">Sáb</div>
-                        <!-- Days -->
-                        <!-- Los días se llenarán dinámicamente -->
                     </div>
                 </div>
             </div>
-            <!-- Sidebar -->
+
             <div class="sidebar-calendar">
-                <!-- Today's Schedule -->
                 <div class="today-schedule">
                     <div class="schedule-header">
                         <h3 class="schedule-title">Agenda de Hoy</h3>
-                        <div class="schedule-date" id="todayDate">30 Enero 2025</div>
+                        <div class="schedule-date" id="todayDate">30 Septiembre 2025</div>
                     </div>
                     <div id="todaySchedule">
-                        <!-- La agenda de hoy se llenará dinámicamente -->
                     </div>
                 </div>
-                <!-- Quick Add Service -->
+
                 <div class="quick-add">
                     <h3 style="color: #2c5f41; margin-bottom: 1.5rem;">Programar Rápido</h3>
                     <div class="form-group">
-                        <label>Cliente</label>
-                        <select class="form-control" id="quickCliente">
+                        <label>Cliente *</label>
+                        <select class="form-control" id="quickCliente" required>
                             <option value="">Seleccionar cliente</option>
-                            <!-- Opciones se llenan dinámicamente -->
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Tipo de Servicio</label>
+                        <label>Tipo de Servicio *</label>
                         <select class="form-control" id="quickTipoServicio" required>
                             <option value="">Seleccionar tipo</option>
-                            <!-- Opciones se llenan dinámicamente -->
                         </select>
                     </div>
                     <div class="form-grid-2">
                         <div class="form-group">
-                            <label>Fecha</label>
+                            <label>Fecha *</label>
                             <input type="date" class="form-control" id="quickFecha" required>
                         </div>
                         <div class="form-group">
-                            <label>Hora de Inicio</label>
+                            <label>Hora *</label>
                             <input type="time" class="form-control" id="quickHora" required>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Técnico Asignado</label>
+                        <label>Técnico *</label>
                         <select class="form-control" id="quickTecnico" required>
                             <option value="">Seleccionar técnico</option>
-                            <!-- Opciones se llenan dinámicamente -->
                         </select>
                     </div>
                     <div class="form-group">
@@ -641,15 +614,12 @@
                             <option>Urgente</option>
                         </select>
                     </div>
-                    <div class="form-grid-2" style="margin-top: 2rem;">
-                        <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">Cancelar</button>
-                        <button type="button" class="btn btn-primary" onclick="quickAddService()">Programar Servicio</button>
-                    </div>
+                    <button type="button" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="quickAddService()">Programar</button>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Add Service Modal -->
+
     <div class="modal" id="addServiceModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -661,14 +631,12 @@
                     <label>Cotización Origen (Opcional)</label>
                     <select class="form-control" id="cotizacionId">
                         <option value="">Seleccionar cotización</option>
-                        <!-- Opciones se llenan dinámicamente -->
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Cliente *</label>
                     <select class="form-control" id="clienteId" required>
                         <option value="">Seleccionar cliente</option>
-                        <!-- Opciones se llenan dinámicamente -->
                     </select>
                 </div>
                 <div class="form-grid-2">
@@ -676,14 +644,12 @@
                         <label>Tipo de Servicio *</label>
                         <select class="form-control" id="tipoServicioId" required>
                             <option value="">Seleccionar tipo</option>
-                            <!-- Opciones se llenan dinámicamente -->
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Técnico Asignado *</label>
+                        <label>Técnico *</label>
                         <select class="form-control" id="tecnicoId" required>
                             <option value="">Seleccionar técnico</option>
-                            <!-- Opciones se llenan dinámicamente -->
                         </select>
                     </div>
                 </div>
@@ -693,7 +659,7 @@
                         <input type="date" class="form-control" id="fecha" required>
                     </div>
                     <div class="form-group">
-                        <label>Hora de Inicio *</label>
+                        <label>Hora *</label>
                         <input type="time" class="form-control" id="hora" required>
                     </div>
                 </div>
@@ -731,18 +697,24 @@
             </form>
         </div>
     </div>
-    <script>
-        // URL base de la API
-        const API_BASE_URL = 'http://localhost:8080/api';
 
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let servicios = [];
-        let personas = []; // Clientes y Empleados
+        let personas = [];
         let tiposServicio = [];
         let cotizaciones = [];
 
-        // Cargar datos iniciales
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                const r = Math.random() * 16 | 0;
+                const v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
         async function loadAgendaData() {
             console.log("Iniciando carga de datos de la agenda...");
             try {
@@ -757,7 +729,7 @@
                 tiposServicio = tiposServRes;
                 cotizaciones = cotizacionesRes;
 
-                console.log("Datos cargados - Servicios:", servicios.length, "Personas:", personas.length, "Tipos:", tiposServicio.length, "Cotizaciones:", cotizaciones.length);
+                console.log("Datos cargados:", { servicios: servicios.length, personas: personas.length, tipos: tiposServicio.length });
 
                 populateClienteSelect(personas);
                 populateTecnicoSelect(personas);
@@ -769,7 +741,7 @@
                 populateQuickTecnico(personas);
 
                 renderCalendar(currentMonth, currentYear);
-                renderTodaySchedule(new Date()); // Muestra agenda de hoy
+                renderTodaySchedule(new Date());
 
             } catch (error) {
                 console.error('Error al cargar datos de agenda:', error);
@@ -881,22 +853,17 @@
             }
 
             const calendarGrid = document.getElementById('calendarGrid');
-            if (!calendarGrid) {
-                console.error("No se encontró el contenedor .calendar-grid");
-                return;
-            }
+            if (!calendarGrid) return;
 
-            // Limpiar días actuales (menos los encabezados)
             const headers = calendarGrid.querySelectorAll('.calendar-day-header');
             calendarGrid.innerHTML = '';
-            headers.forEach(header => calendarGrid.appendChild(header)); // Reinsertar encabezados
+            headers.forEach(header => calendarGrid.appendChild(header));
 
             const firstDay = new Date(year, month, 1);
             const lastDay = new Date(year, month + 1, 0);
-            const startDay = firstDay.getDay(); // 0 = Domingo
+            const startDay = firstDay.getDay();
             const totalDays = lastDay.getDate();
 
-            // Días del mes anterior
             const prevLastDay = new Date(year, month, 0).getDate();
             for (let i = startDay - 1; i >= 0; i--) {
                 const dayElement = document.createElement('div');
@@ -905,7 +872,6 @@
                 calendarGrid.appendChild(dayElement);
             }
 
-            // Días del mes actual
             const today = new Date();
             for (let day = 1; day <= totalDays; day++) {
                 const date = new Date(year, month, day);
@@ -916,29 +882,25 @@
                 }
                 dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
-                // Filtrar servicios para este día
                 const serviciosDelDia = servicios.filter(s => {
                     const fechaServicio = new Date(s.fecha);
                     return fechaServicio.getDate() === day && fechaServicio.getMonth() === month && fechaServicio.getFullYear() === year;
                 });
 
-                // Agregar eventos al día
                 const eventsContainer = dayElement.querySelector('.day-events');
                 serviciosDelDia.forEach(serv => {
                     const eventElement = document.createElement('div');
                     eventElement.className = `event-item ${getEventTypeClass(serv.tipoServicio)}`;
-                    eventElement.textContent = serv.descripcion || 'Servicio sin descripción';
+                    const textoEvento = serv.tipoServicio ? serv.tipoServicio.nombreServicio : (serv.observaciones || 'Servicio');
+                    eventElement.textContent = textoEvento;
                     eventsContainer.appendChild(eventElement);
                 });
 
-                // Añadir listener para crear evento en el día
                 dayElement.addEventListener('click', () => openAddServiceModal(date));
-
                 calendarGrid.appendChild(dayElement);
             }
 
-            // Días del siguiente mes
-            const totalCells = 42; // 6 filas x 7 días
+            const totalCells = 42;
             const remaining = totalCells - (startDay + totalDays);
             for (let day = 1; day <= remaining; day++) {
                 const dayElement = document.createElement('div');
@@ -948,7 +910,6 @@
             }
         }
 
-        // Obtener clase CSS para tipo de evento (servicio)
         function getEventTypeClass(tipoServicio) {
             if (tipoServicio && tipoServicio.nombreServicio) {
                 const nombre = tipoServicio.nombreServicio.toLowerCase();
@@ -957,20 +918,15 @@
                 if (nombre.includes('inspeccion')) return 'inspeccion';
                 if (nombre.includes('seguimiento')) return 'seguimiento';
             }
-            return 'control-plagas'; // Valor por defecto
+            return 'control-plagas';
         }
 
-        // Renderizar agenda de hoy
         function renderTodaySchedule(date) {
             const scheduleContainer = document.getElementById('todaySchedule');
-            if (!scheduleContainer) {
-                console.error("No se encontró el contenedor #todaySchedule");
-                return;
-            }
-            // Limpiar agenda actual
+            if (!scheduleContainer) return;
             scheduleContainer.innerHTML = '';
 
-            const todayStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+            const todayStr = date.toISOString().split('T')[0];
             const serviciosHoy = servicios.filter(s => s.fecha === todayStr);
 
             const scheduleDateElement = document.getElementById('todayDate');
@@ -986,11 +942,22 @@
             serviciosHoy.forEach(serv => {
                 const scheduleItem = document.createElement('div');
                 scheduleItem.className = 'schedule-item';
+                
+                let nombreCliente = 'N/A';
+                if (serv.cotizacion && serv.cotizacion.cliente) {
+                    nombreCliente = serv.cotizacion.cliente.nombre;
+                } else if (serv.dniCliente) {
+                    const cliente = personas.find(p => p.dni === serv.dniCliente);
+                    nombreCliente = cliente ? cliente.nombre : 'N/A';
+                }
+                
+                const nombreServicio = serv.tipoServicio ? serv.tipoServicio.nombreServicio : 'Servicio';
+                
                 scheduleItem.innerHTML = `
                     <div class="schedule-time">${serv.hora || 'N/A'}</div>
                     <div class="schedule-details">
-                        <div class="schedule-service">${serv.descripcion || 'Servicio sin descripción'}</div>
-                        <div class="schedule-client">Cliente: ${serv.cotizacion && serv.cotizacion.cliente ? serv.cotizacion.cliente.nombre : 'N/A'}</div>
+                        <div class="schedule-service">${nombreServicio}</div>
+                        <div class="schedule-client">Cliente: ${nombreCliente}</div>
                         <div class="schedule-technician">Técnico: ${serv.empleadoAsignado ? serv.empleadoAsignado.nombre : 'No asignado'}</div>
                     </div>
                 `;
@@ -998,7 +965,6 @@
             });
         }
 
-        // Navegación de mes
         function previousMonth() {
             currentMonth--;
             if (currentMonth < 0) {
@@ -1006,7 +972,6 @@
                 currentYear--;
             }
             renderCalendar(currentMonth, currentYear);
-            renderTodaySchedule(new Date(currentYear, currentMonth, 1)); // Actualiza vista de hoy si es necesario
         }
 
         function nextMonth() {
@@ -1016,52 +981,62 @@
                 currentYear++;
             }
             renderCalendar(currentMonth, currentYear);
-            renderTodaySchedule(new Date(currentYear, currentMonth, 1)); // Actualiza vista de hoy si es necesario
         }
 
         function showView(view) {
-            // Remove active class from all tabs
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
-            // Add active class to clicked tab
             event.target.classList.add('active');
-            // Aquí iría la lógica para mostrar diferentes vistas (calendario, lista, etc.)
-            console.log('Showing view:', view);
+            console.log('Mostrando vista:', view);
         }
 
-        // Abrir modal para agregar servicio en una fecha específica
         function openAddServiceModal(date) {
             document.getElementById('addServiceModal').classList.add('show');
-            // Puedes pre-llenar la fecha en el formulario si lo deseas
-            const dateInput = document.querySelector('#addServiceModal input[type="date"]');
+            const dateInput = document.getElementById('fecha');
             if (dateInput && date) {
-                dateInput.valueAsDate = date;
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}`;
             }
         }
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('show');
-            // Limpiar formulario al cerrar
             const form = document.getElementById(modalId).querySelector('form');
             if (form) form.reset();
         }
 
-        // Función para crear un nuevo servicio
         async function addService(event) {
             event.preventDefault();
+            
+            const clienteId = document.getElementById('clienteId').value;
+            const tecnicoId = document.getElementById('tecnicoId').value;
+            const tipoServicioId = document.getElementById('tipoServicioId').value;
+            const fecha = document.getElementById('fecha').value;
+            const hora = document.getElementById('hora').value;
+
+            if (!clienteId || !tecnicoId || !tipoServicioId || !fecha || !hora) {
+                alert('Por favor complete todos los campos obligatorios marcados con *');
+                return;
+            }
+
             const formData = {
+                id_servicio: generateUUID(),
                 id_cotizacion: document.getElementById('cotizacionId').value || null,
-                dni_cliente: document.getElementById('clienteId').value,
-                dni_empleado_asignado: document.getElementById('tecnicoId').value,
-                id_tipo_servicio: document.getElementById('tipoServicioId').value,
-                fecha: document.getElementById('fecha').value,
-                hora: document.getElementById('hora').value,
-                duracionEstimada: document.getElementById('duracionEstimada').value,
-                observaciones: document.getElementById('observaciones').value,
+                dni_cliente: clienteId,
+                dni_empleado_asignado: tecnicoId,
+                id_tipo_servicio: tipoServicioId,
+                fecha: fecha,
+                hora: hora,
+                duracion_estimada: document.getElementById('duracionEstimada').value || null,
+                observaciones: document.getElementById('observaciones').value || null,
                 prioridad: document.getElementById('prioridad').value,
                 estado: document.getElementById('estado').value
             };
+
+            console.log('Enviando datos del servicio:', formData);
 
             try {
                 const response = await fetch(`${API_BASE_URL}/servicios`, {
@@ -1073,27 +1048,30 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Error al crear servicio: ${response.statusText}`);
+                    const errorData = await response.text();
+                    throw new Error(`Error al crear servicio: ${response.statusText} - ${errorData}`);
                 }
 
-                await loadAgendaData(); // Recargar datos
+                await loadAgendaData();
                 closeModal('addServiceModal');
-                alert('✅ Servicio creado exitosamente.');
+                alert('Servicio creado exitosamente.');
 
             } catch (error) {
                 console.error('Error al crear servicio:', error);
-                alert('❌ Error al crear servicio: ' + error.message);
+                alert('Error al crear servicio: ' + error.message);
             }
         }
 
-        // Función para crear un nuevo servicio rápidamente
         async function quickAddService() {
             const formData = {
+                id_servicio: generateUUID(),
                 dni_cliente: document.getElementById('quickCliente').value,
                 dni_empleado_asignado: document.getElementById('quickTecnico').value,
                 id_tipo_servicio: document.getElementById('quickTipoServicio').value,
                 fecha: document.getElementById('quickFecha').value,
                 hora: document.getElementById('quickHora').value,
+                observaciones: document.getElementById('quickObservaciones').value || null,
+                prioridad: document.getElementById('quickPrioridad').value,
                 estado: 'Programado'
             };
 
@@ -1112,39 +1090,37 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Error al crear servicio rápido: ${response.statusText}`);
+                    const errorData = await response.text();
+                    throw new Error(`Error al crear servicio: ${response.statusText} - ${errorData}`);
                 }
 
-                await loadAgendaData(); // Recargar datos
-                alert('✅ Servicio creado exitosamente.');
+                await loadAgendaData();
+                alert('Servicio creado exitosamente.');
                 document.getElementById('quickCliente').value = '';
                 document.getElementById('quickTecnico').value = '';
                 document.getElementById('quickTipoServicio').value = '';
                 document.getElementById('quickFecha').value = '';
                 document.getElementById('quickHora').value = '';
+                document.getElementById('quickObservaciones').value = '';
 
             } catch (error) {
                 console.error('Error al crear servicio rápido:', error);
-                alert('❌ Error al crear servicio: ' + error.message);
+                alert('Error al crear servicio: ' + error.message);
             }
         }
 
         function exportSchedule() {
             alert('Exportando agenda...');
-            // Implementar lógica de exportación
         }
 
-        // Cerrar modales al hacer clic fuera
         window.onclick = function(event) {
             document.querySelectorAll('.modal').forEach(modal => {
                 if (event.target === modal) modal.classList.remove('show');
             });
         }
 
-        // Event listener para el formulario de servicios
         document.getElementById('serviceForm').addEventListener('submit', addService);
 
-        // Inicialización
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Agenda cargada. Iniciando carga de datos...');
             loadAgendaData();

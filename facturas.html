@@ -245,7 +245,8 @@
         .status-badge.pagada { background: #c6f6d5; color: #22543d; }
         .status-badge.pendiente { background: #fed7d7; color: #c53030; }
         .status-badge.vencida { background: #e2e8f0; color: #4a5568; }
-        .action-buttons { display: flex; gap: 0.5rem; }
+        .status-badge.anulada { background: #e53e3e; color: white; }
+        .action-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
         .btn-sm {
             padding: 0.5rem 1rem;
             font-size: 0.8em;
@@ -305,6 +306,8 @@
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
+        .loading { text-align: center; padding: 2rem; color: #718096; }
+        .empty-state { text-align: center; padding: 3rem; color: #718096; }
         @media (max-width: 768px) {
             .sidebar { transform: translateX(-100%); }
             .main-content { margin-left: 0; padding: 1rem; }
@@ -314,6 +317,7 @@
             .table-container { font-size: 0.9em; }
             .top-nav { flex-direction: column; gap: 1rem; }
             .nav-tabs { justify-content: center; flex-wrap: wrap; }
+            .form-grid-2 { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -367,7 +371,7 @@
                 </a>
             </div>
             <div class="nav-item">
-                <a href="coordinacion-servicios.html" class="nav-link">
+                <a href="servicios.html" class="nav-link">
                     <span class="nav-icon">🔧</span>
                     <span>Servicios</span>
                 </a>
@@ -390,7 +394,7 @@
                 <a href="#" class="nav-tab">📋 Servicios</a>
             </div>
             <div>
-                <button class="btn btn-secondary">📤 Exportar</button>
+                <button class="btn btn-secondary" onclick="exportarFacturas()">📤 Exportar</button>
                 <button class="btn btn-primary" onclick="openAddInvoiceModal()">➕ Nueva Factura</button>
             </div>
         </div>
@@ -407,61 +411,56 @@
                 <div class="stat-header">
                     <div class="stat-icon primary">📄</div>
                 </div>
-                <div class="stat-number">32</div>
-                <div class="stat-label">Facturas Pendientes</div>
+                <div class="stat-number" id="statPendientes">0</div>
+                <div class="stat-label">Pendientes</div>
             </div>
             <div class="stat-card warning">
                 <div class="stat-header">
                     <div class="stat-icon warning">⏰</div>
                 </div>
-                <div class="stat-number">7</div>
+                <div class="stat-number" id="statVencidas">0</div>
                 <div class="stat-label">Vencidas</div>
             </div>
             <div class="stat-card success">
                 <div class="stat-header">
                     <div class="stat-icon success">✔️</div>
                 </div>
-                <div class="stat-number">85</div>
+                <div class="stat-number" id="statPagadas">0</div>
                 <div class="stat-label">Pagadas</div>
             </div>
             <div class="stat-card danger">
                 <div class="stat-header">
                     <div class="stat-icon danger">❌</div>
                 </div>
-                <div class="stat-number">2</div>
+                <div class="stat-number" id="statAnuladas">0</div>
                 <div class="stat-label">Anuladas</div>
             </div>
         </div>
         <!-- Filtros -->
         <div class="filters-section">
-            <form>
+            <form id="filterForm">
                 <div class="filters-grid">
                     <div class="form-group">
                         <label>Buscar cliente</label>
-                        <input type="text" class="form-control" placeholder="Nombre, empresa o NIT">
+                        <input type="text" name="search" class="form-control" placeholder="Nombre, empresa o NIT">
                     </div>
                     <div class="form-group">
                         <label>Estado</label>
-                        <select class="form-control">
-                            <option>Todos</option>
-                            <option>Pendiente</option>
-                            <option>Pagada</option>
-                            <option>Vencida</option>
-                            <option>Anulada</option>
+                        <select name="estado" class="form-control">
+                            <option value="">Todos</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Pagada">Pagada</option>
+                            <option value="Vencida">Vencida</option>
+                            <option value="Anulada">Anulada</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Servicio</label>
-                        <select class="form-control">
-                            <option>Todos</option>
-                            <option>Control de Plagas</option>
-                            <option>Lavado de Tanques</option>
-                            <option>Certificaciones</option>
-                        </select>
+                        <label>Desde</label>
+                        <input type="date" name="fecha_desde" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" class="form-control">
+                        <label>Hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control">
                     </div>
                     <button class="btn btn-primary" type="submit">🔍 Filtrar</button>
                 </div>
@@ -472,7 +471,7 @@
             <div class="invoices-header">
                 <span class="invoices-title">Listado de Facturas</span>
                 <span>
-                    <button class="btn btn-secondary">⬇️ Descargar</button>
+                    <button class="btn btn-secondary" onclick="exportarFacturas()">⬇️ Descargar CSV</button>
                 </span>
             </div>
             <div class="table-container">
@@ -488,72 +487,10 @@
                             <th>Acciones</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="invoicesTableBody">
                         <tr>
-                            <td>F-2025-001</td>
-                            <td>Hotel Plaza Real</td>
-                            <td>Control de Plagas</td>
-                            <td>2025-01-15</td>
-                            <td>$850,000</td>
-                            <td><span class="status-badge pendiente">Pendiente</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
+                            <td colspan="7" class="loading">Cargando facturas...</td>
                         </tr>
-                        <tr>
-                            <td>F-2025-002</td>
-                            <td>Restaurante El Buen Sabor</td>
-                            <td>Lavado de Tanques</td>
-                            <td>2025-01-18</td>
-                            <td>$450,000</td>
-                            <td><span class="status-badge pagada">Pagada</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>F-2025-003</td>
-                            <td>Colegio San Patricio</td>
-                            <td>Certificaciones</td>
-                            <td>2025-01-20</td>
-                            <td>$320,000</td>
-                            <td><span class="status-badge vencida">Vencida</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>F-2025-004</td>
-                            <td>Panadería Central</td>
-                            <td>Control de Plagas</td>
-                            <td>2025-01-22</td>
-                            <td>$520,000</td>
-                            <td><span class="status-badge pagada">Pagada</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-sm btn-view">👁️ Ver</button>
-                                    <button class="btn-sm btn-edit">✏️ Editar</button>
-                                    <button class="btn-sm btn-send">📤 Enviar</button>
-                                    <button class="btn-sm btn-delete">🗑️ Eliminar</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <!-- Más facturas aquí -->
                     </tbody>
                 </table>
             </div>
@@ -563,66 +500,370 @@
     <div class="modal" id="addInvoiceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">Nueva Factura</h2>
+                <h2 class="modal-title" id="invoiceModalTitle">Nueva Factura</h2>
                 <button class="close-btn" onclick="closeModal('addInvoiceModal')">&times;</button>
             </div>
-            <form>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Cliente</label>
-                        <input type="text" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Servicio</label>
-                        <select class="form-control" required>
-                            <option>Control de Plagas</option>
-                            <option>Lavado de Tanques</option>
-                            <option>Certificaciones</option>
-                        </select>
-                    </div>
+            <form id="invoiceForm">
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <select name="dni_cliente" id="clienteSelect" class="form-control" required>
+                        <option value="">Cargando clientes...</option>
+                        <!-- Opciones se llenan dinámicamente -->
+                    </select>
                 </div>
                 <div class="form-grid-2">
                     <div class="form-group">
-                        <label>Fecha</label>
-                        <input type="date" class="form-control" required>
+                        <label>Fecha *</label>
+                        <input type="date" name="fecha_emision" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label>Monto</label>
-                        <input type="number" class="form-control" min="0" required>
+                        <label>Monto *</label>
+                        <input type="number" name="monto_total" class="form-control" min="0" step="0.01" placeholder="0.00" required>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Estado</label>
-                    <select class="form-control" required>
-                        <option>Pendiente</option>
-                        <option>Pagada</option>
-                        <option>Vencida</option>
-                        <option>Anulada</option>
+                    <label>Estado *</label>
+                    <select name="estado" class="form-control" required>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Pagada">Pagada</option>
+                        <option value="Vencida">Vencida</option>
+                        <option value="Anulada">Anulada</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label>Observaciones</label>
-                    <textarea class="form-control" rows="2"></textarea>
+                    <textarea name="observaciones" class="form-control" rows="2" placeholder="Notas..."></textarea>
                 </div>
                 <div class="form-grid-2" style="margin-top: 2rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addInvoiceModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Guardar Factura</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Factura</button>
                 </div>
             </form>
         </div>
     </div>
     <script>
+        // === CONFIGURACIÓN ===
+        const API_BASE_URL = 'http://localhost:8080/api';
+        const API_FACTURAS_URL = `${API_BASE_URL}/facturas`;
+        const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
+        // === VARIABLES GLOBALES ===
+        let allFacturas = [];
+        let clientesData = [];
+        let currentEditId = null;
+        let isSubmitting = false; // Bandera para prevenir dobles envíos
+        // === FUNCIONES PRINCIPALES ===
+        function handleError(error) {
+            console.error('Error:', error);
+            alert('Error: ' + (error.message || 'Por favor, intente nuevamente.'));
+        }
+        async function loadClientes() {
+            try {
+                const response = await fetch(`${API_PERSONAS_URL}?rol=cliente`); // Filtrar solo clientes si el backend lo soporta
+                if (!response.ok) throw new Error('Error al cargar clientes');
+                const personas = await response.json();
+                clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
+                const select = document.getElementById('clienteSelect');
+                select.innerHTML = '<option value="">Seleccione un cliente</option>';
+                clientesData.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.dni;
+                    option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error cargando clientes:', error);
+                document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+        async function handleInvoiceFormSubmit(event) {
+            event.preventDefault();
+            // --- GUARD PARA PREVENIR ENVÍOS DUPLICADOS ---
+            if (isSubmitting) {
+                console.log("DEBUG: handleInvoiceFormSubmit llamado mientras ya se estaba procesando. Ignorando.");
+                return;
+            }
+            isSubmitting = true;
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ Procesando...';
+            try {
+                const formData = new FormData(event.target);
+                const facturaData = {
+                    dniCliente: formData.get('dni_cliente'),
+                    fechaEmision: formData.get('fecha_emision'),
+                    montoTotal: parseFloat(formData.get('monto_total')),
+                    estado: formData.get('estado'),
+                    observaciones: formData.get('observaciones') || null
+                };
+                console.log("Datos de factura a enviar:", facturaData);
+                let response;
+                let message;
+                if (currentEditId) {
+                    // Actualizar
+                    response = await fetch(`${API_FACTURAS_URL}/${currentEditId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(facturaData)
+                    });
+                    message = "Factura actualizada exitosamente!";
+                } else {
+                    // Crear
+                    response = await fetch(API_FACTURAS_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(facturaData)
+                    });
+                    message = "Factura creada exitosamente!";
+                }
+                const responseText = await response.text();
+                if (!response.ok) {
+                    let errorMessage = `Error HTTP ${response.status}`;
+                    try {
+                        const errorData = JSON.parse(responseText);
+                        errorMessage = errorData.error || errorData.message || responseText;
+                    } catch (e) {
+                        errorMessage = responseText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+                console.log("Respuesta del servidor:", responseText);
+                alert(message);
+                closeModal('addInvoiceModal');
+                await getAllFacturas(); // Recargar datos
+            } catch (error) {
+                console.error("Error al procesar la factura:", error);
+                alert(`Error: ${error.message}`);
+            } finally {
+                // --- LIMPIAR EL ESTADO DE ENVÍO ---
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Factura';
+            }
+        }
+        async function getAllFacturas() {
+            try {
+                const response = await fetch(API_FACTURAS_URL);
+                if (!response.ok) throw new Error('Error al obtener facturas');
+                allFacturas = await response.json();
+                renderFacturas(allFacturas);
+                updateStats(allFacturas);
+            } catch (error) {
+                handleError(error);
+                document.getElementById('invoicesTableBody').innerHTML = 
+                    '<tr><td colspan="7" class="empty-state">Error al cargar. Verifique que el backend esté funcionando.</td></tr>';
+            }
+        }
+        function renderFacturas(facturas) {
+            const tbody = document.getElementById('invoicesTableBody');
+            if (facturas.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay facturas</td></tr>';
+                return;
+            }
+            tbody.innerHTML = '';
+            facturas.forEach(fact => {
+                const row = document.createElement('tr');
+                const cliente = clientesData.find(c => c.dni === fact.dniCliente) || { nombre: fact.dniCliente };
+                row.innerHTML = `
+                    <td>${fact.idFactura || 'N/A'}</td>
+                    <td>${cliente.nombre || 'N/A'}</td>
+                    <td>${fact.observaciones || 'Sin descripción'}</td>
+                    <td>${formatDate(fact.fechaEmision)}</td>
+                    <td>${formatCurrency(fact.montoTotal)}</td>
+                    <td><span class="status-badge ${(fact.estado || 'Pendiente').toLowerCase()}">${fact.estado || 'Pendiente'}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-sm btn-view" onclick="viewInvoice('${fact.idFactura}')">👁️ Ver</button>
+                            <button class="btn-sm btn-edit" onclick="editInvoice('${fact.idFactura}')">✏️ Editar</button>
+                            <button class="btn-sm btn-send" onclick="sendInvoice('${fact.idFactura}')">📤 Enviar</button>
+                            <button class="btn-sm btn-delete" onclick="deleteInvoice('${fact.idFactura}')">🗑️ Eliminar</button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        function updateStats(facturas) {
+            const pendientes = facturas.filter(f => f.estado === 'Pendiente').length;
+            const vencidas = facturas.filter(f => f.estado === 'Vencida').length;
+            const pagadas = facturas.filter(f => f.estado === 'Pagada').length;
+            const anuladas = facturas.filter(f => f.estado === 'Anulada').length;
+            document.getElementById('statPendientes').textContent = pendientes;
+            document.getElementById('statVencidas').textContent = vencidas;
+            document.getElementById('statPagadas').textContent = pagadas;
+            document.getElementById('statAnuladas').textContent = anuladas;
+        }
+        async function viewInvoice(id) {
+            try {
+                const response = await fetch(`${API_FACTURAS_URL}/${id}`);
+                if (!response.ok) throw new Error('Factura no encontrada');
+                const fact = await response.json();
+                const cliente = clientesData.find(c => c.dni === fact.dniCliente) || { nombre: fact.dniCliente };
+                const detalles = `
+FACTURA: ${fact.idFactura || 'N/A'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cliente: ${cliente.nombre}
+DNI: ${fact.dniCliente}
+Estado: ${fact.estado || 'Pendiente'}
+Fecha Emisión: ${formatDate(fact.fechaEmision)}
+Monto Total: ${formatCurrency(fact.montoTotal)}
+Observaciones:
+${fact.observaciones || 'Sin observaciones'}
+                `;
+                alert(detalles);
+            } catch (error) {
+                handleError(error);
+            }
+        }
+        async function editInvoice(id) {
+            const fact = allFacturas.find(f => f.idFactura === id);
+            if (!fact) {
+                alert("Factura no encontrada.");
+                return;
+            }
+            console.log("Editando factura:", fact);
+            openAddInvoiceModal();
+            document.getElementById('invoiceModalTitle').textContent = '✏️ Editar Factura';
+            document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
+            // Llenar campos
+            document.querySelector('select[name="dni_cliente"]').value = fact.dniCliente;
+            document.querySelector('input[name="fecha_emision"]').value = fact.fechaEmision.split('T')[0];
+            document.querySelector('input[name="monto_total"]').value = fact.montoTotal;
+            document.querySelector('select[name="estado"]').value = fact.estado;
+            document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
+            currentEditId = id; // Guardar ID para la actualización
+        }
+        async function sendInvoice(id) {
+            if (!confirm('¿Está seguro de enviar esta factura?')) return;
+            try {
+                // Simular envío (en la vida real, aquí iría una llamada al backend)
+                alert('✅ Factura enviada por correo electrónico.');
+            } catch (error) {
+                handleError(error);
+            }
+        }
+        async function deleteInvoice(id) {
+            if (!confirm('¿Está seguro de eliminar esta factura?')) return;
+            try {
+                const response = await fetch(`${API_FACTURAS_URL}/${id}`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) throw new Error('Error al eliminar');
+                alert('Factura eliminada exitosamente');
+                await getAllFacturas(); // Recargar datos
+            } catch (error) {
+                handleError(error);
+            }
+        }
+        // === FUNCIONES DE AYUDA ===
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-CO', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+        function formatCurrency(amount) {
+            if (!amount && amount !== 0) return '$0';
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0
+            }).format(amount);
+        }
         function openAddInvoiceModal() {
             document.getElementById('addInvoiceModal').classList.add('show');
+            const form = document.getElementById('invoiceForm');
+            form.reset();
+            document.getElementById('invoiceModalTitle').textContent = '➕ Nueva Factura';
+            document.getElementById('submitBtn').textContent = '✅ Guardar Factura';
+            currentEditId = null; // Limpiar ID de edición
         }
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('show');
+            const form = document.getElementById('invoiceForm');
+            form.reset();
+            document.getElementById('invoiceModalTitle').textContent = '➕ Nueva Factura';
+            document.getElementById('submitBtn').textContent = '✅ Guardar Factura';
+            currentEditId = null; // Limpiar ID de edición
         }
+        // === EVENTOS ===
+        document.getElementById('invoiceForm').addEventListener('submit', handleInvoiceFormSubmit);
+        document.getElementById('filterForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const searchText = formData.get('search').toLowerCase();
+            const estadoFilter = formData.get('estado');
+            const fechaDesde = formData.get('fecha_desde');
+            const fechaHasta = formData.get('fecha_hasta');
+            let filtered = [...allFacturas];
+            if (searchText) {
+                filtered = filtered.filter(f => 
+                    f.dniCliente?.toLowerCase().includes(searchText) ||
+                    f.cliente?.nombre?.toLowerCase().includes(searchText)
+                );
+            }
+            if (estadoFilter) {
+                filtered = filtered.filter(f => f.estado === estadoFilter);
+            }
+            if (fechaDesde) {
+                filtered = filtered.filter(f => {
+                    const fecha = new Date(f.fechaEmision);
+                    return fecha >= new Date(fechaDesde);
+                });
+            }
+            if (fechaHasta) {
+                filtered = filtered.filter(f => {
+                    const fecha = new Date(f.fechaEmision);
+                    return fecha <= new Date(fechaHasta);
+                });
+            }
+            renderFacturas(filtered);
+            updateStats(filtered);
+        });
         window.onclick = function(event) {
             const modal = document.getElementById('addInvoiceModal');
             if (event.target === modal) {
-                modal.classList.remove('show');
+                closeModal('addInvoiceModal');
             }
         }
+        function exportarFacturas() {
+            if (allFacturas.length === 0) {
+                alert('No hay facturas para exportar');
+                return;
+            }
+            let csv = 'ID,Cliente,DNI_Cliente,Fecha_Emision,Monto_Total,Estado,Observaciones';
+            allFacturas.forEach(f => {
+                const cliente = clientesData.find(c => c.dni === f.dniCliente) || { nombre: f.dniCliente };
+                csv += `"${f.idFactura || ''}",`;
+                csv += `"${cliente.nombre || ''}",`;
+                csv += `"${f.dniCliente || ''}",`;
+                csv += `"${f.fechaEmision || ''}",`;
+                csv += `"${f.montoTotal || 0}",`;
+                csv += `"${f.estado || 'Pendiente'}",`;
+                csv += `"${(f.observaciones || '').replace(/"/g, '""')}"
+`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `facturas_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        // === INICIALIZACIÓN ===
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Cargando facturas...');
+            getAllFacturas();
+            loadClientes();
+            const today = new Date().toISOString().split('T')[0];
+            document.querySelector('input[name="fecha_emision"]').value = today;
+        });
     </script>
 </body>
+</html>
