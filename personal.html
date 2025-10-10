@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,37 +10,29 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f8fafc;
             color: #2d3748;
         }
-
-        /* Variables de colores por rol */
         :root {
             --cliente-primary: #4299e1;
             --cliente-secondary: #63b3ed;
             --cliente-light: #ebf8ff;
             --cliente-dark: #2c5282;
-
             --empleado-primary: #48bb78;
             --empleado-secondary: #68d391;
             --empleado-light: #f0fff4;
             --empleado-dark: #276749;
-
             --proveedor-primary: #ed8936;
             --proveedor-secondary: #f6ad55;
             --proveedor-light: #fffaf0;
             --proveedor-dark: #c05621;
-
             --admin-primary: #805ad5;
             --admin-secondary: #9f7aea;
             --admin-light: #faf5ff;
             --admin-dark: #553c9a;
         }
-
-        /* Sidebar - Same as previous modules */
         .sidebar {
             position: fixed;
             left: 0;
@@ -53,18 +44,15 @@
             z-index: 1000;
             transition: transform 0.3s ease;
         }
-
         .sidebar-header {
             padding: 2rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .logo {
             display: flex;
             align-items: center;
             gap: 1rem;
         }
-
         .logo-icon {
             width: 45px;
             height: 45px;
@@ -75,25 +63,20 @@
             justify-content: center;
             font-size: 20px;
         }
-
         .logo-text h2 {
             font-size: 1.2em;
             margin-bottom: 0.2rem;
         }
-
         .logo-text p {
             font-size: 0.8em;
             opacity: 0.8;
         }
-
         .nav-menu {
             padding: 1rem 0;
         }
-
         .nav-item {
             margin: 0.5rem 1rem;
         }
-
         .nav-link {
             display: flex;
             align-items: center;
@@ -104,27 +87,23 @@
             border-radius: 12px;
             transition: all 0.3s ease;
         }
-
         .nav-link:hover,
         .nav-link.active {
             background: rgba(255, 255, 255, 0.1);
             color: white;
             transform: translateX(5px);
         }
-
         .nav-icon {
             font-size: 1.2em;
             width: 24px;
             text-align: center;
         }
-
         .logout-section {
             position: absolute;
             bottom: 2rem;
             left: 1rem;
             right: 1rem;
         }
-
         .logout-btn {
             display: flex;
             align-items: center;
@@ -137,20 +116,15 @@
             transition: all 0.3s ease;
             width: 100%;
         }
-
         .logout-btn:hover {
             background: rgba(255, 107, 107, 0.3);
             transform: translateY(-2px);
         }
-
-        /* Main Content */
         .main-content {
             margin-left: 280px;
             padding: 2rem;
             min-height: 100vh;
         }
-
-        /* Top Navigation */
         .top-nav {
             background: white;
             padding: 1.5rem 2rem;
@@ -163,13 +137,11 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-
         .nav-tabs {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
         }
-
         .nav-tab {
             padding: 0.75rem 1.5rem;
             text-decoration: none;
@@ -181,7 +153,6 @@
             position: relative;
             overflow: hidden;
         }
-
         .nav-tab::before {
             content: '';
             position: absolute;
@@ -192,56 +163,45 @@
             transition: left 0.3s ease;
             z-index: -1;
         }
-
         .nav-tab:hover::before {
             left: 0;
         }
-
         .nav-tab.all {
             border-color: #e2e8f0;
         }
-
         .nav-tab.all:hover,
         .nav-tab.all.active {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             transform: translateY(-2px);
         }
-
         .nav-tab.clientes {
             border-color: var(--cliente-light);
         }
-
         .nav-tab.clientes:hover,
         .nav-tab.clientes.active {
             background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
             color: white;
             transform: translateY(-2px);
         }
-
         .nav-tab.empleados {
             border-color: var(--empleado-light);
         }
-
         .nav-tab.empleados:hover,
         .nav-tab.empleados.active {
             background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
             color: white;
             transform: translateY(-2px);
         }
-
         .nav-tab.proveedores {
             border-color: var(--proveedor-light);
         }
-
         .nav-tab.proveedores:hover,
         .nav-tab.proveedores.active {
             background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
             color: white;
             transform: translateY(-2px);
         }
-
-        /* Header */
         .header {
             background: white;
             padding: 2rem;
@@ -254,18 +214,15 @@
             flex-wrap: wrap;
             gap: 1rem;
         }
-
         .header-title h1 {
             color: #2c5f41;
             font-size: 2.5em;
             margin-bottom: 0.5rem;
         }
-
         .header-title p {
             color: #718096;
             font-size: 1.1em;
         }
-
         .btn {
             padding: 0.75rem 1.5rem;
             border: none;
@@ -278,36 +235,29 @@
             align-items: center;
             gap: 0.5rem;
         }
-
         .btn-primary {
             background: linear-gradient(135deg, #4a8b64, #2c5f41);
             color: white;
         }
-
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(74, 139, 100, 0.3);
         }
-
         .btn-secondary {
             background: #f7fafc;
             color: #2d3748;
             border: 2px solid #e2e8f0;
         }
-
         .btn-secondary:hover {
             background: #e2e8f0;
             transform: translateY(-2px);
         }
-
-        /* Stats Cards con colores por rol */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
         }
-
         .stat-card {
             background: white;
             padding: 2rem;
@@ -317,11 +267,9 @@
             overflow: hidden;
             transition: transform 0.3s ease;
         }
-
         .stat-card:hover {
             transform: translateY(-5px);
         }
-
         .stat-card::before {
             content: '';
             position: absolute;
@@ -330,30 +278,24 @@
             right: 0;
             height: 4px;
         }
-
         .stat-card.clientes::before {
             background: linear-gradient(90deg, var(--cliente-primary), var(--cliente-secondary));
         }
-
         .stat-card.empleados::before {
             background: linear-gradient(90deg, var(--empleado-primary), var(--empleado-secondary));
         }
-
         .stat-card.proveedores::before {
             background: linear-gradient(90deg, var(--proveedor-primary), var(--proveedor-secondary));
         }
-
         .stat-card.total::before {
             background: linear-gradient(90deg, #667eea, #764ba2);
         }
-
         .stat-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1rem;
         }
-
         .stat-icon {
             width: 60px;
             height: 60px;
@@ -365,36 +307,29 @@
             color: white;
             position: relative;
         }
-
         .stat-icon.clientes {
             background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
         }
-
         .stat-icon.empleados {
             background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
         }
-
         .stat-icon.proveedores {
             background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
         }
-
         .stat-icon.total {
             background: linear-gradient(135deg, #667eea, #553c9a);
         }
-
         .stat-number {
             font-size: 2.2em;
             font-weight: bold;
             color: #2d3748;
             margin-bottom: 0.5rem;
         }
-
         .stat-label {
             color: #718096;
             font-size: 1em;
             font-weight: 600;
         }
-
         .stat-trend {
             font-size: 0.8em;
             margin-top: 0.5rem;
@@ -402,23 +337,18 @@
             align-items: center;
             gap: 0.3rem;
         }
-
         .trend-up {
             color: #48bb78;
         }
-
         .trend-down {
             color: #f56565;
         }
-
-        /* Personnel Grid con colores por rol */
         .personnel-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
             gap: 2rem;
             margin-bottom: 3rem;
         }
-
         .personnel-card {
             background: white;
             border-radius: 20px;
@@ -427,31 +357,25 @@
             transition: all 0.3s ease;
             position: relative;
         }
-
         .personnel-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
         }
-
         .card-header {
             color: white;
             padding: 2rem;
             text-align: center;
             position: relative;
         }
-
         .card-header.cliente {
             background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
         }
-
         .card-header.empleado {
             background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
         }
-
         .card-header.proveedor {
             background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
         }
-
         .personnel-avatar {
             width: 90px;
             height: 90px;
@@ -465,19 +389,16 @@
             border: 4px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(10px);
         }
-
         .personnel-name {
             font-size: 1.4em;
             font-weight: bold;
             margin-bottom: 0.5rem;
         }
-
         .personnel-role {
             opacity: 0.9;
             font-size: 1em;
             font-weight: 500;
         }
-
         .status-indicator {
             position: absolute;
             top: 1.5rem;
@@ -488,30 +409,24 @@
             border: 3px solid white;
             box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
-
         .status-indicator.active {
             background: #48bb78;
             animation: pulse 2s infinite;
         }
-
         .status-indicator.inactive {
             background: #f56565;
         }
-
         .status-indicator.busy {
             background: #f6ad55;
         }
-
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0.7); }
             70% { box-shadow: 0 0 0 10px rgba(72, 187, 120, 0); }
             100% { box-shadow: 0 0 0 0 rgba(72, 187, 120, 0); }
         }
-
         .card-body {
             padding: 2rem;
         }
-
         .info-item {
             display: flex;
             justify-content: space-between;
@@ -520,93 +435,74 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid #e2e8f0;
         }
-
         .info-item:last-child {
             border-bottom: none;
             margin-bottom: 0;
         }
-
         .info-label {
             color: #718096;
             font-weight: 600;
         }
-
         .info-value {
             color: #2d3748;
             font-weight: 600;
         }
-
         .card-actions {
             padding: 1rem 2rem 2rem;
             display: flex;
             gap: 1rem;
         }
-
         .btn-sm {
             padding: 0.6rem 1.2rem;
             font-size: 0.9em;
             flex: 1;
         }
-
         .btn-outline {
             background: transparent;
             border: 2px solid;
             transition: all 0.3s ease;
         }
-
         .btn-outline.cliente {
             border-color: var(--cliente-primary);
             color: var(--cliente-primary);
         }
-
         .btn-outline.cliente:hover {
             background: var(--cliente-primary);
             color: white;
         }
-
         .btn-outline.empleado {
             border-color: var(--empleado-primary);
             color: var(--empleado-primary);
         }
-
         .btn-outline.empleado:hover {
             background: var(--empleado-primary);
             color: white;
         }
-
         .btn-outline.proveedor {
             border-color: var(--proveedor-primary);
             color: var(--proveedor-primary);
         }
-
         .btn-outline.proveedor:hover {
             background: var(--proveedor-primary);
             color: white;
         }
-
         .btn-filled {
             border: none;
             color: white;
         }
-
         .btn-filled.cliente {
             background: linear-gradient(135deg, var(--cliente-primary), var(--cliente-dark));
         }
-
         .btn-filled.empleado {
             background: linear-gradient(135deg, var(--empleado-primary), var(--empleado-dark));
         }
-
         .btn-filled.proveedor {
             background: linear-gradient(135deg, var(--proveedor-primary), var(--proveedor-dark));
         }
-
         .btn-filled:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
-
-        /* Role Badge */
         .role-badge {
             position: absolute;
             top: -10px;
@@ -620,20 +516,15 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .role-badge.cliente {
             background: var(--cliente-dark);
         }
-
         .role-badge.empleado {
             background: var(--empleado-dark);
         }
-
         .role-badge.proveedor {
             background: var(--proveedor-dark);
         }
-
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -647,11 +538,9 @@
             justify-content: center;
             backdrop-filter: blur(5px);
         }
-
         .modal.show {
             display: flex;
         }
-
         .modal-content {
             background: white;
             border-radius: 20px;
@@ -662,7 +551,6 @@
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -671,13 +559,11 @@
             padding-bottom: 1rem;
             border-bottom: 2px solid #e2e8f0;
         }
-
         .modal-title {
             font-size: 1.5em;
             font-weight: bold;
             color: #2c5f41;
         }
-
         .close-btn {
             background: none;
             border: none;
@@ -686,22 +572,18 @@
             color: #718096;
             transition: color 0.3s ease;
         }
-
         .close-btn:hover {
             color: #f56565;
         }
-
         .form-group {
             margin-bottom: 1.5rem;
         }
-
         .form-group label {
             display: block;
             margin-bottom: 0.5rem;
             color: #4a5568;
             font-weight: 600;
         }
-
         .form-control {
             width: 100%;
             padding: 1rem;
@@ -710,20 +592,16 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-
         .form-control:focus {
             outline: none;
             border-color: #4a8b64;
             box-shadow: 0 0 0 3px rgba(74, 139, 100, 0.1);
         }
-
         .form-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
-
-        /* Filter Section */
         .filter-section {
             background: white;
             padding: 1.5rem 2rem;
@@ -731,83 +609,65 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             margin-bottom: 2rem;
         }
-
         .filter-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1rem;
             align-items: end;
         }
-
-        /* Responsive */
         @media (max-width: 1024px) {
             .personnel-grid {
                 grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             }
-
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             }
         }
-
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
             }
-
             .main-content {
                 margin-left: 0;
                 padding: 1rem;
             }
-
             .header {
                 flex-direction: column;
                 gap: 1rem;
                 text-align: center;
             }
-
             .header-title h1 {
                 font-size: 2em;
             }
-
             .personnel-grid {
                 grid-template-columns: 1fr;
             }
-
             .top-nav {
                 flex-direction: column;
                 gap: 1rem;
             }
-
             .nav-tabs {
                 justify-content: center;
                 flex-wrap: wrap;
             }
-
             .form-grid-2 {
                 grid-template-columns: 1fr;
             }
-
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
-
         @media (max-width: 480px) {
             .stats-grid {
                 grid-template-columns: 1fr;
             }
         }
-
-        /* Hidden class for filtering */
         .hidden {
             display: none !important;
         }
     </style>
 </head>
-
 <body>
-    <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -818,24 +678,15 @@
                 </div>
             </div>
         </div>
-
         <nav class="nav-menu">
-            <div class="nav-item"><a href="dashboard.html" class="nav-link"><span
-                        class="nav-icon">📊</span><span>Dashboard</span></a></div>
-            <div class="nav-item"><a href="inventario.html" class="nav-link"><span
-                        class="nav-icon">📦</span><span>Inventario</span></a></div>
-            <div class="nav-item"><a href="agenda.html" class="nav-link"><span
-                        class="nav-icon">📅</span><span>Agenda</span></a></div>
-            <div class="nav-item"><a href="personal.html" class="nav-link active"><span
-                        class="nav-icon">👥</span><span>Personas</span></a></div>
-            <div class="nav-item"><a href="cotizaciones.html" class="nav-link"><span
-                        class="nav-icon">💰</span><span>Cotizaciones</span></a></div>
-            <div class="nav-item"><a href="facturas.html" class="nav-link"><span
-                        class="nav-icon">📄</span><span>Facturas</span></a></div>
-            <div class="nav-item"><a href="servicios.html" class="nav-link"><span
-                        class="nav-icon">🔧</span><span>Servicios</span></a></div>
+            <div class="nav-item"><a href="dashboard.html" class="nav-link"><span class="nav-icon">📊</span><span>Dashboard</span></a></div>
+            <div class="nav-item"><a href="inventario.html" class="nav-link"><span class="nav-icon">📦</span><span>Inventario</span></a></div>
+            <div class="nav-item"><a href="agenda.html" class="nav-link"><span class="nav-icon">📅</span><span>Agenda</span></a></div>
+            <div class="nav-item"><a href="personal.html" class="nav-link active"><span class="nav-icon">👥</span><span>Personas</span></a></div>
+            <div class="nav-item"><a href="cotizaciones.html" class="nav-link"><span class="nav-icon">💰</span><span>Cotizaciones</span></a></div>
+            <div class="nav-item"><a href="facturas.html" class="nav-link"><span class="nav-icon">📄</span><span>Facturas</span></a></div>
+            <div class="nav-item"><a href="servicios.html" class="nav-link"><span class="nav-icon">🔧</span><span>Servicios</span></a></div>
         </nav>
-
         <div class="logout-section">
             <a href="index.html" class="logout-btn">
                 <span class="nav-icon">🚪</span>
@@ -844,23 +695,13 @@
         </div>
     </div>
 
-    <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Navigation -->
         <div class="top-nav">
             <div class="nav-tabs">
-                <a href="#" class="nav-tab all active" onclick="showView('all', this)">
-                    🏢 Todas las Personas
-                </a>
-                <a href="#" class="nav-tab clientes" onclick="showView('cliente', this)">
-                    🛒 Clientes <span style="background: var(--cliente-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">0</span>
-                </a>
-                <a href="#" class="nav-tab empleados" onclick="showView('empleado', this)">
-                    💼 Empleados <span style="background: var(--empleado-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">0</span>
-                </a>
-                <a href="#" class="nav-tab proveedores" onclick="showView('proveedor', this)">
-                    📦 Proveedores <span style="background: var(--proveedor-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">0</span>
-                </a>
+                <a href="#" class="nav-tab all active" onclick="showView('all', this)">🏢 Todas las Personas</a>
+                <a href="#" class="nav-tab clientes" onclick="showView('cliente', this)">🛒 Clientes <span style="background: var(--cliente-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">0</span></a>
+                <a href="#" class="nav-tab empleados" onclick="showView('empleado', this)">💼 Empleados <span style="background: var(--empleado-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">0</span></a>
+                <a href="#" class="nav-tab proveedores" onclick="showView('proveedor', this)">📦 Proveedores <span style="background: var(--proveedor-dark); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; margin-left: 5px;">0</span></a>
             </div>
             <div style="display: flex; gap: 1rem;">
                 <button class="btn btn-secondary">📊 Reportes</button>
@@ -868,7 +709,6 @@
             </div>
         </div>
 
-        <!-- Header -->
         <div class="header">
             <div class="header-title">
                 <h1>Gestión de Personas</h1>
@@ -881,15 +721,14 @@
             </div>
         </div>
 
-        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card clientes">
                 <div class="stat-header">
                     <div class="stat-icon clientes">🛒</div>
                 </div>
-                <div class="stat-number">25</div>
+                <div class="stat-number">0</div>
                 <div class="stat-label">Clientes Activos</div>
-                <div class="stat-trend trend-up">↗️ +3 este mes</div>
+                <div class="stat-trend trend-up"></div>
             </div>
             <div class="stat-card empleados">
                 <div class="stat-header">
@@ -903,7 +742,7 @@
                 <div class="stat-header">
                     <div class="stat-icon proveedores">📦</div>
                 </div>
-                <div class="stat-number"></div>
+                <div class="stat-number">0</div>
                 <div class="stat-label">Proveedores</div>
                 <div class="stat-trend"></div>
             </div>
@@ -911,22 +750,21 @@
                 <div class="stat-header">
                     <div class="stat-icon total">👥</div>
                 </div>
-                <div class="stat-number"></div>
+                <div class="stat-number">0</div>
                 <div class="stat-label">Total Personas</div>
                 <div class="stat-trend trend-up"></div>
             </div>
         </div>
 
-        <!-- Filter Section -->
         <div class="filter-section">
             <div class="filter-grid">
                 <div class="form-group">
                     <label>🔍 Buscar</label>
-                    <input type="text" class="form-control" placeholder="Nombre, documento, email..." oninput="filterPersons()" id="searchInput">
+                    <input type="text" class="form-control" placeholder="Nombre, documento, email..." oninput="aplicarFiltros()" id="searchInput">
                 </div>
                 <div class="form-group">
                     <label>🏢 Estado</label>
-                    <select class="form-control" onchange="filterPersons()" id="statusFilter">
+                    <select class="form-control" onchange="aplicarFiltros()" id="statusFilter">
                         <option value="">Todos los estados</option>
                         <option value="active">Activo</option>
                         <option value="inactive">Inactivo</option>
@@ -935,11 +773,8 @@
                 </div>
                 <div class="form-group">
                     <label>📍 Ciudad</label>
-                    <select class="form-control" onchange="filterPersons()" id="cityFilter">
+                    <select class="form-control" onchange="aplicarFiltros()" id="cityFilter">
                         <option value="">Todas las ciudades</option>
-                        <option value="bogota">Bogotá</option>
-                        <option value="tunja">Tunja</option>
-                        <option value="duitama">Duitama</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -948,234 +783,466 @@
             </div>
         </div>
 
-        <!-- Personnel Grid -->
-        <div class="personnel-grid" id="personnelGrid">
-           
-        </div>
+        <div class="personnel-grid" id="personnelGrid"></div>
     </div>
 
-<!-- Modal de Agregar Persona -->
-<div class="modal" id="addPersonModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title">➕ Agregar Nueva Persona</h2>
-            <button class="close-btn" onclick="closeModal('addPersonModal')">&times;</button>
-        </div>
-        <!-- Añadido id="addPersonForm" al formulario -->
-        <form id="addPersonForm">
-            <div class="form-group">
-                <label>🏷️ Tipo de Persona</label>
-                <!-- Añadido name="personType" -->
-                <select class="form-control" required id="personType" name="personType" onchange="updateFormFields()">
-                    <option value="">Seleccionar tipo</option>
-                    <option value="cliente">🛒 Cliente</option>
-                    <option value="empleado">💼 Empleado</option>
-                    <option value="proveedor">📦 Proveedor</option>
-                </select>
+    <div class="modal" id="addPersonModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">➕ Agregar Nueva Persona</h2>
+                <button class="close-btn" onclick="closeModal('addPersonModal')">&times;</button>
             </div>
-            <div class="form-grid-2">
+            <form id="addPersonForm">
                 <div class="form-group">
-                    <label>👤 Nombre/Razón Social</label>
-                    <input type="text" class="form-control" placeholder="Nombre completo o empresa" required id="personName" name="personName">
-                </div>
-                <div class="form-group">
-                    <label>💼 Cargo/Especialidad</label>
-                    <input type="text" class="form-control" placeholder="Cargo o tipo de servicio" required id="personRole" name="personRole">
-                </div>
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label>🆔 Documento</label>
-                    <input type="text" class="form-control" placeholder="Cédula/NIT" required id="personDoc" name="personDoc">
-                </div>
-                <div class="form-group">
-                    <label>📞 Teléfono</label>
-                    <input type="tel" class="form-control" placeholder="300-123-4567" required id="personPhone" name="personPhone">
-                </div>
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label>📧 Email</label>
-                    <input type="email" class="form-control" placeholder="correo@ejemplo.com" required id="personEmail" name="personEmail">
-                </div>
-                <div class="form-group">
-                    <label>📍 Ciudad</label>
-                    <!-- Añadido name="personCity" -->
-                    <select class="form-control" required id="personCity" name="personCity">
-                        <option value="">Seleccionar ciudad</option>
-                        <option value="5413">Bogotá</option>
-                        <option value="5414">Medellín</option>
-                        <option value="5415">Tunja</option>
+                    <label>🏷️ Tipo de Persona</label>
+                    <select class="form-control" required id="personType" name="personType" onchange="updateFormFields()">
+                        <option value="">Seleccionar tipo</option>
+                        <option value="Cliente">🛒 Cliente</option>
+                        <option value="Empleado">💼 Empleado</option>
+                        <option value="Proveedor">📦 Proveedor</option>
                     </select>
                 </div>
-            </div>
-            <div class="form-group">
-                <label>📍 Dirección</label>
-                <textarea class="form-control" rows="2" placeholder="Dirección completa" id="personAddress" name="personAddress"></textarea>
-            </div>
-            <div class="form-group">
-                <label>📝 Observaciones</label>
-                <textarea class="form-control" rows="3" placeholder="Notas adicionales..." id="personNotes" name="personNotes"></textarea>
-            </div>
-            <div class="form-grid-2" style="margin-top:2rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonModal')">❌ Cancelar</button>
-                <button type="submit" class="btn btn-primary">✅ Agregar Persona</button>
-            </div>
-        </form>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>👤 Nombre/Razón Social</label>
+                        <input type="text" class="form-control" placeholder="Nombre completo o empresa" required id="personName" name="personName">
+                    </div>
+                    <div class="form-group">
+                        <label>💼 Cargo/Especialidad</label>
+                        <input type="text" class="form-control" placeholder="Cargo o tipo de servicio" id="personRole" name="personRole">
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>👤 Tipo de Persona</label>
+                        <select class="form-control" id="personTypeSelect" name="personTypeSelect">
+                            <option value="Natural">Persona Natural</option>
+                            <option value="Juridica">Persona Jurídica</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="nitField" style="display: none;">
+                        <label>🏢 NIT</label>
+                        <input type="text" class="form-control" placeholder="Solo números" id="personNit" name="personNit" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="form-group" id="representanteField" style="display: none;">
+                    <label>👤 Representante Legal</label>
+                    <input type="text" class="form-control" placeholder="Nombre del representante legal" id="personRepresentante" name="personRepresentante">
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group" id="docGroup">
+                        <label id="docLabel">🆔 Documento *</label>
+                        <input type="text" class="form-control" placeholder="Solo números" required id="personDoc" name="personDoc" inputmode="numeric">
+                    </div>
+                    <div class="form-group">
+                        <label>📞 Teléfono *</label>
+                        <input type="tel" class="form-control" placeholder="3001234567" required id="personPhone" name="personPhone" inputmode="numeric">
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>📧 Email *</label>
+                        <input type="email" class="form-control" placeholder="correo@ejemplo.com" required id="personEmail" name="personEmail">
+                    </div>
+                    <div class="form-group">
+                        <label>📍 Ciudad</label>
+                        <select class="form-control" required id="personCity" name="personCity">
+                            <option value="">Seleccionar ciudad</option>
+                            <option value="5413">Bogotá</option>
+                            <option value="5414">Medellín</option>
+                            <option value="5415">Tunja</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>📍 Dirección</label>
+                    <textarea class="form-control" rows="2" placeholder="Dirección completa" id="personAddress" name="personAddress"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>📝 Observaciones</label>
+                    <textarea class="form-control" rows="3" placeholder="Notas adicionales..." id="personNotes" name="personNotes"></textarea>
+                </div>
+                <div class="form-grid-2" style="margin-top:2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addPersonModal')">❌ Cancelar</button>
+                    <button type="submit" class="btn btn-primary">✅ Agregar Persona</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
-    <script>
-// === CONFIGURACIÓN ===
-const API_BASE_URL = 'http://localhost:8080/api';
 
-// === VARIABLES GLOBALES ===
+<script>
+const API_BASE_URL = 'http://localhost:8080/api';
 let todasLasPersonas = [];
 let direcciones = [];
 let currentView = 'all';
 
-// === FUNCIONES PRINCIPALES ===
+function soloNumeros(input) {
+    input.value = input.value.replace(/\D/g, '');
+}
 
-// 1. Cargar todos los datos iniciales
+function validarEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const personTypeSelect = document.getElementById('personTypeSelect');
+    if (personTypeSelect) {
+        personTypeSelect.addEventListener('change', function() {
+            const tipoPersona = this.value;
+            const nitField = document.getElementById('nitField');
+            const representanteField = document.getElementById('representanteField');
+            const docField = document.getElementById('personDoc');
+            const docGroup = document.getElementById('docGroup');
+
+            if (tipoPersona === 'Juridica') {
+                nitField.style.display = 'block';
+                representanteField.style.display = 'block';
+                docGroup.style.display = 'none';
+                document.getElementById('personNit').required = true;
+                docField.required = false;
+            } else {
+                nitField.style.display = 'none';
+                representanteField.style.display = 'none';
+                docGroup.style.display = 'block';
+                document.getElementById('personNit').required = false;
+                docField.required = true;
+            }
+        });
+    }
+
+    ['personDoc', 'personNit', 'personPhone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', () => soloNumeros(el));
+        }
+    });
+
+    loadData();
+});
+
 async function loadData() {
-    console.log("Iniciando carga de datos desde el backend...");
     try {
         const [personasRes, direccionesRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/personas`).then(r => {
-                if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
-                return r.json();
-            }),
-            fetch(`${API_BASE_URL}/direcciones`).then(r => {
-                if (!r.ok) {
-                    console.warn(`No se pudo cargar direcciones: ${r.status}`);
-                    return [];
-                }
-                return r.json();
-            }).catch(err => {
-                console.warn("Error al cargar direcciones:", err);
-                return [];
-            })
+            fetch(`${API_BASE_URL}/personas`).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE_URL}/direcciones`).then(r => r.ok ? r.json() : []).catch(() => [])
         ]);
-
         todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
         direcciones = Array.isArray(direccionesRes) ? direccionesRes : [];
-        console.log(`Datos cargados: ${todasLasPersonas.length} personas, ${direcciones.length} direcciones.`);
-
+        
+        console.log('📊 Datos cargados:', {
+            personas: todasLasPersonas.length,
+            direcciones: direcciones.length
+        });
+        
         actualizarEstadisticas(todasLasPersonas);
         renderizarPersonas(todasLasPersonas);
         poblarFiltrosCiudad(todasLasPersonas);
-
     } catch (error) {
-        console.error("Error crítico al cargar datos:", error);
-        alert("Error al cargar los datos. Revise que el backend esté corriendo.");
-        document.getElementById('personnelGrid').innerHTML = '<p style="text-align:center; color:red; grid-column: 1/-1;">Error al cargar datos.</p>';
+        console.error("Error al cargar datos:", error);
+        alert("⚠️ Error al conectar con el servidor.");
     }
 }
 
-// 2. Renderizar las tarjetas de personas
-function renderizarPersonas(personasParaMostrar) {
-    const grid = document.getElementById('personnelGrid');
-    if (!grid) return;
+async function handleAddPersonForm(event) {
+    event.preventDefault();
+    const tipoPersona = document.getElementById('personTypeSelect').value;
+    const dniInput = document.getElementById('personDoc');
+    const nitInput = document.getElementById('personNit');
 
-    grid.innerHTML = '';
+    const nombre = document.getElementById('personName').value.trim();
+    const telefono = document.getElementById('personPhone').value.trim();
+    const email = document.getElementById('personEmail').value.trim();
+    const rol = document.getElementById('personType').value;
 
-    if (personasParaMostrar.length === 0) {
-        grid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron personas.</p>';
+    if (!nombre || !telefono || !email || !rol) {
+        alert("Complete todos los campos obligatorios.");
         return;
     }
 
-    personasParaMostrar.forEach(persona => {
-        const card = crearTarjetaPersona(persona);
-        grid.appendChild(card);
-    });
+    if (!validarEmail(email)) {
+        alert("El correo electrónico no es válido.");
+        return;
+    }
+
+    let dni = '';
+    if (tipoPersona === 'Juridica') {
+        dni = nitInput.value.trim();
+        if (!dni) {
+            alert("El NIT es obligatorio para personas jurídicas.");
+            return;
+        }
+    } else {
+        dni = dniInput.value.trim();
+        if (!dni) {
+            alert("El documento es obligatorio.");
+            return;
+        }
+    }
+
+    if (dni.length < 5 || dni.length > 20) {
+        alert("El documento/NIT debe tener entre 5 y 20 caracteres.");
+        return;
+    }
+
+    if (telefono.length < 7 || telefono.length > 15) {
+        alert("El teléfono debe tener entre 7 y 15 dígitos.");
+        return;
+    }
+
+    if (todasLasPersonas.some(p => String(p.dni) === String(dni))) {
+        alert(`El documento/NIT "${dni}" ya está registrado.`);
+        return;
+    }
+
+    // CRÍTICO: Todos los campos como STRING explícitamente
+    const cargoEspecialidad = document.getElementById('personRole').value.trim();
+
+    const datosPersona = {
+        dni: dni.toString(),
+        tipo_dni: tipoPersona === 'Juridica' ? 'NIT' : 'Cédula',
+        nombre: nombre.toString(),
+        telefono: telefono.toString(),
+        correo: email.toString(),
+        rol: rol.toString().charAt(0).toUpperCase() + rol.toString().slice(1),
+        id_direccion: document.getElementById('personCity').value.toString(),
+        tipo_persona: tipoPersona.toString(),
+        cargo_especialidad: cargoEspecialidad || null  // ← Texto libre
+    };
+
+    if (tipoPersona === 'Juridica') {
+        datosPersona.nit = dni.toString();
+        const repLegal = document.getElementById('personRepresentante').value.trim();
+        if (repLegal) {
+            datosPersona.representante_legal = repLegal.toString();
+        }
+    }
+
+    // Debug para verificar tipos
+    console.log('Datos a enviar:', datosPersona);
+    console.log('Tipos:', Object.keys(datosPersona).map(k => `${k}: ${typeof datosPersona[k]}`));
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/personas`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosPersona)
+        });
+
+        const text = await response.text();
+        if (!response.ok) {
+            console.error('Error del servidor:', text);
+            if (text.includes('Duplicate entry')) {
+                alert(`El documento/NIT "${dni}" ya existe en la base de datos.`);
+            } else {
+                alert(`Error: ${text}`);
+            }
+            return;
+        }
+
+        alert("Persona agregada exitosamente.");
+        closeModal('addPersonModal');
+        await loadData();
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Error de red. Verifique su conexión.");
+    }
 }
 
-// 3. Crear tarjeta de persona
+function openAddPersonModal() {
+    document.getElementById('addPersonModal').classList.add('show');
+    const form = document.getElementById('addPersonForm');
+    form.reset();
+    
+    document.getElementById('personDoc').disabled = false;
+    document.getElementById('docGroup').style.display = 'block';
+    document.getElementById('nitField').style.display = 'none';
+    document.getElementById('representanteField').style.display = 'none';
+    
+    // CARGO HABILITADO Y OPCIONAL
+    const cargoField = document.getElementById('personRole');
+    cargoField.disabled = false;  // Habilitado
+    cargoField.required = false;  // Opcional
+    cargoField.placeholder = 'Ej: Técnico, Contador, Gerente (opcional)';
+    cargoField.style.backgroundColor = '';
+    cargoField.style.cursor = '';
+    
+    document.querySelector('#addPersonModal .modal-title').textContent = 'Agregar Nueva Persona';
+    document.querySelector('#addPersonModal .btn-primary').textContent = 'Agregar Persona';
+    
+    form.onsubmit = handleAddPersonForm;
+}
+
+function editarPersona(dni) {
+    const p = todasLasPersonas.find(person => String(person.dni) === String(dni));
+    if (!p) {
+        alert("Persona no encontrada.");
+        return;
+    }
+    
+    openAddPersonModal();
+    document.querySelector('#addPersonModal .modal-title').textContent = '✏️ Editar Persona';
+    document.querySelector('#addPersonModal .btn-primary').textContent = '💾 Guardar Cambios';
+
+    document.getElementById('personDoc').value = p.dni;
+    document.getElementById('personDoc').disabled = true;
+    document.getElementById('personName').value = p.nombre || '';
+    document.getElementById('personPhone').value = p.telefono || '';
+    document.getElementById('personEmail').value = p.correo || '';
+    document.getElementById('personType').value = p.rol || '';
+    document.getElementById('personTypeSelect').value = p.tipo_persona || 'Natural';
+
+    const cargoField = document.getElementById('personRole');
+    let cargoTexto = '';
+    if (p.cargo_especialidad) {
+        cargoTexto = p.cargo_especialidad;
+    } else if (p.cargoEspecialidad) {
+        cargoTexto = typeof p.cargoEspecialidad === 'string' 
+            ? p.cargoEspecialidad 
+            : (p.cargoEspecialidad.nombre || '');
+    }
+    cargoField.value = cargoTexto;
+    cargoField.disabled = false;
+    cargoField.placeholder = 'Ej: Técnico, Contador, Proveedor de Equipos';
+
+    if (p.direccion && p.direccion.idDireccion) {
+        document.getElementById('personCity').value = p.direccion.idDireccion;
+    } else if (p.id_direccion) {
+        document.getElementById('personCity').value = p.id_direccion;
+    }
+
+    const tipo = p.tipo_persona || 'Natural';
+    document.getElementById('nitField').style.display = tipo === 'Juridica' ? 'block' : 'none';
+    document.getElementById('representanteField').style.display = tipo === 'Juridica' ? 'block' : 'none';
+    document.getElementById('docGroup').style.display = tipo === 'Juridica' ? 'none' : 'block';
+    
+    if (tipo === 'Juridica') {
+        document.getElementById('personNit').value = p.nit || p.dni;
+        document.getElementById('personRepresentante').value = p.representante_legal || '';
+    }
+
+    const form = document.getElementById('addPersonForm');
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        
+        const tipoEdit = document.getElementById('personTypeSelect').value;
+        const ciudadEdit = parseInt(document.getElementById('personCity').value);
+        
+        const datos = {
+            dni: String(p.dni),
+            tipo_dni: tipoEdit === 'Juridica' ? 'NIT' : 'CC',
+            nombre: String(document.getElementById('personName').value.trim()),
+            telefono: String(document.getElementById('personPhone').value.trim()),
+            correo: String(document.getElementById('personEmail').value.trim()),
+            rol: String(document.getElementById('personType').value),
+            id_direccion: String(ciudadEdit), // asegurar string
+            tipo_persona: String(tipoEdit),
+            cargo_especialidad: String(document.getElementById('personRole').value.trim()) || null // mantener valor original (no editable)
+        };
+        
+        if (tipoEdit === 'Juridica') {
+            datos.nit = String(document.getElementById('personNit').value.trim());
+            const repLegal = document.getElementById('personRepresentante').value.trim();
+            if (repLegal) {
+                datos.representante_legal = String(repLegal);
+            }
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/personas/${dni}`, {
+                method: 'PUT',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+            
+            if (!res.ok) throw new Error(await res.text());
+            
+            alert("✅ Persona actualizada exitosamente.");
+            closeModal('addPersonModal');
+            await loadData();
+        } catch (err) {
+            alert(`❌ Error: ${err.message}`);
+        }
+    };
+}
+
 function crearTarjetaPersona(persona) {
     const rol = (persona.rol || 'Desconocido').toLowerCase();
-    const estado = 'active';
     const nombre = persona.nombre || 'Nombre no disponible';
     const telefono = persona.telefono || 'N/A';
     const correo = persona.correo || 'N/A';
     const dni = persona.dni || 'N/A';
     
-    let ciudad = 'N/A';
-    let idDir = null;
-    
-    if (persona.direccion && persona.direccion.descripcionAdicional) {
-        ciudad = persona.direccion.descripcionAdicional;
-    } else if (persona.direccion && persona.direccion.nombre) {
-        ciudad = persona.direccion.nombre;
-    } else if (persona.idDireccion || persona.id_direccion) {
-        idDir = persona.idDireccion || persona.id_direccion;
-        const dir = direcciones.find(d => 
-            (d.idDireccion && d.idDireccion == idDir) || 
-            (d.id_direccion && d.id_direccion == idDir)
-        );
-        if (dir) {
-            ciudad = dir.descripcionAdicional || dir.nombre || 'Ciudad';
+    let cargoTexto = 'Sin cargo especificado';
+    if (persona.cargo_especialidad && persona.cargo_especialidad.trim() !== '') {
+        cargoTexto = persona.cargo_especialidad;
+    } else if (persona.cargoEspecialidad) {
+        if (typeof persona.cargoEspecialidad === 'object' && persona.cargoEspecialidad.nombre) {
+            cargoTexto = persona.cargoEspecialidad.nombre;
+        } else if (typeof persona.cargoEspecialidad === 'string' && persona.cargoEspecialidad.trim() !== '') {
+            cargoTexto = persona.cargoEspecialidad;
         }
     }
     
-    console.log(`Persona: ${nombre} | DNI: ${dni} | ID Dir: ${idDir} | Ciudad: ${ciudad}`);
+    let ciudad = 'N/A';
+    if (persona.direccion) {
+        ciudad = persona.direccion.descripcionAdicional || persona.direccion.nombre || 'N/A';
+    } else if (persona.id_direccion) {
+        const dirEncontrada = direcciones.find(d => d.idDireccion == persona.id_direccion);
+        if (dirEncontrada) {
+            ciudad = dirEncontrada.descripcionAdicional || dirEncontrada.nombre || 'N/A';
+        }
+    }
 
     let icono, colorClass, badgeText;
     switch (rol) {
-        case 'cliente':
-            icono = '🛒'; colorClass = 'cliente'; badgeText = 'Cliente';
-            break;
-        case 'empleado':
-            icono = '💼'; colorClass = 'empleado'; badgeText = 'Empleado';
-            break;
-        case 'proveedor':
-            icono = '📦'; colorClass = 'proveedor'; badgeText = 'Proveedor';
-            break;
-        default:
-            icono = '👥'; colorClass = 'cliente'; badgeText = 'Persona';
+        case 'cliente': icono = '🛒'; colorClass = 'cliente'; badgeText = 'Cliente'; break;
+        case 'empleado': icono = '💼'; colorClass = 'empleado'; badgeText = 'Empleado'; break;
+        case 'proveedor': icono = '📦'; colorClass = 'proveedor'; badgeText = 'Proveedor'; break;
+        default: icono = '👥'; colorClass = 'cliente'; badgeText = 'Persona';
     }
 
     const card = document.createElement('div');
     card.className = 'personnel-card';
-    card.dataset.role = rol;
-    card.dataset.status = estado;
-    card.dataset.city = ciudad.toLowerCase().replace(/\s+/g, '-');
-
     card.innerHTML = `
         <div class="role-badge ${colorClass}">${badgeText}</div>
         <div class="card-header ${colorClass}">
-            <div class="status-indicator ${estado}"></div>
+            <div class="status-indicator active"></div>
             <div class="personnel-avatar">${icono}</div>
             <div class="personnel-name">${nombre}</div>
-            <div class="personnel-role">${persona.cargoEspecialidad ? persona.cargoEspecialidad.nombre : 'Sin cargo/especialidad'}</div>
+            <div class="personnel-role">${cargoTexto}</div>
         </div>
         <div class="card-body">
-            <div class="info-item">
-                <span class="info-label">📞 Teléfono:</span>
-                <span class="info-value">${telefono}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">📧 Email:</span>
-                <span class="info-value">${correo}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">🆔 ${persona.tipoDni || 'Documento'}:</span>
-                <span class="info-value">${dni}</span>
-            </div>
-            <div class="info-item">
-                <span class="info-label">📍 Ciudad:</span>
-                <span class="info-value">${ciudad}</span>
-            </div>
+            <div class="info-item"><span class="info-label">📞 Teléfono:</span><span class="info-value">${telefono}</span></div>
+            <div class="info-item"><span class="info-label">📧 Email:</span><span class="info-value">${correo}</span></div>
+            <div class="info-item"><span class="info-label">🆔 Documento:</span><span class="info-value">${dni}</span></div>
+            <div class="info-item"><span class="info-label">📍 Ciudad:</span><span class="info-value">${ciudad}</span></div>
         </div>
         <div class="card-actions">
-            <button class="btn btn-outline btn-sm ${colorClass}" onclick="verPerfil('${persona.dni}')">👁️ Ver Perfil</button>
-            <button class="btn btn-outline btn-sm ${colorClass}" onclick="actualizarPersona('${persona.dni}')">✏️ Actualizar</button>
-            <button class="btn btn-outline btn-sm ${colorClass}" onclick="eliminarPersona('${persona.dni}')">🗑️ Eliminar</button>
-            <button class="btn btn-filled btn-sm ${colorClass}" onclick="contactar('${persona.dni}')">📞 Contactar</button>
+            <button class="btn btn-outline btn-sm ${colorClass}" onclick="verPerfil('${dni}')">👁️ Ver</button>
+            <button class="btn btn-outline btn-sm ${colorClass}" onclick="editarPersona('${dni}')">✏️ Editar</button>
+            <button class="btn btn-outline btn-sm ${colorClass}" onclick="eliminarPersona('${dni}')">🗑️ Eliminar</button>
         </div>
     `;
     return card;
 }
 
-// 4. Actualizar estadísticas
+function renderizarPersonas(personas) {
+    const grid = document.getElementById('personnelGrid');
+    grid.innerHTML = '';
+    if (personas.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron personas.</p>';
+        return;
+    }
+    personas.forEach(p => {
+        const card = crearTarjetaPersona(p);
+        grid.appendChild(card);
+    });
+}
+
 function actualizarEstadisticas(personas) {
     const clientes = personas.filter(p => (p.rol || '').toLowerCase() === 'cliente').length;
     const empleados = personas.filter(p => (p.rol || '').toLowerCase() === 'empleado').length;
@@ -1187,95 +1254,70 @@ function actualizarEstadisticas(personas) {
     document.querySelector('.stat-card.proveedores .stat-number').textContent = proveedores;
     document.querySelector('.stat-card.total .stat-number').textContent = total;
 
-    const clienteTab = document.querySelector('.nav-tab.clientes span');
-    const empleadoTab = document.querySelector('.nav-tab.empleados span');
-    const proveedorTab = document.querySelector('.nav-tab.proveedores span');
-
-    if (clienteTab) clienteTab.textContent = clientes;
-    if (empleadoTab) empleadoTab.textContent = empleados;
-    if (proveedorTab) proveedorTab.textContent = proveedores;
+    const tabs = {
+        cliente: document.querySelector('.nav-tab.clientes span'),
+        empleado: document.querySelector('.nav-tab.empleados span'),
+        proveedor: document.querySelector('.nav-tab.proveedores span')
+    };
+    if (tabs.cliente) tabs.cliente.textContent = clientes;
+    if (tabs.empleado) tabs.empleado.textContent = empleados;
+    if (tabs.proveedor) tabs.proveedor.textContent = proveedores;
 }
 
-// 5. Poblar filtros de ciudad
 function poblarFiltrosCiudad(personas) {
     const ciudadesSet = new Set();
-    
     personas.forEach(p => {
-        if (p.direccion && p.direccion.descripcionAdicional) {
-            ciudadesSet.add(p.direccion.descripcionAdicional);
-        } else if (p.direccion && p.direccion.nombre) {
-            ciudadesSet.add(p.direccion.nombre);
-        }
+        if (p.direccion && p.direccion.descripcionAdicional) ciudadesSet.add(p.direccion.descripcionAdicional);
+        else if (p.direccion && p.direccion.nombre) ciudadesSet.add(p.direccion.nombre);
     });
-    
     direcciones.forEach(d => {
         if (d.descripcionAdicional) ciudadesSet.add(d.descripcionAdicional);
         else if (d.nombre) ciudadesSet.add(d.nombre);
     });
-
     const ciudadesUnicas = Array.from(ciudadesSet).filter(c => c && c.trim() !== '');
-    const selectCiudad = document.getElementById('cityFilter');
-    if (!selectCiudad) return;
-
-    const valorActual = selectCiudad.value;
-    selectCiudad.innerHTML = '<option value="">Todas las ciudades</option>';
-    
+    const select = document.getElementById('cityFilter');
+    select.innerHTML = '<option value="">Todas las ciudades</option>';
     ciudadesUnicas.forEach(ciudad => {
-        const option = document.createElement('option');
-        option.value = ciudad.toLowerCase().replace(/\s+/g, '-');
-        option.textContent = ciudad;
-        selectCiudad.appendChild(option);
+        const opt = document.createElement('option');
+        opt.value = ciudad.toLowerCase().replace(/\s+/g, '-');
+        opt.textContent = ciudad;
+        select.appendChild(opt);
     });
-
-    if (ciudadesUnicas.map(c => c.toLowerCase().replace(/\s+/g, '-')).includes(valorActual)) {
-        selectCiudad.value = valorActual;
-    }
 }
 
-// === FUNCIONES DE INTERACCIÓN ===
-
 function showView(view, element) {
-    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     element.classList.add('active');
     currentView = view;
     aplicarFiltros();
 }
 
 function aplicarFiltros() {
-    let personasFiltradas = [...todasLasPersonas];
-
+    let filtradas = [...todasLasPersonas];
     if (currentView !== 'all') {
-        personasFiltradas = personasFiltradas.filter(p => (p.rol || '').toLowerCase() === currentView);
+        filtradas = filtradas.filter(p => (p.rol || '').toLowerCase() === currentView);
     }
-
-    const terminoBusqueda = document.getElementById('searchInput').value.toLowerCase();
-    if (terminoBusqueda) {
-        personasFiltradas = personasFiltradas.filter(p =>
-            (p.nombre && p.nombre.toLowerCase().includes(terminoBusqueda)) ||
-            (p.correo && p.correo.toLowerCase().includes(terminoBusqueda)) ||
-            (p.dni && p.dni.toLowerCase().includes(terminoBusqueda))
+    const busq = document.getElementById('searchInput').value.toLowerCase();
+    if (busq) {
+        filtradas = filtradas.filter(p =>
+            (p.nombre && p.nombre.toLowerCase().includes(busq)) ||
+            (p.correo && p.correo.toLowerCase().includes(busq)) ||
+            (p.dni && String(p.dni).includes(busq))
         );
     }
+    const estado = document.getElementById('statusFilter').value;
+    if (estado) filtradas = filtradas.filter(p => (p.estado || 'active') === estado);
 
-    const filtroEstado = document.getElementById('statusFilter').value;
-    if (filtroEstado) {
-        personasFiltradas = personasFiltradas.filter(p => (p.estado || 'active').toLowerCase() === filtroEstado);
-    }
-
-    const filtroCiudad = document.getElementById('cityFilter').value;
-    if (filtroCiudad) {
-        personasFiltradas = personasFiltradas.filter(p => {
-            let ciudad = '';
-            if (p.direccion && p.direccion.descripcionAdicional) {
-                ciudad = p.direccion.descripcionAdicional;
-            } else if (p.direccion && p.direccion.nombre) {
-                ciudad = p.direccion.nombre;
-            }
-            return ciudad.toLowerCase().replace(/\s+/g, '-') === filtroCiudad;
+    const ciudad = document.getElementById('cityFilter').value;
+    if (ciudad) {
+        filtradas = filtradas.filter(p => {
+            let c = '';
+            if (p.direccion && p.direccion.descripcionAdicional) c = p.direccion.descripcionAdicional;
+            else if (p.direccion && p.direccion.nombre) c = p.direccion.nombre;
+            return c.toLowerCase().replace(/\s+/g, '-') === ciudad;
         });
     }
-
-    renderizarPersonas(personasFiltradas);
+    renderizarPersonas(filtradas);
 }
 
 function clearFilters() {
@@ -1283,289 +1325,199 @@ function clearFilters() {
     document.getElementById('statusFilter').value = '';
     document.getElementById('cityFilter').value = '';
     currentView = 'all';
-    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.querySelector('.nav-tab.all').classList.add('active');
     renderizarPersonas(todasLasPersonas);
 }
 
 function updateFormFields() {
     const type = document.getElementById('personType').value;
-    const roleField = document.getElementById('personRole');
+    const field = document.getElementById('personRole');
+    if (!field) return;
     
-    switch(type) {
-        case 'cliente':
-            roleField.placeholder = 'Ej: Cliente Corporativo, Individual';
-            break;
-        case 'empleado':
-            roleField.placeholder = 'Ej: Coordinador, Especialista, Técnico';
-            break;
-        case 'proveedor':
-            roleField.placeholder = 'Ej: Proveedor de Equipos, Transporte';
-            break;
-        default:
-            roleField.placeholder = 'Cargo o tipo de servicio';
+    switch (type) {
+        case 'Cliente': field.placeholder = 'Ej: Cliente Corporativo'; break;
+        case 'Empleado': field.placeholder = 'Ej: Técnico Ambiental'; break;
+        case 'Proveedor': field.placeholder = 'Ej: Proveedor de Equipos'; break;
+        default: field.placeholder = 'Cargo o tipo de servicio';
     }
 }
 
-function openAddPersonModal() {
-    document.getElementById('addPersonModal').classList.add('show');
-    const form = document.querySelector('#addPersonModal form');
-    if (form) {
-        form.reset();
-        document.getElementById('personDoc').disabled = false;
-        document.querySelector('#addPersonModal .modal-title').textContent = '➕ Agregar Nueva Persona';
-        document.querySelector('#addPersonModal .btn-primary').textContent = '✅ Agregar Persona';
-        form.onsubmit = handleAddPersonForm;
-    }
-    updateFormFields();
-}
-
-function closeModal(modalId) {
-    const modal = document.getElementById(modalId);
-    if (modal) modal.classList.remove('show');
-    
-    const form = modal ? modal.querySelector('form') : document.querySelector('#addPersonModal form');
-    if (form) {
-        form.reset();
-        document.getElementById('personDoc').disabled = false;
-        document.querySelector('#addPersonModal .modal-title').textContent = '➕ Agregar Nueva Persona';
-        document.querySelector('#addPersonModal .btn-primary').textContent = '✅ Agregar Persona';
-        form.onsubmit = handleAddPersonForm;
-    }
-}
-
-
-// Manejar agregar persona
-async function handleAddPersonForm(event) {
-    event.preventDefault();
-    const form = event.target;
-    const formData = new FormData(form);
-    const datosPersona = Object.fromEntries(formData.entries());
-    const dniIngresado = datosPersona.personDoc.trim();
-    const cargoIngresado = datosPersona.personRole?.trim() || ''; // 👈 Añadimos esto
-
-    if (!dniIngresado || !datosPersona.personName || !datosPersona.personPhone || !datosPersona.personEmail || !datosPersona.personType) {
-        alert("Por favor complete todos los campos obligatorios.");
-        return;
-    }
-
-    if (todasLasPersonas.some(p => p.dni === dniIngresado)) {
-        alert(`El DNI "${dniIngresado}" ya está registrado.`);
-        return;
-    }
-
-    const datosParaEnviar = {
-        dni: dniIngresado,
-        tipo_dni: datosPersona.personType === 'cliente' ? 'NIT/Cédula' : 'Cédula',
-        nombre: datosPersona.personName.trim(),
-        telefono: datosPersona.personPhone.trim(),
-        correo: datosPersona.personEmail.trim(),
-        rol: datosPersona.personType.charAt(0).toUpperCase() + datosPersona.personType.slice(1),
-        // ✅ AÑADIMOS EL CAMPO DEL CARGO/ESPECIALIDAD
-        cargoEspecialidad: cargoIngresado // <-- Este campo debe coincidir con lo que espera tu backend
-    };
-
-    console.log("Datos a enviar:", JSON.stringify(datosParaEnviar, null, 2));
-    try {
-
-        const response = await fetch(`${API_BASE_URL}/personas`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosParaEnviar)
-        });
-
-        // Leer la respuesta UNA SOLA VEZ
-        const responseText = await response.text();
-
-        if (!response.ok) {
-            // Intentar parsear como JSON si es posible
-            let errorMessage = `Error HTTP: ${response.status}`;
-            try {
-                const errorData = JSON.parse(responseText);
-                errorMessage = errorData.error || errorData.message || responseText;
-            } catch (e) {
-                errorMessage = responseText || errorMessage;
-            }
-            throw new Error(errorMessage);
-        }
-
-        console.log("Respuesta del servidor:", responseText);
-        alert("Persona agregada exitosamente!");
-        closeModal('addPersonModal');
-        form.reset();
-        await loadData();
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert(`Error al agregar persona: ${error.message}`);
-    }
-}
-// Actualizar persona
-function actualizarPersona(dni) {
-    const persona = todasLasPersonas.find(p => p.dni === dni);
-    if (!persona) {
-        alert("Persona no encontrada.");
-        return;
-    }
-
-    console.log("Editando:", persona);
-    openAddPersonModal();
-
-    document.querySelector('#addPersonModal .modal-title').textContent = '✏️ Editar Persona';
-    document.getElementById('personDoc').value = persona.dni || '';
-    document.getElementById('personDoc').disabled = true;
-
-    let tipoPersonaValue = '';
-    if (persona.rol) {
-        const rolLower = persona.rol.toLowerCase();
-        if (rolLower.includes('cliente')) tipoPersonaValue = 'cliente';
-        else if (rolLower.includes('empleado')) tipoPersonaValue = 'empleado';
-        else if (rolLower.includes('proveedor')) tipoPersonaValue = 'proveedor';
-    }
-    document.getElementById('personType').value = tipoPersonaValue;
-    updateFormFields();
-
-    document.getElementById('personName').value = persona.nombre || '';
-    document.getElementById('personPhone').value = persona.telefono || '';
-    document.getElementById('personEmail').value = persona.correo || '';
-    
-    let idDirActual = null;
-    if (persona.direccion && persona.direccion.idDireccion) {
-        idDirActual = persona.direccion.idDireccion;
-    } else if (persona.direccion && persona.direccion.id_direccion) {
-        idDirActual = persona.direccion.id_direccion;
-    } else if (persona.idDireccion) {
-        idDirActual = persona.idDireccion;
-    } else if (persona.id_direccion) {
-        idDirActual = persona.id_direccion;
-    }
-    
-    if (idDirActual) {
-        document.getElementById('personCity').value = idDirActual;
-    }
-
-    const submitButton = document.querySelector('#addPersonModal .btn-primary');
-    if (submitButton) {
-        submitButton.textContent = '💾 Guardar Cambios';
-        const form = document.getElementById('addPersonForm');
-        if (form) {
-            form.onsubmit = function(event) {
-                event.preventDefault();
-                updatePerson(dni);
-            };
-        }
-    }
-}
-
-// Update person function
-// Update person function
-async function updatePerson(dniOriginal) {
-    const nombre = document.getElementById('personName').value.trim();
-    const telefono = document.getElementById('personPhone').value.trim();
-    const correo = document.getElementById('personEmail').value.trim();
-    const tipoDni = document.getElementById('personType').value.trim();
-    const ciudadSeleccionada = document.getElementById('personCity').value;
-
-    if (!nombre || !telefono || !correo || !tipoDni) {
-        alert("Complete todos los campos obligatorios.");
-        return;
-    }
-
-    const formData = {
-        tipo_dni: tipoDni === 'cliente' ? 'NIT/Cédula' : 'Cédula',
-        nombre: nombre,
-        telefono: telefono,
-        correo: correo,
-        rol: tipoDni.charAt(0).toUpperCase() + tipoDni.slice(1)
-    };
-    
-    if (ciudadSeleccionada && ciudadSeleccionada !== '') {
-        formData.id_direccion = ciudadSeleccionada;
-    }
-
-    console.log("Actualizando:", JSON.stringify(formData, null, 2));
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/personas/${dniOriginal}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
-
-        // Leer la respuesta UNA SOLA VEZ
-        const responseText = await response.text();
-
-        if (!response.ok) {
-            let errorMessage = `Error ${response.status}`;
-            try {
-                const errorData = JSON.parse(responseText);
-                errorMessage = errorData.error || errorData.message || responseText;
-            } catch (e) {
-                errorMessage = responseText || errorMessage;
-            }
-            throw new Error(errorMessage);
-        }
-
-        console.log("Respuesta del servidor:", responseText);
-        alert("Persona actualizada!");
-        closeModal('addPersonModal');
-        await loadData();
-
-    } catch (error) {
-        console.error("Error:", error);
-        alert(`Error: ${error.message}`);
-    }
-}
-
-// Eliminar persona
-function eliminarPersona(dni) {
-    const persona = todasLasPersonas.find(p => p.dni === dni);
-    if (persona) {
-        if (confirm(`¿Eliminar a ${persona.nombre}?`)) {
-            fetch(`${API_BASE_URL}/personas/${dni}`, { method: 'DELETE' })
-                .then(r => {
-                    if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
-                    return r.text();
-                })
-                .then(msg => {
-                    alert(`Persona ${persona.nombre} eliminada.`);
-                    loadData();
-                })
-                .catch(err => alert(`Error: ${err.message}`));
-        }
-    }
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
 }
 
 function verPerfil(dni) {
-    const persona = todasLasPersonas.find(p => p.dni === dni);
-    if (persona) {
-        alert(`Perfil: ${persona.nombre}\nRol: ${persona.rol}\nDNI: ${persona.dni}`);
+    const p = todasLasPersonas.find(p => String(p.dni) === String(dni));
+    if (p) {
+        let cargoTexto = 'Sin cargo';
+        if (p.cargoEspecialidad) {
+            if (typeof p.cargoEspecialidad === 'object' && p.cargoEspecialidad.nombre) {
+                cargoTexto = p.cargoEspecialidad.nombre;
+            } else if (typeof p.cargoEspecialidad === 'string') {
+                cargoTexto = p.cargoEspecialidad;
+            }
+        } else if (p.cargo_especialidad) {
+            cargoTexto = p.cargo_especialidad;
+        }
+        
+        alert(`Perfil: ${p.nombre}\nRol: ${p.rol}\nCargo: ${cargoTexto}\nDNI: ${p.dni}`);
     }
 }
 
-function contactar(dni) {
-    const persona = todasLasPersonas.find(p => p.dni === dni);
-    if (persona) {
-        alert(`Contactar a ${persona.nombre}:\nEmail: ${persona.correo}\nTel: ${persona.telefono}`);
+async function eliminarPersona(dni) {
+    const p = todasLasPersonas.find(person => String(person.dni) === String(dni));
+    if (!p) {
+        alert("⚠️ Persona no encontrada.");
+        return;
+    }
+
+    if (!confirm(`¿Está seguro de eliminar a ${p.nombre}?\n\nEsta acción no se puede deshacer.`)) {
+        return;
+    }
+
+    try {
+        console.log(`🔍 Verificando vinculaciones para DNI: ${dni}`);
+        
+        // ⚠️ CAMBIO: Usar /servicios en lugar de /citas
+        const [cotizaciones, servicios, facturas] = await Promise.all([
+            fetch(`${API_BASE_URL}/cotizaciones`).then(r => r.ok ? r.json() : []).catch(err => {
+                console.warn('Error cargando cotizaciones:', err);
+                return [];
+            }),
+            fetch(`${API_BASE_URL}/servicios`).then(r => r.ok ? r.json() : []).catch(err => {
+                console.warn('Error cargando servicios:', err);
+                return [];
+            }),
+            fetch(`${API_BASE_URL}/facturas`).then(r => r.ok ? r.json() : []).catch(err => {
+                console.warn('Error cargando facturas:', err);
+                return [];
+            })
+        ]);
+
+        console.log('📊 Datos cargados:', {
+            cotizaciones: cotizaciones.length,
+            servicios: servicios.length,
+            facturas: facturas.length
+        });
+
+        // Función mejorada para obtener DNI de forma segura
+        const getDni = (obj, campo = null) => {
+            if (!obj) return null;
+            if (typeof obj === 'string' || typeof obj === 'number') return String(obj);
+            
+            if (campo && obj[campo]) {
+                if (typeof obj[campo] === 'object' && obj[campo].dni) return String(obj[campo].dni);
+                return String(obj[campo]);
+            }
+            
+            if (obj.dni) return String(obj.dni);
+            if (obj.cliente?.dni) return String(obj.cliente.dni);
+            if (obj.empleado?.dni) return String(obj.empleado.dni);
+            if (obj.empleadoAsignado?.dni) return String(obj.empleadoAsignado.dni);
+            
+            return null;
+        };
+
+        const dniStr = String(dni);
+        const errores = [];
+        let detalles = [];
+
+        // 1️⃣ Verificar cotizaciones (cliente o empleado)
+        const cotizacionesVinculadas = cotizaciones.filter(c => {
+            const dniClienteCot = getDni(c, 'dniCliente') || getDni(c.cliente);
+            const dniEmpleadoCot = getDni(c, 'dniEmpleado') || getDni(c.empleado);
+            return dniClienteCot === dniStr || dniEmpleadoCot === dniStr;
+        });
+
+        if (cotizacionesVinculadas.length > 0) {
+            errores.push(`${cotizacionesVinculadas.length} cotización(es)`);
+            detalles.push(`  • ${cotizacionesVinculadas.length} cotización(es) activa(s)`);
+            console.log('❌ Cotizaciones vinculadas:', cotizacionesVinculadas.map(c => c.idCotizacion));
+        }
+
+        // 2️⃣ Verificar servicios en agenda (cliente o técnico)
+        const serviciosVinculados = servicios.filter(s => {
+            // Intentar desde cotización primero
+            if (s.cotizacion && s.cotizacion.cliente) {
+                const dniClienteCot = getDni(s.cotizacion.cliente);
+                if (dniClienteCot === dniStr) return true;
+            }
+            
+            // Verificar cliente directo
+            const dniCliente = getDni(s, 'dniCliente') || getDni(s.cliente);
+            if (dniCliente === dniStr) return true;
+            
+            // Verificar técnico asignado
+            const dniTecnico = 
+                getDni(s, 'dniEmpleadoAsignado') || 
+                getDni(s.empleadoAsignado) ||
+                getDni(s, 'dniEmpleado');
+            
+            return dniTecnico === dniStr;
+        });
+
+        if (serviciosVinculados.length > 0) {
+            errores.push(`${serviciosVinculados.length} servicio(s)`);
+            detalles.push(`  • ${serviciosVinculados.length} servicio(s) programado(s) en la agenda`);
+            console.log('❌ Servicios vinculados:', serviciosVinculados.map(s => s.idServicio));
+        }
+
+        // 3️⃣ Verificar facturas
+        const facturasVinculadas = facturas.filter(f => {
+            const dniClienteFact = getDni(f, 'dniCliente') || getDni(f.cliente);
+            return dniClienteFact === dniStr;
+        });
+
+        if (facturasVinculadas.length > 0) {
+            errores.push(`${facturasVinculadas.length} factura(s)`);
+            detalles.push(`  • ${facturasVinculadas.length} factura(s) emitida(s)`);
+            console.log('❌ Facturas vinculadas:', facturasVinculadas.map(f => f.idFactura));
+        }
+
+        // 🚫 Si hay registros vinculados, BLOQUEAR eliminación
+        if (errores.length > 0) {
+            console.warn(`❌ Eliminación BLOQUEADA para DNI ${dni}:`, {
+                cotizaciones: cotizacionesVinculadas.length,
+                servicios: serviciosVinculados.length,
+                facturas: facturasVinculadas.length
+            });
+            
+            const mensaje = 
+                `🚫 NO SE PUEDE ELIMINAR A ${p.nombre.toUpperCase()}\n\n` +
+                `Esta persona está vinculada a:\n` +
+                `${detalles.join('\n')}\n\n` +
+                `⚠️ ACCIÓN REQUERIDA:\n` +
+                `Debe eliminar o reasignar estos registros antes de poder eliminar a esta persona.\n\n` +
+                `💡 Sugerencia:\n` +
+                `1. Cancele o reasigne los servicios pendientes\n` +
+                `2. Elimine las cotizaciones relacionadas\n` +
+                `3. Archive las facturas si es necesario`;
+            
+            alert(mensaje);
+            return; // ← DETENER aquí, NO eliminar
+        }
+
+        console.log(`✅ Sin vinculaciones encontradas. Procediendo a eliminar DNI: ${dni}`);
+
+        // ✅ Si no hay vinculaciones, proceder con la eliminación
+        const response = await fetch(`${API_BASE_URL}/personas/${encodeURIComponent(dni)}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Error desconocido al eliminar');
+        }
+
+        alert(`✅ ${p.nombre} ha sido eliminado exitosamente.`);
+        await loadData();
+
+    } catch (error) {
+        console.error("❌ Error al eliminar persona:", error);
+        alert(`❌ Error al eliminar: ${error.message}\n\nPor favor, verifique la consola para más detalles.`);
     }
 }
-
-// Inicialización
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('Iniciando aplicación...');
-    loadData();
-
-    const form = document.getElementById('addPersonForm');
-    if (form) form.addEventListener('submit', handleAddPersonForm);
-
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    const cityFilter = document.getElementById('cityFilter');
-
-    if (searchInput) searchInput.addEventListener('input', aplicarFiltros);
-    if (statusFilter) statusFilter.addEventListener('change', aplicarFiltros);
-    if (cityFilter) cityFilter.addEventListener('change', aplicarFiltros);
-});
 
 window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
@@ -1574,5 +1526,4 @@ window.onclick = function(event) {
 };
 </script>
 </body>
-
 </html>

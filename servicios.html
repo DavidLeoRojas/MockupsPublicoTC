@@ -650,12 +650,12 @@
             </div>
             <form id="addServiceForm">
                 <div class="form-group">
-                    <label>🔧 Nombre del Servicio</label>
-                    <input type="text" class="form-control" placeholder="Ej: Control de Plagas" required id="serviceName" name="serviceName">
-                </div>
-                <div class="form-group">
                     <label>🏷️ Categoría</label>
                     <input type="text" class="form-control" placeholder="Ej: Aseo, Mantenimiento" required id="serviceCategory" name="serviceCategory">
+                </div>
+                <div class="form-group">
+                    <label>🔧 Nombre del Servicio</label>
+                    <input type="text" class="form-control" placeholder="Ej: Control de Plagas" required id="serviceName" name="serviceName">
                 </div>
                 <div class="form-grid-2">
                     <div class="form-group">
@@ -690,391 +690,501 @@
     </div>
 
     <script>
-        // === CONFIGURACIÓN ===
-        const API_BASE_URL = 'http://localhost:8080/api';
-        // === VARIABLES GLOBALES ===
-        let todosLosServicios = [];
-        let currentView = 'all';
-        let currentEditingId = null; // Para manejar la edición
+// === CONFIGURACIÓN ===
+const API_BASE_URL = 'http://localhost:8080/api';
 
-        // === FUNCIONES PRINCIPALES ===
-        // 1. Cargar todos los datos iniciales
-        async function loadServicesData() {
-            console.log("Iniciando carga de servicios desde el backend...");
+// === VARIABLES GLOBALES ===
+let todosLosServicios = [];
+let serviciosAgendados = []; // Nueva variable para almacenar servicios agendados
+let currentView = 'all';
+let currentEditingId = null;
+let isSubmitting = false;
+
+// === FUNCIONES PRINCIPALES ===
+
+// Cargar todos los datos iniciales
+async function loadServicesData() {
+    console.log("Iniciando carga de servicios desde el backend...");
+    try {
+        // Cargar tipos de servicio
+        const serviciosRes = await fetch(`${API_BASE_URL}/tipos-servicio`);
+        if (!serviciosRes.ok) throw new Error(`HTTP error! status: ${serviciosRes.status}`);
+        const serviciosData = await serviciosRes.json();
+        todosLosServicios = Array.isArray(serviciosData) ? serviciosData : [];
+        
+        // Cargar servicios agendados
+        const agendadosRes = await fetch(`${API_BASE_URL}/servicios`);
+        if (!agendadosRes.ok) throw new Error('Error al cargar servicios agendados');
+        serviciosAgendados = await agendadosRes.json();
+        
+        console.log(`Datos cargados: ${todosLosServicios.length} tipos de servicio, ${serviciosAgendados.length} servicios agendados.`);
+        
+        actualizarEstadisticas(todosLosServicios);
+        poblarFiltrosCategoria(todosLosServicios);
+        renderizarServicios(todosLosServicios);
+    } catch (error) {
+        console.error("Error crítico al cargar servicios:", error);
+        alert("Error al cargar los servicios. Revise que el backend esté corriendo.");
+        document.getElementById('servicesGrid').innerHTML = '<p style="text-align:center; color:red; grid-column: 1/-1;">Error al cargar servicios.</p>';
+    }
+}
+
+// Verificar si un tipo de servicio está siendo usado
+function isServicioEnUso(idTipoServicio) {
+    return serviciosAgendados.some(servicio => {
+        // Verificar diferentes formas de relacionar el servicio
+        if (servicio.idTipoServicio === idTipoServicio) return true;
+        if (servicio.tipoServicio && servicio.tipoServicio.idTipoServicio === idTipoServicio) return true;
+        return false;
+    });
+}
+
+// Obtener servicios agendados que usan un tipo de servicio
+function getServiciosVinculados(idTipoServicio) {
+    return serviciosAgendados.filter(servicio => {
+        if (servicio.idTipoServicio === idTipoServicio) return true;
+        if (servicio.tipoServicio && servicio.tipoServicio.idTipoServicio === idTipoServicio) return true;
+        return false;
+    });
+}
+
+// Renderizar las tarjetas de servicios
+function renderizarServicios(serviciosParaMostrar) {
+    const grid = document.getElementById('servicesGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    if (serviciosParaMostrar.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron servicios.</p>';
+        return;
+    }
+    serviciosParaMostrar.forEach(servicio => {
+        const card = crearTarjetaServicio(servicio);
+        grid.appendChild(card);
+    });
+}
+
+// Crear tarjeta de servicio
+function crearTarjetaServicio(servicio) {
+    const nombre = servicio.nombreServicio || 'Nombre no disponible';
+    const categoria = servicio.categoria || 'Categoría no disponible';
+    const descripcion = servicio.descripcionExtendida || 'Descripción no disponible';
+    const costo = servicio.costo ? servicio.costo.toLocaleString('es-CO') : 'N/A';
+    const duracion = servicio.duracion || 'N/A';
+    const frecuencia = servicio.frecuencia || 'N/A';
+    const enUso = isServicioEnUso(servicio.idTipoServicio);
+    
+    // Icono genérico o personalizado
+    let icono = '🔧';
+    if (servicio.icono) icono = servicio.icono;
+    else if (categoria.toLowerCase().includes('plaga')) icono = '🐛';
+    else if (categoria.toLowerCase().includes('tanque')) icono = '🚿';
+    else if (categoria.toLowerCase().includes('certificado')) icono = '📋';
+
+    const card = document.createElement('div');
+    card.className = 'service-card';
+    card.dataset.category = categoria.toLowerCase().replace(/\s+/g, '-');
+
+    card.innerHTML = `
+        <div class="card-header">
+            <div class="service-icon">${icono}</div>
+            <div class="service-name">${nombre}</div>
+            <div class="service-category">${categoria}</div>
+            ${enUso ? '<div style="background: rgba(255,193,7,0.9); color: #000; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.8em; margin-top: 0.5rem; font-weight: 600;">🔗 En uso</div>' : ''}
+        </div>
+        <div class="card-body">
+            <div class="info-item">
+                <span class="info-label">💰 Costo:</span>
+                <span class="info-value">$${costo}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">⏱️ Duración:</span>
+                <span class="info-value">${duracion}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">🔄 Frecuencia:</span>
+                <span class="info-value">${frecuencia}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">📝 Descripción:</span>
+                <span class="info-value">${descripcion.substring(0, 50)}${descripcion.length > 50 ? '...' : ''}</span>
+            </div>
+        </div>
+        <div class="card-actions">
+            <button class="btn btn-outline btn-sm" onclick="verDetalles('${servicio.idTipoServicio}')">👁️ Ver Detalles</button>
+            <button class="btn btn-outline btn-sm" onclick="actualizarServicio('${servicio.idTipoServicio}')">✏️ Actualizar</button>
+            <button class="btn btn-outline btn-sm" 
+                onclick="eliminarServicio('${servicio.idTipoServicio}')"
+                ${enUso ? 'disabled title="No se puede eliminar: servicio en uso"' : ''}
+                style="${enUso ? 'opacity: 0.5; cursor: not-allowed;' : ''}">
+                🗑️ Eliminar
+            </button>
+        </div>
+    `;
+    return card;
+}
+
+// Actualizar estadísticas
+function actualizarEstadisticas(servicios) {
+    const total = servicios.length;
+    const costoTotal = servicios.reduce((acc, s) => acc + (s.costo || 0), 0);
+
+    document.getElementById('totalServicesCount').textContent = total;
+    document.getElementById('totalCost').textContent = costoTotal.toLocaleString('es-CO');
+}
+
+// Poblar filtros de categoría
+function poblarFiltrosCategoria(servicios) {
+    const categoriasSet = new Set();
+    servicios.forEach(s => {
+        if (s.categoria) {
+            categoriasSet.add(s.categoria);
+        }
+    });
+    const categoriasUnicas = Array.from(categoriasSet).filter(c => c && c.trim() !== '');
+    const selectCategoria = document.getElementById('categoryFilter');
+    if (!selectCategoria) return;
+    const valorActual = selectCategoria.value;
+    selectCategoria.innerHTML = '<option value="">Todas las categorías</option>';
+    categoriasUnicas.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.toLowerCase().replace(/\s+/g, '-');
+        option.textContent = cat;
+        selectCategoria.appendChild(option);
+    });
+    if (categoriasUnicas.map(c => c.toLowerCase().replace(/\s+/g, '-')).includes(valorActual)) {
+        selectCategoria.value = valorActual;
+    }
+}
+
+// === FUNCIONES DE INTERACCIÓN ===
+
+function showView(view, element) {
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    element.classList.add('active');
+    currentView = view;
+    aplicarFiltros();
+}
+
+function aplicarFiltros() {
+    let serviciosFiltrados = [...todosLosServicios];
+
+    const terminoBusqueda = document.getElementById('searchInput').value.toLowerCase();
+    if (terminoBusqueda) {
+        serviciosFiltrados = serviciosFiltrados.filter(s =>
+            (s.nombreServicio && s.nombreServicio.toLowerCase().includes(terminoBusqueda)) ||
+            (s.categoria && s.categoria.toLowerCase().includes(terminoBusqueda))
+        );
+    }
+
+    const filtroCategoria = document.getElementById('categoryFilter').value;
+    if (filtroCategoria) {
+        serviciosFiltrados = serviciosFiltrados.filter(s =>
+            s.categoria.toLowerCase().replace(/\s+/g, '-') === filtroCategoria
+        );
+    }
+
+    renderizarServicios(serviciosFiltrados);
+}
+
+function filterServices() {
+    aplicarFiltros();
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('categoryFilter').value = '';
+    currentView = 'all';
+    document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelector('.nav-tab.all').classList.add('active');
+    renderizarServicios(todosLosServicios);
+}
+
+function openAddServiceModal() {
+    document.getElementById('addServiceModal').classList.add('show');
+    const form = document.querySelector('#addServiceModal form');
+    if (form) {
+        form.reset();
+        document.querySelector('#addServiceModal .modal-title').textContent = '➕ Agregar Nuevo Servicio';
+        document.querySelector('#addServiceModal .btn-primary').textContent = '✅ Agregar Servicio';
+    }
+    currentEditingId = null;
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('show');
+}
+
+// Manejar agregar/editar servicio
+async function handleAddServiceForm(event) {
+    if (isSubmitting) {
+        console.log("DEBUG: Ya se está procesando. Ignorando.");
+        return;
+    }
+
+    event.preventDefault();
+    isSubmitting = true;
+
+    const submitButton = document.querySelector('#addServiceModal .btn-primary');
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = '⏳ Procesando...';
+    }
+
+    try {
+        const form = event.target;
+        const formData = new FormData(form);
+        const datosServicio = Object.fromEntries(formData.entries());
+
+        if (!datosServicio.serviceName || !datosServicio.serviceCategory || !datosServicio.serviceCost || !datosServicio.serviceDuration || !datosServicio.serviceFrequency || !datosServicio.serviceDescription) {
+            alert("Por favor complete todos los campos obligatorios.");
+            return;
+        }
+
+        const costo = parseFloat(datosServicio.serviceCost);
+
+        if (!validarCosto(costo)) {
+            return;
+        }
+
+        const datosParaEnviar = {
+            nombreServicio: datosServicio.serviceName.trim(),
+            categoria: datosServicio.serviceCategory.trim(),
+            costo: costo,
+            duracion: datosServicio.serviceDuration.trim(),
+            frecuencia: datosServicio.serviceFrequency.trim(),
+            descripcionExtendida: datosServicio.serviceDescription.trim()
+        };
+
+        if (datosServicio.serviceIcon && datosServicio.serviceIcon.trim() !== '') {
+            datosParaEnviar.icono = datosServicio.serviceIcon.trim();
+        }
+
+        console.log("Datos del servicio a enviar:", datosParaEnviar);
+
+        let response;
+        let message;
+
+        if (currentEditingId) {
+            response = await fetch(`${API_BASE_URL}/tipos-servicio/${currentEditingId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosParaEnviar)
+            });
+            message = "✅ Servicio actualizado exitosamente!";
+        } else {
+            response = await fetch(`${API_BASE_URL}/tipos-servicio`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datosParaEnviar)
+            });
+            message = "✅ Servicio agregado exitosamente!";
+        }
+
+        const responseText = await response.text();
+
+        if (!response.ok) {
+            let errorMessage = `Error HTTP ${response.status}`;
             try {
-                const serviciosRes = await fetch(`${API_BASE_URL}/tipos-servicio`);
-                if (!serviciosRes.ok) throw new Error(`HTTP error! status: ${serviciosRes.status}`);
-                const serviciosData = await serviciosRes.json();
-                todosLosServicios = Array.isArray(serviciosData) ? serviciosData : [];
-                console.log(`Datos cargados: ${todosLosServicios.length} servicios.`);
-                actualizarEstadisticas(todosLosServicios);
-                poblarFiltrosCategoria(todosLosServicios);
-                renderizarServicios(todosLosServicios);
-            } catch (error) {
-                console.error("Error crítico al cargar servicios:", error);
-                alert("Error al cargar los servicios. Revise que el backend esté corriendo.");
-                document.getElementById('servicesGrid').innerHTML = '<p style="text-align:center; color:red; grid-column: 1/-1;">Error al cargar servicios.</p>';
+                const errorData = JSON.parse(responseText);
+                errorMessage = errorData.error || errorData.message || responseText;
+            } catch (e) {
+                errorMessage = responseText || errorMessage;
             }
+            throw new Error(errorMessage);
         }
 
-        // 2. Renderizar las tarjetas de servicios
-        function renderizarServicios(serviciosParaMostrar) {
-            const grid = document.getElementById('servicesGrid');
-            if (!grid) return;
-            grid.innerHTML = '';
-            if (serviciosParaMostrar.length === 0) {
-                grid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron servicios.</p>';
-                return;
+        console.log("Respuesta del servidor:", responseText);
+        alert(message);
+        closeModal('addServiceModal');
+        form.reset();
+        await loadServicesData();
+
+    } catch (error) {
+        console.error("Error al procesar el servicio:", error);
+        alert(`❌ Error: ${error.message}`);
+    } finally {
+        isSubmitting = false;
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = currentEditingId ? '💾 Guardar Cambios' : '✅ Agregar Servicio';
+        }
+    }
+}
+
+// Validar el costo
+function validarCosto(costo) {
+    const maxCosto = 999999999999.99;
+    if (costo > maxCosto) {
+        alert(`El costo no puede ser mayor a $${maxCosto.toLocaleString('es-CO')}`);
+        return false;
+    }
+    if (costo < 0) {
+        alert("El costo no puede ser negativo.");
+        return false;
+    }
+    return true;
+}
+
+// Actualizar servicio
+function actualizarServicio(id) {
+    const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
+    if (!servicio) {
+        alert("Servicio no encontrado.");
+        return;
+    }
+    console.log("Editando:", servicio);
+    openAddServiceModal();
+    document.querySelector('#addServiceModal .modal-title').textContent = '✏️ Editar Servicio';
+    document.getElementById('serviceName').value = servicio.nombreServicio || '';
+    document.getElementById('serviceCategory').value = servicio.categoria || '';
+    document.getElementById('serviceCost').value = servicio.costo || '';
+    document.getElementById('serviceDuration').value = servicio.duracion || '';
+    document.getElementById('serviceFrequency').value = servicio.frecuencia || '';
+    document.getElementById('serviceDescription').value = servicio.descripcionExtendida || '';
+    document.getElementById('serviceIcon').value = servicio.icono || '';
+
+    currentEditingId = id;
+
+    const submitButton = document.querySelector('#addServiceModal .btn-primary');
+    if (submitButton) {
+        submitButton.textContent = '💾 Guardar Cambios';
+    }
+}
+
+// Eliminar servicio con protección mejorada
+async function eliminarServicio(id) {
+    const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
+    if (!servicio) {
+        alert("❌ Servicio no encontrado.");
+        return;
+    }
+
+    try {
+        // Recargar servicios agendados para asegurar datos actualizados
+        const agendadosRes = await fetch(`${API_BASE_URL}/servicios`);
+        if (!agendadosRes.ok) throw new Error('Error al verificar servicios agendados');
+        serviciosAgendados = await agendadosRes.json();
+
+        console.log(`📋 Verificando si tipo de servicio ${id} está en uso...`);
+        console.log(`Total servicios agendados: ${serviciosAgendados.length}`);
+
+        // Verificar si está en uso - CORRECCIÓN CRÍTICA
+        const vinculados = serviciosAgendados.filter(servAgendado => {
+            // Verificar por ID directo
+            if (servAgendado.idTipoServicio === id) {
+                console.log(`✅ Encontrado por idTipoServicio: ${servAgendado.idServicio}`);
+                return true;
             }
-            serviciosParaMostrar.forEach(servicio => {
-                const card = crearTarjetaServicio(servicio);
-                grid.appendChild(card);
+            
+            // Verificar por objeto anidado
+            if (servAgendado.tipoServicio && servAgendado.tipoServicio.idTipoServicio === id) {
+                console.log(`✅ Encontrado por tipoServicio.idTipoServicio: ${servAgendado.idServicio}`);
+                return true;
+            }
+            
+            // Verificar por id_tipo_servicio (snake_case)
+            if (servAgendado.id_tipo_servicio === id) {
+                console.log(`✅ Encontrado por id_tipo_servicio: ${servAgendado.idServicio}`);
+                return true;
+            }
+            
+            return false;
+        });
+
+        console.log(`🔍 Servicios vinculados encontrados: ${vinculados.length}`);
+
+        if (vinculados.length > 0) {
+            const detalles = vinculados.map(s => {
+                const fecha = s.fecha || 'sin fecha';
+                const hora = s.hora || 'sin hora';
+                const cliente = s.cliente?.nombre || s.dniCliente || 'sin cliente';
+                const estado = s.estado || 'sin estado';
+                return `  • ID: ${s.idServicio} | ${fecha} ${hora} | ${cliente} | Estado: ${estado}`;
+            }).join('\n');
+
+            alert(`❌ NO SE PUEDE ELIMINAR "${servicio.nombreServicio}"
+            
+⚠️ Motivo: Existen ${vinculados.length} servicio(s) programado(s) que utilizan este tipo de servicio.
+
+📋 Servicios vinculados:
+${detalles}
+
+💡 Solución: Debe eliminar o reasignar estos servicios desde la Agenda primero.`);
+            return;
+        }
+
+        console.log(`✅ Tipo de servicio ${id} no está en uso. Procediendo a eliminar...`);
+
+        // Si no está en uso, proceder con eliminación
+        if (confirm(`¿Está seguro de eliminar "${servicio.nombreServicio}"?\n\n⚠️ Esta acción no se puede deshacer.`)) {
+            const res = await fetch(`${API_BASE_URL}/tipos-servicio/${id}`, { 
+                method: 'DELETE' 
             });
-        }
-
-        // 3. Crear tarjeta de servicio
-        function crearTarjetaServicio(servicio) {
-            const nombre = servicio.nombreServicio || 'Nombre no disponible';
-            const categoria = servicio.categoria || 'Categoría no disponible';
-            const descripcion = servicio.descripcionExtendida || 'Descripción no disponible';
-            const costo = servicio.costo ? servicio.costo.toLocaleString('es-CO') : 'N/A';
-            const duracion = servicio.duracion || 'N/A';
-            const frecuencia = servicio.frecuencia || 'N/A';
-            // Icono genérico o personalizado
-            let icono = '🔧'; // Icono por defecto
-            if (servicio.icono) icono = servicio.icono;
-            else if (categoria.toLowerCase().includes('plaga')) icono = '🐛';
-            else if (categoria.toLowerCase().includes('tanque')) icono = '🚿';
-            else if (categoria.toLowerCase().includes('certificado')) icono = '📋';
-
-            const card = document.createElement('div');
-            card.className = 'service-card';
-            card.dataset.category = categoria.toLowerCase().replace(/\s+/g, '-');
-
-            card.innerHTML = `
-                <div class="card-header">
-                    <div class="service-icon">${icono}</div>
-                    <div class="service-name">${nombre}</div>
-                    <div class="service-category">${categoria}</div>
-                </div>
-                <div class="card-body">
-                    <div class="info-item">
-                        <span class="info-label">💰 Costo:</span>
-                        <span class="info-value">$${costo}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">⏱️ Duración:</span>
-                        <span class="info-value">${duracion}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">🔄 Frecuencia:</span>
-                        <span class="info-value">${frecuencia}</span>
-                    </div>
-                    <div class="info-item">
-                        <span class="info-label">📝 Descripción:</span>
-                        <span class="info-value">${descripcion.substring(0, 50)}${descripcion.length > 50 ? '...' : ''}</span>
-                    </div>
-                </div>
-                <div class="card-actions">
-                    <button class="btn btn-outline btn-sm" onclick="verDetalles('${servicio.idTipoServicio}')">👁️ Ver Detalles</button>
-                    <button class="btn btn-outline btn-sm" onclick="actualizarServicio('${servicio.idTipoServicio}')">✏️ Actualizar</button>
-                    <button class="btn btn-outline btn-sm" onclick="eliminarServicio('${servicio.idTipoServicio}')">🗑️ Eliminar</button>
-                </div>
-            `;
-            return card;
-        }
-
-        // 4. Actualizar estadísticas
-        function actualizarEstadisticas(servicios) {
-            const total = servicios.length;
-            const costoTotal = servicios.reduce((acc, s) => acc + (s.costo || 0), 0);
-
-            document.getElementById('totalServicesCount').textContent = total;
-            document.getElementById('totalCost').textContent = costoTotal.toLocaleString('es-CO');
-        }
-
-        // 5. Poblar filtros de categoría
-        function poblarFiltrosCategoria(servicios) {
-            const categoriasSet = new Set();
-            servicios.forEach(s => {
-                if (s.categoria) {
-                    categoriasSet.add(s.categoria);
-                }
-            });
-            const categoriasUnicas = Array.from(categoriasSet).filter(c => c && c.trim() !== '');
-            const selectCategoria = document.getElementById('categoryFilter');
-            if (!selectCategoria) return;
-            const valorActual = selectCategoria.value;
-            selectCategoria.innerHTML = '<option value="">Todas las categorías</option>';
-            categoriasUnicas.forEach(cat => {
-                const option = document.createElement('option');
-                option.value = cat.toLowerCase().replace(/\s+/g, '-');
-                option.textContent = cat;
-                selectCategoria.appendChild(option);
-            });
-            if (categoriasUnicas.map(c => c.toLowerCase().replace(/\s+/g, '-')).includes(valorActual)) {
-                selectCategoria.value = valorActual;
+            
+            if (!res.ok) {
+                const errorText = await res.text();
+                throw new Error(errorText || 'Error al eliminar');
             }
+            
+            alert("✅ Servicio eliminado exitosamente.");
+            await loadServicesData();
         }
+    } catch (error) {
+        console.error("❌ Error al eliminar servicio:", error);
+        alert(`❌ Error: ${error.message}`);
+    }
+}
 
-        // === FUNCIONES DE INTERACCIÓN ===
-        function showView(view, element) {
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            element.classList.add('active');
-            currentView = view;
-            aplicarFiltros();
-        }
+function verDetalles(id) {
+    const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
+    if (!servicio) {
+        alert("Servicio no encontrado.");
+        return;
+    }
+    
+    const enUso = isServicioEnUso(id);
+    const vinculados = getServiciosVinculados(id);
+    
+    let mensaje = `═══════════════════════════════
+DETALLES DEL SERVICIO
+═══════════════════════════════
 
-        function aplicarFiltros() {
-            let serviciosFiltrados = [...todosLosServicios];
+🔧 Nombre: ${servicio.nombreServicio}
+🏷️ Categoría: ${servicio.categoria}
+💰 Costo: $${(servicio.costo || 0).toLocaleString('es-CO')}
+⏱️ Duración: ${servicio.duracion}
+🔄 Frecuencia: ${servicio.frecuencia}
+${servicio.icono ? `🎨 Icono: ${servicio.icono}` : ''}
 
-            const terminoBusqueda = document.getElementById('searchInput').value.toLowerCase();
-            if (terminoBusqueda) {
-                serviciosFiltrados = serviciosFiltrados.filter(s =>
-                    (s.nombreServicio && s.nombreServicio.toLowerCase().includes(terminoBusqueda)) ||
-                    (s.categoria && s.categoria.toLowerCase().includes(terminoBusqueda))
-                );
-            }
+📝 Descripción:
+${servicio.descripcionExtendida}
 
-            const filtroCategoria = document.getElementById('categoryFilter').value;
-            if (filtroCategoria) {
-                serviciosFiltrados = serviciosFiltrados.filter(s =>
-                    s.categoria.toLowerCase().replace(/\s+/g, '-') === filtroCategoria
-                );
-            }
+═══════════════════════════════`;
 
-            renderizarServicios(serviciosFiltrados);
-        }
-
-        function clearFilters() {
-            document.getElementById('searchInput').value = '';
-            document.getElementById('categoryFilter').value = '';
-            currentView = 'all';
-            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelector('.nav-tab.all').classList.add('active');
-            renderizarServicios(todosLosServicios);
-        }
-
-        function openAddServiceModal() {
-            document.getElementById('addServiceModal').classList.add('show');
-            const form = document.querySelector('#addServiceModal form');
-            if (form) {
-                form.reset();
-                document.querySelector('#addServiceModal .modal-title').textContent = '➕ Agregar Nuevo Servicio';
-                document.querySelector('#addServiceModal .btn-primary').textContent = '✅ Agregar Servicio';
-                form.onsubmit = handleAddServiceForm;
-            }
-            currentEditingId = null; // Limpiar ID de edición
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            if (modal) modal.classList.remove('show');
-        }
-
-        // Variable para prevenir envíos duplicados
-        let isSubmitting = false;
-
-        // Manejar agregar servicio
-        async function handleAddServiceForm(event) {
-            // --- GUARD PARA PREVENIR ENVÍOS DUPLICADOS ---
-            if (isSubmitting) {
-                console.log("DEBUG: handleAddServiceForm llamado mientras ya se estaba procesando. Ignorando.");
-                return; // Si ya se está procesando, salir inmediatamente
-            }
-
-            event.preventDefault();
-
-            // Marcar como "enviando"
-            isSubmitting = true;
-
-            // Botón de submit para deshabilitar temporalmente (feedback visual)
-            const submitButton = document.querySelector('#addServiceModal .btn-primary');
-            if (submitButton) {
-                submitButton.disabled = true;
-                submitButton.textContent = '⏳ Procesando...';
-            }
-
-            try {
-                const form = event.target;
-                const formData = new FormData(form);
-                const datosServicio = Object.fromEntries(formData.entries());
-
-                if (!datosServicio.serviceName || !datosServicio.serviceCategory || !datosServicio.serviceCost || !datosServicio.serviceDuration || !datosServicio.serviceFrequency || !datosServicio.serviceDescription) {
-                    alert("Por favor complete todos los campos obligatorios.");
-                    return;
-                }
-
-                // Convertir costo a número
-                const costo = parseFloat(datosServicio.serviceCost);
-
-                // Validar costo
-                if (!validarCosto(costo)) {
-                    return;
-                }
-
-                const datosParaEnviar = {
-                    nombreServicio: datosServicio.serviceName.trim(),
-                    categoria: datosServicio.serviceCategory.trim(),
-                    costo: costo,
-                    duracion: datosServicio.serviceDuration.trim(),
-                    frecuencia: datosServicio.serviceFrequency.trim(),
-                    descripcionExtendida: datosServicio.serviceDescription.trim()
-                };
-
-                // Agregar icono si está presente
-                if (datosServicio.serviceIcon && datosServicio.serviceIcon.trim() !== '') {
-                    datosParaEnviar.icono = datosServicio.serviceIcon.trim();
-                }
-
-                console.log("Datos del servicio a enviar:", datosParaEnviar);
-
-                let response;
-                let message;
-
-                if (currentEditingId) {
-                    // Actualizar
-                    response = await fetch(`${API_BASE_URL}/tipos-servicio/${currentEditingId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(datosParaEnviar)
-                    });
-                    message = "Servicio actualizado exitosamente!";
-                } else {
-                    // Crear
-                    response = await fetch(`${API_BASE_URL}/tipos-servicio`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(datosParaEnviar)
-                    });
-                    message = "Servicio agregado exitosamente!";
-                }
-
-                const responseText = await response.text();
-
-                if (!response.ok) {
-                    let errorMessage = `Error HTTP ${response.status}`;
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        errorMessage = errorData.error || errorData.message || responseText;
-                    } catch (e) {
-                        errorMessage = responseText || errorMessage;
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                console.log("Respuesta del servidor:", responseText);
-                alert(message);
-                closeModal('addServiceModal');
-                form.reset();
-                await loadServicesData(); // Recargar datos
-
-            } catch (error) {
-                console.error("Error al procesar el servicio:", error);
-                alert(`Error: ${error.message}`);
-            } finally {
-                // --- LIMPIAR EL ESTADO DE ENVÍO ---
-                isSubmitting = false; // Volver a permitir envíos
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.textContent = currentEditingId ? '💾 Guardar Cambios' : '✅ Agregar Servicio';
-                }
-            }
-        }
-
-        // Función para validar el costo
-        function validarCosto(costo) {
-            const maxCosto = 999999999999.99; // Máximo permitido si usas DECIMAL(15,2)
-            if (costo > maxCosto) {
-                alert(`El costo no puede ser mayor a $${maxCosto.toLocaleString('es-CO')}`);
-                return false;
-            }
-            if (costo < 0) {
-                alert("El costo no puede ser negativo.");
-                return false;
-            }
-            return true;
-        }
-        // Actualizar servicio
-        function actualizarServicio(id) {
-            const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
-            if (!servicio) {
-                alert("Servicio no encontrado.");
-                return;
-            }
-            console.log("Editando:", servicio);
-            openAddServiceModal();
-            document.querySelector('#addServiceModal .modal-title').textContent = '✏️ Editar Servicio';
-            document.getElementById('serviceName').value = servicio.nombreServicio || '';
-            document.getElementById('serviceCategory').value = servicio.categoria || '';
-            document.getElementById('serviceCost').value = servicio.costo || '';
-            document.getElementById('serviceDuration').value = servicio.duracion || '';
-            document.getElementById('serviceFrequency').value = servicio.frecuencia || '';
-            document.getElementById('serviceDescription').value = servicio.descripcionExtendida || '';
-            document.getElementById('serviceIcon').value = servicio.icono || '';
-
-            currentEditingId = id; // Guardar ID para la actualización
-
-            const submitButton = document.querySelector('#addServiceModal .btn-primary');
-            if (submitButton) {
-                submitButton.textContent = '💾 Guardar Cambios';
-                // NO asignes el evento aquí, ya está asignado globalmente
-            }
-        }
-
-        // Eliminar servicio
-        function eliminarServicio(id) {
-            const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
-            if (servicio) {
-                if (confirm(`¿Eliminar el servicio "${servicio.nombreServicio}"?`)) {
-                    fetch(`${API_BASE_URL}/tipos-servicio/${id}`, { method: 'DELETE' })
-                        .then(r => {
-                            if (!r.ok) throw new Error(`HTTP error! status: ${r.status}`);
-                            return r.text();
-                        })
-                        .then(msg => {
-                            alert(`Servicio "${servicio.nombreServicio}" eliminado.`);
-                            loadServicesData(); // Recargar datos
-                        })
-                        .catch(err => alert(`Error: ${err.message}`));
-                }
-            }
-        }
-
-        function verDetalles(id) {
-            const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
-            if (servicio) {
-                alert(`Detalles del Servicio:
-Nombre: ${servicio.nombreServicio}
-Categoría: ${servicio.categoria}
-Costo: $${(servicio.costo || 0).toLocaleString('es-CO')}
-Duración: ${servicio.duracion}
-Frecuencia: ${servicio.frecuencia}
-Descripción: ${servicio.descripcionExtendida}
-Icono: ${servicio.icono || 'No definido'}`);
-            }
-        }
+    if (enUso) {
+        mensaje += `\n⚠️ ESTADO: EN USO (${vinculados.length} servicio(s) programado(s))`;
+        mensaje += `\n🔒 No se puede eliminar mientras esté en uso`;
+    } else {
+        mensaje += `\n✅ ESTADO: Disponible para eliminar`;
+    }
+    
+    alert(mensaje);
+}
 
 // === INICIALIZACIÓN Y MANEJO DE EVENTOS ===
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Iniciando aplicación de Servicios...');
 
-    // Cargar servicios iniciales
     loadServicesData();
 
-    // Asociar eventos al formulario de agregar/editar
     const form = document.getElementById('addServiceForm');
     if (form) {
-        // Solo asigna el evento una vez
-        form.addEventListener('submit', function(event) {
-            event.preventDefault();
-            handleAddServiceForm(event);
-        });
+        form.addEventListener('submit', handleAddServiceForm);
     } else {
         console.error("No se encontró el formulario #addServiceForm");
     }
 
-    // Asociar eventos de filtrado
     const searchInput = document.getElementById('searchInput');
     const categoryFilter = document.getElementById('categoryFilter');
     if (searchInput) searchInput.addEventListener('input', aplicarFiltros);

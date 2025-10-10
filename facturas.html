@@ -165,7 +165,8 @@
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;
         }
         .stat-icon {
-            width: 50px; height: 50px; border-radius: 12px;
+            width: 50px; height: 50px;
+            border-radius: 12px;
             display: flex; align-items: center; justify-content: center;
             font-size: 1.3em; color: white;
         }
@@ -386,7 +387,6 @@
     </div>
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Navigation -->
         <div class="top-nav">
             <div class="nav-tabs">
                 <a href="#" class="nav-tab active">📄 Facturas</a>
@@ -398,14 +398,12 @@
                 <button class="btn btn-primary" onclick="openAddInvoiceModal()">➕ Nueva Factura</button>
             </div>
         </div>
-        <!-- Header -->
         <div class="header">
             <div class="header-title">
                 <h1>Facturas</h1>
                 <p>Gestión y seguimiento de facturación de servicios</p>
             </div>
         </div>
-        <!-- Stats -->
         <div class="stats-grid">
             <div class="stat-card primary">
                 <div class="stat-header">
@@ -436,7 +434,6 @@
                 <div class="stat-label">Anuladas</div>
             </div>
         </div>
-        <!-- Filtros -->
         <div class="filters-section">
             <form id="filterForm">
                 <div class="filters-grid">
@@ -466,7 +463,6 @@
                 </div>
             </form>
         </div>
-        <!-- Tabla de Facturas -->
         <div class="invoices-section">
             <div class="invoices-header">
                 <span class="invoices-title">Listado de Facturas</span>
@@ -500,15 +496,28 @@
     <div class="modal" id="addInvoiceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title" id="invoiceModalTitle">Nueva Factura</h2>
+                <h2 class="modal-title" id="invoiceModalTitle">➕ Nueva Factura</h2>
                 <button class="close-btn" onclick="closeModal('addInvoiceModal')">&times;</button>
             </div>
             <form id="invoiceForm">
                 <div class="form-group">
+                    <label>Tipo de Factura *</label>
+                    <select name="tipoFacturaSelect" id="tipoFacturaSelect" class="form-control" required>
+                        <option value="">Seleccione tipo</option>
+                        <option value="Simple">Factura Simple</option>
+                        <option value="ConCotizacion">Factura con Cotización</option>
+                    </select>
+                </div>
+                <div class="form-group" id="cotizacionField" style="display: none;">
+                    <label>Cotización</label>
+                    <select name="id_cotizacion" id="cotizacionSelect" class="form-control">
+                        <option value="">Cargando cotizaciones...</option>
+                    </select>
+                </div>
+                <div class="form-group">
                     <label>Cliente *</label>
                     <select name="dni_cliente" id="clienteSelect" class="form-control" required>
                         <option value="">Cargando clientes...</option>
-                        <!-- Opciones se llenan dinámicamente -->
                     </select>
                 </div>
                 <div class="form-grid-2">
@@ -536,334 +545,525 @@
                 </div>
                 <div class="form-grid-2" style="margin-top: 2rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addInvoiceModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Factura</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">✅ Guardar Factura</button>
                 </div>
             </form>
         </div>
     </div>
     <script>
-        // === CONFIGURACIÓN ===
-        const API_BASE_URL = 'http://localhost:8080/api';
-        const API_FACTURAS_URL = `${API_BASE_URL}/facturas`;
-        const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
-        // === VARIABLES GLOBALES ===
-        let allFacturas = [];
-        let clientesData = [];
-        let currentEditId = null;
-        let isSubmitting = false; // Bandera para prevenir dobles envíos
-        // === FUNCIONES PRINCIPALES ===
-        function handleError(error) {
-            console.error('Error:', error);
-            alert('Error: ' + (error.message || 'Por favor, intente nuevamente.'));
-        }
-        async function loadClientes() {
-            try {
-                const response = await fetch(`${API_PERSONAS_URL}?rol=cliente`); // Filtrar solo clientes si el backend lo soporta
-                if (!response.ok) throw new Error('Error al cargar clientes');
-                const personas = await response.json();
-                clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
-                const select = document.getElementById('clienteSelect');
-                select.innerHTML = '<option value="">Seleccione un cliente</option>';
-                clientesData.forEach(cliente => {
-                    const option = document.createElement('option');
-                    option.value = cliente.dni;
-                    option.textContent = `${cliente.nombre} - ${cliente.dni}`;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error cargando clientes:', error);
-                document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
+ // === CONFIGURACIÓN ===
+const API_BASE_URL = 'http://localhost:8080/api';
+const API_FACTURAS_URL = `${API_BASE_URL}/facturas`;
+const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
+const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
+
+// === VARIABLES GLOBALES ===
+let allFacturas = [];
+let clientesData = [];
+let cotizacionesData = [];
+let currentEditId = null;
+let isSubmitting = false;
+
+// === FUNCIONES PRINCIPALES ===
+function handleError(error) {
+    console.error('Error:', error);
+    alert('Error: ' + (error.message || 'Por favor, intente nuevamente.'));
+}
+
+async function loadClientes() {
+    try {
+        const response = await fetch(`${API_PERSONAS_URL}?rol=cliente`);
+        if (!response.ok) throw new Error('Error al cargar clientes');
+        const personas = await response.json();
+        clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
+        const select = document.getElementById('clienteSelect');
+        select.innerHTML = '<option value="">Seleccione un cliente</option>';
+        clientesData.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.dni; 
+            option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error cargando clientes:', error);
+        document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
+    }
+}
+
+async function loadCotizaciones() {
+    try {
+        const response = await fetch(API_COTIZACIONES_URL);
+        if (!response.ok) throw new Error('Error al cargar cotizaciones');
+        cotizacionesData = await response.json();
+        
+        console.log('Cotizaciones cargadas:', cotizacionesData); // Para debug
+        
+        const select = document.getElementById('cotizacionSelect');
+        select.innerHTML = '<option value="">Seleccione una cotización</option>';
+        
+        // Mostrar todas las cotizaciones que no estén rechazadas o finalizadas
+        cotizacionesData.forEach(cot => {
+            const estado = cot.estado ? cot.estado.toLowerCase() : '';
+            
+            // Excluir solo las rechazadas y finalizadas
+            if (estado !== 'rechazada' && estado !== 'finalizada') {
+                const option = document.createElement('option');
+                option.value = cot.idCotizacion;
+                
+                // Obtener nombre del cliente
+                const clienteNombre = cot.cliente?.nombre || cot.dniCliente || 'Cliente desconocido';
+                const costoFormateado = formatCurrency(cot.costoTotalCotizacion || 0);
+                const estadoBadge = cot.estado ? `[${cot.estado}]` : '[Sin estado]';
+                
+                // Texto descriptivo para la opción
+                option.textContent = `#${cot.idCotizacion} - ${clienteNombre} - ${costoFormateado} ${estadoBadge}`;
+                
+                select.appendChild(option);
             }
+        });
+        
+        // Si no hay cotizaciones disponibles
+        if (select.options.length === 1) {
+            select.innerHTML = '<option value="">No hay cotizaciones disponibles</option>';
         }
-        async function handleInvoiceFormSubmit(event) {
-            event.preventDefault();
-            // --- GUARD PARA PREVENIR ENVÍOS DUPLICADOS ---
-            if (isSubmitting) {
-                console.log("DEBUG: handleInvoiceFormSubmit llamado mientras ya se estaba procesando. Ignorando.");
+    } catch (error) {
+        console.error('Error cargando cotizaciones:', error);
+        document.getElementById('cotizacionSelect').innerHTML = '<option value="">Error al cargar</option>';
+    }
+}
+
+// Manejar cambio de tipo de factura
+document.getElementById('tipoFacturaSelect').addEventListener('change', function() {
+    const tipoFactura = this.value;
+    const cotizacionField = document.getElementById('cotizacionField');
+    const cotizacionSelect = document.getElementById('cotizacionSelect');
+    if (tipoFactura === 'ConCotizacion') {
+        cotizacionField.style.display = 'block';
+    } else {
+        cotizacionField.style.display = 'none';
+        cotizacionSelect.value = '';
+    }
+});
+
+async function handleInvoiceFormSubmit(event) {
+    event.preventDefault();
+
+    if (isSubmitting) return;
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Procesando...';
+
+    try {
+        const formData = new FormData(event.target);
+        const tipoFactura = document.getElementById('tipoFacturaSelect').value;
+        const dniCliente = formData.get('dni_cliente')?.trim();
+
+        if (!dniCliente) {
+            alert('⚠️ Por favor, seleccione un cliente.');
+            return;
+        }
+
+        let idCotizacion = null;
+        if (tipoFactura === 'ConCotizacion') {
+            idCotizacion = formData.get('id_cotizacion')?.trim();
+            if (!idCotizacion) {
+                alert('⚠️ Por favor, seleccione una cotización.');
                 return;
             }
-            isSubmitting = true;
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Procesando...';
-            try {
-                const formData = new FormData(event.target);
-                const facturaData = {
-                    dniCliente: formData.get('dni_cliente'),
-                    fechaEmision: formData.get('fecha_emision'),
-                    montoTotal: parseFloat(formData.get('monto_total')),
-                    estado: formData.get('estado'),
-                    observaciones: formData.get('observaciones') || null
-                };
-                console.log("Datos de factura a enviar:", facturaData);
-                let response;
-                let message;
-                if (currentEditId) {
-                    // Actualizar
-                    response = await fetch(`${API_FACTURAS_URL}/${currentEditId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(facturaData)
-                    });
-                    message = "Factura actualizada exitosamente!";
-                } else {
-                    // Crear
-                    response = await fetch(API_FACTURAS_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(facturaData)
-                    });
-                    message = "Factura creada exitosamente!";
-                }
-                const responseText = await response.text();
-                if (!response.ok) {
-                    let errorMessage = `Error HTTP ${response.status}`;
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        errorMessage = errorData.error || errorData.message || responseText;
-                    } catch (e) {
-                        errorMessage = responseText || errorMessage;
-                    }
-                    throw new Error(errorMessage);
-                }
-                console.log("Respuesta del servidor:", responseText);
-                alert(message);
-                closeModal('addInvoiceModal');
-                await getAllFacturas(); // Recargar datos
-            } catch (error) {
-                console.error("Error al procesar la factura:", error);
-                alert(`Error: ${error.message}`);
-            } finally {
-                // --- LIMPIAR EL ESTADO DE ENVÍO ---
-                isSubmitting = false;
-                submitBtn.disabled = false;
-                submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Factura';
-            }
         }
-        async function getAllFacturas() {
-            try {
-                const response = await fetch(API_FACTURAS_URL);
-                if (!response.ok) throw new Error('Error al obtener facturas');
-                allFacturas = await response.json();
-                renderFacturas(allFacturas);
-                updateStats(allFacturas);
-            } catch (error) {
-                handleError(error);
-                document.getElementById('invoicesTableBody').innerHTML = 
-                    '<tr><td colspan="7" class="empty-state">Error al cargar. Verifique que el backend esté funcionando.</td></tr>';
-            }
+
+        const montoTotalRaw = formData.get('monto_total');
+        const montoTotal = parseFloat(montoTotalRaw);
+        if (isNaN(montoTotal) || montoTotal <= 0) {
+            alert('⚠️ El monto total debe ser un número válido mayor a 0.');
+            return;
         }
-        function renderFacturas(facturas) {
-            const tbody = document.getElementById('invoicesTableBody');
-            if (facturas.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay facturas</td></tr>';
-                return;
-            }
-            tbody.innerHTML = '';
-            facturas.forEach(fact => {
-                const row = document.createElement('tr');
-                const cliente = clientesData.find(c => c.dni === fact.dniCliente) || { nombre: fact.dniCliente };
-                row.innerHTML = `
-                    <td>${fact.idFactura || 'N/A'}</td>
-                    <td>${cliente.nombre || 'N/A'}</td>
-                    <td>${fact.observaciones || 'Sin descripción'}</td>
-                    <td>${formatDate(fact.fechaEmision)}</td>
-                    <td>${formatCurrency(fact.montoTotal)}</td>
-                    <td><span class="status-badge ${(fact.estado || 'Pendiente').toLowerCase()}">${fact.estado || 'Pendiente'}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-sm btn-view" onclick="viewInvoice('${fact.idFactura}')">👁️ Ver</button>
-                            <button class="btn-sm btn-edit" onclick="editInvoice('${fact.idFactura}')">✏️ Editar</button>
-                            <button class="btn-sm btn-send" onclick="sendInvoice('${fact.idFactura}')">📤 Enviar</button>
-                            <button class="btn-sm btn-delete" onclick="deleteInvoice('${fact.idFactura}')">🗑️ Eliminar</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
+
+        const facturaData = {
+            dniCliente: dniCliente,
+            fechaEmision: formData.get('fecha_emision'),
+            montoTotal: montoTotal,
+            estado: formData.get('estado'),
+            observaciones: formData.get('observaciones')?.trim() || null,
+            tipoFactura: tipoFactura,
+            cotizacionId: idCotizacion
+        };
+
+        let response;
+        let message;
+
+        if (currentEditId) {
+            response = await fetch(`${API_FACTURAS_URL}/${currentEditId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(facturaData)
             });
+            message = "✅ Factura actualizada exitosamente.";
+        } else {
+            response = await fetch(API_FACTURAS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(facturaData)
+            });
+            message = "✅ Factura creada exitosamente.";
         }
-        function updateStats(facturas) {
-            const pendientes = facturas.filter(f => f.estado === 'Pendiente').length;
-            const vencidas = facturas.filter(f => f.estado === 'Vencida').length;
-            const pagadas = facturas.filter(f => f.estado === 'Pagada').length;
-            const anuladas = facturas.filter(f => f.estado === 'Anulada').length;
-            document.getElementById('statPendientes').textContent = pendientes;
-            document.getElementById('statVencidas').textContent = vencidas;
-            document.getElementById('statPagadas').textContent = pagadas;
-            document.getElementById('statAnuladas').textContent = anuladas;
-        }
-        async function viewInvoice(id) {
+
+        const responseText = await response.text();
+        if (!response.ok) {
+            let errorMessage = `Error HTTP ${response.status}`;
             try {
-                const response = await fetch(`${API_FACTURAS_URL}/${id}`);
-                if (!response.ok) throw new Error('Factura no encontrada');
-                const fact = await response.json();
-                const cliente = clientesData.find(c => c.dni === fact.dniCliente) || { nombre: fact.dniCliente };
-                const detalles = `
+                const errorData = JSON.parse(responseText);
+                errorMessage = errorData.error || errorData.message || responseText;
+            } catch (e) {
+                errorMessage = responseText || errorMessage;
+            }
+            throw new Error(errorMessage);
+        }
+
+        alert(message);
+
+        if (!currentEditId) {
+            try {
+                const responseData = JSON.parse(responseText);
+                generatePDF({ ...facturaData, idFactura: responseData.idFactura || null });
+            } catch (e) {
+                console.log('No se pudo generar PDF automáticamente');
+            }
+        }
+
+        closeModal('addInvoiceModal');
+        await getAllFacturas();
+
+    } catch (error) {
+        console.error("Error al procesar la factura:", error);
+        alert(`❌ Error: ${error.message}`);
+    } finally {
+        isSubmitting = false;
+        submitBtn.disabled = false;
+        submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Factura';
+    }
+}
+
+function generatePDF(facturaData) {
+    console.log("Generando PDF para la factura:", facturaData);
+    alert(`PDF generado para la factura con monto: $${facturaData.montoTotal}`);
+}
+
+async function getAllFacturas() {
+    try {
+        const response = await fetch(API_FACTURAS_URL);
+        if (!response.ok) throw new Error('Error al obtener facturas');
+        allFacturas = await response.json();
+        renderFacturas(allFacturas);
+        updateStats(allFacturas);
+    } catch (error) {
+        handleError(error);
+        document.getElementById('invoicesTableBody').innerHTML = 
+            '<tr><td colspan="7" class="empty-state">Error al cargar. Verifique que el backend esté funcionando.</td></tr>';
+    }
+}
+
+function renderFacturas(facturas) {
+    const tbody = document.getElementById('invoicesTableBody');
+    if (facturas.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay facturas</td></tr>';
+        return;
+    }
+    tbody.innerHTML = '';
+    facturas.forEach(fact => {
+        // Obtener nombre del cliente - puede venir en fact.cliente o buscar en clientesData
+        const clienteNombre = fact.cliente?.nombre || 
+                            clientesData.find(c => c.dni === fact.dniCliente)?.nombre || 
+                            fact.dniCliente || 'N/A';
+        
+        // Descripción del servicio mejorada
+        let servicioDescripcion = '';
+        if (fact.tipoFactura === 'ConCotizacion' && fact.cotizacion) {
+            servicioDescripcion = `Cotización #${fact.cotizacion.idCotizacion}`;
+            if (fact.cotizacion.descripcionProblema) {
+                servicioDescripcion += ` - ${fact.cotizacion.descripcionProblema.substring(0, 30)}...`;
+            }
+        } else if (fact.observaciones) {
+            servicioDescripcion = fact.observaciones;
+        } else {
+            servicioDescripcion = fact.tipoFactura === 'ConCotizacion' ? 
+                'Servicio basado en cotización' : 'Servicio general';
+        }
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${fact.idFactura || 'N/A'}</td>
+            <td>${clienteNombre}</td>
+            <td>${servicioDescripcion}</td>
+            <td>${formatDate(fact.fechaEmision)}</td>
+            <td>${formatCurrency(fact.montoTotal)}</td>
+            <td><span class="status-badge ${(fact.estado || 'Pendiente').toLowerCase()}">${fact.estado || 'Pendiente'}</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-sm btn-view" onclick="viewInvoice('${fact.idFactura}')">👁️ Ver</button>
+                    <button class="btn-sm btn-edit" onclick="editInvoice('${fact.idFactura}')">✏️ Editar</button>
+                    <button class="btn-sm btn-send" onclick="sendInvoice('${fact.idFactura}')">📤 Enviar</button>
+                    <button class="btn-sm btn-delete" onclick="deleteInvoice('${fact.idFactura}')">🗑️ Eliminar</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function updateStats(facturas) {
+    const pendientes = facturas.filter(f => f.estado === 'Pendiente').length;
+    const vencidas = facturas.filter(f => f.estado === 'Vencida').length;
+    const pagadas = facturas.filter(f => f.estado === 'Pagada').length;
+    const anuladas = facturas.filter(f => f.estado === 'Anulada').length;
+    document.getElementById('statPendientes').textContent = pendientes;
+    document.getElementById('statVencidas').textContent = vencidas;
+    document.getElementById('statPagadas').textContent = pagadas;
+    document.getElementById('statAnuladas').textContent = anuladas;
+}
+
+async function viewInvoice(id) {
+    try {
+        const response = await fetch(`${API_FACTURAS_URL}/${id}`);
+        if (!response.ok) throw new Error('Factura no encontrada');
+        const fact = await response.json();
+        
+        const clienteNombre = fact.cliente?.nombre || 
+                            clientesData.find(c => c.dni === fact.dniCliente)?.nombre || 
+                            fact.dniCliente;
+        
+        let cotizacionInfo = 'N/A';
+        if (fact.cotizacion) {
+            cotizacionInfo = `#${fact.cotizacion.idCotizacion}`;
+            if (fact.cotizacion.descripcionProblema) {
+                cotizacionInfo += `\n   ${fact.cotizacion.descripcionProblema}`;
+            }
+            if (fact.cotizacion.costoTotalCotizacion) {
+                cotizacionInfo += `\n   Costo: ${formatCurrency(fact.cotizacion.costoTotalCotizacion)}`;
+            }
+        }
+        
+        const detalles = `
 FACTURA: ${fact.idFactura || 'N/A'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Cliente: ${cliente.nombre}
-DNI: ${fact.dniCliente}
+Cliente: ${clienteNombre}
+DNI: ${fact.cliente?.dni || fact.dniCliente}
+Tipo: ${fact.tipoFactura || 'Simple'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 Estado: ${fact.estado || 'Pendiente'}
 Fecha Emisión: ${formatDate(fact.fechaEmision)}
 Monto Total: ${formatCurrency(fact.montoTotal)}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+Cotización: 
+${cotizacionInfo}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
 Observaciones:
 ${fact.observaciones || 'Sin observaciones'}
-                `;
-                alert(detalles);
-            } catch (error) {
-                handleError(error);
-            }
-        }
-        async function editInvoice(id) {
-            const fact = allFacturas.find(f => f.idFactura === id);
-            if (!fact) {
-                alert("Factura no encontrada.");
-                return;
-            }
-            console.log("Editando factura:", fact);
-            openAddInvoiceModal();
-            document.getElementById('invoiceModalTitle').textContent = '✏️ Editar Factura';
-            document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
-            // Llenar campos
-            document.querySelector('select[name="dni_cliente"]').value = fact.dniCliente;
-            document.querySelector('input[name="fecha_emision"]').value = fact.fechaEmision.split('T')[0];
-            document.querySelector('input[name="monto_total"]').value = fact.montoTotal;
-            document.querySelector('select[name="estado"]').value = fact.estado;
-            document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
-            currentEditId = id; // Guardar ID para la actualización
-        }
-        async function sendInvoice(id) {
-            if (!confirm('¿Está seguro de enviar esta factura?')) return;
-            try {
-                // Simular envío (en la vida real, aquí iría una llamada al backend)
-                alert('✅ Factura enviada por correo electrónico.');
-            } catch (error) {
-                handleError(error);
-            }
-        }
-        async function deleteInvoice(id) {
-            if (!confirm('¿Está seguro de eliminar esta factura?')) return;
-            try {
-                const response = await fetch(`${API_FACTURAS_URL}/${id}`, {
-                    method: 'DELETE'
-                });
-                if (!response.ok) throw new Error('Error al eliminar');
-                alert('Factura eliminada exitosamente');
-                await getAllFacturas(); // Recargar datos
-            } catch (error) {
-                handleError(error);
-            }
-        }
-        // === FUNCIONES DE AYUDA ===
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-CO', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-            });
-        }
-        function formatCurrency(amount) {
-            if (!amount && amount !== 0) return '$0';
-            return new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                minimumFractionDigits: 0
-            }).format(amount);
-        }
-        function openAddInvoiceModal() {
-            document.getElementById('addInvoiceModal').classList.add('show');
-            const form = document.getElementById('invoiceForm');
-            form.reset();
-            document.getElementById('invoiceModalTitle').textContent = '➕ Nueva Factura';
-            document.getElementById('submitBtn').textContent = '✅ Guardar Factura';
-            currentEditId = null; // Limpiar ID de edición
-        }
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.remove('show');
-            const form = document.getElementById('invoiceForm');
-            form.reset();
-            document.getElementById('invoiceModalTitle').textContent = '➕ Nueva Factura';
-            document.getElementById('submitBtn').textContent = '✅ Guardar Factura';
-            currentEditId = null; // Limpiar ID de edición
-        }
-        // === EVENTOS ===
-        document.getElementById('invoiceForm').addEventListener('submit', handleInvoiceFormSubmit);
-        document.getElementById('filterForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const searchText = formData.get('search').toLowerCase();
-            const estadoFilter = formData.get('estado');
-            const fechaDesde = formData.get('fecha_desde');
-            const fechaHasta = formData.get('fecha_hasta');
-            let filtered = [...allFacturas];
-            if (searchText) {
-                filtered = filtered.filter(f => 
-                    f.dniCliente?.toLowerCase().includes(searchText) ||
-                    f.cliente?.nombre?.toLowerCase().includes(searchText)
-                );
-            }
-            if (estadoFilter) {
-                filtered = filtered.filter(f => f.estado === estadoFilter);
-            }
-            if (fechaDesde) {
-                filtered = filtered.filter(f => {
-                    const fecha = new Date(f.fechaEmision);
-                    return fecha >= new Date(fechaDesde);
-                });
-            }
-            if (fechaHasta) {
-                filtered = filtered.filter(f => {
-                    const fecha = new Date(f.fechaEmision);
-                    return fecha <= new Date(fechaHasta);
-                });
-            }
-            renderFacturas(filtered);
-            updateStats(filtered);
+        `;
+        alert(detalles);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+async function editInvoice(id) {
+    const fact = allFacturas.find(f => f.idFactura === id);
+    if (!fact) {
+        alert("Factura no encontrada.");
+        return;
+    }
+    openAddInvoiceModal();
+    document.getElementById('invoiceModalTitle').textContent = '✏️ Editar Factura';
+    document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
+    
+    // Setear cliente
+    const dniCliente = fact.cliente?.dni || fact.dniCliente;
+    document.getElementById('clienteSelect').value = dniCliente;
+    
+    // Setear fecha
+    const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : '';
+    document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
+    
+    // Setear monto
+    document.querySelector('input[name="monto_total"]').value = fact.montoTotal;
+    
+    // Setear estado
+    document.querySelector('select[name="estado"]').value = fact.estado;
+    
+    // Setear observaciones
+    document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
+    
+    // Setear tipo de factura
+    document.getElementById('tipoFacturaSelect').value = fact.tipoFactura || 'Simple';
+    
+    // Mostrar/ocultar campo cotización según tipo
+    if (fact.tipoFactura === 'ConCotizacion') {
+        document.getElementById('cotizacionField').style.display = 'block';
+        const idCotizacion = fact.cotizacion?.idCotizacion || '';
+        document.getElementById('cotizacionSelect').value = idCotizacion;
+    } else {
+        document.getElementById('cotizacionField').style.display = 'none';
+    }
+    
+    currentEditId = id;
+}
+
+async function sendInvoice(id) {
+    if (!confirm('¿Está seguro de enviar esta factura?')) return;
+    alert('✅ Factura enviada por correo electrónico.');
+}
+
+async function deleteInvoice(id) {
+    if (!confirm('¿Está seguro de eliminar esta factura?')) return;
+    try {
+        const response = await fetch(`${API_FACTURAS_URL}/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Error al eliminar');
+        alert('✅ Factura eliminada exitosamente');
+        await getAllFacturas();
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+function formatDate(dateString) {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('es-CO', { year: 'numeric', month: '2-digit', day: '2-digit' });
+}
+
+function formatCurrency(amount) {
+    if (!amount && amount !== 0) return '$0';
+    return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0 }).format(amount);
+}
+
+function openAddInvoiceModal() {
+    document.getElementById('addInvoiceModal').classList.add('show');
+    const form = document.getElementById('invoiceForm');
+    form.reset();
+    document.getElementById('invoiceModalTitle').textContent = '➕ Nueva Factura';
+    document.getElementById('submitBtn').textContent = '✅ Guardar Factura';
+    currentEditId = null;
+    document.getElementById('tipoFacturaSelect').value = '';
+    document.getElementById('cotizacionField').style.display = 'none';
+}
+// Asumiendo que tienes jsPDF importado
+function generatePDF(facturaData) {
+    const { jsPDF } = window.jspdf; // Ajusta según cómo hayas importado la librería
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text('FACTURA', 10, 10);
+    doc.setFontSize(12);
+    doc.text(`Número: ${facturaData.idFactura}`, 10, 20);
+    doc.text(`Cliente: ${facturaData.cliente.nombre}`, 10, 30);
+    doc.text(`Total: $${facturaData.montoTotal}`, 10, 40);
+
+    // Aquí puedes agregar más detalles de los servicios
+    let y = 50;
+    facturaData.detalleFactura.forEach(detalle => {
+        doc.text(`${detalle.servicio.nombre}: $${detalle.precio_unitario}`, 10, y);
+        y += 10;
+    });
+
+    doc.save(`factura_${facturaData.idFactura}.pdf`);
+}
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('show');
+    const form = document.getElementById('invoiceForm');
+    form.reset();
+    document.getElementById('invoiceModalTitle').textContent = '➕ Nueva Factura';
+    document.getElementById('submitBtn').textContent = '✅ Guardar Factura';
+    currentEditId = null;
+    document.getElementById('tipoFacturaSelect').value = '';
+    document.getElementById('cotizacionField').style.display = 'none';
+}
+
+function exportarFacturas() {
+    if (allFacturas.length === 0) {
+        alert('No hay facturas para exportar');
+        return;
+    }
+    let csv = 'ID,Cliente,DNI_Cliente,Fecha_Emision,Monto_Total,Estado,Tipo_Factura,Observaciones\n';
+    allFacturas.forEach(f => {
+        const clienteNombre = f.cliente?.nombre || clientesData.find(c => c.dni === f.dniCliente)?.nombre || '';
+        const dniCliente = f.cliente?.dni || f.dniCliente || '';
+        csv += `"${f.idFactura || ''}",`;
+        csv += `"${clienteNombre}",`;
+        csv += `"${dniCliente}",`;
+        csv += `"${f.fechaEmision || ''}",`;
+        csv += `"${f.montoTotal || 0}",`;
+        csv += `"${f.estado || 'Pendiente'}",`;
+        csv += `"${f.tipoFactura || 'Simple'}",`;
+        csv += `"${(f.observaciones || '').replace(/"/g, '""')}"\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `facturas_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+document.getElementById('filterForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const searchText = formData.get('search').toLowerCase();
+    const estadoFilter = formData.get('estado');
+    const fechaDesde = formData.get('fecha_desde');
+    const fechaHasta = formData.get('fecha_hasta');
+    
+    let filtered = [...allFacturas];
+    
+    // Filtro por búsqueda de texto
+    if (searchText) {
+        filtered = filtered.filter(f => {
+            const clienteNombre = (f.cliente?.nombre || f.dniCliente || '').toLowerCase();
+            const dniCliente = (f.cliente?.dni || f.dniCliente || '').toLowerCase();
+            return clienteNombre.includes(searchText) || dniCliente.includes(searchText);
         });
-        window.onclick = function(event) {
-            const modal = document.getElementById('addInvoiceModal');
-            if (event.target === modal) {
-                closeModal('addInvoiceModal');
-            }
-        }
-        function exportarFacturas() {
-            if (allFacturas.length === 0) {
-                alert('No hay facturas para exportar');
-                return;
-            }
-            let csv = 'ID,Cliente,DNI_Cliente,Fecha_Emision,Monto_Total,Estado,Observaciones';
-            allFacturas.forEach(f => {
-                const cliente = clientesData.find(c => c.dni === f.dniCliente) || { nombre: f.dniCliente };
-                csv += `"${f.idFactura || ''}",`;
-                csv += `"${cliente.nombre || ''}",`;
-                csv += `"${f.dniCliente || ''}",`;
-                csv += `"${f.fechaEmision || ''}",`;
-                csv += `"${f.montoTotal || 0}",`;
-                csv += `"${f.estado || 'Pendiente'}",`;
-                csv += `"${(f.observaciones || '').replace(/"/g, '""')}"
-`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', `facturas_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-        // === INICIALIZACIÓN ===
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Cargando facturas...');
-            getAllFacturas();
-            loadClientes();
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelector('input[name="fecha_emision"]').value = today;
-        });
+    }
+    
+    // Filtro por estado
+    if (estadoFilter) {
+        filtered = filtered.filter(f => f.estado === estadoFilter);
+    }
+    
+    // Filtro por fecha desde
+    if (fechaDesde) {
+        filtered = filtered.filter(f => new Date(f.fechaEmision) >= new Date(fechaDesde));
+    }
+    
+    // Filtro por fecha hasta
+    if (fechaHasta) {
+        filtered = filtered.filter(f => new Date(f.fechaEmision) <= new Date(fechaHasta));
+    }
+    
+    renderFacturas(filtered);
+    updateStats(filtered);
+});
+
+// === INICIALIZACIÓN ===
+document.addEventListener('DOMContentLoaded', function() {
+    getAllFacturas();
+    loadClientes();
+    loadCotizaciones();
+    const today = new Date().toISOString().split('T')[0];
+    document.querySelector('input[name="fecha_emision"]').value = today;
+});
+
+document.getElementById('invoiceForm').addEventListener('submit', handleInvoiceFormSubmit);
+
+window.onclick = function(event) {
+    const modal = document.getElementById('addInvoiceModal');
+    if (event.target === modal) {
+        closeModal('addInvoiceModal');
+    }
+};
     </script>
 </body>
 </html>

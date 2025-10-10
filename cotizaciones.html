@@ -430,6 +430,12 @@
             background: #e53e3e;
         }
 
+        .btn-delete:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
         .modal {
             display: none;
             position: fixed;
@@ -495,6 +501,19 @@
             text-align: center;
             padding: 3rem;
             color: #718096;
+        }
+
+        .warning-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: 600;
+            margin-left: 0.5rem;
         }
 
         @media (max-width: 768px) {
@@ -661,13 +680,14 @@
                         <input type="text" name="search" class="form-control" placeholder="Nombre o DNI">
                     </div>
                     <div class="form-group">
-                    <label>Estado</label>
-                    <select name="estado" class="form-control" id="estadoSelect" >
-                        <option value="Pendiente">Pendiente</option>
-                        <option value="Aprobada">Aprobada</option>
-                        <option value="Rechazada">Rechazada</option>
-                        <option value="Finalizada">Finalizada</option>
-                    </select>
+                        <label>Estado</label>
+                        <select name="estado" class="form-control">
+                            <option value="">Todos</option>
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="Aprobada">Aprobada</option>
+                            <option value="Rechazada">Rechazada</option>
+                            <option value="Finalizada">Finalizada</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Desde</label>
@@ -719,6 +739,8 @@
                 <button class="close-btn" onclick="closeModal('addQuoteModal')">&times;</button>
             </div>
             <form id="quoteForm">
+                <input type="hidden" id="editingQuoteId" value="">
+                
                 <div class="form-grid-2">
                     <div class="form-group">
                         <label>Tipo Cliente *</label>
@@ -739,11 +761,11 @@
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label>DNI *</label>
-                            <input type="text" name="dni_nuevo" class="form-control" placeholder="123456789">
+                            <input type="text" name="dni_nuevo" id="dniNuevo" class="form-control" placeholder="123456789">
                         </div>
                         <div class="form-group">
                             <label>Tipo DNI *</label>
-                            <select name="tipo_dni" class="form-control">
+                            <select name="tipo_dni" id="tipoDniNuevo" class="form-control">
                                 <option value="CC">CC - Cédula</option>
                                 <option value="NIT">NIT - Empresa</option>
                                 <option value="CE">CE - Extranjería</option>
@@ -753,27 +775,27 @@
                     <div class="form-grid-2">
                         <div class="form-group">
                             <label>Nombre Completo *</label>
-                            <input type="text" name="nombre_nuevo" class="form-control" placeholder="Nombre del cliente">
+                            <input type="text" name="nombre_nuevo" id="nombreNuevo" class="form-control" placeholder="Nombre del cliente">
                         </div>
                         <div class="form-group">
                             <label>Teléfono</label>
-                            <input type="tel" name="telefono_nuevo" class="form-control" placeholder="3001234567">
+                            <input type="tel" name="telefono_nuevo" id="telefonoNuevo" class="form-control" placeholder="3001234567">
                         </div>
                     </div>
                     <div class="form-group">
                         <label>Correo</label>
-                        <input type="email" name="correo_nuevo" class="form-control" placeholder="cliente@email.com">
+                        <input type="email" name="correo_nuevo" id="correoNuevo" class="form-control" placeholder="cliente@email.com">
                     </div>
                 </div>
 
                 <div class="form-grid-2">
                     <div class="form-group">
                         <label>Fecha Preferida *</label>
-                        <input type="date" name="fecha_preferida" class="form-control" required>
+                        <input type="date" name="fecha_preferida" id="fechaPreferida" class="form-control" required>
                     </div>
                     <div class="form-group">
                         <label>Prioridad</label>
-                        <select name="prioridad" class="form-control">
+                        <select name="prioridad" id="prioridad" class="form-control">
                             <option value="Media">Media</option>
                             <option value="Alta">Alta</option>
                             <option value="Baja">Baja</option>
@@ -781,14 +803,34 @@
                     </div>
                 </div>
 
+                <div class="form-group" id="estadoGroup" style="display: none;">
+                    <label>Estado</label>
+                    <select name="estado" id="estadoSelect" class="form-control">
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                        <option value="Finalizada">Finalizada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Valor de la Cotización (COP) *</label>
+                    <input type="number" 
+                        name="costo_total" 
+                        id="costoTotal" 
+                        class="form-control" 
+                        min="0" 
+                        step="1000" 
+                        placeholder="Ej: 150000"
+                        required>
+                </div>
                 <div class="form-group">
                     <label>Descripción del Problema *</label>
-                    <textarea name="descripcion" class="form-control" rows="3" required placeholder="Describa el servicio requerido..."></textarea>
+                    <textarea name="descripcion" id="descripcion" class="form-control" rows="3" required placeholder="Describa el servicio requerido..."></textarea>
                 </div>
 
                 <div class="form-group">
                     <label>Notas Internas</label>
-                    <textarea name="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
+                    <textarea name="notas" id="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
                 </div>
 
                 <div class="form-grid-2" style="margin-top: 2rem;">
@@ -800,263 +842,287 @@
     </div>
 
     <script>
-        // === CONFIGURACIÓN ===
-        const API_BASE_URL = 'http://localhost:8080/api';
-        const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
-        const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
+    const API_BASE_URL = 'http://localhost:8080/api';
+    const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
+    const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
+    const API_SERVICIOS_URL = `${API_BASE_URL}/servicios`;
+    let allCotizaciones = [];
+    let allServicios = [];
+    let clientesData = [];
+    let currentEditId = null;
+    let isSubmitting = false;
 
-        // === VARIABLES GLOBALES ===
-        let allCotizaciones = [];
-        let clientesData = [];
-        let currentEditId = null;
-        let isSubmitting = false; // Bandera para prevenir dobles envíos
+    function handleError(error) {
+        console.error('Error:', error);
+        alert('Error: ' + (error.message || 'Por favor, intente nuevamente.'));
+    }
 
-        // === FUNCIONES PRINCIPALES ===
-        function handleError(error) {
-            console.error('Error:', error);
-            alert('Error: ' + (error.message || 'Por favor, intente nuevamente.'));
+    function toggleClienteInput() {
+        const tipo = document.getElementById('clienteTipo').value;
+        const existenteGroup = document.getElementById('clienteExistenteGroup');
+        const nuevoFields = document.getElementById('nuevoClienteFields');
+        if (tipo === 'nuevo') {
+            existenteGroup.style.display = 'none';
+            nuevoFields.style.display = 'block';
+            document.getElementById('clienteSelect').removeAttribute('required');
+            document.getElementById('dniNuevo').setAttribute('required', 'required');
+            document.getElementById('nombreNuevo').setAttribute('required', 'required');
+        } else {
+            existenteGroup.style.display = 'block';
+            nuevoFields.style.display = 'none';
+            document.getElementById('clienteSelect').setAttribute('required', 'required');
+            document.getElementById('dniNuevo').removeAttribute('required');
+            document.getElementById('nombreNuevo').removeAttribute('required');
         }
+    }
 
-        function toggleClienteInput() {
-            const tipo = document.getElementById('clienteTipo').value;
-            const existenteGroup = document.getElementById('clienteExistenteGroup');
-            const nuevoFields = document.getElementById('nuevoClienteFields');
-            
-            if (tipo === 'nuevo') {
-                existenteGroup.style.display = 'none';
-                nuevoFields.style.display = 'block';
-                document.getElementById('clienteSelect').removeAttribute('required');
-            } else {
-                existenteGroup.style.display = 'block';
-                nuevoFields.style.display = 'none';
-                document.getElementById('clienteSelect').setAttribute('required', 'required');
+    async function loadClientes() {
+        try {
+            const response = await fetch(API_PERSONAS_URL);
+            if (!response.ok) throw new Error('Error al cargar clientes');
+            const personas = await response.json();
+            clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
+            const select = document.getElementById('clienteSelect');
+            select.innerHTML = '<option value="">Seleccione un cliente</option>';
+            clientesData.forEach(cliente => {
+                const option = document.createElement('option');
+                option.value = cliente.dni;
+                option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error cargando clientes:', error);
+            document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
+        }
+    }
+
+    async function loadServicios() {
+        try {
+            const response = await fetch(API_SERVICIOS_URL);
+            if (!response.ok) throw new Error('Error al cargar servicios');
+            allServicios = await response.json();
+        } catch (error) {
+            console.error('Error cargando servicios:', error);
+            allServicios = [];
+        }
+    }
+
+    function isCotizacionVinculada(idCotizacion) {
+        return allServicios.some(servicio => 
+            servicio.idCotizacion === idCotizacion || 
+            (servicio.cotizacion && servicio.cotizacion.idCotizacion === idCotizacion)
+        );
+    }
+
+    async function createPersona(personaData) {
+        try {
+            const response = await fetch(API_PERSONAS_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(personaData)
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Error al crear cliente');
             }
+            return personaData.dni;
+        } catch (error) {
+            throw error;
         }
+    }
 
-        async function loadClientes() {
-            try {
-                const response = await fetch(`${API_PERSONAS_URL}?rol=cliente`); // Filtrar solo clientes si el backend lo soporta
-                if (!response.ok) throw new Error('Error al cargar clientes');
-                
-                const personas = await response.json();
-                clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
-                
-                const select = document.getElementById('clienteSelect');
-                select.innerHTML = '<option value="">Seleccione un cliente</option>';
-                
-                clientesData.forEach(cliente => {
-                    const option = document.createElement('option');
-                    option.value = cliente.dni;
-                    option.textContent = `${cliente.nombre} - ${cliente.dni}`;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Error cargando clientes:', error);
-                document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
-            }
-        }
+    async function handleQuoteFormSubmit(event) {
+        event.preventDefault();
+        if (isSubmitting) return;
+        isSubmitting = true;
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Procesando...';
 
-        function generateQuoteId() {
-            const year = new Date().getFullYear();
-            const timestamp = Date.now().toString().slice(-6);
-            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            return `COT-${year}-${timestamp}${random}`;
-        }
+        try {
+            const formData = new FormData(event.target);
+            const clienteTipo = document.getElementById('clienteTipo').value;
+            let dniCliente;
 
-        async function createPersona(personaData) {
-            try {
-                const response = await fetch(API_PERSONAS_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(personaData)
-                });
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || 'Error al crear cliente');
-                }
-                return personaData.dni;
-            } catch (error) {
-                throw error;
-            }
-        }
-
-        async function handleQuoteFormSubmit(event) {
-            event.preventDefault();
-
-            // --- GUARD PARA PREVENIR ENVÍOS DUPLICADOS ---
-            if (isSubmitting) {
-                console.log("DEBUG: handleQuoteFormSubmit llamado mientras ya se estaba procesando. Ignorando.");
-                return;
-            }
-
-            isSubmitting = true;
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.textContent = '⏳ Procesando...';
-
-            try {
-                const formData = new FormData(event.target);
-                const clienteTipo = document.getElementById('clienteTipo').value;
-                
-                let dniCliente;
-                
-                if (clienteTipo === 'nuevo') {
-                    const nuevoCliente = {
-                        dni: formData.get('dni_nuevo'),
-                        tipo_dni: formData.get('tipo_dni'), // Asegúrate que el backend espere tipo_dni
-                        nombre: formData.get('nombre_nuevo'),
-                        telefono: formData.get('telefono_nuevo') || null,
-                        correo: formData.get('correo_nuevo') || null,
-                        rol: 'Cliente',
-                        id_direccion: '5413', // Asumiendo un ID fijo o usar uno del backend
-                        id_cargo_especialidad: '9874' // Asumiendo un ID fijo o usar uno del backend
-                    };
-                    
-                    dniCliente = await createPersona(nuevoCliente);
-                    await loadClientes(); // Recargar lista de clientes para incluir al nuevo
-                } else {
-                    dniCliente = formData.get('dni_cliente');
-                }
-                
-                if (!dniCliente) {
-                    alert('Por favor seleccione un cliente');
+            if (clienteTipo === 'nuevo') {
+                const dniNuevo = formData.get('dni_nuevo');
+                const nombreNuevo = formData.get('nombre_nuevo');
+                if (!dniNuevo || !nombreNuevo) {
+                    alert('Por favor complete todos los campos del nuevo cliente');
                     return;
                 }
-                
-                const cotizacionData = {
-                    dniCliente: dniCliente,
-                    dniEmpleado: null, // Se puede asignar después
-                    estado: currentEditId ? formData.get('estado') : 'Pendiente',
-                    fechaSolicitud: new Date().toISOString(), // Backend debería generar esta fecha
-                    fechaPreferida: formData.get('fecha_preferida'),
-                    fechaRespuesta: null,
-                    prioridad: formData.get('prioridad') || 'Media',
-                    descripcionProblema: formData.get('descripcion'),
-                    notasInternas: formData.get('notas') || null,
-                    costoTotalCotizacion: 0 // Se puede calcular o actualizar después
+                const nuevoCliente = {
+                    dni: dniNuevo,
+                    tipo_dni: formData.get('tipo_dni'),
+                    nombre: nombreNuevo,
+                    telefono: formData.get('telefono_nuevo') || null,
+                    correo: formData.get('correo_nuevo') || null,
+                    rol: 'Cliente',
+                    id_direccion: '5413',
+                    id_cargo_especialidad: '9874'
                 };
-
-                console.log("Datos de cotización a enviar:", cotizacionData);
-
-                let response;
-                let message;
-
-                if (currentEditId) {
-                    // Actualizar
-                    response = await fetch(`${API_COTIZACIONES_URL}/${currentEditId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cotizacionData)
-                    });
-                    message = "Cotización actualizada exitosamente!";
-                } else {
-                    // Crear
-                    response = await fetch(API_COTIZACIONES_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(cotizacionData)
-                    });
-                    message = "Cotización creada exitosamente!";
-                }
-
-                const responseText = await response.text();
-
-                if (!response.ok) {
-                    let errorMessage = `Error HTTP ${response.status}`;
-                    try {
-                        const errorData = JSON.parse(responseText);
-                        errorMessage = errorData.error || errorData.message || responseText;
-                    } catch (e) {
-                        errorMessage = responseText || errorMessage;
-                    }
-                    throw new Error(errorMessage);
-                }
-
-                console.log("Respuesta del servidor:", responseText);
-                alert(message);
-                closeModal('addQuoteModal');
-                await getAllCotizaciones(); // Recargar datos
-
-            } catch (error) {
-                console.error("Error al procesar la cotización:", error);
-                alert(`Error: ${error.message}`);
-            } finally {
-                // --- LIMPIAR EL ESTADO DE ENVÍO ---
-                isSubmitting = false;
-                submitBtn.disabled = false;
-                submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Cotización';
+                dniCliente = await createPersona(nuevoCliente);
+                await loadClientes();
+            } else {
+                dniCliente = formData.get('dni_cliente');
             }
-        }
 
-        async function getAllCotizaciones() {
-            try {
-                const response = await fetch(API_COTIZACIONES_URL);
-                if (!response.ok) throw new Error('Error al obtener cotizaciones');
-                allCotizaciones = await response.json();
-                renderCotizaciones(allCotizaciones);
-                updateStats(allCotizaciones);
-            } catch (error) {
-                handleError(error);
-                document.getElementById('cotizacionesTableBody').innerHTML = 
-                    '<tr><td colspan="7" class="empty-state">Error al cargar. Verifique que el backend esté funcionando.</td></tr>';
-            }
-        }
-
-        function renderCotizaciones(cotizaciones) {
-            const tbody = document.getElementById('cotizacionesTableBody');
-            
-            if (cotizaciones.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay cotizaciones</td></tr>';
+            if (!dniCliente) {
+                alert('Por favor seleccione un cliente');
                 return;
             }
-            
-            tbody.innerHTML = '';
-            cotizaciones.forEach(cot => {
-                const row = document.createElement('tr');
-                const clienteNombre = cot.cliente?.nombre || cot.dniCliente || 'N/A';
-                
-                row.innerHTML = `
-                    <td>${cot.idCotizacion || 'N/A'}</td>
-                    <td>${clienteNombre}</td>
-                    <td>${formatDate(cot.fechaSolicitud)}</td>
-                    <td>${formatDate(cot.fechaPreferida)}</td>
-                    <td>${formatCurrency(cot.costoTotalCotizacion)}</td>
-                    <td><span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">${cot.estado || 'Pendiente'}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-sm btn-view" onclick="viewCotizacion('${cot.idCotizacion}')">Ver</button>
-                            <button class="btn-sm btn-edit" onclick="editCotizacion('${cot.idCotizacion}')">Editar</button>
-                            <button class="btn-sm btn-delete" onclick="deleteCotizacion('${cot.idCotizacion}')">Eliminar</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
 
-        function updateStats(cotizaciones) {
-            const pendientes = cotizaciones.filter(c => c.estado === 'Pendiente').length;
-            const aprobadas = cotizaciones.filter(c => c.estado === 'Aprobada').length;
-            const finalizadas = cotizaciones.filter(c => c.estado === 'Finalizada').length;
-            const rechazadas = cotizaciones.filter(c => c.estado === 'Rechazada').length;
-            
-            document.getElementById('statPendientes').textContent = pendientes;
-            document.getElementById('statAprobadas').textContent = aprobadas;
-            document.getElementById('statFinalizadas').textContent = finalizadas;
-            document.getElementById('statRechazadas').textContent = rechazadas;
-        }
+            const fechaPreferida = formData.get('fecha_preferida');
+            if (!fechaPreferida) {
+                alert('Por favor ingrese una fecha preferida');
+                return;
+            }
 
-        async function viewCotizacion(id) {
-            try {
-                const response = await fetch(`${API_COTIZACIONES_URL}/${id}`);
-                if (!response.ok) throw new Error('Cotización no encontrada');
-                const cot = await response.json();
-                
-                const detalles = `
+            const descripcion = formData.get('descripcion');
+            if (!descripcion || descripcion.trim() === '') {
+                alert('Por favor ingrese una descripción del problema');
+                return;
+            }
+
+            // ✅ CORRECCIÓN CLAVE: Extraer el valor del input correcto
+            const costoTotalRaw = document.getElementById('costoTotal').value;
+            const costoTotal = parseFloat(costoTotalRaw);
+
+            if (isNaN(costoTotal) || costoTotal <= 0) {
+                alert('Por favor, ingrese un valor de cotización válido.');
+                return;
+            }
+
+            const cotizacionData = {
+                dniCliente: dniCliente,
+                dniEmpleado: null,
+                estado: currentEditId ? (formData.get('estado') || 'Pendiente') : 'Pendiente',
+                fechaSolicitud: new Date().toISOString().split('T')[0],
+                fechaPreferida: fechaPreferida,
+                fechaRespuesta: null,
+                prioridad: formData.get('prioridad') || 'Media',
+                descripcionProblema: descripcion,
+                notasInternas: formData.get('notas') || null,
+                costoTotalCotizacion: costoTotal // ✅ Valor correcto
+            };
+
+            let response, message;
+            if (currentEditId) {
+                response = await fetch(`${API_COTIZACIONES_URL}/${currentEditId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cotizacionData)
+                });
+                message = "Cotización actualizada exitosamente!";
+            } else {
+                response = await fetch(API_COTIZACIONES_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(cotizacionData)
+                });
+                message = "Cotización creada exitosamente!";
+            }
+
+            const responseText = await response.text();
+            if (!response.ok) {
+                let errorMessage = `Error HTTP ${response.status}`;
+                try {
+                    const errorData = JSON.parse(responseText);
+                    errorMessage = errorData.error || errorData.message || responseText;
+                } catch (e) {
+                    errorMessage = responseText || errorMessage;
+                }
+                throw new Error(errorMessage);
+            }
+
+            alert(message);
+            closeModal('addQuoteModal');
+            await getAllCotizaciones();
+        } catch (error) {
+            console.error("Error al procesar la cotización:", error);
+            alert(`Error: ${error.message}`);
+        } finally {
+            isSubmitting = false;
+            submitBtn.disabled = false;
+            submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Cotización';
+        }
+    }
+
+    async function getAllCotizaciones() {
+        try {
+            const response = await fetch(API_COTIZACIONES_URL);
+            if (!response.ok) throw new Error('Error al obtener cotizaciones');
+            allCotizaciones = await response.json();
+            renderCotizaciones(allCotizaciones);
+            updateStats(allCotizaciones);
+        } catch (error) {
+            handleError(error);
+            document.getElementById('cotizacionesTableBody').innerHTML = 
+                '<tr><td colspan="7" class="empty-state">Error al cargar. Verifique que el backend esté funcionando.</td></tr>';
+        }
+    }
+
+    function renderCotizaciones(cotizaciones) {
+        const tbody = document.getElementById('cotizacionesTableBody');
+        if (cotizaciones.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay cotizaciones</td></tr>';
+            return;
+        }
+        tbody.innerHTML = '';
+        cotizaciones.forEach(cot => {
+            const row = document.createElement('tr');
+            const clienteNombre = cot.cliente?.nombre || cot.dniCliente || 'N/A';
+            const isVinculada = isCotizacionVinculada(cot.idCotizacion);
+            row.innerHTML = `
+                <td>${cot.idCotizacion || 'N/A'}</td>
+                <td>${clienteNombre}</td>
+                <td>${formatDate(cot.fechaSolicitud)}</td>
+                <td>${formatDate(cot.fechaPreferida)}</td>
+                <td>${formatCurrency(cot.costoTotalCotizacion)}</td>
+                <td>
+                    <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">${cot.estado || 'Pendiente'}</span>
+                    ${isVinculada ? '<span class="warning-badge">🔗 Con servicio</span>' : ''}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-sm btn-view" onclick="viewCotizacion('${cot.idCotizacion}')">Ver</button>
+                        <button class="btn-sm btn-edit" onclick="editCotizacion('${cot.idCotizacion}')">Editar</button>
+                        <button class="btn-sm btn-delete" 
+                            onclick="deleteCotizacion('${cot.idCotizacion}')"
+                            ${isVinculada ? 'disabled title="No se puede eliminar: tiene servicios asociados"' : ''}>
+                            Eliminar
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function updateStats(cotizaciones) {
+        const pendientes = cotizaciones.filter(c => c.estado === 'Pendiente').length;
+        const aprobadas = cotizaciones.filter(c => c.estado === 'Aprobada').length;
+        const finalizadas = cotizaciones.filter(c => c.estado === 'Finalizada').length;
+        const rechazadas = cotizaciones.filter(c => c.estado === 'Rechazada').length;
+        document.getElementById('statPendientes').textContent = pendientes;
+        document.getElementById('statAprobadas').textContent = aprobadas;
+        document.getElementById('statFinalizadas').textContent = finalizadas;
+        document.getElementById('statRechazadas').textContent = rechazadas;
+    }
+
+    async function viewCotizacion(id) {
+        try {
+            const response = await fetch(`${API_COTIZACIONES_URL}/${id}`);
+            if (!response.ok) throw new Error('Cotización no encontrada');
+            const cot = await response.json();
+            const isVinculada = isCotizacionVinculada(id);
+            const serviciosVinculados = allServicios.filter(s => 
+                s.idCotizacion === id || 
+                (s.cotizacion && s.cotizacion.idCotizacion === id)
+            );
+            const detalles = `
 COTIZACIÓN: ${cot.idCotizacion || 'N/A'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-
 Cliente: ${cot.cliente?.nombre || cot.dniCliente}
 DNI: ${cot.dniCliente}
 Estado: ${cot.estado || 'Pendiente'}
@@ -1064,200 +1130,189 @@ Fecha Solicitud: ${formatDate(cot.fechaSolicitud)}
 Fecha Preferida: ${formatDate(cot.fechaPreferida)}
 Prioridad: ${cot.prioridad || 'N/A'}
 Costo Total: ${formatCurrency(cot.costoTotalCotizacion)}
-
 Descripción:
 ${cot.descripcionProblema || 'Sin descripción'}
-
 Notas Internas:
 ${cot.notasInternas || 'Sin notas'}
-                `;
-                alert(detalles);
-            } catch (error) {
-                handleError(error);
-            }
+${isVinculada ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ SERVICIOS VINCULADOS: ${serviciosVinculados.length}
+${serviciosVinculados.map(s => `- Servicio #${s.idServicio} (${s.fecha || 'Sin fecha'})`).join('\n')}
+` : ''}
+            `;
+            alert(detalles);
+        } catch (error) {
+            handleError(error);
         }
+    }
 
-        async function editCotizacion(id) {
-            const cot = allCotizaciones.find(c => c.idCotizacion === id);
-            if (!cot) {
-                alert("Cotización no encontrada.");
-                return;
-            }
-            console.log("Editando cotización:", cot);
-
-            openAddQuoteModal();
-            document.getElementById('estadoSelect').style.display = 'block'; // Mostrar en edición
-            document.getElementById('estadoSelect').value = cot.estado; // Cargar estado actual
-            document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
-            document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
-
-            // Pre-seleccionar cliente existente
-            document.getElementById('clienteTipo').value = 'existente';
-            toggleClienteInput(); // Actualizar campos visibles
-            document.getElementById('clienteSelect').value = cot.dniCliente;
-
-            // Llenar campos
-            document.querySelector('input[name="fecha_preferida"]').value = cot.fechaPreferida.split('T')[0];
-            document.querySelector('select[name="prioridad"]').value = cot.prioridad || 'Media';
-            document.querySelector('textarea[name="descripcion"]').value = cot.descripcionProblema || '';
-            document.querySelector('textarea[name="notas"]').value = cot.notasInternas || '';
-
-            currentEditId = id; // Guardar ID para la actualización
+    async function editCotizacion(id) {
+        const cot = allCotizaciones.find(c => c.idCotizacion === id);
+        if (!cot) {
+            alert("Cotización no encontrada.");
+            return;
         }
+        openAddQuoteModal();
+        document.getElementById('estadoGroup').style.display = 'block';
+        document.getElementById('estadoSelect').value = cot.estado || 'Pendiente';
+        document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
+        document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
+        document.getElementById('costoTotal').value = cot.costoTotalCotizacion || '';
+        document.getElementById('clienteTipo').value = 'existente';
+        toggleClienteInput();
+        document.getElementById('clienteSelect').value = cot.dniCliente;
+        document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
+        document.getElementById('prioridad').value = cot.prioridad || 'Media';
+        document.getElementById('descripcion').value = cot.descripcionProblema || '';
+        document.getElementById('notas').value = cot.notasInternas || '';
+        currentEditId = id;
+    }
 
-        async function deleteCotizacion(id) {
-            if (!confirm('¿Está seguro de eliminar esta cotización?')) return;
-            
-            try {
-                const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
-                    method: 'DELETE'
-                });
-                
-                if (!response.ok) throw new Error('Error al eliminar');
-                alert('Cotización eliminada exitosamente');
-                await getAllCotizaciones(); // Recargar datos
-            } catch (error) {
-                handleError(error);
-            }
+    async function deleteCotizacion(id) {
+        if (isCotizacionVinculada(id)) {
+            const serviciosVinculados = allServicios.filter(s => 
+                s.idCotizacion === id || 
+                (s.cotizacion && s.cotizacion.idCotizacion === id)
+            );
+            alert(`❌ No se puede eliminar esta cotización.
+Motivo: Tiene ${serviciosVinculados.length} servicio(s) asociado(s).
+Primero debe eliminar o desvincular los servicios relacionados.`);
+            return;
         }
-
-        // === FUNCIONES DE AYUDA ===
-        function formatDate(dateString) {
-            if (!dateString) return 'N/A';
-            const date = new Date(dateString);
-            return date.toLocaleDateString('es-CO', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
+        if (!confirm('¿Está seguro de eliminar esta cotización?\nEsta acción no se puede deshacer.')) return;
+        try {
+            const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
+                method: 'DELETE'
             });
-        }
-
-        function formatCurrency(amount) {
-            if (!amount && amount !== 0) return '$0';
-            return new Intl.NumberFormat('es-CO', {
-                style: 'currency',
-                currency: 'COP',
-                minimumFractionDigits: 0
-            }).format(amount);
-        }
-
-        function openAddQuoteModal() {
-            document.getElementById('estadoSelect').style.display = 'none'; 
-            document.getElementById('addQuoteModal').classList.add('show');
-            const form = document.getElementById('quoteForm');
-            form.reset();
-            document.getElementById('clienteTipo').value = 'existente';
-            toggleClienteInput();
-            document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
-            document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
-            currentEditId = null; // Limpiar ID de edición
-        }
-
-        function closeModal(modalId) {
-            const modal = document.getElementById(modalId);
-            modal.classList.remove('show');
-            const form = document.getElementById('quoteForm');
-            form.reset();
-            document.getElementById('clienteTipo').value = 'existente';
-            toggleClienteInput();
-            document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
-            document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
-            currentEditId = null; // Limpiar ID de edición
-        }
-
-        // === EVENTOS ===
-        document.getElementById('quoteForm').addEventListener('submit', handleQuoteFormSubmit);
-
-        document.getElementById('filterForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const searchText = formData.get('search').toLowerCase();
-            const estadoFilter = formData.get('estado');
-            const fechaDesde = formData.get('fecha_desde');
-            const fechaHasta = formData.get('fecha_hasta');
-            
-            let filtered = [...allCotizaciones];
-            
-            if (searchText) {
-                filtered = filtered.filter(c => 
-                    c.dniCliente?.toLowerCase().includes(searchText) ||
-                    c.cliente?.nombre?.toLowerCase().includes(searchText)
-                );
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Error al eliminar');
             }
-            
-            if (estadoFilter) {
-                filtered = filtered.filter(c => c.estado === estadoFilter);
-            }
-            
-            if (fechaDesde) {
-                filtered = filtered.filter(c => {
-                    const fecha = new Date(c.fechaSolicitud);
-                    return fecha >= new Date(fechaDesde);
-                });
-            }
-            
-            if (fechaHasta) {
-                filtered = filtered.filter(c => {
-                    const fecha = new Date(c.fechaSolicitud);
-                    return fecha <= new Date(fechaHasta);
-                });
-            }
-            
-            renderCotizaciones(filtered);
-            updateStats(filtered);
+            alert('✅ Cotización eliminada exitosamente');
+            await getAllCotizaciones();
+        } catch (error) {
+            handleError(error);
+        }
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-CO', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
         });
+    }
 
-        window.onclick = function(event) {
-            const modal = document.getElementById('addQuoteModal');
-            if (event.target === modal) {
-                closeModal('addQuoteModal');
-            }
+    function formatCurrency(amount) {
+        if (!amount && amount !== 0) return '$0';
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0
+        }).format(amount);
+    }
+
+    function openAddQuoteModal() {
+        document.getElementById('estadoGroup').style.display = 'none';
+        document.getElementById('addQuoteModal').classList.add('show');
+        const form = document.getElementById('quoteForm');
+        form.reset();
+        document.getElementById('clienteTipo').value = 'existente';
+        toggleClienteInput();
+        document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
+        document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
+        currentEditId = null;
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('show');
+        const form = document.getElementById('quoteForm');
+        if (form) form.reset();
+        document.getElementById('clienteTipo').value = 'existente';
+        toggleClienteInput();
+        document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
+        document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
+        document.getElementById('estadoGroup').style.display = 'none';
+        currentEditId = null;
+    }
+
+    document.getElementById('quoteForm').addEventListener('submit', handleQuoteFormSubmit);
+
+    document.getElementById('filterForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const searchText = formData.get('search').toLowerCase();
+        const estadoFilter = formData.get('estado');
+        const fechaDesde = formData.get('fecha_desde');
+        const fechaHasta = formData.get('fecha_hasta');
+        let filtered = [...allCotizaciones];
+        if (searchText) {
+            filtered = filtered.filter(c => 
+                c.dniCliente?.toLowerCase().includes(searchText) ||
+                c.cliente?.nombre?.toLowerCase().includes(searchText)
+            );
         }
-
-        function exportarCotizaciones() {
-            if (allCotizaciones.length === 0) {
-                alert('No hay cotizaciones para exportar');
-                return;
-            }
-
-            let csv = 'ID,Cliente,DNI_Cliente,Estado,Fecha_Solicitud,Fecha_Preferida,Prioridad,Costo_Total,Descripcion\n';
-            
-            allCotizaciones.forEach(c => {
-                csv += `"${c.idCotizacion || ''}",`;
-                csv += `"${c.cliente?.nombre || ''}",`;
-                csv += `"${c.dniCliente || ''}",`;
-                csv += `"${c.estado || 'Pendiente'}",`;
-                csv += `"${c.fechaSolicitud || ''}",`;
-                csv += `"${c.fechaPreferida || ''}",`;
-                csv += `"${c.prioridad || ''}",`;
-                csv += `"${c.costoTotalCotizacion || 0}",`;
-                csv += `"${(c.descripcionProblema || '').replace(/"/g, '""')}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            
-            link.setAttribute('href', url);
-            link.setAttribute('download', `cotizaciones_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+        if (estadoFilter) {
+            filtered = filtered.filter(c => c.estado === estadoFilter);
         }
+        if (fechaDesde) {
+            filtered = filtered.filter(c => new Date(c.fechaSolicitud) >= new Date(fechaDesde));
+        }
+        if (fechaHasta) {
+            filtered = filtered.filter(c => new Date(c.fechaSolicitud) <= new Date(fechaHasta));
+        }
+        renderCotizaciones(filtered);
+        updateStats(filtered);
+    });
 
-        // === INICIALIZACIÓN ===
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Cargando cotizaciones...');
-            getAllCotizaciones();
-            loadClientes();
-            
-            const tomorrow = new Date();
-            tomorrow.setDate(tomorrow.getDate() + 1);
-            const tomorrowStr = tomorrow.toISOString().split('T')[0];
-            document.querySelector('input[name="fecha_preferida"]').value = tomorrowStr;
+    window.onclick = function(event) {
+        const modal = document.getElementById('addQuoteModal');
+        if (event.target === modal) {
+            closeModal('addQuoteModal');
+        }
+    }
+
+    function exportarCotizaciones() {
+        if (allCotizaciones.length === 0) {
+            alert('No hay cotizaciones para exportar');
+            return;
+        }
+        let csv = 'ID,Cliente,DNI_Cliente,Estado,Fecha_Solicitud,Fecha_Preferida,Prioridad,Costo_Total,Descripcion,Vinculada_Servicio\n';
+        allCotizaciones.forEach(c => {
+            const isVinculada = isCotizacionVinculada(c.idCotizacion);
+            csv += `"${c.idCotizacion || ''}",`;
+            csv += `"${c.cliente?.nombre || ''}",`;
+            csv += `"${c.dniCliente || ''}",`;
+            csv += `"${c.estado || 'Pendiente'}",`;
+            csv += `"${c.fechaSolicitud || ''}",`;
+            csv += `"${c.fechaPreferida || ''}",`;
+            csv += `"${c.prioridad || ''}",`;
+            csv += `"${c.costoTotalCotizacion || 0}",`;
+            csv += `"${(c.descripcionProblema || '').replace(/"/g, '""')}",`;
+            csv += `"${isVinculada ? 'Sí' : 'No'}"\n`;
         });
-    </script>
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `cotizaciones_${new Date().toISOString().split('T')[0]}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        await loadClientes();
+        await loadServicios();
+        await getAllCotizaciones();
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('fechaPreferida').value = tomorrow.toISOString().split('T')[0];
+    });
+</script>
 </body>
 </html>

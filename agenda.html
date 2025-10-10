@@ -183,6 +183,17 @@
             color: #2d3748;
             border: 1px solid #e2e8f0;
         }
+        .btn-danger {
+            background: #ff6b6b;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #ff5252;
+        }
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.85em;
+        }
         .calendar-layout {
             display: grid;
             grid-template-columns: 1fr 350px;
@@ -276,6 +287,8 @@
         }
         .day-events {
             font-size: 0.8em;
+            max-height: 60px;
+            overflow-y: auto;
         }
         .event-item {
             background: var(--event-color);
@@ -427,6 +440,65 @@
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
         }
+        .service-card {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid #4a8b64;
+        }
+        .service-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        .service-time-large {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #4a8b64;
+        }
+        .service-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .service-info-row {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.9em;
+        }
+        .service-info-label {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .service-info-value {
+            color: #2d3748;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 600;
+        }
+        .status-programado {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+        .status-en-progreso {
+            background: #feebc8;
+            color: #7c2d12;
+        }
+        .status-completado {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+        .status-cancelado {
+            background: #fed7d7;
+            color: #742a2a;
+        }
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -445,6 +517,9 @@
             .nav-tabs {
                 justify-content: center;
                 flex-wrap: wrap;
+            }
+            .form-grid-2 {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -566,10 +641,9 @@
                 <div class="today-schedule">
                     <div class="schedule-header">
                         <h3 class="schedule-title">Agenda de Hoy</h3>
-                        <div class="schedule-date" id="todayDate">30 Septiembre 2025</div>
+                        <div class="schedule-date" id="todayDate"></div>
                     </div>
-                    <div id="todaySchedule">
-                    </div>
+                    <div id="todaySchedule"></div>
                 </div>
 
                 <div class="quick-add">
@@ -586,15 +660,13 @@
                             <option value="">Seleccionar tipo</option>
                         </select>
                     </div>
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label>Fecha *</label>
-                            <input type="date" class="form-control" id="quickFecha" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Hora *</label>
-                            <input type="time" class="form-control" id="quickHora" required>
-                        </div>
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" class="form-control" id="quickFecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora *</label>
+                        <input type="time" class="form-control" id="quickHora" required>
                     </div>
                     <div class="form-group">
                         <label>Técnico *</label>
@@ -620,6 +692,86 @@
         </div>
     </div>
 
+    <!-- Modal de servicios del día -->
+    <div class="modal" id="dayServicesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="dayServicesTitle">Servicios del Día</h2>
+                <button class="close-btn" onclick="closeModal('dayServicesModal')">&times;</button>
+            </div>
+            <div id="dayServicesContent" style="max-height: 500px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <!-- Modal de edición de servicio -->
+    <div class="modal" id="editServiceModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Editar Servicio</h2>
+                <button class="close-btn" onclick="closeModal('editServiceModal')">&times;</button>
+            </div>
+            <form id="editServiceForm">
+                <input type="hidden" id="editServiceId">
+                <div class="form-group">
+                    <label>Cliente *</label>
+                    <select class="form-control" id="editClienteId" required>
+                        <option value="">Seleccionar cliente</option>
+                    </select>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Tipo de Servicio *</label>
+                        <select class="form-control" id="editTipoServicioId" required>
+                            <option value="">Seleccionar tipo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Técnico *</label>
+                        <select class="form-control" id="editTecnicoId" required>
+                            <option value="">Seleccionar técnico</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" class="form-control" id="editFecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora *</label>
+                        <input type="time" class="form-control" id="editHora" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select class="form-control" id="editPrioridad">
+                        <option value="Normal">Normal</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea class="form-control" id="editObservaciones" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select class="form-control" id="editEstado">
+                        <option value="Programado">Programado</option>
+                        <option value="En Progreso">En Progreso</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editServiceModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de agregar servicio -->
     <div class="modal" id="addServiceModal">
         <div class="modal-content">
             <div class="modal-header">
@@ -698,59 +850,122 @@
         </div>
     </div>
 
-    <script>
-        const API_BASE_URL = 'http://localhost:8080/api';
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
-        let servicios = [];
-        let personas = [];
-        let tiposServicio = [];
-        let cotizaciones = [];
+<script>
+    const API_BASE_URL = 'http://localhost:8080/api';
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+    let servicios = [];
+    let personas = [];
+    let tiposServicio = [];
+    let cotizaciones = [];
 
-        function generateUUID() {
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-                const r = Math.random() * 16 | 0;
-                const v = c === 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
+    function generateUUID() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
+
+    // ========== FUNCIONES AUXILIARES PARA VINCULACIÓN ==========
+    function buscarPersonaPorDNI(dni) {
+        if (!dni) return null;
+        const dniStr = String(dni).trim();
+        return personas.find(p => String(p.dni).trim() === dniStr);
+    }
+
+    function obtenerNombreCliente(servicio) {
+        let dniCliente = null;
+
+        // 1. Buscar desde campo directo
+        if (servicio.dniCliente) {
+            dniCliente = servicio.dniCliente;
+        }
+
+        // 2. Si no, buscar desde cotización si existe
+        if (!dniCliente && servicio.cotizacion && servicio.cotizacion.dniCliente) {
+            dniCliente = servicio.cotizacion.dniCliente;
+        }
+
+        if (!dniCliente) return 'Sin asignar';
+
+        const cliente = buscarPersonaPorDNI(dniCliente);
+        return cliente ? cliente.nombre : `DNI: ${dniCliente}`;
+    }
+
+    function obtenerNombreTecnico(servicio) {
+        let dniTecnico = null;
+
+        // 1. Buscar desde campo directo
+        if (servicio.dniEmpleadoAsignado) {
+            dniTecnico = servicio.dniEmpleadoAsignado;
+        }
+
+        if (!dniTecnico) return 'Sin asignar';
+
+        const tecnico = buscarPersonaPorDNI(dniTecnico);
+        return tecnico ? tecnico.nombre : `DNI: ${dniTecnico}`;
+    }
+
+    function obtenerNombreServicio(servicio) {
+        let idTipoServicio = null;
+
+        // 1. Buscar desde campo directo
+        if (servicio.idTipoServicio) {
+            idTipoServicio = servicio.idTipoServicio;
+        }
+
+        if (!idTipoServicio) return 'Servicio';
+
+        const tipo = tiposServicio.find(ts => ts.idTipoServicio == idTipoServicio);
+        return tipo ? tipo.nombreServicio : 'Servicio';
+    }
+
+    // ========== CARGA DE DATOS ==========
+    async function loadAgendaData() {
+        console.log("🔄 Iniciando carga de datos de la agenda...");
+        try {
+            const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/servicios`).then(r => r.json()),
+                fetch(`${API_BASE_URL}/personas`).then(r => r.json()),
+                fetch(`${API_BASE_URL}/tipos-servicio`).then(r => r.json()),
+                fetch(`${API_BASE_URL}/cotizaciones`).then(r => r.json())
+            ]);
+
+            servicios = serviciosRes;
+            personas = personasRes;
+            tiposServicio = tiposServRes;
+            cotizaciones = cotizacionesRes;
+
+            console.log("✅ Datos cargados:", { 
+                servicios: servicios.length, 
+                personas: personas.length, 
+                tipos: tiposServicio.length,
+                cotizaciones: cotizaciones.length
             });
+
+            populateClienteSelect(personas);
+            populateTecnicoSelect(personas);
+            populateTipoServicioSelect(tiposServicio);
+            populateCotizacionSelect(cotizaciones);
+            populateFilterTecnico(personas);
+            populateQuickCliente(personas);
+            populateQuickTipoServicio(tiposServicio);
+            populateQuickTecnico(personas);
+            renderCalendar(currentMonth, currentYear);
+            renderTodaySchedule(new Date());
+
+        } catch (error) {
+            console.error('❌ Error al cargar datos de agenda:', error);
+            alert('Error al cargar la agenda. Por favor, recargue la página.');
         }
+    }
 
-        async function loadAgendaData() {
-            console.log("Iniciando carga de datos de la agenda...");
-            try {
-                const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/servicios`).then(r => r.json()),
-                    fetch(`${API_BASE_URL}/personas`).then(r => r.json()),
-                    fetch(`${API_BASE_URL}/tipos-servicio`).then(r => r.json()),
-                    fetch(`${API_BASE_URL}/cotizaciones`).then(r => r.json())
-                ]);
-                servicios = serviciosRes;
-                personas = personasRes;
-                tiposServicio = tiposServRes;
-                cotizaciones = cotizacionesRes;
-
-                console.log("Datos cargados:", { servicios: servicios.length, personas: personas.length, tipos: tiposServicio.length });
-
-                populateClienteSelect(personas);
-                populateTecnicoSelect(personas);
-                populateTipoServicioSelect(tiposServicio);
-                populateCotizacionSelect(cotizaciones);
-                populateFilterTecnico(personas);
-                populateQuickCliente(personas);
-                populateQuickTipoServicio(tiposServicio);
-                populateQuickTecnico(personas);
-
-                renderCalendar(currentMonth, currentYear);
-                renderTodaySchedule(new Date());
-
-            } catch (error) {
-                console.error('Error al cargar datos de agenda:', error);
-                alert('Error al cargar la agenda. Por favor, recargue la página.');
-            }
-        }
-
-        function populateClienteSelect(personas) {
-            const select = document.getElementById('clienteId');
+    // ========== POPULATION FUNCTIONS ==========
+    function populateClienteSelect(personas) {
+        const selects = ['clienteId', 'editClienteId', 'quickCliente'];
+        selects.forEach(selectId => {
+            const select = document.getElementById(selectId);
             if (!select) return;
             select.innerHTML = '<option value="">Seleccionar cliente</option>';
             personas.filter(p => p.rol === 'Cliente').forEach(p => {
@@ -759,10 +974,13 @@
                 option.textContent = p.nombre;
                 select.appendChild(option);
             });
-        }
+        });
+    }
 
-        function populateTecnicoSelect(personas) {
-            const select = document.getElementById('tecnicoId');
+    function populateTecnicoSelect(personas) {
+        const selects = ['tecnicoId', 'editTecnicoId', 'quickTecnico'];
+        selects.forEach(selectId => {
+            const select = document.getElementById(selectId);
             if (!select) return;
             select.innerHTML = '<option value="">Seleccionar técnico</option>';
             personas.filter(p => p.rol === 'Empleado').forEach(p => {
@@ -771,360 +989,563 @@
                 option.textContent = p.nombre;
                 select.appendChild(option);
             });
-        }
+        });
+    }
 
-        function populateTipoServicioSelect(tipos) {
-            const select = document.getElementById('tipoServicioId');
+    function populateTipoServicioSelect(tipos) {
+        const selects = ['tipoServicioId', 'editTipoServicioId', 'quickTipoServicio']; // Asegúrate de que estos IDs coincidan con tus <select>
+        selects.forEach(selectId => {
+            const select = document.getElementById(selectId);
             if (!select) return;
             select.innerHTML = '<option value="">Seleccionar tipo</option>';
             tipos.forEach(ts => {
                 const option = document.createElement('option');
-                option.value = ts.idTipoServicio;
-                option.textContent = `${ts.nombreServicio} ($${ts.costo})`;
+                // CAMBIO AQUÍ: El VALUE ahora es el ID numérico
+                option.value = ts.id_tipo_servicio; // <--- AQUÍ
+                // El TEXT CONTENT sigue siendo la descripción para el usuario
+                option.textContent = `${ts.nombre_servicio} ($${ts.costo})`; // <--- AQUÍ
                 select.appendChild(option);
             });
+        });
+    }
+
+    function populateCotizacionSelect(cotizaciones) {
+        const select = document.getElementById('cotizacionId');
+        if (!select) return;
+        select.innerHTML = '<option value="">Seleccionar cotización</option>';
+        cotizaciones.forEach(c => {
+            const option = document.createElement('option');
+            option.value = c.idCotizacion;
+            option.textContent = `#${c.idCotizacion} - ${c.descripcionProblema || 'Sin descripción'}`;
+            select.appendChild(option);
+        });
+    }
+
+    function populateFilterTecnico(personas) {
+        const select = document.getElementById('filterTecnico');
+        if (!select) return;
+        select.innerHTML = '<option value="">Todos los técnicos</option>';
+        personas.filter(p => p.rol === 'Empleado').forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.dni;
+            option.textContent = p.nombre;
+            select.appendChild(option);
+        });
+    }
+
+    function populateQuickCliente(personas) {
+        const select = document.getElementById('quickCliente');
+        if (!select) return;
+        select.innerHTML = '<option value="">Seleccionar cliente</option>';
+        personas.filter(p => p.rol === 'Cliente').forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.dni;
+            option.textContent = p.nombre;
+            select.appendChild(option);
+        });
+    }
+
+    function populateQuickTipoServicio(tipos) {
+        const select = document.getElementById('quickTipoServicio');
+        if (!select) return;
+        select.innerHTML = '<option value="">Seleccionar tipo</option>';
+        tipos.forEach(ts => {
+            const option = document.createElement('option');
+            option.value = ts.idTipoServicio;
+            option.textContent = ts.nombreServicio;
+            select.appendChild(option);
+        });
+    }
+
+    function populateQuickTecnico(personas) {
+        const select = document.getElementById('quickTecnico');
+        if (!select) return;
+        select.innerHTML = '<option value="">Seleccionar técnico</option>';
+        personas.filter(p => p.rol === 'Empleado').forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.dni;
+            option.textContent = p.nombre;
+            select.appendChild(option);
+        });
+    }
+
+    // ========== RENDER CALENDAR ==========
+    function renderCalendar(month, year) {
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                           "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const monthYearElement = document.querySelector('.month-year');
+        if (monthYearElement) {
+            monthYearElement.textContent = `${monthNames[month]} ${year}`;
         }
 
-        function populateCotizacionSelect(cotizaciones) {
-            const select = document.getElementById('cotizacionId');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar cotización</option>';
-            cotizaciones.forEach(c => {
-                const option = document.createElement('option');
-                option.value = c.idCotizacion;
-                option.textContent = `#${c.idCotizacion} - ${c.descripcionProblema || 'Sin descripción'}`;
-                select.appendChild(option);
-            });
+        const calendarGrid = document.getElementById('calendarGrid');
+        if (!calendarGrid) return;
+
+        const headers = calendarGrid.querySelectorAll('.calendar-day-header');
+        calendarGrid.innerHTML = '';
+        headers.forEach(header => calendarGrid.appendChild(header));
+
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0);
+        const startDay = firstDay.getDay();
+        const totalDays = lastDay.getDate();
+        const prevLastDay = new Date(year, month, 0).getDate();
+
+        for (let i = startDay - 1; i >= 0; i--) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day other-month';
+            dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div>`;
+            calendarGrid.appendChild(dayElement);
         }
 
-        function populateFilterTecnico(personas) {
-            const select = document.getElementById('filterTecnico');
-            if (!select) return;
-            select.innerHTML = '<option value="">Todos los técnicos</option>';
-            personas.filter(p => p.rol === 'Empleado').forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.dni;
-                option.textContent = p.nombre;
-                select.appendChild(option);
-            });
-        }
-
-        function populateQuickCliente(personas) {
-            const select = document.getElementById('quickCliente');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar cliente</option>';
-            personas.filter(p => p.rol === 'Cliente').forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.dni;
-                option.textContent = p.nombre;
-                select.appendChild(option);
-            });
-        }
-
-        function populateQuickTipoServicio(tipos) {
-            const select = document.getElementById('quickTipoServicio');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar tipo</option>';
-            tipos.forEach(ts => {
-                const option = document.createElement('option');
-                option.value = ts.idTipoServicio;
-                option.textContent = ts.nombreServicio;
-                select.appendChild(option);
-            });
-        }
-
-        function populateQuickTecnico(personas) {
-            const select = document.getElementById('quickTecnico');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar técnico</option>';
-            personas.filter(p => p.rol === 'Empleado').forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.dni;
-                option.textContent = p.nombre;
-                select.appendChild(option);
-            });
-        }
-
-        function renderCalendar(month, year) {
-            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-            const monthYearElement = document.querySelector('.month-year');
-            if (monthYearElement) {
-                monthYearElement.textContent = `${monthNames[month]} ${year}`;
+        const today = new Date();
+        for (let day = 1; day <= totalDays; day++) {
+            const date = new Date(year, month, day);
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day';
+            if (date.getDate() === today.getDate() && 
+                date.getMonth() === today.getMonth() && 
+                date.getFullYear() === today.getFullYear()) {
+                dayElement.classList.add('today');
             }
+            dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
-            const calendarGrid = document.getElementById('calendarGrid');
-            if (!calendarGrid) return;
+            const serviciosDelDia = servicios.filter(s => {
+                if (!s.fecha) return false;
+                const fechaServicio = new Date(s.fecha + 'T00:00:00');
+                return fechaServicio.getDate() === day && 
+                       fechaServicio.getMonth() === month && 
+                       fechaServicio.getFullYear() === year;
+            });
 
-            const headers = calendarGrid.querySelectorAll('.calendar-day-header');
-            calendarGrid.innerHTML = '';
-            headers.forEach(header => calendarGrid.appendChild(header));
-
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const startDay = firstDay.getDay();
-            const totalDays = lastDay.getDate();
-
-            const prevLastDay = new Date(year, month, 0).getDate();
-            for (let i = startDay - 1; i >= 0; i--) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day other-month';
-                dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div>`;
-                calendarGrid.appendChild(dayElement);
-            }
-
-            const today = new Date();
-            for (let day = 1; day <= totalDays; day++) {
-                const date = new Date(year, month, day);
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                if (date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear()) {
-                    dayElement.classList.add('today');
-                }
-                dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
-
-                const serviciosDelDia = servicios.filter(s => {
-                    const fechaServicio = new Date(s.fecha);
-                    return fechaServicio.getDate() === day && fechaServicio.getMonth() === month && fechaServicio.getFullYear() === year;
+            const eventsContainer = dayElement.querySelector('.day-events');
+            serviciosDelDia.forEach(serv => {
+                const eventElement = document.createElement('div');
+                eventElement.className = `event-item ${getEventTypeClass(serv)}`;
+                const nombreCliente = obtenerNombreCliente(serv);
+                const nombreServicio = obtenerNombreServicio(serv);
+                const primerNombre = nombreCliente.split(' ')[0];
+                eventElement.textContent = `${primerNombre}`;
+                eventElement.title = `${nombreServicio}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
+                eventElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    showDayServices(date);
                 });
+                eventsContainer.appendChild(eventElement);
+            });
 
-                const eventsContainer = dayElement.querySelector('.day-events');
-                serviciosDelDia.forEach(serv => {
-                    const eventElement = document.createElement('div');
-                    eventElement.className = `event-item ${getEventTypeClass(serv.tipoServicio)}`;
-                    const textoEvento = serv.tipoServicio ? serv.tipoServicio.nombreServicio : (serv.observaciones || 'Servicio');
-                    eventElement.textContent = textoEvento;
-                    eventsContainer.appendChild(eventElement);
-                });
-
-                dayElement.addEventListener('click', () => openAddServiceModal(date));
-                calendarGrid.appendChild(dayElement);
-            }
-
-            const totalCells = 42;
-            const remaining = totalCells - (startDay + totalDays);
-            for (let day = 1; day <= remaining; day++) {
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day other-month';
-                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
-                calendarGrid.appendChild(dayElement);
-            }
+            dayElement.addEventListener('click', () => showDayServices(date));
+            calendarGrid.appendChild(dayElement);
         }
 
-        function getEventTypeClass(tipoServicio) {
-            if (tipoServicio && tipoServicio.nombreServicio) {
-                const nombre = tipoServicio.nombreServicio.toLowerCase();
-                if (nombre.includes('plaga') || nombre.includes('control')) return 'control-plagas';
-                if (nombre.includes('tanque') || nombre.includes('lavado')) return 'lavado-tanques';
-                if (nombre.includes('inspeccion')) return 'inspeccion';
-                if (nombre.includes('seguimiento')) return 'seguimiento';
-            }
-            return 'control-plagas';
+        const totalCells = 42;
+        const remaining = totalCells - (startDay + totalDays);
+        for (let day = 1; day <= remaining; day++) {
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-day other-month';
+            dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+            calendarGrid.appendChild(dayElement);
         }
+    }
 
-        function renderTodaySchedule(date) {
-            const scheduleContainer = document.getElementById('todaySchedule');
-            if (!scheduleContainer) return;
-            scheduleContainer.innerHTML = '';
+    function getEventTypeClass(servicio) {
+        const nombreServicio = obtenerNombreServicio(servicio).toLowerCase();
+        if (nombreServicio.includes('plaga') || nombreServicio.includes('control')) return 'control-plagas';
+        if (nombreServicio.includes('tanque') || nombreServicio.includes('lavado')) return 'lavado-tanques';
+        if (nombreServicio.includes('inspeccion')) return 'inspeccion';
+        if (nombreServicio.includes('seguimiento')) return 'seguimiento';
+        return 'control-plagas';
+    }
 
-            const todayStr = date.toISOString().split('T')[0];
-            const serviciosHoy = servicios.filter(s => s.fecha === todayStr);
+    // ========== SHOW DAY SERVICES ==========
+    function showDayServices(date) {
+        const modal = document.getElementById('dayServicesModal');
+        const title = document.getElementById('dayServicesTitle');
+        const content = document.getElementById('dayServicesContent');
 
-            const scheduleDateElement = document.getElementById('todayDate');
-            if (scheduleDateElement) {
-                scheduleDateElement.textContent = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-            }
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const day = date.getDate();
 
-            if (serviciosHoy.length === 0) {
-                scheduleContainer.innerHTML = '<p style="text-align: center; color: #718096;">No hay servicios programados para hoy.</p>';
-                return;
-            }
+        const serviciosDelDia = servicios.filter(s => {
+            if (!s.fecha) return false;
+            const fechaServicio = new Date(s.fecha + 'T00:00:00');
+            return fechaServicio.getDate() === day && 
+                   fechaServicio.getMonth() === month && 
+                   fechaServicio.getFullYear() === year;
+        });
 
-            serviciosHoy.forEach(serv => {
-                const scheduleItem = document.createElement('div');
-                scheduleItem.className = 'schedule-item';
-                
-                let nombreCliente = 'N/A';
-                if (serv.cotizacion && serv.cotizacion.cliente) {
-                    nombreCliente = serv.cotizacion.cliente.nombre;
-                } else if (serv.dniCliente) {
-                    const cliente = personas.find(p => p.dni === serv.dniCliente);
-                    nombreCliente = cliente ? cliente.nombre : 'N/A';
-                }
-                
-                const nombreServicio = serv.tipoServicio ? serv.tipoServicio.nombreServicio : 'Servicio';
-                
-                scheduleItem.innerHTML = `
-                    <div class="schedule-time">${serv.hora || 'N/A'}</div>
-                    <div class="schedule-details">
-                        <div class="schedule-service">${nombreServicio}</div>
-                        <div class="schedule-client">Cliente: ${nombreCliente}</div>
-                        <div class="schedule-technician">Técnico: ${serv.empleadoAsignado ? serv.empleadoAsignado.nombre : 'No asignado'}</div>
+        const monthStr = String(month + 1).padStart(2, '0');
+        const dayStr = String(day).padStart(2, '0');
+        const dateStr = `${year}-${monthStr}-${dayStr}`;
+
+        title.textContent = `Servicios del ${date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
+
+        if (serviciosDelDia.length === 0) {
+            content.innerHTML = `
+                <p style="text-align: center; color: #718096; padding: 2rem;">
+                    No hay servicios programados para esta fecha.
+                </p>
+                <button class="btn btn-primary" style="width: 100%;" onclick="closeModal('dayServicesModal'); openAddServiceModal(new Date('${dateStr}'))">
+                    ➕ Programar Servicio
+                </button>
+            `;
+        } else {
+            content.innerHTML = serviciosDelDia.map(serv => {
+                const nombreCliente = obtenerNombreCliente(serv);
+                const nombreTecnico = obtenerNombreTecnico(serv);
+                const nombreServicio = obtenerNombreServicio(serv);
+                const estadoClass = serv.estado ? `status-${serv.estado.toLowerCase().replace(/\s+/g, '-')}` : 'status-programado';
+                return `
+                    <div class="service-card">
+                        <div class="service-card-header">
+                            <div class="service-time-large">${serv.hora || 'Sin hora'}</div>
+                            <div class="service-actions">
+                                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); openEditServiceModal('${serv.idServicio}')">
+                                    ✏️ Editar
+                                </button>
+                                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); cancelService('${serv.idServicio}')">
+                                    ❌ Cancelar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="service-info-row">
+                            <span class="service-info-label">Servicio:</span>
+                            <span class="service-info-value">${nombreServicio}</span>
+                        </div>
+                        <div class="service-info-row">
+                            <span class="service-info-label">Cliente:</span>
+                            <span class="service-info-value">${nombreCliente}</span>
+                        </div>
+                        <div class="service-info-row">
+                            <span class="service-info-label">Técnico:</span>
+                            <span class="service-info-value">${nombreTecnico}</span>
+                        </div>
+                        <div class="service-info-row">
+                            <span class="service-info-label">Prioridad:</span>
+                            <span class="service-info-value">${serv.prioridad || 'Normal'}</span>
+                        </div>
+                        <div class="service-info-row">
+                            <span class="service-info-label">Estado:</span>
+                            <span class="status-badge ${estadoClass}">${serv.estado || 'Programado'}</span>
+                        </div>
+                        ${serv.observaciones ? `
+                        <div class="service-info-row">
+                            <span class="service-info-label">Observaciones:</span>
+                            <span class="service-info-value">${serv.observaciones}</span>
+                        </div>
+                        ` : ''}
                     </div>
                 `;
-                scheduleContainer.appendChild(scheduleItem);
+            }).join('');
+
+            content.innerHTML += `
+                <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="closeModal('dayServicesModal'); openAddServiceModal(new Date('${dateStr}'))">
+                    ➕ Agregar Otro Servicio
+                </button>
+            `;
+        }
+
+        modal.classList.add('show');
+    }
+
+    // ========== EDIT SERVICE ==========
+    async function openEditServiceModal(servicioId) {
+        const servicio = servicios.find(s => s.idServicio === servicioId);
+        if (!servicio) return;
+
+        closeModal('dayServicesModal');
+        document.getElementById('editServiceId').value = servicio.idServicio;
+        document.getElementById('editClienteId').value = servicio.dniCliente || '';
+        document.getElementById('editTecnicoId').value = servicio.dniEmpleadoAsignado || '';
+        document.getElementById('editTipoServicioId').value = servicio.idTipoServicio || '';
+        document.getElementById('editFecha').value = servicio.fecha || '';
+        document.getElementById('editHora').value = servicio.hora || '';
+        document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
+        document.getElementById('editObservaciones').value = servicio.observaciones || '';
+        document.getElementById('editEstado').value = servicio.estado || 'Programado';
+        document.getElementById('editServiceModal').classList.add('show');
+    }
+
+    async function updateService(event) {
+        event.preventDefault();
+        const servicioId = document.getElementById('editServiceId').value;
+        const servicioData = {
+            id_servicio: servicioId,
+            dni_cliente: document.getElementById('editClienteId').value,
+            dni_empleado_asignado: document.getElementById('editTecnicoId').value,
+            id_tipo_servicio: document.getElementById('editTipoServicioId').value,
+            fecha: document.getElementById('editFecha').value,
+            hora: document.getElementById('editHora').value,
+            observaciones: document.getElementById('editObservaciones').value || null,
+            prioridad: document.getElementById('editPrioridad').value,
+            estado: document.getElementById('editEstado').value
+        };
+
+        const fechaServicio = new Date(servicioData.fecha);
+        const fechaActual = new Date();
+        fechaActual.setHours(0, 0, 0, 0);
+        if (fechaServicio < fechaActual && servicioData.estado === 'Programado') {
+            alert('No se puede programar un servicio en una fecha pasada');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(servicioData)
             });
-        }
-
-        function previousMonth() {
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Error al actualizar servicio');
             }
-            renderCalendar(currentMonth, currentYear);
+            closeModal('editServiceModal');
+            await loadAgendaData();
+            alert('✅ Servicio actualizado exitosamente');
+        } catch (error) {
+            console.error("Error:", error);
+            alert(`❌ Error al actualizar servicio: ${error.message}`);
         }
+    }
 
-        function nextMonth() {
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            renderCalendar(currentMonth, currentYear);
+    // ========== CANCEL SERVICE ==========
+    async function cancelService(servicioId) {
+        if (!confirm('¿Está seguro de que desea cancelar este servicio?')) {
+            return;
         }
+        try {
+            const servicio = servicios.find(s => s.idServicio === servicioId);
+            if (!servicio) throw new Error('Servicio no encontrado');
 
-        function showView(view) {
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            console.log('Mostrando vista:', view);
-        }
-
-        function openAddServiceModal(date) {
-            document.getElementById('addServiceModal').classList.add('show');
-            const dateInput = document.getElementById('fecha');
-            if (dateInput && date) {
-                const year = date.getFullYear();
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                dateInput.value = `${year}-${month}-${day}`;
-            }
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('show');
-            const form = document.getElementById(modalId).querySelector('form');
-            if (form) form.reset();
-        }
-
-        async function addService(event) {
-            event.preventDefault();
-            
-            const clienteId = document.getElementById('clienteId').value;
-            const tecnicoId = document.getElementById('tecnicoId').value;
-            const tipoServicioId = document.getElementById('tipoServicioId').value;
-            const fecha = document.getElementById('fecha').value;
-            const hora = document.getElementById('hora').value;
-
-            if (!clienteId || !tecnicoId || !tipoServicioId || !fecha || !hora) {
-                alert('Por favor complete todos los campos obligatorios marcados con *');
-                return;
-            }
-
-            const formData = {
-                id_servicio: generateUUID(),
-                id_cotizacion: document.getElementById('cotizacionId').value || null,
-                dni_cliente: clienteId,
-                dni_empleado_asignado: tecnicoId,
-                id_tipo_servicio: tipoServicioId,
-                fecha: fecha,
-                hora: hora,
-                duracion_estimada: document.getElementById('duracionEstimada').value || null,
-                observaciones: document.getElementById('observaciones').value || null,
-                prioridad: document.getElementById('prioridad').value,
-                estado: document.getElementById('estado').value
+            const servicioData = {
+                id_servicio: servicio.idServicio,
+                dni_cliente: servicio.dniCliente,
+                dni_empleado_asignado: servicio.dniEmpleadoAsignado,
+                id_tipo_servicio: servicio.idTipoServicio,
+                fecha: servicio.fecha,
+                hora: servicio.hora,
+                observaciones: servicio.observaciones,
+                prioridad: servicio.prioridad || 'Normal',
+                estado: 'Cancelado'
             };
 
-            console.log('Enviando datos del servicio:', formData);
+            const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(servicioData)
+            });
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/servicios`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error(`Error al crear servicio: ${response.statusText} - ${errorData}`);
-                }
-
-                await loadAgendaData();
-                closeModal('addServiceModal');
-                alert('Servicio creado exitosamente.');
-
-            } catch (error) {
-                console.error('Error al crear servicio:', error);
-                alert('Error al crear servicio: ' + error.message);
-            }
-        }
-
-        async function quickAddService() {
-            const formData = {
-                id_servicio: generateUUID(),
-                dni_cliente: document.getElementById('quickCliente').value,
-                dni_empleado_asignado: document.getElementById('quickTecnico').value,
-                id_tipo_servicio: document.getElementById('quickTipoServicio').value,
-                fecha: document.getElementById('quickFecha').value,
-                hora: document.getElementById('quickHora').value,
-                observaciones: document.getElementById('quickObservaciones').value || null,
-                prioridad: document.getElementById('quickPrioridad').value,
-                estado: 'Programado'
-            };
-
-            if (!formData.dni_cliente || !formData.dni_empleado_asignado || !formData.id_tipo_servicio || !formData.fecha || !formData.hora) {
-                alert('Por favor, complete todos los campos requeridos.');
-                return;
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Error al cancelar servicio');
             }
 
-            try {
-                const response = await fetch(`${API_BASE_URL}/servicios`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(formData),
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.text();
-                    throw new Error(`Error al crear servicio: ${response.statusText} - ${errorData}`);
-                }
-
-                await loadAgendaData();
-                alert('Servicio creado exitosamente.');
-                document.getElementById('quickCliente').value = '';
-                document.getElementById('quickTecnico').value = '';
-                document.getElementById('quickTipoServicio').value = '';
-                document.getElementById('quickFecha').value = '';
-                document.getElementById('quickHora').value = '';
-                document.getElementById('quickObservaciones').value = '';
-
-            } catch (error) {
-                console.error('Error al crear servicio rápido:', error);
-                alert('Error al crear servicio: ' + error.message);
-            }
+            alert('✅ Servicio cancelado exitosamente!');
+            closeModal('dayServicesModal');
+            await loadAgendaData();
+        } catch (error) {
+            console.error("Error:", error);
+            alert(`❌ Error al cancelar servicio: ${error.message}`);
         }
+    }
 
-        function exportSchedule() {
-            alert('Exportando agenda...');
-        }
+    // ========== RENDER TODAY SCHEDULE ==========
+    function renderTodaySchedule(date) {
+        const scheduleContainer = document.getElementById('todaySchedule');
+        if (!scheduleContainer) return;
+        scheduleContainer.innerHTML = '';
 
-        window.onclick = function(event) {
-            document.querySelectorAll('.modal').forEach(modal => {
-                if (event.target === modal) modal.classList.remove('show');
+        const todayStr = date.toISOString().split('T')[0];
+        const serviciosHoy = servicios.filter(s => s.fecha === todayStr);
+
+        const scheduleDateElement = document.getElementById('todayDate');
+        if (scheduleDateElement) {
+            scheduleDateElement.textContent = date.toLocaleDateString('es-ES', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
             });
         }
 
-        document.getElementById('serviceForm').addEventListener('submit', addService);
+        if (serviciosHoy.length === 0) {
+            scheduleContainer.innerHTML = '<p style="text-align: center; color: #718096;">No hay servicios programados para hoy.</p>';
+            return;
+        }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Agenda cargada. Iniciando carga de datos...');
-            loadAgendaData();
+        serviciosHoy.forEach(serv => {
+            const nombreCliente = obtenerNombreCliente(serv);
+            const nombreTecnico = obtenerNombreTecnico(serv);
+            const nombreServicio = obtenerNombreServicio(serv);
+            const scheduleItem = document.createElement('div');
+            scheduleItem.className = 'schedule-item';
+            scheduleItem.innerHTML = `
+                <div class="schedule-time">${serv.hora || 'N/A'}</div>
+                <div class="schedule-details">
+                    <div class="schedule-service">${nombreServicio}</div>
+                    <div class="schedule-client">Cliente: ${nombreCliente}</div>
+                    <div class="schedule-technician">Técnico: ${nombreTecnico}</div>
+                </div>
+            `;
+            scheduleContainer.appendChild(scheduleItem);
         });
-    </script>
+    }
+
+    // ========== NAVIGATION ==========
+    function previousMonth() {
+        currentMonth--;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        }
+        renderCalendar(currentMonth, currentYear);
+    }
+
+    function nextMonth() {
+        currentMonth++;
+        if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+        renderCalendar(currentMonth, currentYear);
+    }
+
+    function showView(view) {
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        console.log('Mostrando vista:', view);
+    }
+
+    // ========== MODAL FUNCTIONS ==========
+    function openAddServiceModal(date) {
+        document.getElementById('addServiceModal').classList.add('show');
+        if (date) {
+            document.getElementById('fecha').value = date.toISOString().split('T')[0];
+        }
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('show');
+        const form = document.getElementById(modalId).querySelector('form');
+        if (form) form.reset();
+    }
+
+    // ========== ADD SERVICE ==========
+    async function addService(event) {
+        event.preventDefault();
+        const servicioData = {
+            id_servicio: generateUUID(),
+            dni_cliente: document.getElementById('clienteId').value,
+            dni_empleado_asignado: document.getElementById('tecnicoId').value,
+            id_tipo_servicio: document.getElementById('tipoServicioId').value,
+            fecha: document.getElementById('fecha').value,
+            hora: document.getElementById('hora').value,
+            observaciones: document.getElementById('observaciones').value || null,
+            prioridad: document.getElementById('prioridad').value || 'Normal',
+            estado: document.getElementById('estado').value || 'Programado'
+        };
+
+        if (document.getElementById('cotizacionId').value) {
+            servicioData.id_cotizacion = document.getElementById('cotizacionId').value;
+        }
+
+        const fechaServicio = new Date(servicioData.fecha);
+        const fechaActual = new Date();
+        fechaActual.setHours(0, 0, 0, 0);
+        if (fechaServicio < fechaActual) {
+            alert('❌ No se puede programar un servicio en una fecha pasada');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/servicios`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(servicioData)
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || 'Error al crear servicio');
+            }
+            alert('✅ Servicio creado exitosamente!');
+            closeModal('addServiceModal');
+            event.target.reset();
+            await loadAgendaData();
+        } catch (error) {
+            console.error("Error:", error);
+            alert(`❌ Error al crear servicio: ${error.message}`);
+        }
+    }
+
+    // ========== QUICK ADD SERVICE ==========
+    async function quickAddService() {
+        const formData = {
+            id_servicio: generateUUID(),
+            dni_cliente: document.getElementById('quickCliente').value,
+            dni_empleado_asignado: document.getElementById('quickTecnico').value,
+            id_tipo_servicio: document.getElementById('quickTipoServicio').value,
+            fecha: document.getElementById('quickFecha').value,
+            hora: document.getElementById('quickHora').value,
+            observaciones: document.getElementById('quickObservaciones').value || null,
+            prioridad: document.getElementById('quickPrioridad').value,
+            estado: 'Programado'
+        };
+
+        if (!formData.dni_cliente || !formData.dni_empleado_asignado || !formData.id_tipo_servicio || !formData.fecha || !formData.hora) {
+            alert('Por favor, complete todos los campos requeridos.');
+            return;
+        }
+
+        const fechaServicio = new Date(document.getElementById('quickFecha').value);
+        const fechaActual = new Date();
+        fechaActual.setHours(0, 0, 0, 0);
+        if (fechaServicio < fechaActual) {
+            alert('❌ No se puede programar un servicio en una fecha pasada');
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/servicios`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData),
+            });
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`Error al crear servicio: ${response.statusText} - ${errorData}`);
+            }
+            alert('✅ Servicio creado exitosamente.');
+            ['quickCliente','quickTecnico','quickTipoServicio','quickFecha','quickHora','quickObservaciones'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('quickPrioridad').value = 'Normal';
+            await loadAgendaData();
+        } catch (error) {
+            console.error('Error al crear servicio rápido:', error);
+            alert('❌ Error al crear servicio: ' + error.message);
+        }
+    }
+
+    function exportSchedule() {
+        alert('Exportando agenda...');
+    }
+
+    // ========== EVENT LISTENERS ==========
+    window.onclick = function(event) {
+        document.querySelectorAll('.modal').forEach(modal => {
+            if (event.target === modal) modal.classList.remove('show');
+        });
+    }
+
+    document.getElementById('serviceForm').addEventListener('submit', addService);
+    document.getElementById('editServiceForm').addEventListener('submit', updateService);
+
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🚀 Agenda cargada. Iniciando carga de datos...');
+        loadAgendaData();
+    });
+</script>
 </body>
 </html>
