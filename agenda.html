@@ -194,6 +194,28 @@
             padding: 0.5rem 1rem;
             font-size: 0.85em;
         }
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85em;
+        }
+        .btn-outline-primary {
+            background: white;
+            color: #4a8b64;
+            border: 1px solid #4a8b64;
+        }
+        .btn-outline-primary:hover {
+            background: #4a8b64;
+            color: white;
+        }
+        .btn-outline-danger {
+            background: white;
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+        }
+        .btn-outline-danger:hover {
+            background: #ff6b6b;
+            color: white;
+        }
         .calendar-layout {
             display: grid;
             grid-template-columns: 1fr 350px;
@@ -453,6 +475,11 @@
             align-items: start;
             margin-bottom: 1rem;
         }
+        .service-time {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #4a8b64;
+        }
         .service-time-large {
             font-size: 1.5em;
             font-weight: bold;
@@ -461,6 +488,9 @@
         .service-actions {
             display: flex;
             gap: 0.5rem;
+        }
+        .service-card-body {
+            margin-top: 1rem;
         }
         .service-info-row {
             display: grid;
@@ -476,28 +506,32 @@
         .service-info-value {
             color: #2d3748;
         }
-        .status-badge {
+        .status-badge, .badge {
             display: inline-block;
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8em;
             font-weight: 600;
         }
-        .status-programado {
+        .status-programado, .badge-info {
             background: #bee3f8;
             color: #2c5282;
         }
-        .status-en-progreso {
+        .status-en-progreso, .badge-warning {
             background: #feebc8;
             color: #7c2d12;
         }
-        .status-completado {
+        .status-completado, .badge-success {
             background: #c6f6d5;
             color: #22543d;
         }
-        .status-cancelado {
+        .status-cancelado, .badge-danger {
             background: #fed7d7;
             color: #742a2a;
+        }
+        .badge-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
         }
         @media (max-width: 768px) {
             .sidebar {
@@ -694,12 +728,17 @@
 
     <!-- Modal de servicios del día -->
     <div class="modal" id="dayServicesModal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 800px;">
             <div class="modal-header">
                 <h2 class="modal-title" id="dayServicesTitle">Servicios del Día</h2>
                 <button class="close-btn" onclick="closeModal('dayServicesModal')">&times;</button>
             </div>
             <div id="dayServicesContent" style="max-height: 500px; overflow-y: auto;"></div>
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e2e8f0;">
+                <button class="btn btn-primary" style="width: 100%;" onclick="openAddServiceModalFromDay()">
+                    ➕ Agregar Otro Servicio en Esta Fecha
+                </button>
+            </div>
         </div>
     </div>
 
@@ -758,7 +797,7 @@
                     <label>Estado</label>
                     <select class="form-control" id="editEstado">
                         <option value="Programado">Programado</option>
-                        <option value="En Progreso">En Progreso</option>
+                        <option value="En_Progreso">En Progreso</option>
                         <option value="Completado">Completado</option>
                         <option value="Cancelado">Cancelado</option>
                     </select>
@@ -851,321 +890,316 @@
     </div>
 
 <script>
-    const API_BASE_URL = 'http://localhost:8080/api';
-    let currentMonth = new Date().getMonth();
-    let currentYear = new Date().getFullYear();
-    let servicios = [];
-    let personas = [];
-    let tiposServicio = [];
-    let cotizaciones = [];
+const API_BASE_URL = 'http://localhost:8080/api';
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
+let servicios = [];
+let todasLasPersonas = [];
+let todosLosTiposServicio = [];
+let cotizaciones = [];
+let currentView = 'all';
+let currentEditingId = null;
+let isSubmitting = false;
+let selectedDate = null; // Para recordar la fecha seleccionada
 
-    function generateUUID() {
-        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-            const r = Math.random() * 16 | 0;
-            const v = c === 'x' ? r : (r & 0x3 | 0x8);
-            return v.toString(16);
+// ========== FUNCIONES AUXILIARES MEJORADAS ==========
+function obtenerDNICliente(servicio) {
+    // Intentar todas las variantes posibles
+    if (servicio.cliente?.dni) return servicio.cliente.dni;
+    if (servicio.dniCliente) return servicio.dniCliente;
+    if (servicio.dni_cliente) return servicio.dni_cliente;
+    if (servicio.DNI_cliente) return servicio.DNI_cliente;
+    return null;
+}
+
+function obtenerDNITecnico(servicio) {
+    if (servicio.empleadoAsignado?.dni) return servicio.empleadoAsignado.dni;
+    if (servicio.dniEmpleadoAsignado) return servicio.dniEmpleadoAsignado;
+    if (servicio.dni_empleado_asignado) return servicio.dni_empleado_asignado;
+    if (servicio.DNI_empleado_asignado) return servicio.DNI_empleado_asignado;
+    return null;
+}
+
+function obtenerIDTipoServicio(servicio) {
+    if (servicio.tipoServicio?.idTipoServicio) return servicio.tipoServicio.idTipoServicio;
+    if (servicio.idTipoServicio) return servicio.idTipoServicio;
+    if (servicio.id_tipo_servicio) return servicio.id_tipo_servicio;
+    if (servicio.ID_tipo_servicio) return servicio.ID_tipo_servicio;
+    return null;
+}
+
+function obtenerNombreCliente(servicio) {
+    console.log('🔍 Buscando cliente para servicio:', servicio);
+    
+    // Intento 1: Objeto completo
+    if (servicio.cliente?.nombre) {
+        console.log('✅ Cliente encontrado en objeto:', servicio.cliente.nombre);
+        return servicio.cliente.nombre;
+    }
+    
+    // Intento 2: Buscar por DNI
+    const dniCliente = obtenerDNICliente(servicio);
+    console.log('📝 DNI Cliente extraído:', dniCliente);
+    
+    if (dniCliente && todasLasPersonas.length > 0) {
+        const cliente = todasLasPersonas.find(p => {
+            const dniComparar = String(p.dni).trim();
+            const dniBuscar = String(dniCliente).trim();
+            return dniComparar === dniBuscar;
         });
+        
+        if (cliente) {
+            console.log('✅ Cliente encontrado por DNI:', cliente.nombre);
+            return cliente.nombre;
+        }
+        console.warn('⚠️ Cliente con DNI', dniCliente, 'NO encontrado en lista de', todasLasPersonas.length, 'personas');
     }
+    
+    console.error('❌ No se pudo obtener nombre del cliente');
+    return '⚠️ Cliente no encontrado';
+}
 
-    // ========== FUNCIONES AUXILIARES PARA VINCULACIÓN ==========
-    function buscarPersonaPorDNI(dni) {
-        if (!dni) return null;
-        const dniStr = String(dni).trim();
-        return personas.find(p => String(p.dni).trim() === dniStr);
+function obtenerNombreTecnico(servicio) {
+    console.log('🔍 Buscando técnico para servicio:', servicio);
+    
+    if (servicio.empleadoAsignado?.nombre) {
+        console.log('✅ Técnico encontrado en objeto:', servicio.empleadoAsignado.nombre);
+        return servicio.empleadoAsignado.nombre;
     }
+    
+    const dniTecnico = obtenerDNITecnico(servicio);
+    console.log('📝 DNI Técnico extraído:', dniTecnico);
+    
+    if (dniTecnico && todasLasPersonas.length > 0) {
+        const tecnico = todasLasPersonas.find(p => {
+            const dniComparar = String(p.dni).trim();
+            const dniBuscar = String(dniTecnico).trim();
+            return dniComparar === dniBuscar;
+        });
+        
+        if (tecnico) {
+            console.log('✅ Técnico encontrado por DNI:', tecnico.nombre);
+            return tecnico.nombre;
+        }
+        console.warn('⚠️ Técnico con DNI', dniTecnico, 'NO encontrado en lista de', todasLasPersonas.length, 'personas');
+    }
+    
+    console.error('❌ No se pudo obtener nombre del técnico');
+    return '⚠️ Técnico no encontrado';
+}
 
-    function obtenerNombreCliente(servicio) {
-        let dniCliente = null;
+function obtenerNombreServicio(servicio) {
+    console.log('🔍 Buscando tipo de servicio:', servicio);
+    
+    if (servicio.tipoServicio?.nombreServicio) {
+        const costo = servicio.tipoServicio.costo || 0;
+        console.log('✅ Tipo servicio encontrado en objeto:', servicio.tipoServicio.nombreServicio);
+        return `${servicio.tipoServicio.nombreServicio} ($${costo.toLocaleString('es-CO')})`;
+    }
+    
+    const idTipo = obtenerIDTipoServicio(servicio);
+    console.log('📝 ID Tipo Servicio extraído:', idTipo);
+    
+    if (idTipo && todosLosTiposServicio.length > 0) {
+        const tipo = todosLosTiposServicio.find(t => {
+            return String(t.idTipoServicio) === String(idTipo);
+        });
+        
+        if (tipo) {
+            const costo = tipo.costo || 0;
+            console.log('✅ Tipo servicio encontrado por ID:', tipo.nombreServicio);
+            return `${tipo.nombreServicio} ($${costo.toLocaleString('es-CO')})`;
+        }
+        console.warn('⚠️ Tipo servicio con ID', idTipo, 'NO encontrado en lista de', todosLosTiposServicio.length, 'tipos');
+    }
+    
+    console.error('❌ No se pudo obtener tipo de servicio');
+    return '⚠️ Servicio Desconocido';
+}
 
-        // 1. Buscar desde campo directo
-        if (servicio.dniCliente) {
-            dniCliente = servicio.dniCliente;
+// ========== CARGA DE DATOS ==========
+async function loadAgendaData() {
+    console.log("🔄 Iniciando carga de datos de la agenda...");
+    try {
+        const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/servicios`).then(r => {
+                if (!r.ok) throw new Error('Error al cargar servicios');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/personas`).then(r => {
+                if (!r.ok) throw new Error('Error al cargar personas');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/tipos-servicio`).then(r => {
+                if (!r.ok) throw new Error('Error al cargar tipos de servicio');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/cotizaciones`).then(r => {
+                if (!r.ok) throw new Error('Error al cargar cotizaciones');
+                return r.json();
+            })
+        ]);
+
+        // Filtrar solo servicios que tienen una fecha válida
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => s.fecha) : [];
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+        todosLosTiposServicio = Array.isArray(tiposServRes) ? tiposServRes : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
+
+        console.log(`✅ Datos cargados exitosamente:`);
+        console.log(`   📋 ${servicios.length} servicios`);
+        console.log(`   👥 ${todasLasPersonas.length} personas`);
+        console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio`);
+        console.log(`   💰 ${cotizaciones.length} cotizaciones`);
+
+        // Mostrar datos de ejemplo
+        if (servicios.length > 0) {
+            console.log('📦 Ejemplo de servicio:', servicios[0]);
+        }
+        if (todasLasPersonas.length > 0) {
+            console.log('👤 Ejemplo de persona:', todasLasPersonas[0]);
+        }
+        if (todosLosTiposServicio.length > 0) {
+            console.log('🔧 Ejemplo de tipo servicio:', todosLosTiposServicio[0]);
         }
 
-        // 2. Si no, buscar desde cotización si existe
-        if (!dniCliente && servicio.cotizacion && servicio.cotizacion.dniCliente) {
-            dniCliente = servicio.cotizacion.dniCliente;
-        }
-
-        if (!dniCliente) return 'Sin asignar';
-
-        const cliente = buscarPersonaPorDNI(dniCliente);
-        return cliente ? cliente.nombre : `DNI: ${dniCliente}`;
+        populateClienteSelect(todasLasPersonas);
+        populateTecnicoSelect(todasLasPersonas);
+        populateTipoServicioSelect(todosLosTiposServicio);
+        populateCotizacionSelect(cotizaciones);
+        populateFilterTecnico(todasLasPersonas);
+        renderCalendar(currentMonth, currentYear);
+        renderTodaySchedule(new Date());
+        
+        console.log('✅ Inicialización completada');
+    } catch (error) {
+        console.error('❌ Error al cargar datos de agenda:', error);
+        alert('Error al cargar la agenda: ' + error.message + '\n\nPor favor, verifique que el backend esté corriendo.');
     }
+}
 
-    function obtenerNombreTecnico(servicio) {
-        let dniTecnico = null;
-
-        // 1. Buscar desde campo directo
-        if (servicio.dniEmpleadoAsignado) {
-            dniTecnico = servicio.dniEmpleadoAsignado;
-        }
-
-        if (!dniTecnico) return 'Sin asignar';
-
-        const tecnico = buscarPersonaPorDNI(dniTecnico);
-        return tecnico ? tecnico.nombre : `DNI: ${dniTecnico}`;
-    }
-
-    function obtenerNombreServicio(servicio) {
-        let idTipoServicio = null;
-
-        // 1. Buscar desde campo directo
-        if (servicio.idTipoServicio) {
-            idTipoServicio = servicio.idTipoServicio;
-        }
-
-        if (!idTipoServicio) return 'Servicio';
-
-        const tipo = tiposServicio.find(ts => ts.idTipoServicio == idTipoServicio);
-        return tipo ? tipo.nombreServicio : 'Servicio';
-    }
-
-    // ========== CARGA DE DATOS ==========
-    async function loadAgendaData() {
-        console.log("🔄 Iniciando carga de datos de la agenda...");
-        try {
-            const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/servicios`).then(r => r.json()),
-                fetch(`${API_BASE_URL}/personas`).then(r => r.json()),
-                fetch(`${API_BASE_URL}/tipos-servicio`).then(r => r.json()),
-                fetch(`${API_BASE_URL}/cotizaciones`).then(r => r.json())
-            ]);
-
-            servicios = serviciosRes;
-            personas = personasRes;
-            tiposServicio = tiposServRes;
-            cotizaciones = cotizacionesRes;
-
-            console.log("✅ Datos cargados:", { 
-                servicios: servicios.length, 
-                personas: personas.length, 
-                tipos: tiposServicio.length,
-                cotizaciones: cotizaciones.length
-            });
-
-            populateClienteSelect(personas);
-            populateTecnicoSelect(personas);
-            populateTipoServicioSelect(tiposServicio);
-            populateCotizacionSelect(cotizaciones);
-            populateFilterTecnico(personas);
-            populateQuickCliente(personas);
-            populateQuickTipoServicio(tiposServicio);
-            populateQuickTecnico(personas);
-            renderCalendar(currentMonth, currentYear);
-            renderTodaySchedule(new Date());
-
-        } catch (error) {
-            console.error('❌ Error al cargar datos de agenda:', error);
-            alert('Error al cargar la agenda. Por favor, recargue la página.');
-        }
-    }
-
-    // ========== POPULATION FUNCTIONS ==========
-    function populateClienteSelect(personas) {
-        const selects = ['clienteId', 'editClienteId', 'quickCliente'];
-        selects.forEach(selectId => {
-            const select = document.getElementById(selectId);
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar cliente</option>';
-            personas.filter(p => p.rol === 'Cliente').forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.dni;
-                option.textContent = p.nombre;
-                select.appendChild(option);
-            });
-        });
-    }
-
-    function populateTecnicoSelect(personas) {
-        const selects = ['tecnicoId', 'editTecnicoId', 'quickTecnico'];
-        selects.forEach(selectId => {
-            const select = document.getElementById(selectId);
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar técnico</option>';
-            personas.filter(p => p.rol === 'Empleado').forEach(p => {
-                const option = document.createElement('option');
-                option.value = p.dni;
-                option.textContent = p.nombre;
-                select.appendChild(option);
-            });
-        });
-    }
-
-    function populateTipoServicioSelect(tipos) {
-        const selects = ['tipoServicioId', 'editTipoServicioId', 'quickTipoServicio']; // Asegúrate de que estos IDs coincidan con tus <select>
-        selects.forEach(selectId => {
-            const select = document.getElementById(selectId);
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar tipo</option>';
-            tipos.forEach(ts => {
-                const option = document.createElement('option');
-                // CAMBIO AQUÍ: El VALUE ahora es el ID numérico
-                option.value = ts.id_tipo_servicio; // <--- AQUÍ
-                // El TEXT CONTENT sigue siendo la descripción para el usuario
-                option.textContent = `${ts.nombre_servicio} ($${ts.costo})`; // <--- AQUÍ
-                select.appendChild(option);
-            });
-        });
-    }
-
-    function populateCotizacionSelect(cotizaciones) {
-        const select = document.getElementById('cotizacionId');
-        if (!select) return;
-        select.innerHTML = '<option value="">Seleccionar cotización</option>';
-        cotizaciones.forEach(c => {
-            const option = document.createElement('option');
-            option.value = c.idCotizacion;
-            option.textContent = `#${c.idCotizacion} - ${c.descripcionProblema || 'Sin descripción'}`;
-            select.appendChild(option);
-        });
-    }
-
-    function populateFilterTecnico(personas) {
-        const select = document.getElementById('filterTecnico');
-        if (!select) return;
-        select.innerHTML = '<option value="">Todos los técnicos</option>';
-        personas.filter(p => p.rol === 'Empleado').forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.dni;
-            option.textContent = p.nombre;
-            select.appendChild(option);
-        });
-    }
-
-    function populateQuickCliente(personas) {
-        const select = document.getElementById('quickCliente');
+// ========== POPULATION FUNCTIONS ==========
+function populateClienteSelect(personas) {
+    const selects = ['clienteId', 'editClienteId', 'quickCliente'];
+    const clientes = personas.filter(p => p.rol === 'Cliente');
+    
+    console.log(`📋 Poblando selects de clientes con ${clientes.length} clientes`);
+    
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
         if (!select) return;
         select.innerHTML = '<option value="">Seleccionar cliente</option>';
-        personas.filter(p => p.rol === 'Cliente').forEach(p => {
+        clientes.forEach(p => {
             const option = document.createElement('option');
             option.value = p.dni;
             option.textContent = p.nombre;
             select.appendChild(option);
         });
-    }
+    });
+}
 
-    function populateQuickTipoServicio(tipos) {
-        const select = document.getElementById('quickTipoServicio');
+function populateTecnicoSelect(personas) {
+    const selects = ['tecnicoId', 'editTecnicoId', 'quickTecnico'];
+    const tecnicos = personas.filter(p => p.rol === 'Empleado');
+    
+    console.log(`📋 Poblando selects de técnicos con ${tecnicos.length} empleados`);
+    
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
+        if (!select) return;
+        select.innerHTML = '<option value="">Seleccionar técnico</option>';
+        tecnicos.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.dni;
+            option.textContent = p.nombre;
+            select.appendChild(option);
+        });
+    });
+}
+
+function populateTipoServicioSelect(tipos) {
+    const selects = ['tipoServicioId', 'editTipoServicioId', 'quickTipoServicio'];
+    
+    console.log(`📋 Poblando selects de tipos de servicio con ${tipos.length} tipos`);
+    
+    selects.forEach(selectId => {
+        const select = document.getElementById(selectId);
         if (!select) return;
         select.innerHTML = '<option value="">Seleccionar tipo</option>';
         tipos.forEach(ts => {
             const option = document.createElement('option');
             option.value = ts.idTipoServicio;
-            option.textContent = ts.nombreServicio;
+            option.textContent = `${ts.nombreServicio} ($${ts.costo})`;
             select.appendChild(option);
         });
+    });
+}
+
+function populateCotizacionSelect(cotizaciones) {
+    const select = document.getElementById('cotizacionId');
+    if (!select) return;
+    select.innerHTML = '<option value="">Seleccionar cotización</option>';
+    cotizaciones.filter(c => c.estado !== 'Rechazada' && c.estado !== 'Finalizada').forEach(c => {
+        const option = document.createElement('option');
+        option.value = c.idCotizacion;
+        const clienteNombre = c.cliente?.nombre || 'Sin cliente';
+        option.textContent = `#${c.idCotizacion} - ${clienteNombre} - ${c.descripcionProblema || 'Sin descripción'}`;
+        select.appendChild(option);
+    });
+}
+
+function populateFilterTecnico(personas) {
+    const select = document.getElementById('filterTecnico');
+    if (!select) return;
+    select.innerHTML = '<option value="">Todos los técnicos</option>';
+    personas.filter(p => p.rol === 'Empleado').forEach(p => {
+        const option = document.createElement('option');
+        option.value = p.dni;
+        option.textContent = p.nombre;
+        select.appendChild(option);
+    });
+}
+
+// ========== RENDER CALENDAR ==========
+function renderCalendar(month, year) {
+    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                       "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const monthYearElement = document.querySelector('.month-year');
+    if (monthYearElement) {
+        monthYearElement.textContent = `${monthNames[month]} ${year}`;
     }
 
-    function populateQuickTecnico(personas) {
-        const select = document.getElementById('quickTecnico');
-        if (!select) return;
-        select.innerHTML = '<option value="">Seleccionar técnico</option>';
-        personas.filter(p => p.rol === 'Empleado').forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.dni;
-            option.textContent = p.nombre;
-            select.appendChild(option);
-        });
+    const calendarGrid = document.getElementById('calendarGrid');
+    if (!calendarGrid) return;
+
+    const headers = calendarGrid.querySelectorAll('.calendar-day-header');
+    calendarGrid.innerHTML = '';
+    headers.forEach(header => calendarGrid.appendChild(header));
+
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDay = firstDay.getDay();
+    const totalDays = lastDay.getDate();
+    const prevLastDay = new Date(year, month, 0).getDate();
+
+    for (let i = startDay - 1; i >= 0; i--) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day other-month';
+        dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div>`;
+        calendarGrid.appendChild(dayElement);
     }
 
-    // ========== RENDER CALENDAR ==========
-    function renderCalendar(month, year) {
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-                           "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-        const monthYearElement = document.querySelector('.month-year');
-        if (monthYearElement) {
-            monthYearElement.textContent = `${monthNames[month]} ${year}`;
+    const today = new Date();
+    for (let day = 1; day <= totalDays; day++) {
+        const date = new Date(year, month, day);
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+        if (date.getDate() === today.getDate() && 
+            date.getMonth() === today.getMonth() && 
+            date.getFullYear() === today.getFullYear()) {
+            dayElement.classList.add('today');
         }
-
-        const calendarGrid = document.getElementById('calendarGrid');
-        if (!calendarGrid) return;
-
-        const headers = calendarGrid.querySelectorAll('.calendar-day-header');
-        calendarGrid.innerHTML = '';
-        headers.forEach(header => calendarGrid.appendChild(header));
-
-        const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        const startDay = firstDay.getDay();
-        const totalDays = lastDay.getDate();
-        const prevLastDay = new Date(year, month, 0).getDate();
-
-        for (let i = startDay - 1; i >= 0; i--) {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day other-month';
-            dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div>`;
-            calendarGrid.appendChild(dayElement);
-        }
-
-        const today = new Date();
-        for (let day = 1; day <= totalDays; day++) {
-            const date = new Date(year, month, day);
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day';
-            if (date.getDate() === today.getDate() && 
-                date.getMonth() === today.getMonth() && 
-                date.getFullYear() === today.getFullYear()) {
-                dayElement.classList.add('today');
-            }
-            dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
-
-            const serviciosDelDia = servicios.filter(s => {
-                if (!s.fecha) return false;
-                const fechaServicio = new Date(s.fecha + 'T00:00:00');
-                return fechaServicio.getDate() === day && 
-                       fechaServicio.getMonth() === month && 
-                       fechaServicio.getFullYear() === year;
-            });
-
-            const eventsContainer = dayElement.querySelector('.day-events');
-            serviciosDelDia.forEach(serv => {
-                const eventElement = document.createElement('div');
-                eventElement.className = `event-item ${getEventTypeClass(serv)}`;
-                const nombreCliente = obtenerNombreCliente(serv);
-                const nombreServicio = obtenerNombreServicio(serv);
-                const primerNombre = nombreCliente.split(' ')[0];
-                eventElement.textContent = `${primerNombre}`;
-                eventElement.title = `${nombreServicio}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
-                eventElement.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    showDayServices(date);
-                });
-                eventsContainer.appendChild(eventElement);
-            });
-
-            dayElement.addEventListener('click', () => showDayServices(date));
-            calendarGrid.appendChild(dayElement);
-        }
-
-        const totalCells = 42;
-        const remaining = totalCells - (startDay + totalDays);
-        for (let day = 1; day <= remaining; day++) {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-day other-month';
-            dayElement.innerHTML = `<div class="day-number">${day}</div>`;
-            calendarGrid.appendChild(dayElement);
-        }
-    }
-
-    function getEventTypeClass(servicio) {
-        const nombreServicio = obtenerNombreServicio(servicio).toLowerCase();
-        if (nombreServicio.includes('plaga') || nombreServicio.includes('control')) return 'control-plagas';
-        if (nombreServicio.includes('tanque') || nombreServicio.includes('lavado')) return 'lavado-tanques';
-        if (nombreServicio.includes('inspeccion')) return 'inspeccion';
-        if (nombreServicio.includes('seguimiento')) return 'seguimiento';
-        return 'control-plagas';
-    }
-
-    // ========== SHOW DAY SERVICES ==========
-    function showDayServices(date) {
-        const modal = document.getElementById('dayServicesModal');
-        const title = document.getElementById('dayServicesTitle');
-        const content = document.getElementById('dayServicesContent');
-
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const day = date.getDate();
+        dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
         const serviciosDelDia = servicios.filter(s => {
             if (!s.fecha) return false;
@@ -1175,377 +1209,572 @@
                    fechaServicio.getFullYear() === year;
         });
 
-        const monthStr = String(month + 1).padStart(2, '0');
-        const dayStr = String(day).padStart(2, '0');
-        const dateStr = `${year}-${monthStr}-${dayStr}`;
-
-        title.textContent = `Servicios del ${date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}`;
-
-        if (serviciosDelDia.length === 0) {
-            content.innerHTML = `
-                <p style="text-align: center; color: #718096; padding: 2rem;">
-                    No hay servicios programados para esta fecha.
-                </p>
-                <button class="btn btn-primary" style="width: 100%;" onclick="closeModal('dayServicesModal'); openAddServiceModal(new Date('${dateStr}'))">
-                    ➕ Programar Servicio
-                </button>
-            `;
-        } else {
-            content.innerHTML = serviciosDelDia.map(serv => {
-                const nombreCliente = obtenerNombreCliente(serv);
-                const nombreTecnico = obtenerNombreTecnico(serv);
-                const nombreServicio = obtenerNombreServicio(serv);
-                const estadoClass = serv.estado ? `status-${serv.estado.toLowerCase().replace(/\s+/g, '-')}` : 'status-programado';
-                return `
-                    <div class="service-card">
-                        <div class="service-card-header">
-                            <div class="service-time-large">${serv.hora || 'Sin hora'}</div>
-                            <div class="service-actions">
-                                <button class="btn btn-secondary btn-small" onclick="event.stopPropagation(); openEditServiceModal('${serv.idServicio}')">
-                                    ✏️ Editar
-                                </button>
-                                <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); cancelService('${serv.idServicio}')">
-                                    ❌ Cancelar
-                                </button>
-                            </div>
-                        </div>
-                        <div class="service-info-row">
-                            <span class="service-info-label">Servicio:</span>
-                            <span class="service-info-value">${nombreServicio}</span>
-                        </div>
-                        <div class="service-info-row">
-                            <span class="service-info-label">Cliente:</span>
-                            <span class="service-info-value">${nombreCliente}</span>
-                        </div>
-                        <div class="service-info-row">
-                            <span class="service-info-label">Técnico:</span>
-                            <span class="service-info-value">${nombreTecnico}</span>
-                        </div>
-                        <div class="service-info-row">
-                            <span class="service-info-label">Prioridad:</span>
-                            <span class="service-info-value">${serv.prioridad || 'Normal'}</span>
-                        </div>
-                        <div class="service-info-row">
-                            <span class="service-info-label">Estado:</span>
-                            <span class="status-badge ${estadoClass}">${serv.estado || 'Programado'}</span>
-                        </div>
-                        ${serv.observaciones ? `
-                        <div class="service-info-row">
-                            <span class="service-info-label">Observaciones:</span>
-                            <span class="service-info-value">${serv.observaciones}</span>
-                        </div>
-                        ` : ''}
-                    </div>
-                `;
-            }).join('');
-
-            content.innerHTML += `
-                <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="closeModal('dayServicesModal'); openAddServiceModal(new Date('${dateStr}'))">
-                    ➕ Agregar Otro Servicio
-                </button>
-            `;
-        }
-
-        modal.classList.add('show');
-    }
-
-    // ========== EDIT SERVICE ==========
-    async function openEditServiceModal(servicioId) {
-        const servicio = servicios.find(s => s.idServicio === servicioId);
-        if (!servicio) return;
-
-        closeModal('dayServicesModal');
-        document.getElementById('editServiceId').value = servicio.idServicio;
-        document.getElementById('editClienteId').value = servicio.dniCliente || '';
-        document.getElementById('editTecnicoId').value = servicio.dniEmpleadoAsignado || '';
-        document.getElementById('editTipoServicioId').value = servicio.idTipoServicio || '';
-        document.getElementById('editFecha').value = servicio.fecha || '';
-        document.getElementById('editHora').value = servicio.hora || '';
-        document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
-        document.getElementById('editObservaciones').value = servicio.observaciones || '';
-        document.getElementById('editEstado').value = servicio.estado || 'Programado';
-        document.getElementById('editServiceModal').classList.add('show');
-    }
-
-    async function updateService(event) {
-        event.preventDefault();
-        const servicioId = document.getElementById('editServiceId').value;
-        const servicioData = {
-            id_servicio: servicioId,
-            dni_cliente: document.getElementById('editClienteId').value,
-            dni_empleado_asignado: document.getElementById('editTecnicoId').value,
-            id_tipo_servicio: document.getElementById('editTipoServicioId').value,
-            fecha: document.getElementById('editFecha').value,
-            hora: document.getElementById('editHora').value,
-            observaciones: document.getElementById('editObservaciones').value || null,
-            prioridad: document.getElementById('editPrioridad').value,
-            estado: document.getElementById('editEstado').value
-        };
-
-        const fechaServicio = new Date(servicioData.fecha);
-        const fechaActual = new Date();
-        fechaActual.setHours(0, 0, 0, 0);
-        if (fechaServicio < fechaActual && servicioData.estado === 'Programado') {
-            alert('No se puede programar un servicio en una fecha pasada');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(servicioData)
+        const eventsContainer = dayElement.querySelector('.day-events');
+        serviciosDelDia.forEach(serv => {
+            const eventElement = document.createElement('div');
+            eventElement.className = `event-item ${getEventTypeClass(serv)}`;
+            const nombreCliente = obtenerNombreCliente(serv);
+            const primerNombre = nombreCliente.split(' ')[0];
+            eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
+            eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
+            eventElement.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showDayServices(date);
             });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Error al actualizar servicio');
-            }
-            closeModal('editServiceModal');
-            await loadAgendaData();
-            alert('✅ Servicio actualizado exitosamente');
-        } catch (error) {
-            console.error("Error:", error);
-            alert(`❌ Error al actualizar servicio: ${error.message}`);
-        }
+            eventsContainer.appendChild(eventElement);
+        });
+
+        dayElement.addEventListener('click', () => showDayServices(date));
+        calendarGrid.appendChild(dayElement);
     }
 
-    // ========== CANCEL SERVICE ==========
-    async function cancelService(servicioId) {
-        if (!confirm('¿Está seguro de que desea cancelar este servicio?')) {
-            return;
-        }
-        try {
-            const servicio = servicios.find(s => s.idServicio === servicioId);
-            if (!servicio) throw new Error('Servicio no encontrado');
-
-            const servicioData = {
-                id_servicio: servicio.idServicio,
-                dni_cliente: servicio.dniCliente,
-                dni_empleado_asignado: servicio.dniEmpleadoAsignado,
-                id_tipo_servicio: servicio.idTipoServicio,
-                fecha: servicio.fecha,
-                hora: servicio.hora,
-                observaciones: servicio.observaciones,
-                prioridad: servicio.prioridad || 'Normal',
-                estado: 'Cancelado'
-            };
-
-            const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(servicioData)
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Error al cancelar servicio');
-            }
-
-            alert('✅ Servicio cancelado exitosamente!');
-            closeModal('dayServicesModal');
-            await loadAgendaData();
-        } catch (error) {
-            console.error("Error:", error);
-            alert(`❌ Error al cancelar servicio: ${error.message}`);
-        }
+    const totalCells = 42;
+    const remaining = totalCells - (startDay + totalDays);
+    for (let day = 1; day <= remaining; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day other-month';
+        dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+        calendarGrid.appendChild(dayElement);
     }
+}
 
-    // ========== RENDER TODAY SCHEDULE ==========
-    function renderTodaySchedule(date) {
-        const scheduleContainer = document.getElementById('todaySchedule');
-        if (!scheduleContainer) return;
-        scheduleContainer.innerHTML = '';
+// ========== FUNCIONES DE ESTADO ==========
+function getEstadoClass(estado) {
+    const estadoNormalizado = String(estado).replace(/\s+/g, '_').toLowerCase();
+    switch (estadoNormalizado) {
+        case 'programado':
+            return 'badge-info';
+        case 'en_progreso':
+        case 'en progreso':
+            return 'badge-warning';
+        case 'completado':
+            return 'badge-success';
+        case 'cancelado':
+            return 'badge-danger';
+        default:
+            return 'badge-secondary';
+    }
+}
 
-        const todayStr = date.toISOString().split('T')[0];
-        const serviciosHoy = servicios.filter(s => s.fecha === todayStr);
+function getEventTypeClass(servicio) {
+    const nombreServicio = obtenerNombreServicio(servicio).toLowerCase();
+    if (nombreServicio.includes('fumig') || nombreServicio.includes('plaga') || nombreServicio.includes('control')) return 'control-plagas';
+    if (nombreServicio.includes('tanque') || nombreServicio.includes('lavado')) return 'lavado-tanques';
+    if (nombreServicio.includes('inspeccion') || nombreServicio.includes('inspección')) return 'inspeccion';
+    if (nombreServicio.includes('seguimiento')) return 'seguimiento';
+    return 'control-plagas';
+}
 
-        const scheduleDateElement = document.getElementById('todayDate');
-        if (scheduleDateElement) {
-            scheduleDateElement.textContent = date.toLocaleDateString('es-ES', { 
-                day: 'numeric', 
-                month: 'long', 
-                year: 'numeric' 
-            });
-        }
+// ========== SHOW DAY SERVICES ==========
+function showDayServices(date) {
+    selectedDate = date; // Guardar la fecha seleccionada
+    
+    const modal = document.getElementById('dayServicesModal');
+    const title = document.getElementById('dayServicesTitle');
+    const content = document.getElementById('dayServicesContent');
 
-        if (serviciosHoy.length === 0) {
-            scheduleContainer.innerHTML = '<p style="text-align: center; color: #718096;">No hay servicios programados para hoy.</p>';
-            return;
-        }
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
 
-        serviciosHoy.forEach(serv => {
+    const serviciosDelDia = servicios.filter(s => {
+        if (!s.fecha) return false;
+        const fechaServicio = new Date(s.fecha + 'T00:00:00');
+        return fechaServicio.getDate() === day &&
+               fechaServicio.getMonth() === month &&
+               fechaServicio.getFullYear() === year;
+    });
+
+    const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+    title.textContent = `Servicios del ${dateStr}`;
+
+    console.log(`📅 Mostrando servicios del ${dateStr}:`, serviciosDelDia.length, 'servicios encontrados');
+
+    if (serviciosDelDia.length === 0) {
+        content.innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: #718096;">
+                <div style="font-size: 3em; margin-bottom: 1rem;">📅</div>
+                <p style="font-size: 1.1em; margin-bottom: 0.5rem;">No hay servicios programados para esta fecha</p>
+                <p style="font-size: 0.9em;">Haga clic en el botón de abajo para programar uno</p>
+            </div>
+        `;
+    } else {
+        content.innerHTML = serviciosDelDia.map(serv => {
             const nombreCliente = obtenerNombreCliente(serv);
             const nombreTecnico = obtenerNombreTecnico(serv);
             const nombreServicio = obtenerNombreServicio(serv);
-            const scheduleItem = document.createElement('div');
-            scheduleItem.className = 'schedule-item';
-            scheduleItem.innerHTML = `
-                <div class="schedule-time">${serv.hora || 'N/A'}</div>
-                <div class="schedule-details">
-                    <div class="schedule-service">${nombreServicio}</div>
-                    <div class="schedule-client">Cliente: ${nombreCliente}</div>
-                    <div class="schedule-technician">Técnico: ${nombreTecnico}</div>
+            const hora = serv.hora ? serv.hora.substring(0, 5) : 'No definida';
+
+            return `<div class="service-card">
+                <div class="service-card-header">
+                    <span class="service-time">${hora}</span>
+                    <div class="service-actions">
+                        <button class="btn btn-sm btn-outline-primary" onclick="openEditServiceModal('${serv.idServicio}')">✏️ Editar</button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="cancelarServicio('${serv.idServicio}')">🗑️ Cancelar</button>
+                    </div>
                 </div>
-            `;
-            scheduleContainer.appendChild(scheduleItem);
-        });
+                <div class="service-card-body">
+                    <div class="service-info-row"><span class="service-info-label">Servicio:</span><span class="service-info-value">${nombreServicio}</span></div>
+                    <div class="service-info-row"><span class="service-info-label">Cliente:</span><span class="service-info-value">${nombreCliente}</span></div>
+                    <div class="service-info-row"><span class="service-info-label">Técnico:</span><span class="service-info-value">${nombreTecnico}</span></div>
+                    <div class="service-info-row"><span class="service-info-label">Prioridad:</span><span class="service-info-value">${serv.prioridad || 'Normal'}</span></div>
+                    <div class="service-info-row"><span class="service-info-label">Estado:</span><span class="service-info-value"><span class="badge ${getEstadoClass(serv.estado)}">${serv.estado || 'Programado'}</span></span></div>
+                    ${serv.observaciones ? `<div class="service-info-row"><span class="service-info-label">Observaciones:</span><span class="service-info-value">${serv.observaciones}</span></div>` : ''}
+                </div>
+            </div>`;
+        }).join('');
     }
 
-    // ========== NAVIGATION ==========
-    function previousMonth() {
-        currentMonth--;
-        if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
+    modal.classList.add('show');
+}
+
+// Función para abrir modal de agregar desde el día
+function openAddServiceModalFromDay() {
+    closeModal('dayServicesModal');
+    openAddServiceModal(selectedDate);
+}
+
+// ========== EDIT SERVICE ==========
+function openEditServiceModal(id) {
+    console.log('🔍 Abriendo modal de edición para servicio:', id);
+    
+    const servicio = servicios.find(s => s.idServicio === id);
+    if (!servicio) {
+        console.error('❌ Servicio no encontrado');
+        alert("Servicio no encontrado. Por favor, recargue la página.");
+        return;
+    }
+
+    console.log('📋 Servicio a editar:', servicio);
+
+    const dniCliente = obtenerDNICliente(servicio);
+    const dniTecnico = obtenerDNITecnico(servicio);
+    const idTipoServ = obtenerIDTipoServicio(servicio);
+
+    console.log('📝 Valores extraídos:', { dniCliente, dniTecnico, idTipoServ });
+
+    if (!dniCliente || !dniTecnico || !idTipoServ) {
+        const faltantes = [];
+        if (!dniCliente) faltantes.push('Cliente');
+        if (!dniTecnico) faltantes.push('Técnico');
+        if (!idTipoServ) faltantes.push('Tipo de servicio');
+        
+        alert(`⚠️ Este servicio tiene datos incompletos:\n\n• ${faltantes.join('\n• ')}\n\nPor favor, complete estos datos antes de guardar.`);
+    }
+
+    // Llenar formulario
+    document.getElementById('editClienteId').value = dniCliente || '';
+    document.getElementById('editTecnicoId').value = dniTecnico || '';
+    document.getElementById('editTipoServicioId').value = idTipoServ || '';
+    document.getElementById('editFecha').value = servicio.fecha || '';
+    document.getElementById('editHora').value = servicio.hora ? servicio.hora.substring(0, 5) : '';
+    document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
+    document.getElementById('editObservaciones').value = servicio.observaciones || '';
+    document.getElementById('editEstado').value = servicio.estado ? servicio.estado.replace(' ', '_') : 'Programado';
+    document.getElementById('editServiceId').value = servicio.idServicio;
+
+    closeModal('dayServicesModal');
+    document.getElementById('editServiceModal').classList.add('show');
+    
+    console.log('✅ Modal de edición abierto');
+}
+
+async function updateService(event) {
+    event.preventDefault();
+    
+    if (isSubmitting) {
+        console.log('⚠️ Ya hay una actualización en proceso');
+        return;
+    }
+    
+    isSubmitting = true;
+    
+    try {
+        const servicioId = document.getElementById('editServiceId').value;
+        
+        console.log('🔄 Iniciando actualización del servicio:', servicioId);
+        
+        // --- VERIFICACIÓN ADICIONAL: Consultar al backend antes de actualizar ---
+        const checkResponse = await fetch(`${API_BASE_URL}/servicios/${servicioId}`);
+        if (!checkResponse.ok) {
+            throw new Error(`El servicio con ID ${servicioId} no existe en el servidor.`);
         }
-        renderCalendar(currentMonth, currentYear);
-    }
-
-    function nextMonth() {
-        currentMonth++;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        }
-        renderCalendar(currentMonth, currentYear);
-    }
-
-    function showView(view) {
-        document.querySelectorAll('.nav-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        event.target.classList.add('active');
-        console.log('Mostrando vista:', view);
-    }
-
-    // ========== MODAL FUNCTIONS ==========
-    function openAddServiceModal(date) {
-        document.getElementById('addServiceModal').classList.add('show');
-        if (date) {
-            document.getElementById('fecha').value = date.toISOString().split('T')[0];
-        }
-    }
-
-    function closeModal(modalId) {
-        document.getElementById(modalId).classList.remove('show');
-        const form = document.getElementById(modalId).querySelector('form');
-        if (form) form.reset();
-    }
-
-    // ========== ADD SERVICE ==========
-    async function addService(event) {
-        event.preventDefault();
-        const servicioData = {
-            id_servicio: generateUUID(),
-            dni_cliente: document.getElementById('clienteId').value,
-            dni_empleado_asignado: document.getElementById('tecnicoId').value,
-            id_tipo_servicio: document.getElementById('tipoServicioId').value,
-            fecha: document.getElementById('fecha').value,
-            hora: document.getElementById('hora').value,
-            observaciones: document.getElementById('observaciones').value || null,
-            prioridad: document.getElementById('prioridad').value || 'Normal',
-            estado: document.getElementById('estado').value || 'Programado'
-        };
-
-        if (document.getElementById('cotizacionId').value) {
-            servicioData.id_cotizacion = document.getElementById('cotizacionId').value;
-        }
-
-        const fechaServicio = new Date(servicioData.fecha);
-        const fechaActual = new Date();
-        fechaActual.setHours(0, 0, 0, 0);
-        if (fechaServicio < fechaActual) {
-            alert('❌ No se puede programar un servicio en una fecha pasada');
-            return;
-        }
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/servicios`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(servicioData)
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Error al crear servicio');
-            }
-            alert('✅ Servicio creado exitosamente!');
-            closeModal('addServiceModal');
-            event.target.reset();
-            await loadAgendaData();
-        } catch (error) {
-            console.error("Error:", error);
-            alert(`❌ Error al crear servicio: ${error.message}`);
-        }
-    }
-
-    // ========== QUICK ADD SERVICE ==========
-    async function quickAddService() {
+        // --- FIN VERIFICACIÓN ---
+        
         const formData = {
-            id_servicio: generateUUID(),
-            dni_cliente: document.getElementById('quickCliente').value,
-            dni_empleado_asignado: document.getElementById('quickTecnico').value,
-            id_tipo_servicio: document.getElementById('quickTipoServicio').value,
-            fecha: document.getElementById('quickFecha').value,
-            hora: document.getElementById('quickHora').value,
-            observaciones: document.getElementById('quickObservaciones').value || null,
-            prioridad: document.getElementById('quickPrioridad').value,
-            estado: 'Programado'
+            idServicio: servicioId,
+            dniCliente: document.getElementById('editClienteId').value.trim(),
+            dniEmpleadoAsignado: document.getElementById('editTecnicoId').value.trim(),
+            idTipoServicio: document.getElementById('editTipoServicioId').value.trim(),
+            fecha: document.getElementById('editFecha').value,
+            hora: document.getElementById('editHora').value + ':00',
+            observaciones: document.getElementById('editObservaciones').value.trim() || null,
+            prioridad: document.getElementById('editPrioridad').value,
+            estado: document.getElementById('editEstado').value.replace(' ', '_')
         };
 
-        if (!formData.dni_cliente || !formData.dni_empleado_asignado || !formData.id_tipo_servicio || !formData.fecha || !formData.hora) {
-            alert('Por favor, complete todos los campos requeridos.');
+        console.log('📤 Datos a enviar:', formData);
+
+        if (!formData.dniCliente || !formData.dniEmpleadoAsignado || !formData.idTipoServicio) {
+            const camposFaltantes = [];
+            if (!formData.dniCliente) camposFaltantes.push('Cliente');
+            if (!formData.dniEmpleadoAsignado) camposFaltantes.push('Técnico');
+            if (!formData.idTipoServicio) camposFaltantes.push('Tipo de servicio');
+            
+            alert(`❌ Debe completar los siguientes campos obligatorios:\n\n• ${camposFaltantes.join('\n• ')}`);
+            isSubmitting = false;
             return;
         }
 
-        const fechaServicio = new Date(document.getElementById('quickFecha').value);
-        const fechaActual = new Date();
-        fechaActual.setHours(0, 0, 0, 0);
-        if (fechaServicio < fechaActual) {
-            alert('❌ No se puede programar un servicio en una fecha pasada');
+        if (!formData.fecha || !formData.hora) {
+            alert('❌ Debe completar la fecha y hora del servicio');
+            isSubmitting = false;
             return;
         }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/servicios`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-            if (!response.ok) {
-                const errorData = await response.text();
-                throw new Error(`Error al crear servicio: ${response.statusText} - ${errorData}`);
-            }
-            alert('✅ Servicio creado exitosamente.');
-            ['quickCliente','quickTecnico','quickTipoServicio','quickFecha','quickHora','quickObservaciones'].forEach(id => {
-                document.getElementById(id).value = '';
-            });
-            document.getElementById('quickPrioridad').value = 'Normal';
-            await loadAgendaData();
-        } catch (error) {
-            console.error('Error al crear servicio rápido:', error);
-            alert('❌ Error al crear servicio: ' + error.message);
+        const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error del servidor:', errorText);
+            throw new Error(errorText || `Error ${response.status}`);
         }
+
+        console.log('✅ Servicio actualizado exitosamente');
+        alert('✅ Servicio actualizado exitosamente');
+        
+        closeModal('editServiceModal');
+        await loadAgendaData();
+        
+    } catch (error) {
+        console.error('❌ Error:', error);
+        alert(`❌ Error al actualizar servicio:\n\n${error.message}`);
+    } finally {
+        isSubmitting = false;
+    }
+}
+
+// ========== CANCEL SERVICE ==========
+async function cancelService(servicioId) {
+    console.log('🗑️ Intentando cancelar servicio:', servicioId);
+    
+    if (!confirm('¿Está seguro de que desea cancelar este servicio?')) {
+        return;
+    }
+    
+    const servicio = servicios.find(s => s.idServicio === servicioId);
+    if (!servicio) {
+        alert('❌ Servicio no encontrado');
+        await loadAgendaData();
+        closeModal('dayServicesModal');
+        return;
     }
 
-    function exportSchedule() {
-        alert('Exportando agenda...');
+    const dniCliente = obtenerDNICliente(servicio);
+    const dniTecnico = obtenerDNITecnico(servicio);const idTipoServ = obtenerIDTipoServicio(servicio);
+
+    if (!dniCliente || !dniTecnico || !idTipoServ) {
+        alert('❌ Este servicio tiene datos incompletos y no puede ser cancelado.\n\nPor favor, complete los datos obligatorios primero usando "Editar".');
+        return;
     }
 
-    // ========== EVENT LISTENERS ==========
-    window.onclick = function(event) {
-        document.querySelectorAll('.modal').forEach(modal => {
-            if (event.target === modal) modal.classList.remove('show');
+    try {
+        const servicioData = {
+            dniCliente: dniCliente,
+            dniEmpleadoAsignado: dniTecnico,
+            idTipoServicio: idTipoServ,
+            fecha: servicio.fecha,
+            hora: servicio.hora,
+            observaciones: servicio.observaciones,
+            prioridad: servicio.prioridad || 'Normal',
+            estado: 'Cancelado'
+        };
+
+        console.log('📤 Datos para cancelar:', servicioData);
+
+        const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
+            method: 'PUT',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(servicioData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error del servidor:', errorText);
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+
+        console.log('✅ Servicio cancelado exitosamente');
+        alert('✅ Servicio cancelado exitosamente');
+        
+        closeModal('dayServicesModal');
+        await loadAgendaData();
+        
+    } catch (error) {
+        console.error('❌ Error:', error);
+        alert(`❌ Error al cancelar servicio:\n\n${error.message}`);
+    }
+}
+
+const cancelarServicio = cancelService;
+
+// ========== RENDER TODAY SCHEDULE ==========
+function renderTodaySchedule(date) {
+    const scheduleContainer = document.getElementById('todaySchedule');
+    if (!scheduleContainer) return;
+    scheduleContainer.innerHTML = '';
+
+    const todayStr = date.toISOString().split('T')[0];
+    const serviciosHoy = servicios.filter(s => s.fecha === todayStr);
+
+    const scheduleDateElement = document.getElementById('todayDate');
+    if (scheduleDateElement) {
+        scheduleDateElement.textContent = date.toLocaleDateString('es-ES', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
         });
     }
 
-    document.getElementById('serviceForm').addEventListener('submit', addService);
-    document.getElementById('editServiceForm').addEventListener('submit', updateService);
+    if (serviciosHoy.length === 0) {
+        scheduleContainer.innerHTML = '<p style="text-align: center; color: #718096;">No hay servicios programados para hoy.</p>';
+        return;
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('🚀 Agenda cargada. Iniciando carga de datos...');
-        loadAgendaData();
+    serviciosHoy.forEach(serv => {
+        const nombreCliente = obtenerNombreCliente(serv);
+        const nombreTecnico = obtenerNombreTecnico(serv);
+        const nombreServicio = obtenerNombreServicio(serv);
+        const scheduleItem = document.createElement('div');
+        scheduleItem.className = 'schedule-item';
+        scheduleItem.innerHTML = `
+            <div class="schedule-time">${serv.hora ? serv.hora.substring(0, 5) : 'N/A'}</div>
+            <div class="schedule-details">
+                <div class="schedule-service">${nombreServicio}</div>
+                <div class="schedule-client">Cliente: ${nombreCliente}</div>
+                <div class="schedule-technician">Técnico: ${nombreTecnico}</div>
+            </div>
+        `;
+        scheduleContainer.appendChild(scheduleItem);
     });
+}
+
+// ========== NAVIGATION ==========
+function previousMonth() {
+    currentMonth--;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+    }
+    renderCalendar(currentMonth, currentYear);
+}
+
+function nextMonth() {
+    currentMonth++;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+    }
+    renderCalendar(currentMonth, currentYear);
+}
+
+function showView(view) {
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    console.log('Mostrando vista:', view);
+}
+
+// ========== MODAL FUNCTIONS ==========
+function openAddServiceModal(date) {
+    document.getElementById('addServiceModal').classList.add('show');
+    if (date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        document.getElementById('fecha').value = dateStr;
+        console.log('📅 Fecha preseleccionada:', dateStr);
+    }
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).classList.remove('show');
+    const form = document.getElementById(modalId).querySelector('form');
+    if (form) form.reset();
+}
+
+// ========== ADD SERVICE ==========
+async function addService(event) {
+    event.preventDefault();
+    
+    const dniCliente = document.getElementById('clienteId').value.trim();
+    const dniEmpleado = document.getElementById('tecnicoId').value.trim();
+    const idTipoServicio = document.getElementById('tipoServicioId').value.trim();
+    const fecha = document.getElementById('fecha').value;
+    const hora = document.getElementById('hora').value;
+    const idCotizacion = document.getElementById('cotizacionId').value.trim();
+    
+    const formData = {
+        idServicio: null,
+        idCotizacion: idCotizacion || null,
+        dniEmpleadoAsignado: dniEmpleado,
+        dniCliente: dniCliente,
+        fecha: fecha,
+        hora: hora + ':00',
+        estado: (document.getElementById('estado').value || 'Programado').replace(' ', '_'),
+        idTipoServicio: idTipoServicio,
+        duracionEstimada: document.getElementById('duracionEstimada').value.trim() || null,
+        observaciones: document.getElementById('observaciones').value.trim() || null,
+        prioridad: document.getElementById('prioridad').value
+    };
+
+    if (!formData.dniCliente || !formData.dniEmpleadoAsignado || !formData.idTipoServicio) {
+        alert('❌ Debe completar los campos obligatorios:\n• Cliente\n• Técnico\n• Tipo de servicio');
+        return;
+    }
+
+    if (!formData.fecha || !formData.hora) {
+        alert('❌ Debe completar la fecha y hora del servicio');
+        return;
+    }
+
+    try {
+        console.log('📤 Creando nuevo servicio:', formData);
+        
+        const response = await fetch(`${API_BASE_URL}/servicios`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error('❌ Error del servidor:', errorText);
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Servicio creado exitosamente:', result);
+        
+        alert('✅ Servicio programado exitosamente!');
+        closeModal('addServiceModal');
+        event.target.reset();
+        await loadAgendaData();
+        
+        // Si hay una fecha seleccionada, reabrir el modal del día
+        if (selectedDate) {
+            setTimeout(() => showDayServices(selectedDate), 300);
+        }
+    } catch (error) {
+        console.error("❌ Error al crear servicio:", error);
+        alert(`❌ Error al crear servicio:\n\n${error.message}\n\nVerifique que todos los datos sean correctos.`);
+    }
+}
+
+// ========== QUICK ADD SERVICE ==========
+async function quickAddService() {
+    const dniCliente = document.getElementById('quickCliente').value.trim();
+    const dniEmpleado = document.getElementById('quickTecnico').value.trim();
+    const idTipoServicio = document.getElementById('quickTipoServicio').value.trim();
+    const fecha = document.getElementById('quickFecha').value;
+    const hora = document.getElementById('quickHora').value;
+    
+    const formData = {
+        idServicio: null,
+        idCotizacion: null,
+        dniEmpleadoAsignado: dniEmpleado,
+        dniCliente: dniCliente,
+        fecha: fecha,
+        hora: hora + ':00',
+        estado: 'Programado',
+        idTipoServicio: idTipoServicio,
+        observaciones: document.getElementById('quickObservaciones').value.trim() || null,
+        prioridad: document.getElementById('quickPrioridad').value
+    };
+
+    if (!formData.dniCliente || !formData.dniEmpleadoAsignado || !formData.idTipoServicio) {
+        alert('❌ Debe completar:\n• Cliente\n• Técnico\n• Tipo de servicio');
+        return;
+    }
+
+    if (!formData.fecha || !formData.hora) {
+        alert('❌ Debe completar la fecha y hora del servicio');
+        return;
+    }
+
+    try {
+        console.log('📤 Creando servicio rápido:', formData);
+        
+        const response = await fetch(`${API_BASE_URL}/servicios`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData),
+        });
+        
+        if (!response.ok) {
+            const errorData = await response.text();
+            console.error('❌ Error del servidor:', errorData);
+            throw new Error(errorData || `Error ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Servicio creado exitosamente:', result);
+        
+        alert('✅ Servicio programado exitosamente.');
+        
+        // Limpiar formulario
+        ['quickCliente','quickTecnico','quickTipoServicio','quickFecha','quickHora','quickObservaciones'].forEach(id => {
+            const elem = document.getElementById(id);
+            if (elem) elem.value = '';
+        });
+        const prioridadElem = document.getElementById('quickPrioridad');
+        if (prioridadElem) prioridadElem.value = 'Normal';
+        
+        await loadAgendaData();
+    } catch (error) {
+        console.error('❌ Error al crear servicio rápido:', error);
+        alert(`❌ Error al crear servicio:\n\n${error.message}\n\nVerifique que todos los datos sean correctos.`);
+    }
+}
+
+function exportSchedule() {
+    console.log('📊 Exportando agenda...');
+    alert('Función de exportación en desarrollo');
+}
+
+// ========== EVENT LISTENERS ==========
+window.onclick = function(event) {
+    document.querySelectorAll('.modal').forEach(modal => {
+        if (event.target === modal) modal.classList.remove('show');
+    });
+}
+
+document.getElementById('serviceForm').addEventListener('submit', addService);
+document.getElementById('editServiceForm').addEventListener('submit', updateService);
+
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('🚀 Iniciando aplicación de Agenda...');
+    console.log('🔗 API Base URL:', API_BASE_URL);
+    loadAgendaData();
+});
 </script>
 </body>
 </html>

@@ -651,7 +651,10 @@
             <form id="addServiceForm">
                 <div class="form-group">
                     <label>🏷️ Categoría</label>
-                    <input type="text" class="form-control" placeholder="Ej: Aseo, Mantenimiento" required id="serviceCategory" name="serviceCategory">
+                    <select class="form-control" required id="serviceCategory" name="serviceCategory">
+                        <option value="">Selecciona una categoría</option>
+                        <!-- Las opciones se cargarán dinámicamente -->
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>🔧 Nombre del Servicio</label>
@@ -681,6 +684,15 @@
                     <label>📝 Descripción Extendida</label>
                     <textarea class="form-control" rows="3" placeholder="Descripción detallada del servicio..." required id="serviceDescription" name="serviceDescription"></textarea>
                 </div>
+                <div class="form-group">
+                    <label>✅ Estado</label>
+                    <select class="form-control" required id="serviceStatus" name="serviceStatus">
+                        <option value="">Selecciona un estado</option>
+                        <option value="ACTIVO">ACTIVO</option>
+                        <option value="INACTIVO">INACTIVO</option>
+                        <option value="EN_REVISION">EN REVISION</option>
+                    </select>
+                </div>
                 <div class="form-grid-2" style="margin-top:2rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">❌ Cancelar</button>
                     <button type="submit" class="btn btn-primary">✅ Agregar Servicio</button>
@@ -694,6 +706,7 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // === VARIABLES GLOBALES ===
+let todasLasCategorias = [];
 let todosLosServicios = [];
 let serviciosAgendados = []; // Nueva variable para almacenar servicios agendados
 let currentView = 'all';
@@ -711,16 +724,21 @@ async function loadServicesData() {
         if (!serviciosRes.ok) throw new Error(`HTTP error! status: ${serviciosRes.status}`);
         const serviciosData = await serviciosRes.json();
         todosLosServicios = Array.isArray(serviciosData) ? serviciosData : [];
-        
+
+        // Cargar categorías de servicio
+        const categoriasRes = await fetch(`${API_BASE_URL}/categorias-servicio`); // <-- Aquí estaba el error
+        if (!categoriasRes.ok) throw new Error('Error al cargar categorías de servicio');
+        todasLasCategorias = await categoriasRes.json();
+
         // Cargar servicios agendados
         const agendadosRes = await fetch(`${API_BASE_URL}/servicios`);
         if (!agendadosRes.ok) throw new Error('Error al cargar servicios agendados');
         serviciosAgendados = await agendadosRes.json();
-        
-        console.log(`Datos cargados: ${todosLosServicios.length} tipos de servicio, ${serviciosAgendados.length} servicios agendados.`);
-        
+
+        console.log(`Datos cargados: ${todosLosServicios.length} tipos de servicio, ${todasLasCategorias.length} categorías, ${serviciosAgendados.length} servicios agendados.`);
         actualizarEstadisticas(todosLosServicios);
         poblarFiltrosCategoria(todosLosServicios);
+        poblarSelectCategorias(); // <-- Nueva función para llenar el select
         renderizarServicios(todosLosServicios);
     } catch (error) {
         console.error("Error crítico al cargar servicios:", error);
@@ -728,7 +746,21 @@ async function loadServicesData() {
         document.getElementById('servicesGrid').innerHTML = '<p style="text-align:center; color:red; grid-column: 1/-1;">Error al cargar servicios.</p>';
     }
 }
+function poblarSelectCategorias() {
+    const selectCategoria = document.getElementById('serviceCategory');
+    if (!selectCategoria) return;
 
+    // Limpiar el select
+    selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
+
+    // Llenar con las categorías
+    todasLasCategorias.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.idCategoriaServicio; // ¡Enviamos el ID!
+        option.textContent = cat.nombre; // Mostramos el nombre
+        selectCategoria.appendChild(option);
+    });
+}
 // Verificar si un tipo de servicio está siendo usado
 function isServicioEnUso(idTipoServicio) {
     return serviciosAgendados.some(servicio => {
@@ -916,55 +948,49 @@ function closeModal(modalId) {
 }
 
 // Manejar agregar/editar servicio
+// Manejar agregar/editar servicio
 async function handleAddServiceForm(event) {
     if (isSubmitting) {
         console.log("DEBUG: Ya se está procesando. Ignorando.");
         return;
     }
-
     event.preventDefault();
     isSubmitting = true;
-
     const submitButton = document.querySelector('#addServiceModal .btn-primary');
     if (submitButton) {
         submitButton.disabled = true;
         submitButton.textContent = '⏳ Procesando...';
     }
-
     try {
         const form = event.target;
         const formData = new FormData(form);
         const datosServicio = Object.fromEntries(formData.entries());
-
         if (!datosServicio.serviceName || !datosServicio.serviceCategory || !datosServicio.serviceCost || !datosServicio.serviceDuration || !datosServicio.serviceFrequency || !datosServicio.serviceDescription) {
             alert("Por favor complete todos los campos obligatorios.");
             return;
         }
-
         const costo = parseFloat(datosServicio.serviceCost);
-
         if (!validarCosto(costo)) {
             return;
         }
-
+        // === CAMBIO CRÍTICO AQUÍ ===
+        // En lugar de enviar un objeto { idCategoriaServicio: "..." }, enviamos solo el string.
         const datosParaEnviar = {
             nombreServicio: datosServicio.serviceName.trim(),
-            categoria: datosServicio.serviceCategory.trim(),
+            descripcion: datosServicio.serviceDescription.trim(),
             costo: costo,
             duracion: datosServicio.serviceDuration.trim(),
             frecuencia: datosServicio.serviceFrequency.trim(),
-            descripcionExtendida: datosServicio.serviceDescription.trim()
+            estado: datosServicio.serviceStatus.trim(),
+            // Enviamos solo el ID como string, NO como objeto.
+            idCategoriaServicio: datosServicio.serviceCategory.trim() // <-- Cambiado aquí
         };
-
         if (datosServicio.serviceIcon && datosServicio.serviceIcon.trim() !== '') {
             datosParaEnviar.icono = datosServicio.serviceIcon.trim();
         }
-
         console.log("Datos del servicio a enviar:", datosParaEnviar);
-
         let response;
         let message;
-
         if (currentEditingId) {
             response = await fetch(`${API_BASE_URL}/tipos-servicio/${currentEditingId}`, {
                 method: 'PUT',
@@ -980,9 +1006,7 @@ async function handleAddServiceForm(event) {
             });
             message = "✅ Servicio agregado exitosamente!";
         }
-
         const responseText = await response.text();
-
         if (!response.ok) {
             let errorMessage = `Error HTTP ${response.status}`;
             try {
@@ -993,13 +1017,11 @@ async function handleAddServiceForm(event) {
             }
             throw new Error(errorMessage);
         }
-
         console.log("Respuesta del servidor:", responseText);
         alert(message);
         closeModal('addServiceModal');
         form.reset();
         await loadServicesData();
-
     } catch (error) {
         console.error("Error al procesar el servicio:", error);
         alert(`❌ Error: ${error.message}`);
@@ -1027,6 +1049,7 @@ function validarCosto(costo) {
 }
 
 // Actualizar servicio
+// Actualizar servicio
 function actualizarServicio(id) {
     const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
     if (!servicio) {
@@ -1043,9 +1066,7 @@ function actualizarServicio(id) {
     document.getElementById('serviceFrequency').value = servicio.frecuencia || '';
     document.getElementById('serviceDescription').value = servicio.descripcionExtendida || '';
     document.getElementById('serviceIcon').value = servicio.icono || '';
-
     currentEditingId = id;
-
     const submitButton = document.querySelector('#addServiceModal .btn-primary');
     if (submitButton) {
         submitButton.textContent = '💾 Guardar Cambios';

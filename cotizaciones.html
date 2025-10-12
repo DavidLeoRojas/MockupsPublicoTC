@@ -931,122 +931,50 @@
         }
     }
 
-    async function handleQuoteFormSubmit(event) {
-        event.preventDefault();
-        if (isSubmitting) return;
-        isSubmitting = true;
-        const submitBtn = document.getElementById('submitBtn');
-        submitBtn.disabled = true;
-        submitBtn.textContent = '⏳ Procesando...';
+   async function handleQuoteFormSubmit(event) {
+    event.preventDefault();
 
-        try {
-            const formData = new FormData(event.target);
-            const clienteTipo = document.getElementById('clienteTipo').value;
-            let dniCliente;
+    const clienteId = document.getElementById('clienteId').value;
+    const fechaPreferida = document.getElementById('fechaPreferida').value;
+    const prioridad = document.getElementById('prioridad').value;
+    const valorCotizacion = document.getElementById('valorCotizacion').value;
+    const descripcionProblema = document.getElementById('descripcionProblema').value;
+    const notasInternas = document.getElementById('notasInternas').value;
 
-            if (clienteTipo === 'nuevo') {
-                const dniNuevo = formData.get('dni_nuevo');
-                const nombreNuevo = formData.get('nombre_nuevo');
-                if (!dniNuevo || !nombreNuevo) {
-                    alert('Por favor complete todos los campos del nuevo cliente');
-                    return;
-                }
-                const nuevoCliente = {
-                    dni: dniNuevo,
-                    tipo_dni: formData.get('tipo_dni'),
-                    nombre: nombreNuevo,
-                    telefono: formData.get('telefono_nuevo') || null,
-                    correo: formData.get('correo_nuevo') || null,
-                    rol: 'Cliente',
-                    id_direccion: '5413',
-                    id_cargo_especialidad: '9874'
-                };
-                dniCliente = await createPersona(nuevoCliente);
-                await loadClientes();
-            } else {
-                dniCliente = formData.get('dni_cliente');
-            }
-
-            if (!dniCliente) {
-                alert('Por favor seleccione un cliente');
-                return;
-            }
-
-            const fechaPreferida = formData.get('fecha_preferida');
-            if (!fechaPreferida) {
-                alert('Por favor ingrese una fecha preferida');
-                return;
-            }
-
-            const descripcion = formData.get('descripcion');
-            if (!descripcion || descripcion.trim() === '') {
-                alert('Por favor ingrese una descripción del problema');
-                return;
-            }
-
-            // ✅ CORRECCIÓN CLAVE: Extraer el valor del input correcto
-            const costoTotalRaw = document.getElementById('costoTotal').value;
-            const costoTotal = parseFloat(costoTotalRaw);
-
-            if (isNaN(costoTotal) || costoTotal <= 0) {
-                alert('Por favor, ingrese un valor de cotización válido.');
-                return;
-            }
-
-            const cotizacionData = {
-                dniCliente: dniCliente,
-                dniEmpleado: null,
-                estado: currentEditId ? (formData.get('estado') || 'Pendiente') : 'Pendiente',
-                fechaSolicitud: new Date().toISOString().split('T')[0],
-                fechaPreferida: fechaPreferida,
-                fechaRespuesta: null,
-                prioridad: formData.get('prioridad') || 'Media',
-                descripcionProblema: descripcion,
-                notasInternas: formData.get('notas') || null,
-                costoTotalCotizacion: costoTotal // ✅ Valor correcto
-            };
-
-            let response, message;
-            if (currentEditId) {
-                response = await fetch(`${API_COTIZACIONES_URL}/${currentEditId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(cotizacionData)
-                });
-                message = "Cotización actualizada exitosamente!";
-            } else {
-                response = await fetch(API_COTIZACIONES_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(cotizacionData)
-                });
-                message = "Cotización creada exitosamente!";
-            }
-
-            const responseText = await response.text();
-            if (!response.ok) {
-                let errorMessage = `Error HTTP ${response.status}`;
-                try {
-                    const errorData = JSON.parse(responseText);
-                    errorMessage = errorData.error || errorData.message || responseText;
-                } catch (e) {
-                    errorMessage = responseText || errorMessage;
-                }
-                throw new Error(errorMessage);
-            }
-
-            alert(message);
-            closeModal('addQuoteModal');
-            await getAllCotizaciones();
-        } catch (error) {
-            console.error("Error al procesar la cotización:", error);
-            alert(`Error: ${error.message}`);
-        } finally {
-            isSubmitting = false;
-            submitBtn.disabled = false;
-            submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Cotización';
-        }
+    if (!clienteId || !fechaPreferida || !prioridad || !valorCotizacion || !descripcionProblema) {
+        alert("Complete todos los campos obligatorios.");
+        return;
     }
+
+    const formData = {
+        dniCliente: clienteId,
+        fechaPreferida: fechaPreferida,
+        prioridad: prioridad,
+        costoTotalCotizacion: parseFloat(valorCotizacion),
+        descripcionProblema: descripcionProblema,
+        notasInternas: notasInternas
+    };
+
+    try {
+        const response = await fetch(`${API_COTIZACIONES_URL}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+
+        alert("✅ Cotización creada exitosamente.");
+        closeModal('addQuoteModal');
+        await getAllCotizaciones();
+    } catch (error) {
+        console.error("Error:", error);
+        alert(`❌ Error al crear cotización:\n\n${error.message}`);
+    }
+}
 
     async function getAllCotizaciones() {
         try {
