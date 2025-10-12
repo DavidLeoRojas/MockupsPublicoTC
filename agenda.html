@@ -1682,7 +1682,7 @@ async function addService(event) {
         }
     } catch (error) {
         console.error("❌ Error al crear servicio:", error);
-        alert(`❌ Error al crear servicio:\n\n${error.message}\n\nVerifique que todos los datos sean correctos.`);
+        alert(`❌ Error al crear servicio:\n\n${error.message}\n\nNo se puede crear un servicio en una fecha pasada.`);
     }
 }
 

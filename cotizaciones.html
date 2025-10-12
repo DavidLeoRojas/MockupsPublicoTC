@@ -934,79 +934,81 @@
 
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
 
-    // --- OBTENER ELEMENTOS DEL FORMULARIO CON LOS IDS CORRECTOS ---
-    const clienteSelect = document.getElementById('clienteSelect');
     const tipoCliente = document.getElementById('clienteTipo').value;
-    const fechaPreferidaElement = document.getElementById('fechaPreferida');
-    const prioridadElement = document.getElementById('prioridad');
-    const costoTotalElement = document.getElementById('costoTotal');
-    const descripcionElement = document.getElementById('descripcion');
-    const notasElement = document.getElementById('notas');
+    const fechaPreferida = document.getElementById('fechaPreferida').value;
+    const prioridad = document.getElementById('prioridad').value;
+    const costoTotal = document.getElementById('costoTotal').value.trim();
+    const descripcion = document.getElementById('descripcion').value.trim();
+    const notas = document.getElementById('notas').value.trim();
+    const estado = document.getElementById('estadoSelect').value;
 
-    // --- VALIDAR QUE LOS ELEMENTOS EXISTAN ---
-    if (!fechaPreferidaElement || !prioridadElement || !costoTotalElement || !descripcionElement) {
-        console.error("❌ Elementos del formulario no encontrados. Verifica los IDs.");
-        alert("❌ Error interno: No se pudieron encontrar los campos del formulario.");
+    // Validar campos obligatorios
+    if (!fechaPreferida || !costoTotal || !descripcion) {
+        alert("Complete todos los campos obligatorios.");
+        isSubmitting = false;
         return;
     }
 
-    // --- OBTENER VALORES ---
     let dniCliente = '';
     if (tipoCliente === 'existente') {
-        dniCliente = clienteSelect.value.trim();
+        dniCliente = document.getElementById('clienteSelect').value.trim();
         if (!dniCliente) {
-            alert("Por favor seleccione un cliente existente.");
+            alert("Seleccione un cliente existente.");
+            isSubmitting = false;
             return;
         }
     } else {
-        // Si es cliente nuevo, lo crearías antes (opcional, según tu lógica)
         alert("Por ahora, solo se permiten cotizaciones para clientes existentes.");
+        isSubmitting = false;
         return;
     }
 
-    const fechaPreferida = fechaPreferidaElement.value;
-    const prioridad = prioridadElement.value;
-    const costoTotal = costoTotalElement.value.trim(); // <-- Valor del input
-    const descripcion = descripcionElement.value.trim(); // <-- Valor del textarea
-    const notas = notasElement ? notasElement.value.trim() : ''; // <-- Valor del textarea
-
-    // --- VALIDAR CAMPOS OBLIGATORIOS ---
-    if (!dniCliente || !fechaPreferida || !costoTotal || !descripcion) {
-        alert("Complete todos los campos obligatorios.");
-        return;
-    }
-
-    // --- CREAR OBJETO DE DATOS PARA ENVIAR AL BACKEND ---
-// --- CREAR OBJETO DE DATOS PARA ENVIAR AL BACKEND ---
-const formData = {
-    dniCliente: dniCliente, // ✅ Ya definido arriba
-    fechaSolicitud: new Date().toISOString(), // ✅ LocalDateTime válido
-    fechaPreferida: fechaPreferida || null, // ✅ Puede ser null
-    prioridad: prioridad,
-    costoTotalCotizacion: parseFloat(costoTotal), // ✅ Ya definido
-    descripcionProblema: descripcion, // ✅ Ya definido
-    notasInternas: notas, // ✅ Ya definido
-    estado: "Pendiente"
-};
+    // Construir el objeto
+    const formData = {
+        dniCliente: dniCliente,
+        fechaSolicitud: new Date().toISOString(), // Solo para creación
+        fechaPreferida: fechaPreferida,
+        prioridad: prioridad,
+        costoTotalCotizacion: parseFloat(costoTotal),
+        descripcionProblema: descripcion,
+        notasInternas: notas,
+        estado: estado
+    };
 
     try {
-        const response = await fetch(`${API_COTIZACIONES_URL}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(formData)
-        });
+        let response;
+        if (currentEditId) {
+            // ✅ ACTUALIZAR (PUT)
+            response = await fetch(`${API_COTIZACIONES_URL}/${currentEditId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+        } else {
+            // ✅ CREAR (POST)
+            response = await fetch(API_COTIZACIONES_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+        }
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(errorText || `Error ${response.status}`);
         }
-        alert("✅ Cotización creada exitosamente.");
+
+        alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
         closeModal('addQuoteModal');
         await getAllCotizaciones();
     } catch (error) {
         console.error("Error:", error);
-        alert(`❌ Error al crear cotización:
-${error.message}`);
+        alert(`❌ Error: ${error.message}`);
+    } finally {
+        isSubmitting = false;
     }
 }
 

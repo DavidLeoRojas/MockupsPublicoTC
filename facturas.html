@@ -647,7 +647,6 @@ document.getElementById('tipoFacturaSelect').addEventListener('change', function
 
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
-
     if (isSubmitting) return;
     isSubmitting = true;
     const submitBtn = document.getElementById('submitBtn');
@@ -658,7 +657,6 @@ async function handleInvoiceFormSubmit(event) {
         const formData = new FormData(event.target);
         const tipoFactura = document.getElementById('tipoFacturaSelect').value;
         const dniCliente = formData.get('dni_cliente')?.trim();
-
         if (!dniCliente) {
             alert('⚠️ Por favor, seleccione un cliente.');
             return;
@@ -680,11 +678,18 @@ async function handleInvoiceFormSubmit(event) {
             return;
         }
 
+        // ✅ VALIDAR QUE EL ESTADO NO ESTÉ VACÍO
+        const estado = formData.get('estado')?.trim();
+        if (!estado) {
+            alert('⚠️ Por favor, seleccione un estado.');
+            return;
+        }
+
         const facturaData = {
             dniCliente: dniCliente,
             fechaEmision: formData.get('fecha_emision'),
             montoTotal: montoTotal,
-            estado: formData.get('estado'),
+            estado: estado, // ✅ Ya validado
             observaciones: formData.get('observaciones')?.trim() || null,
             tipoFactura: tipoFactura,
             cotizacionId: idCotizacion
@@ -692,7 +697,6 @@ async function handleInvoiceFormSubmit(event) {
 
         let response;
         let message;
-
         if (currentEditId) {
             response = await fetch(`${API_FACTURAS_URL}/${currentEditId}`, {
                 method: 'PUT',
@@ -722,7 +726,6 @@ async function handleInvoiceFormSubmit(event) {
         }
 
         alert(message);
-
         if (!currentEditId) {
             try {
                 const responseData = JSON.parse(responseText);
