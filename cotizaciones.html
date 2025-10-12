@@ -812,6 +812,7 @@
                         <option value="Finalizada">Finalizada</option>
                     </select>
                 </div>
+                
                 <div class="form-group">
                     <label>Valor de la Cotización (COP) *</label>
                     <input type="number" 
@@ -931,29 +932,63 @@
         }
     }
 
-   async function handleQuoteFormSubmit(event) {
+async function handleQuoteFormSubmit(event) {
     event.preventDefault();
 
-    const clienteId = document.getElementById('clienteId').value;
-    const fechaPreferida = document.getElementById('fechaPreferida').value;
-    const prioridad = document.getElementById('prioridad').value;
-    const valorCotizacion = document.getElementById('valorCotizacion').value;
-    const descripcionProblema = document.getElementById('descripcionProblema').value;
-    const notasInternas = document.getElementById('notasInternas').value;
+    // --- OBTENER ELEMENTOS DEL FORMULARIO CON LOS IDS CORRECTOS ---
+    const clienteSelect = document.getElementById('clienteSelect');
+    const tipoCliente = document.getElementById('clienteTipo').value;
+    const fechaPreferidaElement = document.getElementById('fechaPreferida');
+    const prioridadElement = document.getElementById('prioridad');
+    const costoTotalElement = document.getElementById('costoTotal');
+    const descripcionElement = document.getElementById('descripcion');
+    const notasElement = document.getElementById('notas');
 
-    if (!clienteId || !fechaPreferida || !prioridad || !valorCotizacion || !descripcionProblema) {
+    // --- VALIDAR QUE LOS ELEMENTOS EXISTAN ---
+    if (!fechaPreferidaElement || !prioridadElement || !costoTotalElement || !descripcionElement) {
+        console.error("❌ Elementos del formulario no encontrados. Verifica los IDs.");
+        alert("❌ Error interno: No se pudieron encontrar los campos del formulario.");
+        return;
+    }
+
+    // --- OBTENER VALORES ---
+    let dniCliente = '';
+    if (tipoCliente === 'existente') {
+        dniCliente = clienteSelect.value.trim();
+        if (!dniCliente) {
+            alert("Por favor seleccione un cliente existente.");
+            return;
+        }
+    } else {
+        // Si es cliente nuevo, lo crearías antes (opcional, según tu lógica)
+        alert("Por ahora, solo se permiten cotizaciones para clientes existentes.");
+        return;
+    }
+
+    const fechaPreferida = fechaPreferidaElement.value;
+    const prioridad = prioridadElement.value;
+    const costoTotal = costoTotalElement.value.trim(); // <-- Valor del input
+    const descripcion = descripcionElement.value.trim(); // <-- Valor del textarea
+    const notas = notasElement ? notasElement.value.trim() : ''; // <-- Valor del textarea
+
+    // --- VALIDAR CAMPOS OBLIGATORIOS ---
+    if (!dniCliente || !fechaPreferida || !costoTotal || !descripcion) {
         alert("Complete todos los campos obligatorios.");
         return;
     }
 
-    const formData = {
-        dniCliente: clienteId,
-        fechaPreferida: fechaPreferida,
-        prioridad: prioridad,
-        costoTotalCotizacion: parseFloat(valorCotizacion),
-        descripcionProblema: descripcionProblema,
-        notasInternas: notasInternas
-    };
+    // --- CREAR OBJETO DE DATOS PARA ENVIAR AL BACKEND ---
+// --- CREAR OBJETO DE DATOS PARA ENVIAR AL BACKEND ---
+const formData = {
+    dniCliente: dniCliente, // ✅ Ya definido arriba
+    fechaSolicitud: new Date().toISOString(), // ✅ LocalDateTime válido
+    fechaPreferida: fechaPreferida || null, // ✅ Puede ser null
+    prioridad: prioridad,
+    costoTotalCotizacion: parseFloat(costoTotal), // ✅ Ya definido
+    descripcionProblema: descripcion, // ✅ Ya definido
+    notasInternas: notas, // ✅ Ya definido
+    estado: "Pendiente"
+};
 
     try {
         const response = await fetch(`${API_COTIZACIONES_URL}`, {
@@ -961,18 +996,17 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         });
-
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(errorText || `Error ${response.status}`);
         }
-
         alert("✅ Cotización creada exitosamente.");
         closeModal('addQuoteModal');
         await getAllCotizaciones();
     } catch (error) {
         console.error("Error:", error);
-        alert(`❌ Error al crear cotización:\n\n${error.message}`);
+        alert(`❌ Error al crear cotización:
+${error.message}`);
     }
 }
 
