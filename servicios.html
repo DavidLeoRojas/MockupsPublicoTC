@@ -762,12 +762,20 @@ function poblarSelectCategorias() {
     });
 }
 // Verificar si un tipo de servicio está siendo usado
+// Verificar si un tipo de servicio está siendo usado por servicios activos (no Completados/Cancelados)
 function isServicioEnUso(idTipoServicio) {
     return serviciosAgendados.some(servicio => {
-        // Verificar diferentes formas de relacionar el servicio
-        if (servicio.idTipoServicio === idTipoServicio) return true;
-        if (servicio.tipoServicio && servicio.tipoServicio.idTipoServicio === idTipoServicio) return true;
-        return false;
+        // Verificar si el servicio usa este tipo de servicio
+        const usaEsteTipo = (
+            servicio.idTipoServicio === idTipoServicio ||
+            (servicio.tipoServicio && servicio.tipoServicio.idTipoServicio === idTipoServicio) ||
+            servicio.id_tipo_servicio === idTipoServicio
+        );
+
+        // Verificar si el servicio NO está en estado "Completado" o "Cancelado"
+        const estadoValido = !['Completado', 'Cancelado'].includes(servicio.estado);
+
+        return usaEsteTipo && estadoValido;
     });
 }
 
@@ -1087,72 +1095,70 @@ async function eliminarServicio(id) {
         if (!agendadosRes.ok) throw new Error('Error al verificar servicios agendados');
         serviciosAgendados = await agendadosRes.json();
 
-        console.log(`📋 Verificando si tipo de servicio ${id} está en uso...`);
+        console.log(`📋 Verificando si tipo de servicio ${id} está en uso activamente...`);
         console.log(`Total servicios agendados: ${serviciosAgendados.length}`);
 
-        // Verificar si está en uso - CORRECCIÓN CRÍTICA
+        // Filtrar servicios agendados que usan este tipo de servicio
         const vinculados = serviciosAgendados.filter(servAgendado => {
-            // Verificar por ID directo
             if (servAgendado.idTipoServicio === id) {
-                console.log(`✅ Encontrado por idTipoServicio: ${servAgendado.idServicio}`);
+                console.log(`✅ Encontrado por idTipoServicio: ${servAgendado.idServicio}, Estado: ${servAgendado.estado}`);
                 return true;
             }
-            
-            // Verificar por objeto anidado
             if (servAgendado.tipoServicio && servAgendado.tipoServicio.idTipoServicio === id) {
-                console.log(`✅ Encontrado por tipoServicio.idTipoServicio: ${servAgendado.idServicio}`);
+                console.log(`✅ Encontrado por tipoServicio.idTipoServicio: ${servAgendado.idServicio}, Estado: ${servAgendado.estado}`);
                 return true;
             }
-            
-            // Verificar por id_tipo_servicio (snake_case)
             if (servAgendado.id_tipo_servicio === id) {
-                console.log(`✅ Encontrado por id_tipo_servicio: ${servAgendado.idServicio}`);
+                console.log(`✅ Encontrado por id_tipo_servicio: ${servAgendado.idServicio}, Estado: ${servAgendado.estado}`);
                 return true;
             }
-            
             return false;
         });
 
-        console.log(`🔍 Servicios vinculados encontrados: ${vinculados.length}`);
+        // Verificar si hay servicios vinculados en estado distinto a Completado o Cancelado
+        const vinculadosActivos = vinculados.filter(s => !['Completado', 'Cancelado'].includes(s.estado));
 
-        if (vinculados.length > 0) {
-            const detalles = vinculados.map(s => {
+        console.log(`🔍 Servicios vinculados activos (no Completado/Cancelado): ${vinculadosActivos.length}`);
+        console.log(`🔍 Servicios vinculados totales: ${vinculados.length}`);
+
+        if (vinculadosActivos.length > 0) {
+            // Hay servicios activos, no se puede eliminar
+            const detalles = vinculadosActivos.map(s => {
                 const fecha = s.fecha || 'sin fecha';
                 const hora = s.hora || 'sin hora';
                 const cliente = s.cliente?.nombre || s.dniCliente || 'sin cliente';
                 const estado = s.estado || 'sin estado';
-                return `  • ID: ${s.idServicio} | ${fecha} ${hora} | ${cliente} | Estado: ${estado}`;
+                return ` • ID: ${s.idServicio} | ${fecha} ${hora} | ${cliente} | Estado: ${estado}`;
             }).join('\n');
 
             alert(`❌ NO SE PUEDE ELIMINAR "${servicio.nombreServicio}"
             
-⚠️ Motivo: Existen ${vinculados.length} servicio(s) programado(s) que utilizan este tipo de servicio.
-
-📋 Servicios vinculados:
+⚠️ Motivo: Existen ${vinculadosActivos.length} servicio(s) programado(s) que utilizan este tipo de servicio y no están Completados o Cancelados.
+📋 Servicios vinculados activos:
 ${detalles}
-
-💡 Solución: Debe eliminar o reasignar estos servicios desde la Agenda primero.`);
+💡 Solución: Debe cambiar el estado de estos servicios a "Completado" o "Cancelado" en la Agenda primero.`);
             return;
+        } else if (vinculados.length > 0) {
+            // Todos los vinculados están Completados o Cancelados, se puede eliminar
+            const confirmacion = confirm(`⚠️ Este tipo de servicio tiene ${vinculados.length} servicio(s) asociado(s), pero todos están en estado "Completado" o "Cancelado". ¿Desea eliminarlo de todos modos?`);
+            if (!confirmacion) return;
         }
+        // Si no hay ninguno vinculado, también se puede eliminar
 
-        console.log(`✅ Tipo de servicio ${id} no está en uso. Procediendo a eliminar...`);
-
-        // Si no está en uso, proceder con eliminación
-        if (confirm(`¿Está seguro de eliminar "${servicio.nombreServicio}"?\n\n⚠️ Esta acción no se puede deshacer.`)) {
-            const res = await fetch(`${API_BASE_URL}/tipos-servicio/${id}`, { 
-                method: 'DELETE' 
-            });
-            
+        // Si llegó hasta aquí, puede eliminar
+        console.log(`✅ Tipo de servicio ${id} no tiene servicios activos vinculados. Procediendo a eliminar...`);
+        if (confirm(`⚠️ ¿Está seguro de eliminar "${servicio.nombreServicio}"? Esta acción no se puede deshacer.`)) {
+            const res = await fetch(`${API_BASE_URL}/tipos-servicio/${id}`, { method: 'DELETE' });
             if (!res.ok) {
                 const errorText = await res.text();
                 throw new Error(errorText || 'Error al eliminar');
             }
-            
-            alert("✅ Servicio eliminado exitosamente.");
-            await loadServicesData();
+            alert("✅ Tipo de servicio eliminado exitosamente.");
+            await loadServicesData(); // Recargar la lista de servicios
         }
+
     } catch (error) {
-        console.error("❌ Error al eliminar servicio:", error);
+        console.error("❌ Error al intentar eliminar servicio:", error);
         alert(`❌ Error: ${error.message}`);
     }
 }
