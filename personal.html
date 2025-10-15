@@ -1383,62 +1383,84 @@ if (tipoPersona === 'Juridica') {
         };
     }
 
-    function crearTarjetaPersona(persona) {
-        const rol = (persona.rol || 'Desconocido').toLowerCase();
-        const nombre = persona.nombre || 'Nombre no disponible';
-        const telefono = persona.telefono || 'N/A';
-        const correo = persona.correo || 'N/A';
-        const dni = persona.dni || 'N/A';
-        let cargoTexto = 'Sin cargo especificado';
-        if (persona.cargo_especialidad && persona.cargo_especialidad.trim() !== '') {
-            cargoTexto = persona.cargo_especialidad;
-        } else if (persona.cargoEspecialidad) {
-            if (typeof persona.cargoEspecialidad === 'object' && persona.cargoEspecialidad.nombre) {
-                cargoTexto = persona.cargoEspecialidad.nombre;
-            } else if (typeof persona.cargoEspecialidad === 'string' && persona.cargoEspecialidad.trim() !== '') {
-                cargoTexto = persona.cargoEspecialidad;
-            }
+function crearTarjetaPersona(persona) {
+    const rol = (persona.rol || 'Desconocido').toLowerCase();
+    const nombre = persona.nombre || 'Nombre no disponible';
+    const telefono = persona.telefono || 'N/A';
+    const correo = persona.correo || 'N/A';
+    const dni = persona.dni || 'N/A';
+    let cargoTexto = 'Sin cargo especificado';
+    if (persona.cargo_especialidad && persona.cargo_especialidad.trim() !== '') {
+        cargoTexto = persona.cargo_especialidad;
+    } else if (persona.cargoEspecialidad) {
+        if (typeof persona.cargoEspecialidad === 'object' && persona.cargoEspecialidad.nombre) {
+            cargoTexto = persona.cargoEspecialidad.nombre;
+        } else if (typeof persona.cargoEspecialidad === 'string' && persona.cargoEspecialidad.trim() !== '') {
+            cargoTexto = persona.cargoEspecialidad;
         }
-        let ciudad = 'N/A';
-        if (persona.direccion) {
-            ciudad = persona.direccion.nombre || persona.direccion.descripcionAdicional || 'N/A'; // Prioridad: nombre > descripción
-        } else if (persona.id_direccion) {
-            const dirEncontrada = direcciones.find(d => d.idDireccion == persona.id_direccion);
-            if (dirEncontrada) {
-                ciudad = dirEncontrada.nombre || dirEncontrada.descripcionAdicional || 'N/A'; // Prioridad: nombre > descripción
-            }
-        }
-        let icono, colorClass, badgeText;
-        switch (rol) {
-            case 'cliente': icono = '🛒'; colorClass = 'cliente'; badgeText = 'Cliente'; break;
-            case 'empleado': icono = '💼'; colorClass = 'empleado'; badgeText = 'Empleado'; break;
-            case 'proveedor': icono = '📦'; colorClass = 'proveedor'; badgeText = 'Proveedor'; break;
-            default: icono = '👥'; colorClass = 'cliente'; badgeText = 'Persona';
-        }
-        const card = document.createElement('div');
-        card.className = 'personnel-card';
-        card.innerHTML = `
-            <div class="role-badge ${colorClass}">${badgeText}</div>
-            <div class="card-header ${colorClass}">
-                <div class="status-indicator active"></div>
-                <div class="personnel-avatar">${icono}</div>
-                <div class="personnel-name">${nombre}</div>
-                <div class="personnel-role">${cargoTexto}</div>
-            </div>
-            <div class="card-body">
-                <div class="info-item"><span class="info-label">📞 Teléfono:</span><span class="info-value">${telefono}</span></div>
-                <div class="info-item"><span class="info-label">📧 Email:</span><span class="info-value">${correo}</span></div>
-                <div class="info-item"><span class="info-label">🆔 Documento:</span><span class="info-value">${dni}</span></div>
-                <div class="info-item"><span class="info-label">📍 Ciudad:</span><span class="info-value">${ciudad}</span></div>
-            </div>
-            <div class="card-actions">
-                <button class="btn btn-outline btn-sm ${colorClass}" onclick="verPerfil('${dni}')">👁️ Ver</button>
-                <button class="btn btn-outline btn-sm ${colorClass}" onclick="editarPersona('${dni}')">✏️ Editar</button>
-                <button class="btn btn-outline btn-sm ${colorClass}" onclick="eliminarPersona('${dni}')">🗑️ Eliminar</button>
-            </div>
-        `;
-        return card;
     }
+
+    // --- LÓGICA CORREGIDA PARA OBTENER LA CIUDAD ---
+let ciudad = 'N/A';
+
+// Intentar desde id_direccion (nivel raíz)
+if (persona.id_direccion != null && persona.id_direccion !== '') {
+    const key = String(persona.id_direccion).trim();
+    ciudad = CIUDADES_MAP[key] || 'N/A';
+}
+
+// Si no, intentar desde objeto direccion
+if (ciudad === 'N/A' && persona.direccion) {
+    // Si direccion es un string (error del backend), usarlo directamente
+    if (typeof persona.direccion === 'string') {
+        ciudad = persona.direccion;
+    } else {
+        // Si es objeto, buscar nombre, descripción o id
+        if (persona.direccion.nombre) {
+            ciudad = persona.direccion.nombre;
+        } else if (persona.direccion.descripcionAdicional) {
+            ciudad = persona.direccion.descripcionAdicional;
+        } else if (persona.direccion.idDireccion != null) {
+            const key = String(persona.direccion.idDireccion).trim();
+            ciudad = CIUDADES_MAP[key] || 'N/A';
+        }
+    }
+}
+
+
+
+    let icono, colorClass, badgeText;
+    switch (rol) {
+        case 'cliente': icono = '🛒'; colorClass = 'cliente'; badgeText = 'Cliente'; break;
+        case 'empleado': icono = '💼'; colorClass = 'empleado'; badgeText = 'Empleado'; break;
+        case 'proveedor': icono = '📦'; colorClass = 'proveedor'; badgeText = 'Proveedor'; break;
+        default: icono = '👥'; colorClass = 'cliente'; badgeText = 'Persona';
+    }
+
+    const card = document.createElement('div');
+    card.className = 'personnel-card';
+    card.innerHTML = `
+        <div class="role-badge ${colorClass}">${badgeText}</div>
+        <div class="card-header ${colorClass}">
+            <div class="status-indicator active"></div>
+            <div class="personnel-avatar">${icono}</div>
+            <div class="personnel-name">${nombre}</div>
+            <div class="personnel-role">${cargoTexto}</div>
+        </div>
+        <div class="card-body">
+            <div class="info-item"><span class="info-label">📞 Teléfono:</span><span class="info-value">${telefono}</span></div>
+            <div class="info-item"><span class="info-label">📧 Email:</span><span class="info-value">${correo}</span></div>
+            <div class="info-item"><span class="info-label">🆔 Documento:</span><span class="info-value">${dni}</span></div>
+            <div class="info-item"><span class="info-label">📍 Ciudad:</span><span class="info-value">${ciudad}</span></div>
+        </div>
+        <div class="card-actions">
+            <button class="btn btn-outline btn-sm ${colorClass}" onclick="verPerfil('${dni}')">👁️ Ver</button>
+            <button class="btn btn-outline btn-sm ${colorClass}" onclick="editarPersona('${dni}')">✏️ Editar</button>
+            <button class="btn btn-outline btn-sm ${colorClass}" onclick="eliminarPersona('${dni}')">🗑️ Eliminar</button>
+        </div>
+    `;
+    return card;
+}
 
     function renderizarPersonas(personas) {
         const grid = document.getElementById('personnelGrid');
