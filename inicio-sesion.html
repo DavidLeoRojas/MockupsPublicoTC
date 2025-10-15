@@ -294,7 +294,7 @@
             <div class="demo-credentials">
                 <h4>🔑 Credenciales de Demostración:</h4>
                 <p><strong>Usuario:</strong> admin@geminiambiental.com</p>
-                <p><strong>Contraseña:</strong> admin123</p>
+                <p><strong>DNI:</strong> 12345678</p>
             </div>
 
             <form class="login-form" id="loginForm">
@@ -309,9 +309,9 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="password">Contraseña</label>
-                    <div class="form-icon">🔒</div>
-                    <input type="password" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                    <label for="password">DNI</label>
+                    <div class="form-icon">🆔</div>
+                    <input type="text" id="password" name="dni" placeholder="Ingresa tu DNI" required>
                 </div>
 
                 <div class="remember-me">
@@ -337,27 +337,47 @@
             e.preventDefault();
             
             const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+            const dni = document.getElementById('password').value; // Usamos el campo password para el DNI
             const errorMessage = document.getElementById('errorMessage');
 
-            // Credenciales de demostración
-            if (email === 'admin@geminiambiental.com' && password === 'admin123') {
-                // Simular autenticación exitosa
-                alert('Inicio de sesión exitoso. Redirigiendo al dashboard...');
-                window.location.href = 'dashboard.html';
-            } else {
-                // Mostrar error
+            // Enviar credenciales al backend
+            fetch('http://localhost:8080/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    dni: dni
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.token) {
+                    // Guardar token en localStorage
+                    localStorage.setItem('jwtToken', data.token);
+                    localStorage.setItem('userId', data.id);
+                    localStorage.setItem('userName', data.nombre);
+
+                    alert('Inicio de sesión exitoso. Redirigiendo al dashboard...');
+                    window.location.href = 'dashboard.html';
+                } else {
+                    throw new Error(data.message || 'Credenciales inválidas');
+                }
+            })
+            .catch(error => {
+                errorMessage.textContent = error.message || 'Credenciales inválidas';
                 errorMessage.style.display = 'block';
                 setTimeout(() => {
                     errorMessage.style.display = 'none';
                 }, 3000);
-            }
+            });
         });
 
         // Auto-rellenar campos con credenciales de demo al hacer clic
         document.querySelector('.demo-credentials').addEventListener('click', function() {
             document.getElementById('email').value = 'admin@geminiambiental.com';
-            document.getElementById('password').value = 'admin123';
+            document.getElementById('password').value = '12345678'; // DNI de demo
         });
     </script>
 </body>

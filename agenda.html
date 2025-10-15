@@ -15,6 +15,29 @@
             background: #f5f7fa;
             color: #2d3748;
         }
+        .fc-event-programado {
+    background-color: #bee3f8; /* Azul claro */
+    border-color: #63b3ed;
+    color: #2c5282;
+}
+
+.fc-event-en-progreso {
+    background-color: #feebc8; /* Naranja claro */
+    border-color: #dd6b20;
+    color: #7c2d12;
+}
+
+.fc-event-completado {
+    background-color: #c6f6d5; /* Verde claro */
+    border-color: #38a169;
+    color: #22543d;
+}
+
+.fc-event-cancelado {
+    background-color: #fed7d7; /* Rojo claro */
+    border-color: #e53e3e;
+    color: #742a2a;
+}
         .sidebar {
             position: fixed;
             left: 0;
@@ -567,6 +590,30 @@
             .form-grid-2 {
                 grid-template-columns: 1fr;
             }
+            /* Clases para los eventos según su estado */
+.event-item.programado {
+    background-color: #bee3f8; /* Azul claro */
+    border-color: #63b3ed;
+    color: #2c5282;
+}
+
+.event-item.en-progreso {
+    background-color: #feebc8; /* Naranja claro */
+    border-color: #dd6b20;
+    color: #7c2d12;
+}
+
+.event-item.completado {
+    background-color: #c6f6d5; /* Verde claro */
+    border-color: #48bb78;
+    color: #276749;
+}
+
+.event-item.cancelado {
+    background-color: #fed7d7; /* Rojo claro */
+    border-color: #e53e3e;
+    color: #742a2a;
+}
         }
     </style>
 </head>
@@ -1029,6 +1076,7 @@ function obtenerNombreServicio(servicio) {
     return '⚠️ Servicio Desconocido';
 }
 
+
 // ========== CARGA DE DATOS ==========
 async function loadAgendaData() {
     console.log("🔄 Iniciando carga de datos de la agenda...");
@@ -1055,13 +1103,14 @@ async function loadAgendaData() {
         // Filtrar solo servicios que tienen una fecha válida
         servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => s.fecha) : [];
         todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
-        todosLosTiposServicio = Array.isArray(tiposServRes) ? tiposServRes : [];
+        // ✅ Filtrar solo tipos de servicio ACTIVOS
+        todosLosTiposServicio = Array.isArray(tiposServRes) ? tiposServRes.filter(t => t.estado === 'ACTIVO') : [];
         cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
 
         console.log(`✅ Datos cargados exitosamente:`);
         console.log(`   📋 ${servicios.length} servicios`);
         console.log(`   👥 ${todasLasPersonas.length} personas`);
-        console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio`);
+        console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio ACTIVOS`); // ✅ Log actualizado
         console.log(`   💰 ${cotizaciones.length} cotizaciones`);
 
         // Mostrar datos de ejemplo
@@ -1072,15 +1121,20 @@ async function loadAgendaData() {
             console.log('👤 Ejemplo de persona:', todasLasPersonas[0]);
         }
         if (todosLosTiposServicio.length > 0) {
-            console.log('🔧 Ejemplo de tipo servicio:', todosLosTiposServicio[0]);
+            console.log('🔧 Ejemplo de tipo servicio ACTIVO:', todosLosTiposServicio[0]);
         }
 
         populateClienteSelect(todasLasPersonas);
         populateTecnicoSelect(todasLasPersonas);
-        populateTipoServicioSelect(todosLosTiposServicio);
+        populateTipoServicioSelect(todosLosTiposServicio); // ✅ Solo se pasan los activos
         populateCotizacionSelect(cotizaciones);
         populateFilterTecnico(todasLasPersonas);
+
+        // --- AÑADIDO PARA COLORES ---
+        // Renderizar el calendario con los servicios cargados
         renderCalendar(currentMonth, currentYear);
+        // --- FIN AÑADIDO ---
+
         renderTodaySchedule(new Date());
         
         console.log('✅ Inicialización completada');
@@ -1089,7 +1143,6 @@ async function loadAgendaData() {
         alert('Error al cargar la agenda: ' + error.message + '\n\nPor favor, verifique que el backend esté corriendo.');
     }
 }
-
 // ========== POPULATION FUNCTIONS ==========
 function populateClienteSelect(personas) {
     const selects = ['clienteId', 'editClienteId', 'quickCliente'];
@@ -1129,23 +1182,29 @@ function populateTecnicoSelect(personas) {
     });
 }
 
+// ✅ Función corregida y mejorada para poblar selectores de tipos de servicio ACTIVOS
 function populateTipoServicioSelect(tipos) {
+    // Asegurarse de que solo se usen tipos ACTIVOS (ya filtrados al cargar)
+    const tiposActivos = tipos.filter(t => t.estado === 'ACTIVO');
+    
     const selects = ['tipoServicioId', 'editTipoServicioId', 'quickTipoServicio'];
     
-    console.log(`📋 Poblando selects de tipos de servicio con ${tipos.length} tipos`);
+    console.log(`📋 Poblando selects de tipos de servicio ACTIVOS con ${tiposActivos.length} tipos`);
     
     selects.forEach(selectId => {
         const select = document.getElementById(selectId);
         if (!select) return;
         select.innerHTML = '<option value="">Seleccionar tipo</option>';
-        tipos.forEach(ts => {
+        tiposActivos.forEach(ts => {
             const option = document.createElement('option');
             option.value = ts.idTipoServicio;
-            option.textContent = `${ts.nombreServicio} ($${ts.costo})`;
+            // Mostrar nombre y costo
+            option.textContent = `${ts.nombreServicio} ($${(ts.costo || 0).toLocaleString('es-CO')})`;
             select.appendChild(option);
         });
     });
 }
+
 
 function populateCotizacionSelect(cotizaciones) {
     const select = document.getElementById('cotizacionId');
@@ -1224,14 +1283,17 @@ function renderCalendar(month, year) {
         const eventsContainer = dayElement.querySelector('.day-events');
         serviciosDelDia.forEach(serv => {
             const eventElement = document.createElement('div');
-            eventElement.className = `event-item ${getEventTypeClass(serv)}`;
+            // --- MODIFICACIÓN AQUÍ ---
+            // Se añade la clase del estado del servicio a la clase del tipo
+            eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+            // --- FIN MODIFICACIÓN ---
             const nombreCliente = obtenerNombreCliente(serv);
             const primerNombre = nombreCliente.split(' ')[0];
             eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
             eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
             eventElement.addEventListener('click', (e) => {
                 e.stopPropagation();
-                showDayServices(date);
+                openEditServiceModal(serv); // Asegúrate de que esta función exista y funcione como esperas
             });
             eventsContainer.appendChild(eventElement);
         });
@@ -1249,21 +1311,24 @@ function renderCalendar(month, year) {
         calendarGrid.appendChild(dayElement);
     }
 }
-
 // ========== FUNCIONES DE ESTADO ==========
 function getEstadoClass(estado) {
-    const estadoNormalizado = String(estado).replace(/\s+/g, '_').toLowerCase();
+    // Normalizar el estado: convertir a string, trim, reemplazar espacios por _, y a minúsculas
+    const estadoNormalizado = String(estado || '').trim().replace(/\s+/g, '_').toLowerCase();
+    
     switch (estadoNormalizado) {
         case 'programado':
             return 'badge-info';
         case 'en_progreso':
-        case 'en progreso':
+        case 'en progreso': // También maneja el espacio original
             return 'badge-warning';
         case 'completado':
             return 'badge-success';
         case 'cancelado':
             return 'badge-danger';
         default:
+            // Si el estado es desconocido, usar gris
+            console.warn(`Estado desconocido: "${estado}". Usando clase por defecto.`);
             return 'badge-secondary';
     }
 }
@@ -1317,6 +1382,9 @@ function showDayServices(date) {
             const nombreServicio = obtenerNombreServicio(serv);
             const hora = serv.hora ? serv.hora.substring(0, 5) : 'No definida';
 
+            // ✅ Asegúrate de que serv.estado sea un string limpio
+            const estadoMostrado = serv.estado ? serv.estado.charAt(0).toUpperCase() + serv.estado.slice(1).replace('_', ' ') : 'Programado';
+
             return `<div class="service-card">
                 <div class="service-card-header">
                     <span class="service-time">${hora}</span>
@@ -1330,7 +1398,13 @@ function showDayServices(date) {
                     <div class="service-info-row"><span class="service-info-label">Cliente:</span><span class="service-info-value">${nombreCliente}</span></div>
                     <div class="service-info-row"><span class="service-info-label">Técnico:</span><span class="service-info-value">${nombreTecnico}</span></div>
                     <div class="service-info-row"><span class="service-info-label">Prioridad:</span><span class="service-info-value">${serv.prioridad || 'Normal'}</span></div>
-                    <div class="service-info-row"><span class="service-info-label">Estado:</span><span class="service-info-value"><span class="badge ${getEstadoClass(serv.estado)}">${serv.estado || 'Programado'}</span></span></div>
+                    <!-- ✅ Mostrar el estado con la clase CSS correcta -->
+                    <div class="service-info-row">
+                        <span class="service-info-label">Estado:</span>
+                        <span class="service-info-value">
+                            <span class="badge ${getEstadoClass(serv.estado)}">${estadoMostrado}</span>
+                        </span>
+                    </div>
                     ${serv.observaciones ? `<div class="service-info-row"><span class="service-info-label">Observaciones:</span><span class="service-info-value">${serv.observaciones}</span></div>` : ''}
                 </div>
             </div>`;
@@ -1382,7 +1456,9 @@ function openEditServiceModal(id) {
     document.getElementById('editHora').value = servicio.hora ? servicio.hora.substring(0, 5) : '';
     document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
     document.getElementById('editObservaciones').value = servicio.observaciones || '';
-    document.getElementById('editEstado').value = servicio.estado ? servicio.estado.replace(' ', '_') : 'Programado';
+    // Normalizar estado para el select
+    const estadoNormalizado = servicio.estado ? servicio.estado.replace(' ', '_') : 'Programado';
+    document.getElementById('editEstado').value = estadoNormalizado;
     document.getElementById('editServiceId').value = servicio.idServicio;
 
     closeModal('dayServicesModal');
@@ -1422,7 +1498,7 @@ async function updateService(event) {
             hora: document.getElementById('editHora').value + ':00',
             observaciones: document.getElementById('editObservaciones').value.trim() || null,
             prioridad: document.getElementById('editPrioridad').value,
-            estado: document.getElementById('editEstado').value.replace(' ', '_')
+            estado: document.getElementById('editEstado').value.replace(' ', '_') // Enviar como snake_case
         };
 
         console.log('📤 Datos a enviar:', formData);
@@ -1490,7 +1566,8 @@ async function cancelService(servicioId) {
     }
 
     const dniCliente = obtenerDNICliente(servicio);
-    const dniTecnico = obtenerDNITecnico(servicio);const idTipoServ = obtenerIDTipoServicio(servicio);
+    const dniTecnico = obtenerDNITecnico(servicio);
+    const idTipoServ = obtenerIDTipoServicio(servicio);
 
     if (!dniCliente || !dniTecnico || !idTipoServ) {
         alert('❌ Este servicio tiene datos incompletos y no puede ser cancelado.\n\nPor favor, complete los datos obligatorios primero usando "Editar".');
@@ -1506,7 +1583,7 @@ async function cancelService(servicioId) {
             hora: servicio.hora,
             observaciones: servicio.observaciones,
             prioridad: servicio.prioridad || 'Normal',
-            estado: 'Cancelado'
+            estado: 'Cancelado' // Enviar estado como snake_case
         };
 
         console.log('📤 Datos para cancelar:', servicioData);
@@ -1622,9 +1699,12 @@ function openAddServiceModal(date) {
 }
 
 function closeModal(modalId) {
-    document.getElementById(modalId).classList.remove('show');
-    const form = document.getElementById(modalId).querySelector('form');
-    if (form) form.reset();
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.classList.remove('show');
+        const form = modal.querySelector('form');
+        if (form) form.reset();
+    }
 }
 
 // ========== ADD SERVICE ==========
@@ -1645,7 +1725,7 @@ async function addService(event) {
         dniCliente: dniCliente,
         fecha: fecha,
         hora: hora + ':00',
-        estado: (document.getElementById('estado').value || 'Programado').replace(' ', '_'),
+        estado: (document.getElementById('estado').value || 'Programado').replace(' ', '_'), // Enviar como snake_case
         idTipoServicio: idTipoServicio,
         duracionEstimada: document.getElementById('duracionEstimada').value.trim() || null,
         observaciones: document.getElementById('observaciones').value.trim() || null,
@@ -1713,7 +1793,7 @@ async function quickAddService() {
         dniCliente: dniCliente,
         fecha: fecha,
         hora: hora + ':00',
-        estado: 'Programado',
+        estado: 'Programado', // Estado por defecto para rápido
         idTipoServicio: idTipoServicio,
         observaciones: document.getElementById('quickObservaciones').value.trim() || null,
         prioridad: document.getElementById('quickPrioridad').value

@@ -690,7 +690,7 @@
                         <option value="">Selecciona un estado</option>
                         <option value="ACTIVO">ACTIVO</option>
                         <option value="INACTIVO">INACTIVO</option>
-                        <option value="EN_REVISION">EN REVISION</option>
+
                     </select>
                 </div>
                 <div class="form-grid-2" style="margin-top:2rem;">
@@ -701,7 +701,7 @@
         </div>
     </div>
 
-    <script>
+<script>
 // === CONFIGURACIÓN ===
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -726,7 +726,7 @@ async function loadServicesData() {
         todosLosServicios = Array.isArray(serviciosData) ? serviciosData : [];
 
         // Cargar categorías de servicio
-        const categoriasRes = await fetch(`${API_BASE_URL}/categorias-servicio`); // <-- Aquí estaba el error
+        const categoriasRes = await fetch(`${API_BASE_URL}/categorias-servicio`);
         if (!categoriasRes.ok) throw new Error('Error al cargar categorías de servicio');
         todasLasCategorias = await categoriasRes.json();
 
@@ -746,6 +746,7 @@ async function loadServicesData() {
         document.getElementById('servicesGrid').innerHTML = '<p style="text-align:center; color:red; grid-column: 1/-1;">Error al cargar servicios.</p>';
     }
 }
+
 function poblarSelectCategorias() {
     const selectCategoria = document.getElementById('serviceCategory');
     if (!selectCategoria) return;
@@ -761,7 +762,7 @@ function poblarSelectCategorias() {
         selectCategoria.appendChild(option);
     });
 }
-// Verificar si un tipo de servicio está siendo usado
+
 // Verificar si un tipo de servicio está siendo usado por servicios activos (no Completados/Cancelados)
 function isServicioEnUso(idTipoServicio) {
     return serviciosAgendados.some(servicio => {
@@ -806,19 +807,35 @@ function renderizarServicios(serviciosParaMostrar) {
 // Crear tarjeta de servicio
 function crearTarjetaServicio(servicio) {
     const nombre = servicio.nombreServicio || 'Nombre no disponible';
-    const categoria = servicio.categoria || 'Categoría no disponible';
-    const descripcion = servicio.descripcionExtendida || 'Descripción no disponible';
+    // ✅ Usar 'descripcion' en lugar de 'descripcionExtendida'
+    const descripcion = servicio.descripcion || 'Descripción no disponible';
     const costo = servicio.costo ? servicio.costo.toLocaleString('es-CO') : 'N/A';
     const duracion = servicio.duracion || 'N/A';
     const frecuencia = servicio.frecuencia || 'N/A';
+
+    // ✅ Para la categoría, necesitas hacer una búsqueda en todasLasCategorias
+    let categoria = 'Categoría no disponible';
+    if (servicio.idCategoriaServicio && Array.isArray(todasLasCategorias)) {
+        const cat = todasLasCategorias.find(c => c.idCategoriaServicio === servicio.idCategoriaServicio);
+        if (cat) {
+            categoria = cat.nombre;
+        }
+    }
+
     const enUso = isServicioEnUso(servicio.idTipoServicio);
     
-    // Icono genérico o personalizado
-    let icono = '🔧';
-    if (servicio.icono) icono = servicio.icono;
-    else if (categoria.toLowerCase().includes('plaga')) icono = '🐛';
-    else if (categoria.toLowerCase().includes('tanque')) icono = '🚿';
-    else if (categoria.toLowerCase().includes('certificado')) icono = '📋';
+    // ✅ Corrección: Declarar la variable `icono` antes de usarla
+    let icono = '🔧'; // Valor por defecto
+    if (servicio.icono) {
+        icono = servicio.icono;
+    } else if (categoria.toLowerCase().includes('plaga')) {
+        icono = '🐛';
+    } else if (categoria.toLowerCase().includes('tanque')) {
+        icono = '🚿';
+    } else if (categoria.toLowerCase().includes('certificado')) {
+        icono = '📋';
+    }
+    // Si ninguna condición se cumple, `icono` seguirá siendo '🔧'
 
     const card = document.createElement('div');
     card.className = 'service-card';
@@ -848,6 +865,10 @@ function crearTarjetaServicio(servicio) {
                 <span class="info-label">📝 Descripción:</span>
                 <span class="info-value">${descripcion.substring(0, 50)}${descripcion.length > 50 ? '...' : ''}</span>
             </div>
+            <div class="info-item">
+                <span class="info-label">✅ Estado:</span>
+                <span class="info-value">${servicio.estado || 'N/A'}</span>
+            </div>
         </div>
         <div class="card-actions">
             <button class="btn btn-outline btn-sm" onclick="verDetalles('${servicio.idTipoServicio}')">👁️ Ver Detalles</button>
@@ -876,8 +897,12 @@ function actualizarEstadisticas(servicios) {
 function poblarFiltrosCategoria(servicios) {
     const categoriasSet = new Set();
     servicios.forEach(s => {
-        if (s.categoria) {
-            categoriasSet.add(s.categoria);
+        // ✅ Usar 'idCategoriaServicio' para buscar el nombre
+        if (s.idCategoriaServicio && Array.isArray(todasLasCategorias)) {
+            const cat = todasLasCategorias.find(c => c.idCategoriaServicio === s.idCategoriaServicio);
+            if (cat) {
+                categoriasSet.add(cat.nombre);
+            }
         }
     });
     const categoriasUnicas = Array.from(categoriasSet).filter(c => c && c.trim() !== '');
@@ -912,15 +937,21 @@ function aplicarFiltros() {
     if (terminoBusqueda) {
         serviciosFiltrados = serviciosFiltrados.filter(s =>
             (s.nombreServicio && s.nombreServicio.toLowerCase().includes(terminoBusqueda)) ||
-            (s.categoria && s.categoria.toLowerCase().includes(terminoBusqueda))
+            // ✅ Buscar por nombre de categoría
+            (s.idCategoriaServicio && Array.isArray(todasLasCategorias) &&
+                todasLasCategorias.find(c => c.idCategoriaServicio === s.idCategoriaServicio)?.nombre.toLowerCase().includes(terminoBusqueda))
         );
     }
 
     const filtroCategoria = document.getElementById('categoryFilter').value;
     if (filtroCategoria) {
-        serviciosFiltrados = serviciosFiltrados.filter(s =>
-            s.categoria.toLowerCase().replace(/\s+/g, '-') === filtroCategoria
-        );
+        serviciosFiltrados = serviciosFiltrados.filter(s => {
+            if (s.idCategoriaServicio && Array.isArray(todasLasCategorias)) {
+                const cat = todasLasCategorias.find(c => c.idCategoriaServicio === s.idCategoriaServicio);
+                return cat && cat.nombre.toLowerCase().replace(/\s+/g, '-') === filtroCategoria;
+            }
+            return false;
+        });
     }
 
     renderizarServicios(serviciosFiltrados);
@@ -946,6 +977,8 @@ function openAddServiceModal() {
         form.reset();
         document.querySelector('#addServiceModal .modal-title').textContent = '➕ Agregar Nuevo Servicio';
         document.querySelector('#addServiceModal .btn-primary').textContent = '✅ Agregar Servicio';
+        // Limpiar también el select de categoría
+        document.getElementById('serviceCategory').value = '';
     }
     currentEditingId = null;
 }
@@ -973,18 +1006,22 @@ async function handleAddServiceForm(event) {
         const form = event.target;
         const formData = new FormData(form);
         const datosServicio = Object.fromEntries(formData.entries());
+        
         if (!datosServicio.serviceName || !datosServicio.serviceCategory || !datosServicio.serviceCost || !datosServicio.serviceDuration || !datosServicio.serviceFrequency || !datosServicio.serviceDescription) {
             alert("Por favor complete todos los campos obligatorios.");
             return;
         }
+        
         const costo = parseFloat(datosServicio.serviceCost);
         if (!validarCosto(costo)) {
             return;
         }
+
         // === CAMBIO CRÍTICO AQUÍ ===
         // En lugar de enviar un objeto { idCategoriaServicio: "..." }, enviamos solo el string.
         const datosParaEnviar = {
             nombreServicio: datosServicio.serviceName.trim(),
+            // ✅ Enviar 'descripcion' en lugar de 'descripcionExtendida'
             descripcion: datosServicio.serviceDescription.trim(),
             costo: costo,
             duracion: datosServicio.serviceDuration.trim(),
@@ -993,10 +1030,13 @@ async function handleAddServiceForm(event) {
             // Enviamos solo el ID como string, NO como objeto.
             idCategoriaServicio: datosServicio.serviceCategory.trim() // <-- Cambiado aquí
         };
+        
         if (datosServicio.serviceIcon && datosServicio.serviceIcon.trim() !== '') {
             datosParaEnviar.icono = datosServicio.serviceIcon.trim();
         }
+        
         console.log("Datos del servicio a enviar:", datosParaEnviar);
+        
         let response;
         let message;
         if (currentEditingId) {
@@ -1014,6 +1054,7 @@ async function handleAddServiceForm(event) {
             });
             message = "✅ Servicio agregado exitosamente!";
         }
+        
         const responseText = await response.text();
         if (!response.ok) {
             let errorMessage = `Error HTTP ${response.status}`;
@@ -1025,11 +1066,13 @@ async function handleAddServiceForm(event) {
             }
             throw new Error(errorMessage);
         }
+        
         console.log("Respuesta del servidor:", responseText);
         alert(message);
         closeModal('addServiceModal');
         form.reset();
-        await loadServicesData();
+        await loadServicesData(); // Recargar la lista de servicios
+        
     } catch (error) {
         console.error("Error al procesar el servicio:", error);
         alert(`❌ Error: ${error.message}`);
@@ -1041,6 +1084,7 @@ async function handleAddServiceForm(event) {
         }
     }
 }
+
 
 // Validar el costo
 function validarCosto(costo) {
@@ -1057,7 +1101,6 @@ function validarCosto(costo) {
 }
 
 // Actualizar servicio
-// Actualizar servicio
 function actualizarServicio(id) {
     const servicio = todosLosServicios.find(s => s.idTipoServicio === id);
     if (!servicio) {
@@ -1068,11 +1111,13 @@ function actualizarServicio(id) {
     openAddServiceModal();
     document.querySelector('#addServiceModal .modal-title').textContent = '✏️ Editar Servicio';
     document.getElementById('serviceName').value = servicio.nombreServicio || '';
-    document.getElementById('serviceCategory').value = servicio.categoria || '';
+    // ✅ Cargar la categoría por ID
+    document.getElementById('serviceCategory').value = servicio.idCategoriaServicio || '';
     document.getElementById('serviceCost').value = servicio.costo || '';
     document.getElementById('serviceDuration').value = servicio.duracion || '';
     document.getElementById('serviceFrequency').value = servicio.frecuencia || '';
-    document.getElementById('serviceDescription').value = servicio.descripcionExtendida || '';
+    // ✅ Cargar la descripción
+    document.getElementById('serviceDescription').value = servicio.descripcion || '';
     document.getElementById('serviceIcon').value = servicio.icono || '';
     currentEditingId = id;
     const submitButton = document.querySelector('#addServiceModal .btn-primary');
@@ -1170,32 +1215,30 @@ function verDetalles(id) {
         return;
     }
     
-    const enUso = isServicioEnUso(id);
-    const vinculados = getServiciosVinculados(id);
-    
+    // ✅ Usar 'descripcion' en lugar de 'descripcionExtendida'
     let mensaje = `═══════════════════════════════
 DETALLES DEL SERVICIO
 ═══════════════════════════════
-
 🔧 Nombre: ${servicio.nombreServicio}
-🏷️ Categoría: ${servicio.categoria}
-💰 Costo: $${(servicio.costo || 0).toLocaleString('es-CO')}
+🏷️ Categoría: ${servicio.idCategoriaServicio} // O mejor aún, buscar el nombre
+💰 Costo: $${(servicio.costo|| 0).toLocaleString('es-CO')}
 ⏱️ Duración: ${servicio.duracion}
 🔄 Frecuencia: ${servicio.frecuencia}
 ${servicio.icono ? `🎨 Icono: ${servicio.icono}` : ''}
-
 📝 Descripción:
-${servicio.descripcionExtendida}
-
+${servicio.descripcion} // ✅ Cambiado aquí
 ═══════════════════════════════`;
 
-    if (enUso) {
-        mensaje += `\n⚠️ ESTADO: EN USO (${vinculados.length} servicio(s) programado(s))`;
-        mensaje += `\n🔒 No se puede eliminar mientras esté en uso`;
-    } else {
-        mensaje += `\n✅ ESTADO: Disponible para eliminar`;
+    // Si quieres mostrar el nombre de la categoría, haz lo mismo que en crearTarjetaServicio
+    let nombreCategoria = 'Categoría no disponible';
+    if (servicio.idCategoriaServicio && Array.isArray(todasLasCategorias)) {
+        const cat = todasLasCategorias.find(c => c.idCategoriaServicio === servicio.idCategoriaServicio);
+        if (cat) {
+            nombreCategoria = cat.nombre;
+        }
     }
-    
+    mensaje = mensaje.replace('🏷️ Categoría: ' + servicio.idCategoriaServicio, '🏷️ Categoría: ' + nombreCategoria);
+
     alert(mensaje);
 }
 
@@ -1225,6 +1268,6 @@ window.onclick = function(event) {
         closeModal('addServiceModal');
     }
 };
-    </script>
+</script>
 </body>
 </html>
