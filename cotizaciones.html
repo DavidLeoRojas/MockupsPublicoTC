@@ -17,6 +17,62 @@
             color: #2d3748;
         }
 
+/* Modal de productos */
+/* Estilos para el botón de ver productos */
+.btn-ver-productos {
+    background: #4a8b64;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.btn-ver-productos:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.btn-ver-productos:active {
+    transform: translateY(0);
+}
+
+/* Estado cuando no hay productos */
+.btn-ver-productos[style*="background: #718096"] {
+    background: #718096 !important;
+}
+
+.btn-ver-productos[style*="background: #718096"]:hover {
+    background: #5a6c7d !important;
+}
+.productos-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.productos-modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
         .sidebar {
             position: fixed;
             left: 0;
@@ -346,6 +402,31 @@
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
+.productos-cell:hover {
+    background-color: #f7fafc !important;
+}
+
+/* Tooltip mejorado */
+.productos-cell {
+    position: relative;
+}
+
+.productos-cell:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2d3748;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 6px;
+    font-size: 0.8em;
+    white-space: pre-line;
+    z-index: 1000;
+    min-width: 200px;
+    text-align: left;
+}
 
         .quotes-table th {
             background: #f7fafc;
@@ -559,6 +640,7 @@
     </style>
 </head>
 <body>
+    
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
@@ -719,6 +801,7 @@
                             <th>Cliente</th>
                             <th>Fecha Solicitud</th>
                             <th>Fecha Preferida</th>
+                            <th>Productos</th>
                             <th>Costo Total</th>
                             <th>Estado</th>
                             <th>Acciones</th>
@@ -734,126 +817,152 @@
         </div>
     </div>
 
-    <div class="modal" id="addQuoteModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title" id="quoteModalTitle">Nueva Cotización</h2>
-                <button class="close-btn" onclick="closeModal('addQuoteModal')">&times;</button>
-            </div>
-            <form id="quoteForm">
-                <input type="hidden" id="editingQuoteId" value="">
-                
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Tipo Cliente *</label>
-                        <select id="clienteTipo" class="form-control" onchange="toggleClienteInput()" required>
-                            <option value="existente">Cliente Existente</option>
-                            <option value="nuevo">Nuevo Cliente</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="clienteExistenteGroup">
-                        <label>Seleccionar Cliente *</label>
-                        <select name="dni_cliente" id="clienteSelect" class="form-control" required>
-                            <option value="">Cargando clientes...</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="nuevoClienteFields" style="display: none;">
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label>DNI *</label>
-                            <input type="text" name="dni_nuevo" id="dniNuevo" class="form-control" placeholder="123456789">
-                        </div>
-                        <div class="form-group">
-                            <label>Tipo DNI *</label>
-                            <select name="tipo_dni" id="tipoDniNuevo" class="form-control">
-                                <option value="CC">CC - Cédula</option>
-                                <option value="NIT">NIT - Empresa</option>
-                                <option value="CE">CE - Extranjería</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-grid-2">
-                        <div class="form-group">
-                            <label>Nombre Completo *</label>
-                            <input type="text" name="nombre_nuevo" id="nombreNuevo" class="form-control" placeholder="Nombre del cliente">
-                        </div>
-                        <div class="form-group">
-                            <label>Teléfono</label>
-                            <input type="tel" name="telefono_nuevo" id="telefonoNuevo" class="form-control" placeholder="3001234567">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Correo</label>
-                        <input type="email" name="correo_nuevo" id="correoNuevo" class="form-control" placeholder="cliente@email.com">
-                    </div>
-                </div>
-
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Fecha Preferida *</label>
-                        <input type="date" name="fecha_preferida" id="fechaPreferida" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Prioridad</label>
-                        <select name="prioridad" id="prioridad" class="form-control">
-                            <option value="Media">Media</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Baja">Baja</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-group" id="estadoGroup" style="display: none;">
-                    <label>Estado</label>
-                    <select name="estado" id="estadoSelect" class="form-control">
-                        <option value="Pendiente">Pendiente</option>
-                        <option value="Aprobada">Aprobada</option>
-                        <option value="Rechazada">Rechazada</option>
-                        <option value="Finalizada">Finalizada</option>
+ <!-- Modal Agregar/Editar Cotización -->
+<div class="modal" id="addQuoteModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title" id="quoteModalTitle">Nueva Cotización</h2>
+            <button class="close-btn" onclick="closeModal('addQuoteModal')">&times;</button>
+        </div>
+        <form id="quoteForm">
+            <input type="hidden" id="editingQuoteId" value="">
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Tipo Cliente *</label>
+                    <select id="clienteTipo" class="form-control" onchange="toggleClienteInput()" required>
+                        <option value="existente">Cliente Existente</option>
+                        <option value="nuevo">Nuevo Cliente</option>
                     </select>
                 </div>
-                
-                <div class="form-group">
-                    <label>Valor de la Cotización (COP) *</label>
-                    <input type="number" 
-                        name="costo_total" 
-                        id="costoTotal" 
-                        class="form-control" 
-                        min="0" 
-                        step="1000" 
-                        placeholder="Ej: 150000"
-                        required>
+                <div class="form-group" id="clienteExistenteGroup">
+                    <label>Seleccionar Cliente *</label>
+                    <select name="dni_cliente" id="clienteSelect" class="form-control" required>
+                        <option value="">Cargando clientes...</option>
+                    </select>
+                </div>
+            </div>
+            <div id="nuevoClienteFields" style="display: none;">
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>DNI *</label>
+                        <input type="text" name="dni_nuevo" id="dniNuevo" class="form-control" placeholder="123456789">
+                    </div>
+                    <div class="form-group">
+                        <label>Tipo DNI *</label>
+                        <select name="tipo_dni" id="tipoDniNuevo" class="form-control">
+                            <option value="CC">CC - Cédula</option>
+                            <option value="NIT">NIT - Empresa</option>
+                            <option value="CE">CE - Extranjería</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Nombre Completo *</label>
+                        <input type="text" name="nombre_nuevo" id="nombreNuevo" class="form-control" placeholder="Nombre del cliente">
+                    </div>
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="tel" name="telefono_nuevo" id="telefonoNuevo" class="form-control" placeholder="3001234567">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Descripción del Problema *</label>
-                    <textarea name="descripcion" id="descripcion" class="form-control" rows="3" required placeholder="Describa el servicio requerido..."></textarea>
+                    <label>Correo</label>
+                    <input type="email" name="correo_nuevo" id="correoNuevo" class="form-control" placeholder="cliente@email.com">
                 </div>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Fecha Preferida *</label>
+                    <input type="date" name="fecha_preferida" id="fechaPreferida" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select name="prioridad" id="prioridad" class="form-control">
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Baja">Baja</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" id="estadoGroup" style="display: none;">
+                <label>Estado</label>
+                <select name="estado" id="estadoSelect" class="form-control">
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Aprobada">Aprobada</option>
+                    <option value="Rechazada">Rechazada</option>
+                    <option value="Finalizada">Finalizada</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Valor de la Cotización (COP) *</label>
+                <input type="number" 
+                    name="costo_total" 
+                    id="costoTotal" 
+                    class="form-control" 
+                    min="0" 
+                    step="1000" 
+                    placeholder="Ej: 150000"
+                    required>
+            </div>
+            <div class="form-group">
+                <label>Descripción del Problema *</label>
+                <textarea name="descripcion" id="descripcion" class="form-control" rows="3" required placeholder="Describa el servicio requerido..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Notas Internas</label>
+                <textarea name="notas" id="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
+            </div>
 
-                <div class="form-group">
-                    <label>Notas Internas</label>
-                    <textarea name="notas" id="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
+            <!-- 👇 SECCIÓN DE PRODUCTOS (NUEVA) 👇 -->
+            <div class="form-group">
+                <h3 style="color: #2c5f41; margin-top: 1.5rem;">Productos del Inventario</h3>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Producto</label>
+                        <select id="productoSelectCot" class="form-control">
+                            <option value="">Cargando productos...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Cantidad</label>
+                        <input type="number" id="cantidadProductoCot" class="form-control" min="1" value="1">
+                    </div>
                 </div>
+                <button type="button" class="btn btn-primary" id="addProductBtnCot">Agregar Producto</button>
+                <div class="detalle-cotizacion-container" style="background: #f9f9f9; padding: 1rem; border-radius: 12px; margin-top: 1rem;">
+                    <h4>Productos Agregados</h4>
+                    <div id="detalleCotizacionList">
+                        <!-- Productos se renderizan aquí -->
+                    </div>
+                </div>
+            </div>
+            <!-- 👆 FIN SECCIÓN DE PRODUCTOS 👆 -->
 
-                <div class="form-grid-2" style="margin-top: 2rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addQuoteModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Cotización</button>
-                </div>
-            </form>
-        </div>
+            <div class="form-grid-2" style="margin-top: 2rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addQuoteModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Cotización</button>
+            </div>
+        </form>
     </div>
-
-    <script>
+</div>
+<script>
     const API_BASE_URL = 'http://localhost:8080/api';
     const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
     const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
     const API_SERVICIOS_URL = `${API_BASE_URL}/servicios`;
+    // ✅ USAR PRODUCTOS
+    const API_PRODUCTOS_URL = `${API_BASE_URL}/productos`;
+
     let allCotizaciones = [];
     let allServicios = [];
     let clientesData = [];
+    // ✅ USAR productosDataCot
+    let productosDataCot = [];
     let currentEditId = null;
     let isSubmitting = false;
+    // ✅ USAR idProducto en el array
+    let detalleCotizacion = []; // Array para almacenar los productos de la cotización
 
     function handleError(error) {
         console.error('Error:', error);
@@ -910,6 +1019,29 @@
         }
     }
 
+    // ✅ CARGAR PRODUCTOS
+    async function loadProductosCot() {
+        try {
+            const response = await fetch(API_PRODUCTOS_URL);
+            if (!response.ok) throw new Error('Error al cargar productos');
+            productosDataCot = await response.json();
+            const select = document.getElementById('productoSelectCot');
+            if (!select) return; // Si no existe el select, no cargar productos
+            select.innerHTML = '<option value="">Seleccione un producto</option>';
+            productosDataCot.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod.idProducto;
+                option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
+                option.dataset.precio = prod.precioActual || 0;
+                select.appendChild(option);
+            });
+        } catch (error) {
+            console.error("Error al cargar productos:", error);
+            const select = document.getElementById('productoSelectCot');
+            if (select) select.innerHTML = '<option value="">Error al cargar</option>';
+        }
+    }
+
     function isCotizacionVinculada(idCotizacion) {
         return allServicios.some(servicio => 
             servicio.idCotizacion === idCotizacion || 
@@ -917,24 +1049,95 @@
         );
     }
 
-    async function createPersona(personaData) {
-        try {
-            const response = await fetch(API_PERSONAS_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(personaData)
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Error al crear cliente');
+    // === PRODUCTOS EN COTIZACIÓN ===
+    document.getElementById('addProductBtnCot')?.addEventListener('click', function() {
+        const productoId = document.getElementById('productoSelectCot').value;
+        const cantidad = parseInt(document.getElementById('cantidadProductoCot').value) || 0;
+        if (!productoId || cantidad <= 0) {
+            alert('⚠️ Seleccione un producto y una cantidad válida.');
+            return;
+        }
+        const producto = productosDataCot.find(p => p.idProducto === productoId);
+        if (!producto) {
+            alert('❌ Producto no encontrado.');
+            return;
+        }
+        if (cantidad > producto.stock) {
+            alert(`❌ Stock insuficiente. Disponible: ${producto.stock}`);
+            return;
+        }
+        const precioUnitario = parseFloat(producto.precioActual) || 0;
+        const subtotal = precioUnitario * cantidad;
+        const existingItem = detalleCotizacion.find(item => item.idProducto === productoId);
+        if (existingItem) {
+            alert(`⚠️ El producto "${producto.nombre}" ya está agregado.`);
+            return;
+        }
+        // ✅ AGREGAR CON idProducto
+        detalleCotizacion.push({
+            idProducto: productoId,
+            nombreProducto: producto.nombre,
+            cantidad: cantidad,
+            precioUnitario: precioUnitario,
+            subtotal: subtotal
+        });
+        renderDetalleCotizacion();
+        document.getElementById('productoSelectCot').value = '';
+        document.getElementById('cantidadProductoCot').value = '1';
+    });
+
+    function renderDetalleCotizacion() {
+        const container = document.getElementById('detalleCotizacionList');
+        if (!container) return;
+        if (detalleCotizacion.length === 0) {
+            // ✅ MENSAJE DE PRODUCTOS
+            container.innerHTML = '<p style="text-align: center; color: #718096;">No hay productos agregados.</p>';
+            return;
+        }
+        container.innerHTML = '';
+        detalleCotizacion.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'detalle-factura-item';
+            // ✅ MOSTRAR nombreProducto
+            div.innerHTML = `
+                <div>
+                    <strong>${item.nombreProducto}</strong><br>
+                    Cantidad: ${item.cantidad} x $${item.precioUnitario.toFixed(2)} = $${item.subtotal.toFixed(2)}
+                </div>
+                <div class="detalle-factura-controls">
+                    <button class="btn-sm edit-btn" onclick="editDetalleCotItem(${index})">✏️</button>
+                    <button class="btn-sm remove-btn" onclick="removeDetalleCotItem(${index})">🗑️</button>
+                </div>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function editDetalleCotItem(index) {
+        const item = detalleCotizacion[index];
+        const nuevaCantidad = prompt(`Editar cantidad para "${item.nombreProducto}":`, item.cantidad);
+        const cantidadNum = parseInt(nuevaCantidad);
+        if (!isNaN(cantidadNum) && cantidadNum > 0) {
+            const producto = productosDataCot.find(p => p.idProducto === item.idProducto);
+            if (producto && cantidadNum <= producto.stock) {
+                item.cantidad = cantidadNum;
+                item.subtotal = item.precioUnitario * cantidadNum;
+                renderDetalleCotizacion();
+            } else {
+                alert(`❌ Stock insuficiente. Disponible: ${producto?.stock || 0}`);
             }
-            return personaData.dni;
-        } catch (error) {
-            throw error;
         }
     }
 
-async function handleQuoteFormSubmit(event) {
+    function removeDetalleCotItem(index) {
+        if (confirm('¿Remover este producto?')) { // ✅ MENSAJE
+            detalleCotizacion.splice(index, 1);
+            renderDetalleCotizacion();
+        }
+    }
+
+    // --- FUNCIÓN PRINCIPAL CORREGIDA ---
+   async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
@@ -947,67 +1150,99 @@ async function handleQuoteFormSubmit(event) {
     const notas = document.getElementById('notas').value.trim();
     const estado = document.getElementById('estadoSelect').value;
 
-    // Validar campos obligatorios
-    if (!fechaPreferida || !costoTotal || !descripcion) {
-        alert("Complete todos los campos obligatorios.");
+    if (!fechaPreferida || !descripcion) {
+        alert("Complete todos los campos obligatorios (Fecha Preferida y Descripción del Problema).");
         isSubmitting = false;
         return;
     }
 
     let dniCliente = '';
     if (tipoCliente === 'existente') {
-        dniCliente = document.getElementById('clienteSelect').value.trim();
-        if (!dniCliente) {
-            alert("Seleccione un cliente existente.");
+        const clienteSelect = document.getElementById('clienteSelect');
+        dniCliente = clienteSelect.value.trim();
+        if (!dniCliente || dniCliente === '') {
+            alert("Seleccione un cliente válido.");
             isSubmitting = false;
             return;
         }
-    } else {
-        alert("Por ahora, solo se permiten cotizaciones para clientes existentes.");
-        isSubmitting = false;
-        return;
+    } else { // tipoCliente === 'nuevo'
+        dniCliente = document.getElementById('dniNuevo').value.trim();
+        if (!dniCliente) {
+             alert("Error: No se pudo obtener el DNI del cliente nuevo.");
+             isSubmitting = false;
+             return;
+        }
     }
 
-    // Construir el objeto
+    // ✅ CORRECCIÓN: Validar que haya productos si se agregaron
+    if (detalleCotizacion.length === 0) {
+        const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar con una cotización sin productos?");
+        if (!confirmarSinProductos) {
+            isSubmitting = false;
+            return;
+        }
+    }
+
+    // Calcular costo total desde productos si hay
+    let costoTotalCalculado = parseFloat(costoTotal) || 0;
+    if (detalleCotizacion.length > 0) {
+        costoTotalCalculado = detalleCotizacion.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    }
+
+    // Convertir fechaPreferida a formato LocalDate (sin hora)
+    const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
+
+    // ✅ CORRECCIÓN: Preparar los datos para enviar
     const formData = {
         dniCliente: dniCliente,
-        fechaSolicitud: new Date().toISOString(), // Solo para creación
-        fechaPreferida: fechaPreferida,
+        fechaPreferida: fechaPreferidaParaEnviar,
         prioridad: prioridad,
-        costoTotalCotizacion: parseFloat(costoTotal),
+        costoTotalCotizacion: costoTotalCalculado,
         descripcionProblema: descripcion,
         notasInternas: notas,
-        estado: estado
+        estado: estado,
+        // ✅ CORRECCIÓN: Enviar detalleCotizacion correctamente formateado
+        detalleCotizacion: detalleCotizacion.map(item => ({
+            idProducto: item.idProducto,
+            cantidad: item.cantidad,
+            precioUnitario: (item.precioUnitario !== undefined && item.precioUnitario !== null) ? item.precioUnitario : 0
+        }))
     };
 
+    // ✅ DEBUG: Mostrar datos que se enviarán
+    console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
+
     try {
-        let response;
-        if (currentEditId) {
-            // ✅ ACTUALIZAR (PUT)
-            response = await fetch(`${API_COTIZACIONES_URL}/${currentEditId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-        } else {
-            // ✅ CREAR (POST)
-            response = await fetch(API_COTIZACIONES_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-        }
+        const url = currentEditId ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` : `${API_COTIZACIONES_URL}/con-productos`;
+        const method = currentEditId ? 'PUT' : 'POST';
+
+        console.log("📡 URL:", url, "Método:", method);
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        // ✅ DEBUG: Mostrar respuesta del servidor
+        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
 
         if (!response.ok) {
             const errorText = await response.text();
+            console.error("❌ Error del servidor:", errorText);
             throw new Error(errorText || `Error ${response.status}`);
         }
 
+        const responseData = await response.json();
+        console.log("✅ Respuesta exitosa:", responseData);
+
         alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
         closeModal('addQuoteModal');
-        await getAllCotizaciones();
+        await getAllCotizaciones(); // Recargar la lista de cotizaciones
     } catch (error) {
-        console.error("Error:", error);
+        console.error("❌ Error al guardar la cotización:", error);
         alert(`❌ Error: ${error.message}`);
     } finally {
         isSubmitting = false;
@@ -1017,53 +1252,266 @@ async function handleQuoteFormSubmit(event) {
     async function getAllCotizaciones() {
         try {
             const response = await fetch(API_COTIZACIONES_URL);
-            if (!response.ok) throw new Error('Error al obtener cotizaciones');
-            allCotizaciones = await response.json();
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || `Error ${response.status}`);
+            }
+            const data = await response.json();
+            console.log("Datos recibidos de /api/cotizaciones:", data); // <--- AÑADE ESTA LÍNEA
+
+            allCotizaciones = data;
             renderCotizaciones(allCotizaciones);
             updateStats(allCotizaciones);
         } catch (error) {
-            handleError(error);
-            document.getElementById('cotizacionesTableBody').innerHTML = 
-                '<tr><td colspan="7" class="empty-state">Error al cargar. Verifique que el backend esté funcionando.</td></tr>';
+            console.error("Error al obtener cotizaciones:", error);
+            alert(`Error al cargar cotizaciones: ${error.message}`);
         }
     }
 
-    function renderCotizaciones(cotizaciones) {
-        const tbody = document.getElementById('cotizacionesTableBody');
-        if (cotizaciones.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No hay cotizaciones</td></tr>';
-            return;
-        }
-        tbody.innerHTML = '';
-        cotizaciones.forEach(cot => {
-            const row = document.createElement('tr');
-            const clienteNombre = cot.cliente?.nombre || cot.dniCliente || 'N/A';
-            const isVinculada = isCotizacionVinculada(cot.idCotizacion);
-            row.innerHTML = `
-                <td>${cot.idCotizacion || 'N/A'}</td>
-                <td>${clienteNombre}</td>
-                <td>${formatDate(cot.fechaSolicitud)}</td>
-                <td>${formatDate(cot.fechaPreferida)}</td>
-                <td>${formatCurrency(cot.costoTotalCotizacion)}</td>
-                <td>
-                    <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">${cot.estado || 'Pendiente'}</span>
-                    ${isVinculada ? '<span class="warning-badge">🔗 Con servicio</span>' : ''}
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-sm btn-view" onclick="viewCotizacion('${cot.idCotizacion}')">Ver</button>
-                        <button class="btn-sm btn-edit" onclick="editCotizacion('${cot.idCotizacion}')">Editar</button>
-                        <button class="btn-sm btn-delete" 
-                            onclick="deleteCotizacion('${cot.idCotizacion}')"
-                            ${isVinculada ? 'disabled title="No se puede eliminar: tiene servicios asociados"' : ''}>
-                            Eliminar
-                        </button>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(row);
-        });
+function renderCotizaciones(cotizaciones) {
+    const tbody = document.getElementById('cotizacionesTableBody');
+    if (cotizaciones.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay cotizaciones</td></tr>';
+        return;
     }
+    tbody.innerHTML = '';
+    cotizaciones.forEach(cot => {
+        // Obtener nombre del cliente
+        const clienteNombre = cot.nombreCliente || 
+                              cot.cliente?.nombre || 
+                              clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
+                              'Cliente desconocido';
+
+        // ✅ DETECTAR SI HAY PRODUCTOS - verificar si el array existe y tiene elementos
+        const tieneProductos = cot.detalleCotizacion && cot.detalleCotizacion.length > 0;
+        const cantidadProductos = tieneProductos ? cot.detalleCotizacion.length : 0;
+
+        // Crear fila
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${cot.idCotizacion || 'N/A'}</td>
+            <td>${clienteNombre}</td>
+            <td>${formatDate(cot.fechaSolicitud)}</td>
+            <td>${formatDate(cot.fechaPreferida)}</td>
+            <td>
+                <button class="btn-ver-productos" 
+                        onclick="mostrarProductosCotizacion('${cot.idCotizacion}')"
+                        style="
+                            background: ${tieneProductos ? '#4a8b64' : '#718096'};
+                            color: white;
+                            border: none;
+                            padding: 0.5rem 1rem;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 0.9em;
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            transition: all 0.3s ease;
+                        "
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    ${tieneProductos ? '📦' : '📭'}
+                    ${tieneProductos ? `Ver Productos (${cantidadProductos})` : 'Sin Productos'}
+                </button>
+            </td>
+            <td>${formatCurrency(cot.costoTotalCotizacion)}</td>
+            <td>
+                <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">${cot.estado || 'Pendiente'}</span>
+                ${isCotizacionVinculada(cot.idCotizacion) ? '<span class="warning-badge">🔗 Con servicio</span>' : ''}
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-sm btn-view" onclick="viewCotizacion('${cot.idCotizacion}')">Ver</button>
+                    <button class="btn-sm btn-edit" onclick="editCotizacion('${cot.idCotizacion}')">Editar</button>
+                    <button class="btn-sm btn-delete" 
+                        onclick="deleteCotizacion('${cot.idCotizacion}')"
+                        ${isCotizacionVinculada(cot.idCotizacion) ? 'disabled title="No se puede eliminar: tiene servicios asociados"' : ''}>
+                        Eliminar
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// ✅ FUNCIÓN MEJORADA para mostrar productos
+async function mostrarProductosCotizacion(idCotizacion) {
+    try {
+        // Obtener los datos completos de la cotización
+        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`);
+        if (!response.ok) throw new Error('Cotización no encontrada');
+        const cot = await response.json();
+
+        const clienteNombre = cot.nombreCliente || 
+                             cot.cliente?.nombre || 
+                             clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
+                             'Cliente desconocido';
+
+        // Verificar si hay productos
+        const tieneProductos = cot.detalleCotizacion && cot.detalleCotizacion.length > 0;
+
+        let productosHTML = `
+            <div style="text-align: left; max-width: 500px;">
+                <h3 style="color: #2c5f41; margin-bottom: 1rem;">📦 Productos en Cotización</h3>
+                <p><strong>Cliente:</strong> ${clienteNombre}</p>
+                <p><strong>ID Cotización:</strong> ${cot.idCotizacion}</p>
+                <p><strong>Estado:</strong> ${cot.estado || 'Pendiente'}</p>
+                <hr style="margin: 1rem 0;">
+        `;
+
+        if (tieneProductos) {
+            productosHTML += `
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <h4 style="color: #4a5568; margin-bottom: 1rem;">Productos agregados (${cot.detalleCotizacion.length}):</h4>
+            `;
+
+            cot.detalleCotizacion.forEach((producto, index) => {
+                productosHTML += `
+                    <div style="background: #f8f9fa; padding: 1rem; margin-bottom: 0.5rem; border-radius: 8px; border-left: 4px solid #4a8b64;">
+                        <strong>${index + 1}. ${producto.nombreProducto || 'Producto'}</strong><br>
+                        <span style="color: #666; font-size: 0.9em;">
+                            ID: ${producto.idProducto} | 
+                            Cantidad: ${producto.cantidad} | 
+                            Precio unitario: $${formatCurrency(producto.precioUnitario)}<br>
+                            <strong style="color: #2c5f41;">Subtotal: $${formatCurrency(producto.subtotal)}</strong>
+                        </span>
+                    </div>
+                `;
+            });
+
+            productosHTML += `
+                </div>
+                <hr style="margin: 1rem 0;">
+                <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; text-align: center;">
+                    <strong style="color: #2c5f41; font-size: 1.1em;">
+                        TOTAL COTIZACIÓN: $${formatCurrency(cot.costoTotalCotizacion)}
+                    </strong>
+                </div>
+            `;
+        } else {
+            productosHTML += `
+                <div style="text-align: center; padding: 2rem; background: #f7fafc; border-radius: 8px;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                    <h4 style="color: #718096; margin-bottom: 0.5rem;">No hay productos</h4>
+                    <p style="color: #a0aec0; font-size: 0.9em;">
+                        Esta cotización no tiene productos agregados.<br>
+                        Puede ser una cotización de solo servicios.
+                    </p>
+                </div>
+            `;
+        }
+
+        productosHTML += `</div>`;
+
+        // Crear modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="color: #2c5f41; margin: 0;">
+                        ${tieneProductos ? '📦 Productos de la Cotización' : '📭 Sin Productos'}
+                    </h3>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                            style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0.5rem;">
+                        ×
+                    </button>
+                </div>
+                ${productosHTML}
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                            style="background: #4a8b64; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Cerrar modal al hacer click fuera
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+        alert('Error al cargar los productos de la cotización');
+    }
+}
+
+
+// ✅ También actualiza la función viewCotizacion para mostrar mejor los productos
+async function viewCotizacion(id) {
+    try {
+        const response = await fetch(`${API_COTIZACIONES_URL}/${id}`);
+        if (!response.ok) throw new Error('Cotización no encontrada');
+        const cot = await response.json();
+        
+        const isVinculada = isCotizacionVinculada(id);
+        const serviciosVinculados = allServicios.filter(s => 
+            s.idCotizacion === id || 
+            (s.cotizacion && s.cotizacion.idCotizacion === id)
+        );
+
+        const clienteNombre = cot.cliente?.nombre || 
+                              clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
+                              'Cliente desconocido';
+
+        // ✅ MEJORADA: Mostrar productos de manera más detallada
+        let productosInfo = 'No hay productos.';
+        if (cot.detalleCotizacion && cot.detalleCotizacion.length > 0) {
+            productosInfo = cot.detalleCotizacion.map((item, index) => {
+                return `${index + 1}. ${item.nombreProducto || 'Producto'} (x${item.cantidad}) - $${formatCurrency(item.subtotal || 0)}`;
+            }).join('\n');
+        }
+
+        const detalles = `
+COTIZACIÓN: ${cot.idCotizacion || 'N/A'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+👤 Cliente: ${clienteNombre}
+📧 DNI: ${cot.dniCliente}
+📊 Estado: ${cot.estado || 'Pendiente'}
+📅 Fecha Solicitud: ${formatDate(cot.fechaSolicitud)}
+📅 Fecha Preferida: ${formatDate(cot.fechaPreferida)}
+⚡ Prioridad: ${cot.prioridad || 'N/A'}
+💰 Costo Total: ${formatCurrency(cot.costoTotalCotizacion)}
+
+📝 Descripción:
+${cot.descripcionProblema || 'Sin descripción'}
+
+📋 Notas Internas:
+${cot.notasInternas || 'Sin notas'}
+
+📦 PRODUCTOS (${cot.detalleCotizacion ? cot.detalleCotizacion.length : 0}):
+${productosInfo}
+${isVinculada ? `
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ SERVICIOS VINCULADOS: ${serviciosVinculados.length}
+${serviciosVinculados.map(s => `- Servicio #${s.idServicio} (${s.fecha || 'Sin fecha'})`).join('\n')}
+` : ''}
+        `;
+        alert(detalles);
+    } catch (error) {
+        handleError(error);
+    }
+}
 
     function updateStats(cotizaciones) {
         const pendientes = cotizaciones.filter(c => c.estado === 'Pendiente').length;
@@ -1086,10 +1534,26 @@ async function handleQuoteFormSubmit(event) {
                 s.idCotizacion === id || 
                 (s.cotizacion && s.cotizacion.idCotizacion === id)
             );
+
+            // ✅ Mostrar NOMBRE del cliente
+            const clienteNombre = cot.cliente?.nombre || 
+                                  clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
+                                  'Cliente desconocido';
+
+            // ✅ VOLVER A MOSTRAR PRODUCTOS
+            let productosInfo = 'No hay productos.';
+            if (cot.detalleCotizacion && cot.detalleCotizacion.length > 0) {
+                // ✅ CAMBIAR: Usar nombreProducto (esperando que el backend lo devuelva)
+                productosInfo = cot.detalleCotizacion.map(item => {
+                    // El backend debería devolver nombreProducto si la relación es con Producto
+                    return `- ${item.nombreProducto || 'Producto desconocido'} (x${item.cantidad})`;
+                }).join('\n');
+            }
+
             const detalles = `
 COTIZACIÓN: ${cot.idCotizacion || 'N/A'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-Cliente: ${cot.cliente?.nombre || cot.dniCliente}
+Cliente: ${clienteNombre}
 DNI: ${cot.dniCliente}
 Estado: ${cot.estado || 'Pendiente'}
 Fecha Solicitud: ${formatDate(cot.fechaSolicitud)}
@@ -1100,6 +1564,8 @@ Descripción:
 ${cot.descripcionProblema || 'Sin descripción'}
 Notas Internas:
 ${cot.notasInternas || 'Sin notas'}
+Productos:
+${productosInfo}
 ${isVinculada ? `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ⚠️ SERVICIOS VINCULADOS: ${serviciosVinculados.length}
@@ -1131,6 +1597,25 @@ ${serviciosVinculados.map(s => `- Servicio #${s.idServicio} (${s.fecha || 'Sin f
         document.getElementById('prioridad').value = cot.prioridad || 'Media';
         document.getElementById('descripcion').value = cot.descripcionProblema || '';
         document.getElementById('notas').value = cot.notasInternas || '';
+
+        // ✅ CARGAR PRODUCTOS SI EXISTEN
+        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
+            // ✅ CAMBIAR: Mapear usando nombreProducto (esperando que el backend lo devuelva)
+            detalleCotizacion = cot.detalleCotizacion.map(item => {
+                // El backend ya debería devolver idProducto y nombreProducto si la relación es con Producto
+                return {
+                    idProducto: item.idProducto, // <--- Esperar idProducto del backend
+                    nombreProducto: item.nombreProducto, // <--- Esperar nombreProducto del backend
+                    cantidad: item.cantidad,
+                    precioUnitario: item.precioUnitario || 0, // <--- Esperar precioUnitario del backend
+                    subtotal: (item.precioUnitario || 0) * item.cantidad
+                };
+            });
+        } else {
+            detalleCotizacion = [];
+        }
+        renderDetalleCotizacion();
+
         currentEditId = id;
     }
 
@@ -1190,6 +1675,8 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
         document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
         document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
         currentEditId = null;
+        detalleCotizacion = [];
+        renderDetalleCotizacion();
     }
 
     function closeModal(modalId) {
@@ -1203,6 +1690,8 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
         document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
         document.getElementById('estadoGroup').style.display = 'none';
         currentEditId = null;
+        detalleCotizacion = [];
+        renderDetalleCotizacion();
     }
 
     document.getElementById('quoteForm').addEventListener('submit', handleQuoteFormSubmit);
@@ -1218,7 +1707,8 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
         if (searchText) {
             filtered = filtered.filter(c => 
                 c.dniCliente?.toLowerCase().includes(searchText) ||
-                c.cliente?.nombre?.toLowerCase().includes(searchText)
+                c.cliente?.nombre?.toLowerCase().includes(searchText) ||
+                (clientesData.find(cl => cl.dni === c.dniCliente)?.nombre.toLowerCase().includes(searchText))
             );
         }
         if (estadoFilter) {
@@ -1248,9 +1738,12 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
         }
         let csv = 'ID,Cliente,DNI_Cliente,Estado,Fecha_Solicitud,Fecha_Preferida,Prioridad,Costo_Total,Descripcion,Vinculada_Servicio\n';
         allCotizaciones.forEach(c => {
+            const clienteNombre = c.cliente?.nombre || 
+                                  clientesData.find(cl => cl.dni === c.dniCliente)?.nombre || 
+                                  'Desconocido';
             const isVinculada = isCotizacionVinculada(c.idCotizacion);
             csv += `"${c.idCotizacion || ''}",`;
-            csv += `"${c.cliente?.nombre || ''}",`;
+            csv += `"${clienteNombre}",`;
             csv += `"${c.dniCliente || ''}",`;
             csv += `"${c.estado || 'Pendiente'}",`;
             csv += `"${c.fechaSolicitud || ''}",`;
@@ -1274,6 +1767,8 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
     document.addEventListener('DOMContentLoaded', async function() {
         await loadClientes();
         await loadServicios();
+        // ✅ CARGAR PRODUCTOS
+        await loadProductosCot();
         await getAllCotizaciones();
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);

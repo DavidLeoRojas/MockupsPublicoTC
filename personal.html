@@ -935,60 +935,75 @@
         loadData();
     });
 
-    function updateFormFieldsBasedOnType() {
-        const tipo = document.getElementById('personTypeSelect').value;
-        const nitField = document.getElementById('nitField');
-        const representanteField = document.getElementById('representanteField');
-        const docGroup = document.getElementById('docGroup');
-        const docLabel = document.getElementById('docLabel');
-        const docInput = document.getElementById('personDoc');
-        const docTypeSelect = document.getElementById('personDocType');
-        const nitInput = document.getElementById('personNit');
+function updateFormFieldsBasedOnType() {
+    const tipo = document.getElementById('personTypeSelect').value;
+    const nitField = document.getElementById('nitField');
+    const representanteField = document.getElementById('representanteField');
+    const docGroup = document.getElementById('docGroup');
+    const docLabel = document.getElementById('docLabel');
+    const docInput = document.getElementById('personDoc');
+    const docTypeSelect = document.getElementById('personDocType');
+    const nitInput = document.getElementById('personNit');
 
-        if (tipo === 'Juridica') {
-            docGroup.style.display = 'none';
-            nitField.style.display = 'block';
-            representanteField.style.display = 'block';
-            docLabel.textContent = '🏢 NIT *';
-            docInput.required = false;
-            nitInput.required = true;
+    if (tipo === 'Juridica') {
+        docGroup.style.display = 'none';
+        nitField.style.display = 'block';
+        representanteField.style.display = 'block';
+        docLabel.textContent = '🏢 NIT *';
+        docInput.required = false;
+        nitInput.required = true;
 
-            // --- AJUSTAR TIPO DE DOCUMENTO ---
-            const options = docTypeSelect.querySelectorAll('option');
-            options.forEach(opt => {
-                if (opt.value === 'NIT') {
-                    opt.style.display = 'block';
-                    docTypeSelect.value = 'NIT'; // Seleccionar NIT automáticamente
-                } else {
-                    opt.style.display = 'none';
-                }
-            });
-            // --- FIN AJUSTE ---
-        } else { // Natural
-            docGroup.style.display = 'block';
-            nitField.style.display = 'none';
-            representanteField.style.display = 'none';
-            docLabel.textContent = '🆔 Número de Documento *';
-            docInput.required = true;
-            nitInput.required = false; // Asegura que no sea obligatorio para Natural
-            nitInput.value = ''; // Limpia el campo NIT
+        // 🔥 CORRECCIÓN: NO limpiar docInput, transferir valor si existe
+        if (docInput.value && !nitInput.value) {
+            nitInput.value = docInput.value;
+        }
 
-            // --- AJUSTAR TIPO DE DOCUMENTO ---
-            const options = docTypeSelect.querySelectorAll('option');
-            options.forEach(opt => {
-                if (opt.value === 'NIT') {
-                    opt.style.display = 'none';
-                } else { // CC o CE
-                    opt.style.display = 'block';
-                }
-            });
-            // Limpiar selección si NIT estaba seleccionado
-            if (docTypeSelect.value === 'NIT') {
-                docTypeSelect.value = '';
+        // Configurar tipo de documento para jurídica
+        const options = docTypeSelect.querySelectorAll('option');
+        options.forEach(opt => {
+            if (opt.value === 'NIT') {
+                opt.style.display = 'block';
+                opt.disabled = false;
+            } else {
+                opt.style.display = 'none';
             }
-            // --- FIN AJUSTE ---
+        });
+        
+        // Forzar NIT
+        docTypeSelect.value = 'NIT';
+        
+    } else { // Natural
+        docGroup.style.display = 'block';
+        nitField.style.display = 'none';
+        representanteField.style.display = 'none';
+        docLabel.textContent = '🆔 Número de Documento *';
+        docInput.required = true;
+        nitInput.required = false;
+        
+        // 🔥 CORRECCIÓN: Transferir valor de nitInput a docInput si es necesario
+        if (nitInput.value && !docInput.value) {
+            docInput.value = nitInput.value;
+        }
+        
+        document.getElementById('personRepresentante').value = ''; // Limpiar representante
+
+        // Configurar tipo de documento para natural
+        const options = docTypeSelect.querySelectorAll('option');
+        options.forEach(opt => {
+            if (opt.value === 'NIT') {
+                opt.style.display = 'none';
+            } else {
+                opt.style.display = 'block';
+                opt.disabled = false;
+            }
+        });
+        
+        // Limpiar selección si era NIT
+        if (docTypeSelect.value === 'NIT') {
+            docTypeSelect.value = '';
         }
     }
+}
 
 
     function openAddPersonModal() {
@@ -996,47 +1011,47 @@
         resetForm(); // Asegura que el formulario esté limpio y con la lógica correcta
     }
 
-    function resetForm() {
-        const form = document.getElementById('addPersonForm');
-        form.reset();
+function resetForm() {
+    const form = document.getElementById('addPersonForm');
+    form.reset();
 
-        // Reiniciar el tipo de persona a Natural por defecto
-        document.getElementById('personTypeSelect').value = 'Natural';
+    // Reiniciar el tipo de persona a Natural por defecto
+    document.getElementById('personTypeSelect').value = 'Natural';
 
-        // Mostrar campos por defecto para persona Natural
-        const nitField = document.getElementById('nitField');
-        const representanteField = document.getElementById('representanteField');
-        const docGroup = document.getElementById('docGroup');
-        const docLabel = document.getElementById('docLabel');
-        const docInput = document.getElementById('personDoc');
-        const docTypeSelect = document.getElementById('personDocType');
+    // Mostrar campos por defecto para persona Natural
+    const nitField = document.getElementById('nitField');
+    const representanteField = document.getElementById('representanteField');
+    const docGroup = document.getElementById('docGroup');
+    const docLabel = document.getElementById('docLabel');
+    const docInput = document.getElementById('personDoc');
+    const docTypeSelect = document.getElementById('personDocType');
 
-        docGroup.style.display = 'block';
-        nitField.style.display = 'none';
-        representanteField.style.display = 'none';
-        docLabel.textContent = '🆔 Número de Documento *';
+    docGroup.style.display = 'block';
+    nitField.style.display = 'none';
+    representanteField.style.display = 'none';
+    docLabel.textContent = '🆔 Número de Documento *';
 
-        // Resetear requerimientos
-        docInput.required = true;
-        document.getElementById('personNit').required = false;
+    // Resetear requerimientos
+    docInput.required = true;
+    document.getElementById('personNit').required = false;
 
-        // --- LÓGICA INICIAL PARA AJUSTAR TIPO DE DOCUMENTO ---
-        const options = docTypeSelect.querySelectorAll('option');
-        options.forEach(opt => {
-            if (opt.value === 'NIT') {
-                opt.style.display = 'none'; // Ocultar NIT por defecto
-            } else { // CC o CE
-                opt.style.display = 'block'; // Mostrar CC y CE
-            }
-        });
-        docTypeSelect.value = ''; // Limpiar selección
-        // --- FIN LÓGICA ---
+    // Configurar opciones de tipo de documento
+    const options = docTypeSelect.querySelectorAll('option');
+    options.forEach(opt => {
+        if (opt.value === 'NIT') {
+            opt.style.display = 'none';
+        } else {
+            opt.style.display = 'block';
+            opt.disabled = false;
+        }
+    });
+    docTypeSelect.value = '';
 
-        document.querySelector('#addPersonModal .modal-title').textContent = 'Agregar Nueva Persona';
-        document.querySelector('#addPersonModal .btn-primary').textContent = 'Agregar Persona';
-        
-        form.onsubmit = handleAddPersonForm;
-    }
+    document.querySelector('#addPersonModal .modal-title').textContent = 'Agregar Nueva Persona';
+    document.querySelector('#addPersonModal .btn-primary').textContent = 'Agregar Persona';
+    
+    form.onsubmit = handleAddPersonForm;
+}
 
 function poblarCiudadesEnFormulario() {
     const select = document.getElementById('personCity');
@@ -1057,42 +1072,49 @@ function poblarCiudadesEnFormulario() {
     });
 }
 
+// Mover handleAddPersonForm al ámbito global (fuera de cualquier otra función)
 async function handleAddPersonForm(event) {
     event.preventDefault();
-    if (isSubmitting) return; // Evitar envíos múltiples
+    if (isSubmitting) return;
     isSubmitting = true;
 
-    const tipoPersona = document.getElementById('personTypeSelect').value; // 'Natural' o 'Juridica'
-    const docInput = document.getElementById('personDoc'); // Input para doc normal
-    const nitInput = document.getElementById('personNit'); // Input para NIT
-
-    // - OBTENER TIPO DE DOCUMENTO -
+    const tipoPersona = document.getElementById('personTypeSelect').value;
+    const docInput = document.getElementById('personDoc');
+    const nitInput = document.getElementById('personNit');
     const tipoDni = document.getElementById('personDocType').value;
+
+    // Validaciones previas...
+    if (tipoPersona === 'Natural' && tipoDni === 'NIT') {
+        alert("❌ Para una persona natural, el tipo de documento no puede ser NIT.");
+        isSubmitting = false;
+        return;
+    }
+
+    if (tipoPersona === 'Juridica' && tipoDni !== 'NIT') {
+        alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
+        isSubmitting = false;
+        return;
+    }
+
     if (!tipoDni || tipoDni.trim() === '') {
         alert("Por favor seleccione un tipo de documento.");
         isSubmitting = false;
         return;
     }
 
-    // ✅ VALIDACIÓN CRÍTICA: Si es persona Natural, el tipo de documento no puede ser NIT
-    if (tipoPersona === 'Natural' && tipoDni === 'NIT') {
-        alert("Para una persona natural, el tipo de documento no puede ser NIT. Seleccione CC o CE.");
-        isSubmitting = false;
-        return;
-    }
-    // - FIN OBTENCIÓN -
-
     const nombre = document.getElementById('personName').value.trim();
     const telefono = document.getElementById('personPhone').value.trim();
     const email = document.getElementById('personEmail').value.trim();
     const rol = document.getElementById('personType').value;
-    const ciudad = document.getElementById('personCity').value.trim(); // Asegúrate de que no esté vacío si es obligatorio
+    const ciudad = document.getElementById('personCity').value.trim();
+    const representanteLegal = document.getElementById('personRepresentante').value.trim();
 
     if (!nombre || !telefono || !email || !rol || !ciudad) {
         alert("Complete todos los campos obligatorios.");
         isSubmitting = false;
         return;
     }
+    
     if (!validarEmail(email)) {
         alert("El correo electrónico no es válido.");
         isSubmitting = false;
@@ -1100,15 +1122,29 @@ async function handleAddPersonForm(event) {
     }
 
     let dni = '';
+    let nit = null;
+
+    // 🔥 CORRECCIÓN CRÍTICA: Seguir la lógica del trigger
     if (tipoPersona === 'Juridica') {
-        dni = nitInput.value.trim(); // <-- El DNI de una persona jurídica es su NIT
+        // Para jurídica: el DNI debe ser igual al NIT (según el trigger)
+        nit = nitInput.value.trim();
+        dni = nit; // El DNI es el mismo que el NIT para jurídicas
+        
         if (!dni) {
             alert("El NIT es obligatorio para personas jurídicas.");
             isSubmitting = false;
             return;
         }
-    } else { // Natural
+        if (!representanteLegal) {
+            alert("El representante legal es obligatorio para personas jurídicas.");
+            isSubmitting = false;
+            return;
+        }
+    } else {
+        // Para natural: solo usar documento, NIT debe ser null
         dni = docInput.value.trim();
+        nit = null;
+        
         if (!dni) {
             alert("El documento es obligatorio.");
             isSubmitting = false;
@@ -1122,98 +1158,150 @@ async function handleAddPersonForm(event) {
         isSubmitting = false;
         return;
     }
+    
     if (telefono.length < 7 || telefono.length > 15) {
         alert("El teléfono debe tener entre 7 y 15 dígitos.");
         isSubmitting = false;
         return;
     }
+    
     if (todasLasPersonas.some(p => String(p.dni) === String(dni))) {
         alert(`El documento/NIT "${dni}" ya está registrado.`);
         isSubmitting = false;
         return;
     }
 
-    // CRÍTICO: Todos los campos como STRING explícitamente
     const cargoEspecialidad = document.getElementById('personRole').value.trim();
 
-    // --- CONSTRUCCIÓN SEGURA DEL OBJETO datosPersona ---
-    // Creamos un objeto base con todos los campos comunes
-    const datosPersonaBase = {
+    const datosPersona = {
         dni: dni.toString(),
-        tipo_dni: tipoDni.toString(), // Ej: "NIT", "CC", "CE"
+        tipo_dni: tipoDni.toString(),
         nombre: nombre.toString(),
         telefono: telefono.toString(),
         correo: email.toString(),
         rol: rol.toString().charAt(0).toUpperCase() + rol.toString().slice(1),
-        id_direccion: ciudad, // <-- Asegúrate de que este valor sea el ID correcto
-        tipo_persona: tipoPersona.toString(), // <-- "Natural" o "Juridica"
+        id_direccion: parseInt(ciudad),
+        tipo_persona: tipoPersona.toUpperCase(), // "JURIDICA" o "NATURAL"
         cargo_especialidad: cargoEspecialidad || null
-        // NO incluimos 'password' aquí, el backend lo genera
     };
 
-    let datosPersona;
-    // Creamos el objeto final basado en el tipo
+    // 🔥 CORRECCIÓN: Enviar NIT solo para jurídicas, según el trigger
     if (tipoPersona === 'Juridica') {
-        // Para Juridica, extendemos el base y añadimos campos específicos
-        datosPersona = {
-            ...datosPersonaBase,
-            nit: dni.toString(), // El NIT es el DNI en este caso
-            representante_legal: document.getElementById('personRepresentante').value.trim().toString() || undefined // Solo se incluye si tiene valor
-        };
-        // Si representante_legal es una cadena vacía, lo eliminamos para no enviar ""
-        if (datosPersona.representante_legal === "") {
-            delete datosPersona.representante_legal;
-        }
+        datosPersona.nit = nit.toString();
+        datosPersona.representante_legal = representanteLegal.toString();
     } else {
-        // Para Natural, usamos solo el objeto base.
-        // Es CRUCIAL que 'nit' y 'representante_legal' NO estén presentes.
-        datosPersona = datosPersonaBase;
+        // Para naturales, NO enviar nit (será null en la BD)
+        // El trigger espera que nit sea NULL para naturales
+        datosPersona.nit = null;
+        datosPersona.representante_legal = null;
     }
-    // --- FIN CONSTRUCCIÓN SEGURA ---
 
-    // Debug para verificar tipos y valores antes de enviar (puedes eliminarlo después)
-    console.log('Datos a enviar (antes de fetch):', datosPersona);
-    console.log("¿'nit' está en el objeto?:", 'nit' in datosPersona);
-    console.log("¿'representante_legal' está en el objeto?:", 'representante_legal' in datosPersona);
+    console.log('Datos a enviar (CORREGIDOS):', datosPersona);
 
     try {
         const response = await fetch(`${API_BASE_URL}/personas`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(datosPersona) // <- Este es el objeto clave
+            headers: { 
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(datosPersona)
         });
 
-        const text = await response.text(); // Obtener el cuerpo de la respuesta como texto
-        console.log('Respuesta del servidor (raw):', text); // Agregar log para ver la respuesta
+        const text = await response.text();
+        console.log('Respuesta del servidor:', text);
 
         if (!response.ok) {
-            // Intentar parsear como JSON si es posible, sino usar el texto plano
             let errorMsg = text;
             try {
                 const errorJson = JSON.parse(text);
                 errorMsg = errorJson.message || errorJson.error || text;
             } catch (e) {
-                // Si no es JSON, usar el texto plano
                 console.warn('La respuesta de error no es JSON:', e);
             }
 
             console.error('Error del servidor:', response.status, errorMsg);
+            
             if (text.includes('Duplicate entry')) {
-                alert(`El documento/NIT "${dni}" ya existe en la base de datos.`);
+                alert(`❌ El documento/NIT "${dni}" ya existe en la base de datos.`);
+            } else if (text.includes('persona natural') || text.includes('NIT')) {
+                alert(`❌ Error de validación: ${errorMsg}\n\nEl trigger de la base de datos está rechazando la inserción.`);
             } else {
-                alert(`Error del servidor (${response.status}): ${errorMsg}`);
+                alert(`❌ Error del servidor (${response.status}): ${errorMsg}`);
             }
-            return; // Detener ejecución si hay error
+            return;
         }
 
-        alert("Persona agregada exitosamente.");
+        alert("✅ Persona agregada exitosamente.");
         closeModal('addPersonModal');
-        await loadData(); // Recargar la lista de personas
+        await loadData();
+
     } catch (error) {
-        console.error("Error de red o al procesar la solicitud:", error);
-        alert("Error de red o al procesar la solicitud. Verifique su conexión y la consola.");
+        console.error("❌ Error de red o al procesar la solicitud:", error);
+        alert("❌ Error de red o al procesar la solicitud.");
     } finally {
-        isSubmitting = false; // Asegúrate de reiniciar el estado
+        isSubmitting = false;
+    }
+}
+
+// Ahora actualizamos la función resetForm para que use la función global
+function resetForm() {
+    const form = document.getElementById('addPersonForm');
+    if (form) {
+        form.reset();
+
+        // Reiniciar el tipo de persona a Natural por defecto
+        document.getElementById('personTypeSelect').value = 'Natural';
+
+        // Mostrar campos por defecto para persona Natural
+        const nitField = document.getElementById('nitField');
+        const representanteField = document.getElementById('representanteField');
+        const docGroup = document.getElementById('docGroup');
+        const docLabel = document.getElementById('docLabel');
+        const docInput = document.getElementById('personDoc');
+        const docTypeSelect = document.getElementById('personDocType');
+
+        if (docGroup) docGroup.style.display = 'block';
+        if (nitField) nitField.style.display = 'none';
+        if (representanteField) representanteField.style.display = 'none';
+        if (docLabel) docLabel.textContent = '🆔 Número de Documento *';
+
+        // Resetear requerimientos
+        if (docInput) docInput.required = true;
+        const nitInput = document.getElementById('personNit');
+        if (nitInput) nitInput.required = false;
+
+        // Configurar opciones de tipo de documento
+        if (docTypeSelect) {
+            const options = docTypeSelect.querySelectorAll('option');
+            options.forEach(opt => {
+                if (opt.value === 'NIT') {
+                    opt.style.display = 'none';
+                } else {
+                    opt.style.display = 'block';
+                    opt.disabled = false;
+                }
+            });
+            docTypeSelect.value = '';
+        }
+
+        const modalTitle = document.querySelector('#addPersonModal .modal-title');
+        const submitButton = document.querySelector('#addPersonModal .btn-primary');
+        
+        if (modalTitle) modalTitle.textContent = 'Agregar Nueva Persona';
+        if (submitButton) submitButton.textContent = 'Agregar Persona';
+        
+        // 🔥 CORRECCIÓN: Asignar el event listener correctamente
+        form.onsubmit = handleAddPersonForm;
+    }
+}
+
+// Y la función openAddPersonModal
+function openAddPersonModal() {
+    const modal = document.getElementById('addPersonModal');
+    if (modal) {
+        modal.classList.add('show');
+        resetForm(); // Asegura que el formulario esté limpio y con la lógica correcta
     }
 }
 
@@ -1351,35 +1439,28 @@ async function handleAddPersonForm(event) {
         // --- FIN LÓGICA ---
 
         const form = document.getElementById('addPersonForm');
-        form.onsubmit = async (e) => {
-            e.preventDefault();
+form.onsubmit = async (e) => {
+    e.preventDefault();
 
-            const tipoEdit = document.getElementById('personTypeSelect').value;
-            const ciudadEdit = document.getElementById('personCity').value; // Cambiado a .value
+    const tipoEdit = document.getElementById('personTypeSelect').value;
+    const ciudadEdit = document.getElementById('personCity').value;
+    const tipoDniEdit = document.getElementById('personDocType').value;
 
-            // --- OBTENER TIPO DE DOCUMENTO AL EDITAR ---
-            const tipoDniEdit = document.getElementById('personDocType').value;
-            if (!tipoDniEdit || tipoDniEdit.trim() === '') {
-                alert("Por favor seleccione un tipo de documento.");
-                return;
-            }
-            // --- FIN OBTENCIÓN ---
+    // ✅ VALIDACIÓN CORREGIDA PARA EDICIÓN
+    if (tipoEdit === 'Natural' && tipoDniEdit === 'NIT') {
+        alert("❌ Para una persona natural, el tipo de documento no puede ser NIT. Seleccione CC o CE.");
+        return;
+    }
 
-            // --- SELECCIONAR DNI AL EDITAR ---
-            let dniEdit = '';
-            if (tipoEdit === 'Juridica') {
-                dniEdit = nitInput.value.trim(); // <-- Usar personNit
-                if (!dniEdit) {
-                    alert("El NIT es obligatorio para personas jurídicas.");
-                    return;
-                }
-            } else { // Natural
-                dniEdit = docInput.value.trim(); // <-- Usar personDoc
-                if (!dniEdit) {
-                    alert("El documento es obligatorio.");
-                    return;
-                }
-            }
+    if (tipoEdit === 'Juridica' && tipoDniEdit !== 'NIT') {
+        alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
+        return;
+    }
+
+    if (!tipoDniEdit || tipoDniEdit.trim() === '') {
+        alert("Por favor seleccione un tipo de documento.");
+        return;
+    }
             // --- FIN SELECCIÓN ---
 
             const datos = {

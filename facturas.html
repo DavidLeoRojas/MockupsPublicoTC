@@ -5,109 +5,672 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Facturas - Gemini Ambiental Admin</title>
 <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background: #f5f7fa;color: #2d3748;}
-    .sidebar {position: fixed;left: 0; top: 0;width: 280px; height: 100vh;background: linear-gradient(135deg, #2c5f41, #1a4532);color: white; z-index: 1000;transition: transform 0.3s ease;}
-    .sidebar-header {padding: 2rem; border-bottom: 1px solid rgba(255,255,255,0.1);}
-    .logo { display: flex; align-items: center; gap: 1rem; }
-    .logo-icon { width: 45px; height: 45px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .logo-text h2 { font-size: 1.2em; margin-bottom: 0.2rem; }
-    .logo-text p { font-size: 0.8em; opacity: 0.8; }
-    .nav-menu { padding: 1rem 0; }
-    .nav-item { margin: 0.5rem 1rem; }
-    .nav-link { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 12px; transition: all 0.3s ease; }
-    .nav-link:hover, .nav-link.active { background: rgba(255,255,255,0.1); color: white; transform: translateX(5px); }
-    .nav-icon { font-size: 1.2em; width: 24px; text-align: center; }
-    .logout-section { position: absolute; bottom: 2rem; left: 1rem; right: 1rem; }
-    .logout-btn { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; background: rgba(255,107,107,0.2); color: #ff6b6b; text-decoration: none; border-radius: 12px; transition: all 0.3s ease; width: 100%; }
-    .logout-btn:hover { background: rgba(255,107,107,0.3); transform: translateY(-2px); }
-    .main-content { margin-left: 280px; padding: 2rem; min-height: 100vh; }
-    .top-nav { background: white; padding: 1rem 2rem; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
-    .nav-tabs { display: flex; gap: 2rem; }
-    .nav-tab { padding: 0.75rem 1.5rem; text-decoration: none; color: #718096; border-radius: 12px; transition: all 0.3s ease; font-weight: 600; }
-    .nav-tab:hover, .nav-tab.active { background: linear-gradient(135deg, #4a8b64, #2c5f41); color: white; transform: translateY(-2px); }
-    .header { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
-    .header-title h1 { color: #2c5f41; font-size: 2.5em; margin-bottom: 0.5rem; }
-    .header-title p { color: #718096; font-size: 1.1em; }
-    .header-actions { display: flex; gap: 1rem; }
-    .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 0.5rem; }
-    .btn-primary { background: linear-gradient(135deg, #4a8b64, #2c5f41); color: white; }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(74, 139, 100, 0.3); }
-    .btn-secondary { background: #f7fafc; color: #2d3748; border: 1px solid #e2e8f0; }
-    .btn-secondary:hover { background: white; border-color: #4a8b64; }
-    .btn-send { background: #48bb78; color: white; }
-    .btn-send:hover { background: #38a169; }
-    .btn-delete { background: #f56565; color: white; }
-    .btn-delete:hover { background: #e53e3e; }
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
-    .modal.show { display: flex; }
-    .modal-content { background: white; border-radius: 20px; padding: 2rem; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-    .modal-title { font-size: 1.3em; font-weight: bold; color: #2c5f41; }
-    .close-btn { background: none; border: none; font-size: 1.5em; cursor: pointer; color: #718096; }
-    .form-grid { display: grid; gap: 1rem; }
-    .form-grid-2 { grid-template-columns: 1fr 1fr; }
-    .form-group { display: flex; flex-direction: column; }
-    .form-group label { margin-bottom: 0.5rem; color: #4a5568; font-weight: 600; }
-    .form-control { padding: 0.75rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem; transition: border-color 0.3s ease; width: 100%; box-sizing: border-box; max-width: 100%; }
-    .form-control:focus { outline: none; border-color: #4a8b64; }
-    /* Ajuste específico para el select de cotización y el input de fecha */
-    #cotizacionSelect, input[type="date"] {
-        width: 100%;
-        max-width: 100%;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    color: #2d3748;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: linear-gradient(135deg, #2c5f41, #1a4532);
+    color: white;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.sidebar-header {
+    padding: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.logo-icon {
+    width: 45px;
+    height: 45px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.logo-text h2 {
+    font-size: 1.2em;
+    margin-bottom: 0.2rem;
+}
+
+.logo-text p {
+    font-size: 0.8em;
+    opacity: 0.8;
+}
+
+.nav-menu {
+    padding: 1rem 0;
+}
+
+.nav-item {
+    margin: 0.5rem 1rem;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    transform: translateX(5px);
+}
+
+.nav-icon {
+    font-size: 1.2em;
+    width: 24px;
+    text-align: center;
+}
+
+.logout-section {
+    position: absolute;
+    bottom: 2rem;
+    left: 1rem;
+    right: 1rem;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    background: rgba(255, 107, 107, 0.2);
+    color: #ff6b6b;
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.logout-btn:hover {
+    background: rgba(255, 107, 107, 0.3);
+    transform: translateY(-2px);
+}
+
+.main-content {
+    margin-left: 280px;
+    padding: 2rem;
+    min-height: 100vh;
+}
+
+.top-nav {
+    background: white;
+    padding: 1rem 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-tab {
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    color: #718096;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.nav-tab:hover,
+.nav-tab.active {
+    background: linear-gradient(135deg, #4a8b64, #2c5f41);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.header {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h1 {
+    color: #2c5f41;
+    font-size: 2.5em;
+    margin-bottom: 0.5rem;
+}
+
+.header-title p {
+    color: #718096;
+    font-size: 1.1em;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4a8b64, #2c5f41);
+    color: white;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(74, 139, 100, 0.3);
+}
+
+.btn-secondary {
+    background: #f7fafc;
+    color: #2d3748;
+    border: 1px solid #e2e8f0;
+}
+
+.btn-secondary:hover {
+    background: white;
+    border-color: #4a8b64;
+}
+
+.btn-send {
+    background: #48bb78;
+    color: white;
+}
+
+.btn-send:hover {
+    background: #38a169;
+}
+
+.btn-delete {
+    background: #f56565;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #e53e3e;
+}
+
+.btn-edit {
+    background: #4299e1;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #3182ce;
+}
+
+.btn-details {
+    background: #805ad5;
+    color: white;
+}
+
+.btn-details:hover {
+    background: #6b46c1;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 900px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.modal-title {
+    font-size: 1.3em;
+    font-weight: bold;
+    color: #2c5f41;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #718096;
+}
+
+.form-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.form-grid-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 0.5rem;
+    color: #4a5568;
+    font-weight: 600;
+}
+
+.form-control {
+    padding: 0.75rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+    max-width: 100%;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #4a8b64;
+}
+
+/* Ajuste específico para el select de cotización y el input de fecha */
+#cotizacionSelect,
+input[type="date"] {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.invoices-section {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.invoices-header {
+    padding: 2rem;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.invoices-title {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #2c5f41;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.invoices-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.invoices-table th,
+.invoices-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.invoices-table th {
+    background: #f7fafc;
+    color: #4a5568;
+    font-weight: 600;
+    font-size: 0.9em;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.invoices-table tr:hover {
+    background: #f7fafc;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-badge.pagada {
+    background: #c6f6d5;
+    color: #22543d;
+}
+
+.status-badge.pendiente {
+    background: #e2e8f0;
+    color: #4a5568;
+}
+
+.status-badge.cancelada {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+.status-badge.vencida {
+    background: #fed7d7;
+    color: #c53030;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.8em;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    width: auto;
+    text-align: center;
+}
+
+.btn-sm:hover {
+    transform: translateY(-1px);
+}
+
+.detalle-factura-container {
+    background: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-top: 1rem;
+    border: 1px solid #e2e8f0;
+}
+
+.detalle-factura-container h4 {
+    color: #2c5f41;
+    margin-bottom: 1rem;
+    font-size: 1.1em;
+}
+
+.detalle-factura-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.detalle-factura-item:last-child {
+    border-bottom: none;
+}
+
+.detalle-factura-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.detalle-factura-controls button {
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8em;
+    border: none;
+}
+
+.detalle-factura-controls .remove-btn {
+    background: #f56565;
+    color: white;
+}
+
+.detalle-factura-controls .remove-btn:hover {
+    background: #e53e3e;
+}
+
+.detalle-factura-controls .edit-btn {
+    background: #4299e1;
+    color: white;
+}
+
+.detalle-factura-controls .edit-btn:hover {
+    background: #3182ce;
+}
+
+.add-product-btn {
+    margin-top: 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--accent-color);
+}
+
+.stat-card.primary {
+    --accent-color: #4a8b64;
+}
+
+.stat-card.warning {
+    --accent-color: #f6ad55;
+}
+
+.stat-card.danger {
+    --accent-color: #f56565;
+}
+
+.stat-card.info {
+    --accent-color: #4299e1;
+}
+
+.stat-card.success {
+    --accent-color: #48bb78;
+}
+
+.stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    color: white;
+}
+
+.stat-icon.primary {
+    background: linear-gradient(135deg, #4a8b64, #2c5f41);
+}
+
+.stat-icon.warning {
+    background: linear-gradient(135deg, #f6ad55, #ed8936);
+}
+
+.stat-icon.danger {
+    background: linear-gradient(135deg, #f56565, #e53e3e);
+}
+
+.stat-icon.info {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+}
+
+.stat-icon.success {
+    background: linear-gradient(135deg, #48bb78, #38a169);
+}
+
+.stat-number {
+    font-size: 2em;
+    font-weight: bold;
+    color: #2d3748;
+    margin-bottom: 0.5rem;
+}
+
+.stat-label {
+    color: #718096;
+    font-size: 0.9em;
+}
+
+.filters-section {
+    background: white;
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    margin-bottom: 2rem;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    align-items: end;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
     }
-    .invoices-section { background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); overflow: hidden; }
-    .invoices-header { padding: 2rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
-    .invoices-title { font-size: 1.5em; font-weight: bold; color: #2c5f41; }
-    .table-container { overflow-x: auto; }
-    .invoices-table { width: 100%; border-collapse: collapse; }
-    .invoices-table th, .invoices-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; }
-    .invoices-table th { background: #f7fafc; color: #4a5568; font-weight: 600; font-size: 0.9em; text-transform: uppercase; letter-spacing: 0.05em; }
-    .invoices-table tr:hover { background: #f7fafc; }
-    .status-badge { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8em; font-weight: 600; text-transform: uppercase; }
-    .status-badge.pagada { background: #c6f6d5; color: #22543d; }
-    .status-badge.pendiente { background: #e2e8f0; color: #4a5568; }
-    .status-badge.cancelada { background: #fed7d7; color: #c53030; }
-    .action-buttons { display: flex; gap: 0.5rem; }
-    .btn-sm { padding: 0.5rem 1rem; font-size: 0.8em; border-radius: 8px; cursor: pointer; border: none; transition: all 0.3s ease; }
-    .btn-edit { background: #4299e1; color: white; }
-    .btn-edit:hover { background: #3182ce; }
-    .btn-details { background: #805ad5; color: white; }
-    .btn-details:hover { background: #6b46c1; }
-    .btn-send { background: #48bb78; color: white; }
-    .btn-send:hover { background: #38a169; }
-    .btn-delete { background: #f56565; color: white; }
-    .btn-delete:hover { background: #e53e3e; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem; }
-    .stat-card { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
-    .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: var(--accent-color); }
-    .stat-card.primary { --accent-color: #4a8b64; }
-    .stat-card.warning { --accent-color: #f6ad55; }
-    .stat-card.danger { --accent-color: #f56565; }
-    .stat-card.info { --accent-color: #4299e1; }
-    .stat-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
-    .stat-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3em; color: white; }
-    .stat-icon.primary { background: linear-gradient(135deg, #4a8b64, #2c5f41); }
-    .stat-icon.warning { background: linear-gradient(135deg, #f6ad55, #ed8936); }
-    .stat-icon.danger { background: linear-gradient(135deg, #f56565, #e53e3e); }
-    .stat-icon.info { background: linear-gradient(135deg, #4299e1, #3182ce); }
-    .stat-number { font-size: 2em; font-weight: bold; color: #2d3748; margin-bottom: 0.5rem; }
-    .stat-label { color: #718096; font-size: 0.9em; }
-    .filters-section { background: white; padding: 2rem; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2rem; }
-    .filters-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 1rem; align-items: end; }
-    .detalle-factura-container { background: #f9f9f9; padding: 1rem; border-radius: 12px; margin-top: 1rem; }
-    .detalle-factura-item { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #e2e8f0; }
-    .detalle-factura-item:last-child { border-bottom: none; }
-    .detalle-factura-controls { display: flex; gap: 0.5rem; }
-    .detalle-factura-controls button { padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; }
-    .detalle-factura-controls .remove-btn { background: #f56565; color: white; }
-    .detalle-factura-controls .remove-btn:hover { background: #e53e3e; }
-    .detalle-factura-controls .edit-btn { background: #4299e1; color: white; }
-    .detalle-factura-controls .edit-btn:hover { background: #3182ce; }
-    .add-product-btn { margin-top: 1rem; }
+
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .top-nav {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .nav-tabs {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 1.5rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-sm {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+}
 </style>
 </head>
 <body>
@@ -322,6 +885,11 @@
                             <option value="Cancelada">Cancelada</option>
                         </select>
                     </div>
+                                    <!-- Campo Valor Servicio -->
+                <div class="form-group">
+                    <label>Valor Servicio</label>
+                    <input type="number" step="0.01" name="valor_servicio" id="valorServicio" class="form-control" placeholder="Ej: 500000" value="0">
+                </div>
                     <!-- Campo Monto Total - Se oculta si es con cotización -->
                     <div class="form-group" id="montoTotalField">
                         <label>Monto Total *</label>
@@ -332,6 +900,7 @@
                     <label>Observaciones</label>
                     <textarea name="observaciones" class="form-control" rows="2"></textarea>
                 </div>
+
 
                 <!-- Sección de Productos (Solo para Factura Simple) -->
                 <div id="productosSection" style="display: none;">
@@ -365,7 +934,8 @@
             </form>
         </div>
     </div>
-
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
         const API_BASE_URL = 'http://localhost:8080/api';
         const API_FACTURAS_URL = `${API_BASE_URL}/facturas`;
@@ -483,6 +1053,18 @@
             if (value === null || value === undefined) return '$ 0.00';
             return new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 2 }).format(value);
         }
+        function actualizarMontoTotal() {
+            const valorServicioInput = document.getElementById('valorServicio');
+            const montoTotalInput = document.querySelector('input[name="monto_total"]');
+
+            if (!montoTotalInput) return;
+
+            const valorServicio = parseFloat(valorServicioInput.value) || 0;
+            const subtotalProductos = detalleFactura.reduce((sum, item) => sum + item.subtotal, 0);
+            const montoTotal = subtotalProductos + valorServicio;
+
+            montoTotalInput.value = montoTotal.toFixed(2);
+        }
 
         // Formatear fecha
         function formatDate(dateString) {
@@ -490,13 +1072,14 @@
             const date = new Date(dateString);
             return date.toLocaleDateString('es-ES', { year: 'numeric', month: 'short', day: 'numeric' });
         }
-
+        document.getElementById('valorServicio').addEventListener('input', actualizarMontoTotal);
         // Manejar cambio de tipo de factura
         document.getElementById('tipoFacturaSelect').addEventListener('change', function() {
             const tipoFactura = this.value;
             const cotizacionField = document.getElementById('cotizacionField');
             const productosSection = document.getElementById('productosSection');
             const montoTotalField = document.getElementById('montoTotalField');
+            const montoTotalInput = document.querySelector('input[name="monto_total"]');
             const clienteSelect = document.getElementById('clienteSelect');
             const submitBtn = document.getElementById('submitBtn');
 
@@ -524,6 +1107,8 @@
             renderDetalleFactura();
         });
 
+
+
         // Manejar cambio de cotización
         document.getElementById('cotizacionSelect').addEventListener('change', function() {
             const cotizacionId = this.value;
@@ -542,30 +1127,52 @@
 
                     if (isNaN(costoTotal) || costoTotal <= 0) {
                         alert(`⚠️ La cotización seleccionada no tiene un costo válido. Por favor, verifique los datos.`);
-                        montoTotalInput.value = '';
-                        montoTotalInput.disabled = false;
+                        document.getElementById('valorServicio').value = '0';
                         clienteSelect.disabled = false;
+                        detalleFactura = []; // Limpiar productos
+                        renderDetalleFactura(); // <-- Esto ya actualiza el total
                         return;
                     }
 
-                    montoTotalInput.value = costoTotal.toFixed(2);
-                    montoTotalInput.disabled = true;
+                    // ✅ Cargar productos de la cotización
+                    detalleFactura = []; // Limpiar array actual
+                    if (cotizacion.detalleCotizacion && Array.isArray(cotizacion.detalleCotizacion)) {
+                        cotizacion.detalleCotizacion.forEach(item => {
+                            // Buscar producto en productosData para obtener precio
+                            const producto = productosData.find(p => p.idProducto === item.idProducto);
+                            const precioUnitario = producto ? parseFloat(producto.precioActual) : 0;
+                            const subtotal = precioUnitario * item.cantidad;
+
+                            detalleFactura.push({
+                                idProducto: item.idProducto,
+                                nombreProducto: item.nombreProducto || producto?.nombre || 'Producto desconocido',
+                                cantidad: item.cantidad,
+                                precioUnitario: precioUnitario,
+                                subtotal: subtotal
+                            });
+                        });
+                    }
+
+                    renderDetalleFactura(); // <-- Esto ya actualiza el total
 
                     if (cotizacion.cliente?.dni) {
                         clienteSelect.value = cotizacion.cliente.dni;
                     } else if (cotizacion.dniCliente) {
                         clienteSelect.value = cotizacion.dniCliente;
                     }
+
                 } else {
                     alert(`⚠️ Cotización no encontrada.`);
-                    montoTotalInput.value = '';
-                    montoTotalInput.disabled = false;
+                    document.getElementById('valorServicio').value = '0';
                     clienteSelect.disabled = false;
+                    detalleFactura = []; // Limpiar productos
+                    renderDetalleFactura(); // <-- Esto ya actualiza el total
                 }
             } else {
-                montoTotalInput.value = '';
-                montoTotalInput.disabled = false;
+                document.getElementById('valorServicio').value = '0';
                 clienteSelect.disabled = false;
+                detalleFactura = []; // Limpiar productos
+                renderDetalleFactura(); // <-- Esto ya actualiza el total
             }
         });
 
@@ -614,12 +1221,13 @@
         });
 
         // Renderizar lista de productos agregados
-        function renderDetalleFactura() {
+       function renderDetalleFactura() {
             const container = document.getElementById('detalleFacturaList');
             if (!container) return;
 
             if (detalleFactura.length === 0) {
                 container.innerHTML = '<p style="text-align: center; color: #718096;">No hay productos agregados.</p>';
+                actualizarMontoTotal(); // <-- Agregar esta línea
                 return;
             }
 
@@ -639,6 +1247,7 @@
                 `;
                 container.appendChild(div);
             });
+            actualizarMontoTotal(); // <-- Agregar esta línea
         }
 
         // Editar un item del detalle
@@ -651,7 +1260,7 @@
                 if (producto && cantidadNum <= producto.stock) {
                     item.cantidad = cantidadNum;
                     item.subtotal = item.precioUnitario * cantidadNum;
-                    renderDetalleFactura();
+                    renderDetalleFactura(); // <-- Esto ya llama a actualizarMontoTotal()
                 } else {
                     alert(`❌ Stock insuficiente o cantidad inválida. Disponible: ${producto.stock}`);
                 }
@@ -662,7 +1271,7 @@
         function removeDetalleItem(index) {
             if (confirm('¿Está seguro de remover este producto del detalle?')) {
                 detalleFactura.splice(index, 1);
-                renderDetalleFactura();
+                renderDetalleFactura(); // <-- Esto ya llama a actualizarMontoTotal()
             }
         }
 
@@ -683,123 +1292,130 @@
             document.getElementById('addInvoiceModal').classList.add('show');
         }
 
-        // Abrir modal para editar factura
-        async function editInvoice(id) {
-            const fact = allFacturas.find(f => f.idFactura === id);
-            if (!fact) {
-                alert("Factura no encontrada.");
-                return;
-            }
+ // Abrir modal para editar factura
+async function editInvoice(id) {
+    const fact = allFacturas.find(f => f.idFactura === id);
+    if (!fact) {
+        alert("Factura no encontrada.");
+        return;
+    }
 
-            openAddInvoiceModal();
-            document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
-            document.getElementById('submitBtn').textContent = 'Guardar Cambios';
-            document.getElementById('invoiceIdInput').value = id;
+    openAddInvoiceModal();
+    document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
+    document.getElementById('submitBtn').textContent = 'Guardar Cambios';
+    document.getElementById('invoiceIdInput').value = id;
 
-            const tipoFactura = fact.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
-            document.getElementById('tipoFacturaSelect').value = tipoFactura;
+    const tipoFactura = fact.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
+    document.getElementById('tipoFacturaSelect').value = tipoFactura;
 
-            document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
+    // Disparar el evento de cambio para actualizar campos visibles
+    document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
 
-            const dniCliente = fact.cliente?.dni || fact.dniCliente;
-            document.getElementById('clienteSelect').value = dniCliente;
+    const dniCliente = fact.cliente?.dni || fact.dniCliente;
+    document.getElementById('clienteSelect').value = dniCliente;
 
-            const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : '';
-            document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
+    const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : '';
+    document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
 
-            document.querySelector('select[name="estado"]').value = fact.estado || '';
+    document.querySelector('select[name="estado"]').value = fact.estado || '';
 
-            document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
+    document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
 
-            if (tipoFactura === 'ConCotizacion') {
-                const idCotizacion = fact.cotizacion?.idCotizacion || '';
-                document.getElementById('cotizacionSelect').value = idCotizacion;
-                document.getElementById('cotizacionSelect').dispatchEvent(new Event('change'));
-            } else {
-                document.querySelector('input[name="monto_total"]').value = (fact.montoTotal || 0).toFixed(2);
-                if (fact.detalleFactura && Array.isArray(fact.detalleFactura)) {
-                    detalleFactura = fact.detalleFactura.map(df => ({
-                        idProducto: df.idProducto,
-                        nombreProducto: df.nombreProducto,
-                        cantidad: df.cantidad,
-                        precioUnitario: df.precioUnitario,
-                        subtotal: df.subtotal
-                    }));
-                    renderDetalleFactura();
-                } else {
-                    detalleFactura = [];
-                    renderDetalleFactura();
-                }
-            }
+    // ✅ CARGAR VALOR SERVICIO
+    document.getElementById('valorServicio').value = fact.valorServicio || 0;
 
-            currentEditId = id;
-        }
+    if (tipoFactura === 'ConCotizacion') {
+        const idCotizacion = fact.cotizacion?.idCotizacion || '';
+        document.getElementById('cotizacionSelect').value = idCotizacion;
+        document.getElementById('cotizacionSelect').dispatchEvent(new Event('change'));
+    } else {
+        document.querySelector('input[name="monto_total"]').value = (fact.montoTotal || 0).toFixed(2);
+    }
 
+    // ✅ CARGAR DETALLES DE LA FACTURA
+    if (fact.detalleFactura && Array.isArray(fact.detalleFactura)) {
+        detalleFactura = fact.detalleFactura.map(df => {
+            // Buscar el nombre del producto en productosData
+            const producto = productosData.find(p => p.idProducto === df.idProducto);
+            const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
+
+            return {
+                idProducto: df.idProducto,
+                nombreProducto: nombreProducto,
+                cantidad: df.cantidad,
+                precioUnitario: df.precioUnitario,
+                subtotal: df.subtotal
+            };
+        });
+        renderDetalleFactura(); // Mostrar productos en la UI
+    } else {
+        detalleFactura = [];
+        renderDetalleFactura();
+    }
+
+    currentEditId = id;
+}
         // Manejar envío del formulario
-        async function handleInvoiceFormSubmit(event) {
-            event.preventDefault();
-            if (isSubmitting) return;
+async function handleInvoiceFormSubmit(event) {
+    event.preventDefault();
+    if (isSubmitting) return;
 
-            isSubmitting = true;
+    isSubmitting = true;
 
-            try {
-                const formData = new FormData(event.target);
-                const tipoFactura = document.getElementById('tipoFacturaSelect').value;
-                const dniCliente = document.getElementById('clienteSelect').value;
-                const fechaEmision = formData.get('fecha_emision');
-                const estado = formData.get('estado');
-                const observaciones = formData.get('observaciones');
+    try {
+        const formData = new FormData(event.target);
+        const tipoFactura = document.getElementById('tipoFacturaSelect').value;
+        const dniCliente = document.getElementById('clienteSelect').value;
+        const fechaEmision = formData.get('fecha_emision');
+        const estado = formData.get('estado');
+        const observaciones = formData.get('observaciones');
 
-                let idCotizacion = null;
-                if (tipoFactura === 'ConCotizacion') {
-                    idCotizacion = document.getElementById('cotizacionSelect').value;
-                }
-
-                let montoTotal = 0;
-                if (detalleFactura.length > 0) {
-                    montoTotal = detalleFactura.reduce((sum, item) => sum + item.subtotal, 0);
-                } else {
-                    montoTotal = parseFloat(formData.get('monto_total')) || 0;
-                }
-
-                const facturaData = {
-                    dniCliente,
-                    fechaEmision,
-                    montoTotal,
-                    estado,
-                    observaciones,
-                    tipoFactura,
-                    idCotizacion,
-                    detalleFactura: detalleFactura.map(item => ({
-                        idProducto: item.idProducto,
-                        cantidad: item.cantidad
-                    }))
-                };
-
-                const url = currentEditId ? `${API_FACTURAS_URL}/${currentEditId}` : API_FACTURAS_URL;
-                const method = currentEditId ? 'PUT' : 'POST';
-
-                const response = await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(facturaData)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || `Error ${response.status}`);
-                }
-
-                alert(currentEditId ? "✅ Factura actualizada exitosamente." : "✅ Factura creada exitosamente.");
-                closeModal('addInvoiceModal');
-                await getAllFacturas();
-            } catch (error) {
-                console.error("Error:", error);
-                alert(`❌ Error: ${error.message}`);
-            } finally {
-                isSubmitting = false;
-            }
+        let idCotizacion = null;
+        if (tipoFactura === 'ConCotizacion') {
+            idCotizacion = document.getElementById('cotizacionSelect').value;
         }
+
+        // ✅ Tomar el monto total directamente del campo calculado
+        let montoTotal = parseFloat(formData.get('monto_total')) || 0;
+
+        const facturaData = {
+            dniCliente,
+            fechaEmision,
+            montoTotal, // <-- Este es el valor calculado
+            estado,
+            observaciones,
+            tipoFactura,
+            idCotizacion,
+            detalleFactura: detalleFactura.map(item => ({
+                idProducto: item.idProducto,
+                cantidad: item.cantidad
+            }))
+        };
+
+        const url = currentEditId ? `${API_FACTURAS_URL}/${currentEditId}` : API_FACTURAS_URL;
+        const method = currentEditId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(facturaData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+
+        alert(currentEditId ? "✅ Factura actualizada exitosamente." : "✅ Factura creada exitosamente.");
+        closeModal('addInvoiceModal');
+        await getAllFacturas();
+    } catch (error) {
+        console.error("Error:", error);
+        alert(`❌ Error: ${error.message}`);
+    } finally {
+        isSubmitting = false;
+    }
+}
 
         // Cerrar modal
         function closeModal(modalId) {
@@ -903,37 +1519,123 @@
         }
 
         // Funciones de acciones (simuladas)
-        async function viewInvoice(id) {
-            const fact = allFacturas.find(f => f.idFactura === id);
-            if (!fact) {
-                alert("Factura no encontrada.");
-                return;
-            }
-            let cotizacionInfo = 'N/A';
-            if (fact.cotizacion) {
-                cotizacionInfo = `#${fact.cotizacion.idCotizacion}`;
-                if (fact.cotizacion.descripcionProblema) {
-                    cotizacionInfo += `\n${fact.cotizacion.descripcionProblema}`;
-                }
-                if (fact.cotizacion.costoTotalCotizacion) {
-                    cotizacionInfo += `\nCosto: ${formatCurrency(fact.cotizacion.costoTotalCotizacion)}`;
-                }
-            }
-            const detalles = `FACTURA: ${fact.idFactura || 'N/A'}
-Cliente: ${fact.cliente?.nombre || clientesData.find(c => c.dni === fact.dniCliente)?.nombre || fact.dniCliente || 'N/A'}
-DNI: ${fact.cliente?.dni || fact.dniCliente || 'N/A'}
-Tipo: ${fact.tipoFactura || 'Simple'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Estado: ${fact.estado || 'Pendiente'}
-Fecha Emisión: ${formatDate(fact.fechaEmision)}
-Monto Total: ${formatCurrency(fact.montoTotal)}
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Cotización:\n${cotizacionInfo}
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Observaciones:\n${fact.observaciones || 'Sin observaciones'}`;
-            alert(detalles);
-        }
+async function viewInvoice(id) {
+    const fact = allFacturas.find(f => f.idFactura === id);
+    if (!fact) {
+        alert("Factura no encontrada.");
+        return;
+    }
 
+    // Buscar cliente
+    const cliente = clientesData.find(c => c.dni === fact.dniCliente) || fact.cliente || {};
+
+    // Crear PDF
+    const jsPDF = window.jspdf.jsPDF;
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    // Título
+    doc.setFontSize(20);
+    doc.setTextColor(44, 95, 65); // Verde oscuro
+    doc.text('FACTURA', 105, 20, null, null, 'center');
+
+    // Línea divisoria
+    doc.setDrawColor(44, 95, 65);
+    doc.line(20, 25, 190, 25);
+
+    // Datos de la factura
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`ID: ${fact.idFactura || 'N/A'}`, 20, 35);
+    doc.text(`Fecha Emisión: ${formatDate(fact.fechaEmision)}`, 20, 42);
+    doc.text(`Estado: ${fact.estado || 'N/A'}`, 20, 49);
+    doc.text(`Tipo: ${fact.tipoFactura || 'Simple'}`, 20, 56);
+
+    // Datos del cliente
+    doc.text(`Cliente: ${cliente.nombre || fact.nombreCliente || 'N/A'}`, 20, 68);
+    doc.text(`DNI: ${cliente.dni || fact.dniCliente || 'N/A'}`, 20, 75);
+    doc.text(`Teléfono: ${cliente.telefono || fact.telefonoCliente || 'N/A'}`, 20, 82);
+    doc.text(`Correo: ${cliente.correo || fact.correoCliente || 'N/A'}`, 20, 89);
+
+    // Línea divisoria
+    doc.line(20, 95, 190, 95);
+
+    // Títulos de columnas
+    doc.setFontSize(10);
+    doc.setFont(undefined, 'bold');
+    doc.text('Producto', 20, 105);
+    doc.text('Cant.', 120, 105);
+    doc.text('Precio', 140, 105);
+    doc.text('Subtotal', 160, 105);
+    doc.setFont(undefined, 'normal');
+
+    // Línea divisoria
+    doc.line(20, 108, 190, 108);
+
+    // Detalles de la factura
+    let yPos = 118;
+    let subtotalProductos = 0; // <-- Definir la variable
+
+    if (fact.detalleFactura && fact.detalleFactura.length > 0) {
+        for (const item of fact.detalleFactura) {
+            // Buscar el nombre del producto en productosData
+            const producto = productosData.find(p => p.idProducto === item.idProducto);
+            const nombreProducto = producto?.nombre || item.nombreProducto || 'Producto desconocido';
+
+            doc.text(nombreProducto, 20, yPos);
+            doc.text(item.cantidad?.toString() || '0', 120, yPos);
+            doc.text(formatCurrency(item.precioUnitario).replace('$', ''), 140, yPos);
+            doc.text(formatCurrency(item.subtotal).replace('$', ''), 160, yPos);
+            subtotalProductos += item.subtotal || 0;
+            yPos += 8;
+        }
+    } else {
+        doc.text('No hay productos en esta factura.', 20, yPos);
+        yPos += 8;
+    }
+
+    // Valor Servicio
+    let valorServicio = 0;
+    if (fact.valorServicio !== undefined && fact.valorServicio !== null) {
+        valorServicio = parseFloat(fact.valorServicio) || 0;
+    }
+    yPos += 10;
+    doc.setFont(undefined, 'bold');
+    doc.text(`Valor Servicio: ${formatCurrency(valorServicio).replace('$', '')}`, 140, yPos);
+    yPos += 8;
+
+    // Línea divisoria antes del total
+    doc.line(20, yPos, 190, yPos);
+    yPos += 10;
+
+    // Total final (productos + servicio)
+    const totalFinal = subtotalProductos + valorServicio;
+    doc.setFont(undefined, 'bold');
+    doc.text(`TOTAL: ${formatCurrency(totalFinal).replace('$', '')}`, 140, yPos);
+
+    // Observaciones
+    if (fact.observaciones) {
+        yPos += 15;
+        doc.setFont(undefined, 'normal');
+        doc.text('Observaciones:', 20, yPos);
+        doc.text(fact.observaciones, 20, yPos + 7);
+    }
+
+    // Pie de página
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Documento generado por Gemini Ambiental', 20, 285);
+
+    // Abrir en nueva pestaña o descargar
+    const confirmacion = confirm('¿Desea descargar la factura como PDF?');
+    if (confirmacion) {
+        doc.save(`Factura_${fact.idFactura || 'N/A'}.pdf`);
+    } else {
+        // Abrir en nueva pestaña para vista previa
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        window.open(pdfUrl, '_blank');
+    }
+}
         async function sendInvoice(id) {
             if (!confirm('¿Está seguro de enviar esta factura por correo electrónico?')) return;
             alert('✅ Factura enviada por correo electrónico.');
