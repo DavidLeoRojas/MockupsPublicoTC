@@ -895,15 +895,15 @@
                 </select>
             </div>
             <div class="form-group">
-                <label>Valor de la Cotización (COP) *</label>
-                <input type="number" 
-                    name="costo_total" 
-                    id="costoTotal" 
-                    class="form-control" 
-                    min="0" 
-                    step="1000" 
-                    placeholder="Ej: 150000"
-                    required>
+                <label for="valorServicioCotizacion">Valor del Servicio (COP)</label>
+                <input type="number"
+                    name="valorServicioCotizacion"
+                    id="valorServicioCotizacion"
+                    class="form-control"
+                    min="0"
+                    step="1000"
+                    placeholder="Ej: 200000">
+                <small class="form-text text-muted">Valor específico para el servicio principal en esta cotización.</small>
             </div>
             <div class="form-group">
                 <label>Descripción del Problema *</label>
@@ -912,6 +912,17 @@
             <div class="form-group">
                 <label>Notas Internas</label>
                 <textarea name="notas" id="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
+            </div>
+            <div class="form-group mt-3">
+                <label for="costoTotalCalculado">Valor Total de la Cotización (COP)</label>
+                <input type="number"
+                    name="costoTotalCalculado"
+                    id="costoTotalCalculado"
+                    class="form-control bg-light"
+                    readonly
+                    style="font-weight: bold; color: #2c5f41;"
+                    placeholder="Total se calculará aquí">
+                <small class="form-text text-muted">Este valor incluye el 'Valor del Servicio' y el costo de los productos seleccionados.</small>
             </div>
 
             <!-- 👇 SECCIÓN DE PRODUCTOS (NUEVA) 👇 -->
@@ -1092,6 +1103,7 @@
         if (detalleCotizacion.length === 0) {
             // ✅ MENSAJE DE PRODUCTOS
             container.innerHTML = '<p style="text-align: center; color: #718096;">No hay productos agregados.</p>';
+            calcularCostoTotal(); // <-- Recalcular total si se eliminan todos
             return;
         }
         container.innerHTML = '';
@@ -1111,6 +1123,7 @@
             `;
             container.appendChild(div);
         });
+        calcularCostoTotal(); // <-- Recalcular total cuando se renderiza la lista
     }
 
     function editDetalleCotItem(index) {
@@ -1136,16 +1149,39 @@
         }
     }
 
-    // --- FUNCIÓN PRINCIPAL CORREGIDA ---
-   async function handleQuoteFormSubmit(event) {
+    // - FUNCIÓN DE CÁLCULO DEL TOTAL -
+    function calcularCostoTotal() {
+        // 1. Obtener el valor del servicio
+        const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value || 0);
+
+        // 2. Calcular costo total desde productos (detalleCotizacion)
+        let costoTotalProductos = 0;
+        if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
+            costoTotalProductos = detalleCotizacion.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+        }
+
+        // 3. Calcular el costo total final
+        const costoTotalFinal = valorServicioInput + costoTotalProductos;
+
+        // 4. Actualizar el campo de solo lectura del total
+        document.getElementById('costoTotalCalculado').value = costoTotalFinal.toFixed(2); // Ajusta decimales si usas enteros
+    }
+
+    // Añadir evento para recalcular cuando cambie el valor del servicio
+    document.getElementById('valorServicioCotizacion')?.addEventListener('input', calcularCostoTotal);
+
+
+// --- FUNCIÓN PRINCIPAL CORREGIDA ---
+async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
+    calcularCostoTotal(); // Asegurar que el total esté actualizado antes de enviar
 
     const tipoCliente = document.getElementById('clienteTipo').value;
     const fechaPreferida = document.getElementById('fechaPreferida').value;
     const prioridad = document.getElementById('prioridad').value;
-    const costoTotal = document.getElementById('costoTotal').value.trim();
+    // No usamos más el campo 'costoTotal' anterior si no era parte del total final
     const descripcion = document.getElementById('descripcion').value.trim();
     const notas = document.getElementById('notas').value.trim();
     const estado = document.getElementById('estadoSelect').value;
@@ -1183,11 +1219,11 @@
         }
     }
 
-    // Calcular costo total desde productos si hay
-    let costoTotalCalculado = parseFloat(costoTotal) || 0;
-    if (detalleCotizacion.length > 0) {
-        costoTotalCalculado = detalleCotizacion.reduce((sum, item) => sum + (item.subtotal || 0), 0);
-    }
+    // Calcular el costo total final antes de enviar
+    const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
+
+    // ✅ OBTENER EL VALOR DEL SERVICIO
+    const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value || 0);
 
     // Convertir fechaPreferida a formato LocalDate (sin hora)
     const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
@@ -1197,7 +1233,6 @@
         dniCliente: dniCliente,
         fechaPreferida: fechaPreferidaParaEnviar,
         prioridad: prioridad,
-        costoTotalCotizacion: costoTotalCalculado,
         descripcionProblema: descripcion,
         notasInternas: notas,
         estado: estado,
@@ -1206,7 +1241,10 @@
             idProducto: item.idProducto,
             cantidad: item.cantidad,
             precioUnitario: (item.precioUnitario !== undefined && item.precioUnitario !== null) ? item.precioUnitario : 0
-        }))
+        })),
+        costoTotalCotizacion: costoTotalCalculado, // Enviar el total calculado
+        // ✅ ENVIAR EL VALOR DEL SERVICIO COMO UN CAMPO SEPARADO
+        valorServicio: valorServicioInput
     };
 
     // ✅ DEBUG: Mostrar datos que se enviarán
@@ -1249,6 +1287,7 @@
     }
 }
 
+
     async function getAllCotizaciones() {
         try {
             const response = await fetch(API_COTIZACIONES_URL);
@@ -1276,6 +1315,8 @@ function renderCotizaciones(cotizaciones) {
     }
     tbody.innerHTML = '';
     cotizaciones.forEach(cot => {
+        console.log("🚀 Datos de la cotización para renderizar:", cot); // <-- AÑADE ESTA LÍNEA PARA DEPURAR
+
         // Obtener nombre del cliente
         const clienteNombre = cot.nombreCliente || 
                               cot.cliente?.nombre || 
@@ -1315,7 +1356,7 @@ function renderCotizaciones(cotizaciones) {
                     ${tieneProductos ? `Ver Productos (${cantidadProductos})` : 'Sin Productos'}
                 </button>
             </td>
-            <td>${formatCurrency(cot.costoTotalCotizacion)}</td>
+            <td>${formatCurrency(cot.costoTotalCotizacion)}</td> <!-- ✅ Esta línea parece correcta -->
             <td>
                 <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">${cot.estado || 'Pendiente'}</span>
                 ${isCotizacionVinculada(cot.idCotizacion) ? '<span class="warning-badge">🔗 Con servicio</span>' : ''}
@@ -1578,46 +1619,52 @@ ${serviciosVinculados.map(s => `- Servicio #${s.idServicio} (${s.fecha || 'Sin f
         }
     }
 
-    async function editCotizacion(id) {
-        const cot = allCotizaciones.find(c => c.idCotizacion === id);
-        if (!cot) {
-            alert("Cotización no encontrada.");
-            return;
-        }
-        openAddQuoteModal();
-        document.getElementById('estadoGroup').style.display = 'block';
-        document.getElementById('estadoSelect').value = cot.estado || 'Pendiente';
-        document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
-        document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
-        document.getElementById('costoTotal').value = cot.costoTotalCotizacion || '';
-        document.getElementById('clienteTipo').value = 'existente';
-        toggleClienteInput();
-        document.getElementById('clienteSelect').value = cot.dniCliente;
-        document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
-        document.getElementById('prioridad').value = cot.prioridad || 'Media';
-        document.getElementById('descripcion').value = cot.descripcionProblema || '';
-        document.getElementById('notas').value = cot.notasInternas || '';
-
-        // ✅ CARGAR PRODUCTOS SI EXISTEN
-        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
-            // ✅ CAMBIAR: Mapear usando nombreProducto (esperando que el backend lo devuelva)
-            detalleCotizacion = cot.detalleCotizacion.map(item => {
-                // El backend ya debería devolver idProducto y nombreProducto si la relación es con Producto
-                return {
-                    idProducto: item.idProducto, // <--- Esperar idProducto del backend
-                    nombreProducto: item.nombreProducto, // <--- Esperar nombreProducto del backend
-                    cantidad: item.cantidad,
-                    precioUnitario: item.precioUnitario || 0, // <--- Esperar precioUnitario del backend
-                    subtotal: (item.precioUnitario || 0) * item.cantidad
-                };
-            });
-        } else {
-            detalleCotizacion = [];
-        }
-        renderDetalleCotizacion();
-
-        currentEditId = id;
+async function editCotizacion(id) {
+    const cot = allCotizaciones.find(c => c.idCotizacion === id);
+    if (!cot) {
+        alert("Cotización no encontrada.");
+        return;
     }
+    openAddQuoteModal();
+    document.getElementById('estadoGroup').style.display = 'block';
+    document.getElementById('estadoSelect').value = cot.estado || 'Pendiente';
+    document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
+    document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
+    // Cargar costo total calculado (esto asume que costoTotalCotizacion es el total final)
+    document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
+
+    // ✅ CARGAR EL VALOR DEL SERVICIO (si el backend lo devuelve en el DTO)
+    // Asumiendo que el backend devuelve 'valorServicio' en el objeto cot
+    document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0; // Cargar el valor si existe
+
+    document.getElementById('clienteTipo').value = 'existente';
+    toggleClienteInput();
+    document.getElementById('clienteSelect').value = cot.dniCliente;
+    document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
+    document.getElementById('prioridad').value = cot.prioridad || 'Media';
+    document.getElementById('descripcion').value = cot.descripcionProblema || '';
+    document.getElementById('notas').value = cot.notasInternas || '';
+
+    // ✅ CARGAR PRODUCTOS SI EXISTEN
+    if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
+        // ✅ CAMBIAR: Mapear usando nombreProducto (esperando que el backend lo devuelva)
+        detalleCotizacion = cot.detalleCotizacion.map(item => {
+            // El backend ya debería devolver idProducto y nombreProducto si la relación es con Producto
+            return {
+                idProducto: item.idProducto, // <--- Esperar idProducto del backend
+                nombreProducto: item.nombreProducto, // <--- Esperar nombreProducto del backend
+                cantidad: item.cantidad,
+                precioUnitario: item.precioUnitario || 0, // <--- Esperar precioUnitario del backend
+                subtotal: (item.precioUnitario || 0) * item.cantidad
+            };
+        });
+    } else {
+        detalleCotizacion = [];
+    }
+    renderDetalleCotizacion();
+
+    currentEditId = id;
+}
 
     async function deleteCotizacion(id) {
         if (isCotizacionVinculada(id)) {
@@ -1677,6 +1724,7 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
         currentEditId = null;
         detalleCotizacion = [];
         renderDetalleCotizacion();
+        calcularCostoTotal(); // <-- Limpiar total al abrir
     }
 
     function closeModal(modalId) {

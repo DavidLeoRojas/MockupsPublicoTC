@@ -1005,52 +1005,60 @@ function updateFormFieldsBasedOnType() {
     }
 }
 
-
-    function openAddPersonModal() {
-        document.getElementById('addPersonModal').classList.add('show');
-        resetForm(); // Asegura que el formulario esté limpio y con la lógica correcta
-    }
+function openAddPersonModal() {
+    document.getElementById('addPersonModal').classList.add('show');
+    resetForm(); // Asegura que el formulario esté limpio y con la lógica correcta
+}
 
 function resetForm() {
     const form = document.getElementById('addPersonForm');
-    form.reset();
+    if (form) {
+        form.reset();
 
-    // Reiniciar el tipo de persona a Natural por defecto
-    document.getElementById('personTypeSelect').value = 'Natural';
+        // Reiniciar el tipo de persona a Natural por defecto
+        document.getElementById('personTypeSelect').value = 'Natural';
 
-    // Mostrar campos por defecto para persona Natural
-    const nitField = document.getElementById('nitField');
-    const representanteField = document.getElementById('representanteField');
-    const docGroup = document.getElementById('docGroup');
-    const docLabel = document.getElementById('docLabel');
-    const docInput = document.getElementById('personDoc');
-    const docTypeSelect = document.getElementById('personDocType');
+        // Mostrar campos por defecto para persona Natural
+        const nitField = document.getElementById('nitField');
+        const representanteField = document.getElementById('representanteField');
+        const docGroup = document.getElementById('docGroup');
+        const docLabel = document.getElementById('docLabel');
+        const docInput = document.getElementById('personDoc');
+        const docTypeSelect = document.getElementById('personDocType');
 
-    docGroup.style.display = 'block';
-    nitField.style.display = 'none';
-    representanteField.style.display = 'none';
-    docLabel.textContent = '🆔 Número de Documento *';
+        if (docGroup) docGroup.style.display = 'block';
+        if (nitField) nitField.style.display = 'none';
+        if (representanteField) representanteField.style.display = 'none';
+        if (docLabel) docLabel.textContent = '🆔 Número de Documento *';
 
-    // Resetear requerimientos
-    docInput.required = true;
-    document.getElementById('personNit').required = false;
+        // Resetear requerimientos
+        if (docInput) docInput.required = true;
+        const nitInput = document.getElementById('personNit');
+        if (nitInput) nitInput.required = false;
 
-    // Configurar opciones de tipo de documento
-    const options = docTypeSelect.querySelectorAll('option');
-    options.forEach(opt => {
-        if (opt.value === 'NIT') {
-            opt.style.display = 'none';
-        } else {
-            opt.style.display = 'block';
-            opt.disabled = false;
+        // Configurar opciones de tipo de documento
+        if (docTypeSelect) {
+            const options = docTypeSelect.querySelectorAll('option');
+            options.forEach(opt => {
+                if (opt.value === 'NIT') {
+                    opt.style.display = 'none';
+                } else {
+                    opt.style.display = 'block';
+                    opt.disabled = false;
+                }
+            });
+            docTypeSelect.value = '';
         }
-    });
-    docTypeSelect.value = '';
 
-    document.querySelector('#addPersonModal .modal-title').textContent = 'Agregar Nueva Persona';
-    document.querySelector('#addPersonModal .btn-primary').textContent = 'Agregar Persona';
-    
-    form.onsubmit = handleAddPersonForm;
+        const modalTitle = document.querySelector('#addPersonModal .modal-title');
+        const submitButton = document.querySelector('#addPersonModal .btn-primary');
+        
+        if (modalTitle) modalTitle.textContent = 'Agregar Nueva Persona';
+        if (submitButton) submitButton.textContent = 'Agregar Persona';
+        
+        // 🔥 CORRECCIÓN: Asignar el event listener correctamente
+        form.onsubmit = handleAddPersonForm;
+    }
 }
 
 function poblarCiudadesEnFormulario() {
@@ -1083,13 +1091,14 @@ async function handleAddPersonForm(event) {
     const nitInput = document.getElementById('personNit');
     const tipoDni = document.getElementById('personDocType').value;
 
-    // Validaciones previas...
+    // 🔥 CORRECCIÓN CRÍTICA: Validar que personas naturales no usen NIT
     if (tipoPersona === 'Natural' && tipoDni === 'NIT') {
-        alert("❌ Para una persona natural, el tipo de documento no puede ser NIT.");
+        alert("❌ Para una persona natural, el tipo de documento no puede ser NIT. Seleccione Cédula de Ciudadanía o Cédula de Extranjería.");
         isSubmitting = false;
         return;
     }
 
+    // 🔥 CORRECCIÓN CRÍTICA: Validar que personas jurídicas usen NIT
     if (tipoPersona === 'Juridica' && tipoDni !== 'NIT') {
         alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
         isSubmitting = false;
@@ -1185,7 +1194,7 @@ async function handleAddPersonForm(event) {
         cargo_especialidad: cargoEspecialidad || null
     };
 
-    // 🔥 CORRECCIÓN: Enviar NIT solo para jurídicas, según el trigger
+    // 🔥 CORRECCIÓN DEFINITIVA: Enviar NIT solo para jurídicas, según el trigger
     if (tipoPersona === 'Juridica') {
         datosPersona.nit = nit.toString();
         datosPersona.representante_legal = representanteLegal.toString();
@@ -1244,267 +1253,207 @@ async function handleAddPersonForm(event) {
     }
 }
 
-// Ahora actualizamos la función resetForm para que use la función global
-function resetForm() {
-    const form = document.getElementById('addPersonForm');
-    if (form) {
-        form.reset();
+async function loadData() {
+    try {
+        const [personasRes, direccionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/personas`).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE_URL}/direcciones`).then(r => r.ok ? r.json() : []).catch(() => [])
+        ]);
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+        direcciones = Array.isArray(direccionesRes) ? direccionesRes : [];
 
-        // Reiniciar el tipo de persona a Natural por defecto
-        document.getElementById('personTypeSelect').value = 'Natural';
+        // 👇 AÑADIR ESTA LÍNEA
+        poblarCiudadesEnFormulario();
 
-        // Mostrar campos por defecto para persona Natural
-        const nitField = document.getElementById('nitField');
-        const representanteField = document.getElementById('representanteField');
-        const docGroup = document.getElementById('docGroup');
-        const docLabel = document.getElementById('docLabel');
-        const docInput = document.getElementById('personDoc');
-        const docTypeSelect = document.getElementById('personDocType');
+        actualizarEstadisticas(todasLasPersonas);
+        renderizarPersonas(todasLasPersonas);
+        poblarFiltrosCiudad(todasLasPersonas);
+    } catch (error) {
+        console.error("Error al cargar datos:", error);
+        alert("⚠️ Error al conectar con el servidor.");
+    }
+}
 
-        if (docGroup) docGroup.style.display = 'block';
-        if (nitField) nitField.style.display = 'none';
-        if (representanteField) representanteField.style.display = 'none';
-        if (docLabel) docLabel.textContent = '🆔 Número de Documento *';
+function editarPersona(dni) {
+    const p = todasLasPersonas.find(person => String(person.dni) === String(dni));
+    if (!p) {
+        alert("Persona no encontrada.");
+        return;
+    }
+    
+    openAddPersonModal();
+    document.querySelector('#addPersonModal .modal-title').textContent = '✏️ Editar Persona';
+    document.querySelector('#addPersonModal .btn-primary').textContent = '💾 Guardar Cambios';
 
-        // Resetear requerimientos
-        if (docInput) docInput.required = true;
-        const nitInput = document.getElementById('personNit');
-        if (nitInput) nitInput.required = false;
+    document.getElementById('personDoc').value = p.dni;
+    document.getElementById('personDoc').disabled = true;
+    document.getElementById('personName').value = p.nombre || '';
+    document.getElementById('personPhone').value = p.telefono || '';
+    document.getElementById('personEmail').value = p.correo || '';
+    document.getElementById('personType').value = p.rol || '';
+    document.getElementById('personTypeSelect').value = p.tipo_persona || 'Natural'; // Asegurar tipo persona
 
-        // Configurar opciones de tipo de documento
-        if (docTypeSelect) {
-            const options = docTypeSelect.querySelectorAll('option');
-            options.forEach(opt => {
-                if (opt.value === 'NIT') {
-                    opt.style.display = 'none';
-                } else {
-                    opt.style.display = 'block';
-                    opt.disabled = false;
+    // --- ESTABLECER TIPO DE DOCUMENTO ---
+    if (p.tipo_dni) { // Asumiendo que el backend devuelve tipo_dni
+        document.getElementById('personDocType').value = p.tipo_dni;
+    } else if (p.tipoDni) { // Otra posible clave
+        document.getElementById('personDocType').value = p.tipoDni;
+    }
+    // --- FIN ESTABLECER ---
+
+    const cargoField = document.getElementById('personRole');
+    let cargoTexto = '';
+    if (p.cargo_especialidad) {
+        cargoTexto = p.cargo_especialidad;
+    } else if (p.cargoEspecialidad) {
+        cargoTexto = typeof p.cargoEspecialidad === 'string'
+            ? p.cargoEspecialidad
+            : (p.cargoEspecialidad.nombre || '');
+    }
+    cargoField.value = cargoTexto;
+    cargoField.disabled = false;
+    cargoField.placeholder = 'Ej: Técnico, Contador, Proveedor de Equipos';
+
+    if (p.direccion && p.direccion.idDireccion) {
+        document.getElementById('personCity').value = p.direccion.idDireccion;
+    } else if (p.id_direccion) {
+        document.getElementById('personCity').value = p.id_direccion;
+    }
+
+    // Actualizar campos basados en el tipo de persona cargado
+    updateFormFieldsBasedOnType();
+
+    const tipo = p.tipo_persona || 'Natural';
+    // --- LÓGICA PARA MOSTRAR/OCULTAR CAMPOS AL EDITAR ---
+    const nitField = document.getElementById('nitField');
+    const representanteField = document.getElementById('representanteField');
+    const docGroup = document.getElementById('docGroup');
+    const docLabel = document.getElementById('docLabel');
+    const docInput = document.getElementById('personDoc');
+    const docTypeSelect = document.getElementById('personDocType');
+    const nitInput = document.getElementById('personNit');
+    const options = docTypeSelect.querySelectorAll('option');
+
+    if (tipo === 'Juridica') {
+        docGroup.style.display = 'none';
+        nitField.style.display = 'block';
+        representanteField.style.display = 'block';
+        docLabel.textContent = '🏢 NIT *';
+        docInput.required = false;
+        nitInput.required = true;
+        nitInput.value = p.nit || p.dni; // Asumiendo que p.dni era el NIT o que p.nit existe
+
+        // --- AJUSTAR TIPO DE DOCUMENTO ---
+        options.forEach(opt => {
+            if (opt.value === 'NIT') {
+                opt.style.display = 'block';
+                // Seleccionar NIT si era el tipo original o si no hay otro seleccionado
+                if ((p.tipo_dni || p.tipoDni) === 'NIT' || !docTypeSelect.value) {
+                     docTypeSelect.value = 'NIT';
                 }
-            });
-            docTypeSelect.value = '';
+            } else {
+                opt.style.display = 'none';
+            }
+        });
+        // --- FIN AJUSTE ---
+
+        document.getElementById('personRepresentante').value = p.representante_legal || '';
+    } else { // Natural
+        docGroup.style.display = 'block';
+        nitField.style.display = 'none';
+        representanteField.style.display = 'none';
+        docLabel.textContent = '🆔 Número de Documento *';
+        docInput.required = true;
+        nitInput.required = false;
+        docInput.value = p.dni; // Asegurar que el DNI se carga en el input correcto
+
+        // --- AJUSTAR TIPO DE DOCUMENTO ---
+        options.forEach(opt => {
+            if (opt.value === 'NIT') {
+                opt.style.display = 'none';
+            } else { // CC o CE
+                opt.style.display = 'block';
+            }
+        });
+        // Seleccionar el tipo original si era CC o CE
+        if ((p.tipo_dni || p.tipoDni) && (p.tipo_dni || p.tipoDni) !== 'NIT') {
+            docTypeSelect.value = p.tipo_dni || p.tipoDni;
+        } else {
+            docTypeSelect.value = ''; // Limpiar si no coincide o era NIT
         }
-
-        const modalTitle = document.querySelector('#addPersonModal .modal-title');
-        const submitButton = document.querySelector('#addPersonModal .btn-primary');
-        
-        if (modalTitle) modalTitle.textContent = 'Agregar Nueva Persona';
-        if (submitButton) submitButton.textContent = 'Agregar Persona';
-        
-        // 🔥 CORRECCIÓN: Asignar el event listener correctamente
-        form.onsubmit = handleAddPersonForm;
+        // --- FIN AJUSTE ---
     }
-}
+    // --- FIN LÓGICA ---
 
-// Y la función openAddPersonModal
-function openAddPersonModal() {
-    const modal = document.getElementById('addPersonModal');
-    if (modal) {
-        modal.classList.add('show');
-        resetForm(); // Asegura que el formulario esté limpio y con la lógica correcta
-    }
-}
+    const form = document.getElementById('addPersonForm');
+    form.onsubmit = async (e) => {
+        e.preventDefault();
 
-// --- FIN handleAddPersonForm ---
-    async function loadData() {
-        try {
-            const [personasRes, direccionesRes] = await Promise.all([
-                fetch(`${API_BASE_URL}/personas`).then(r => r.ok ? r.json() : []),
-                fetch(`${API_BASE_URL}/direcciones`).then(r => r.ok ? r.json() : []).catch(() => [])
-            ]);
-            todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
-            direcciones = Array.isArray(direccionesRes) ? direccionesRes : [];
+        const tipoEdit = document.getElementById('personTypeSelect').value;
+        const ciudadEdit = document.getElementById('personCity').value;
+        const tipoDniEdit = document.getElementById('personDocType').value;
 
-            // 👇 AÑADIR ESTA LÍNEA
-            poblarCiudadesEnFormulario();
-
-            actualizarEstadisticas(todasLasPersonas);
-            renderizarPersonas(todasLasPersonas);
-            poblarFiltrosCiudad(todasLasPersonas);
-        } catch (error) {
-            console.error("Error al cargar datos:", error);
-            alert("⚠️ Error al conectar con el servidor.");
-        }
-    }
-
-    function editarPersona(dni) {
-        const p = todasLasPersonas.find(person => String(person.dni) === String(dni));
-        if (!p) {
-            alert("Persona no encontrada.");
+        // ✅ VALIDACIÓN CORREGIDA PARA EDICIÓN
+        if (tipoEdit === 'Natural' && tipoDniEdit === 'NIT') {
+            alert("❌ Para una persona natural, el tipo de documento no puede ser NIT. Seleccione CC o CE.");
             return;
         }
-        
-        openAddPersonModal();
-        document.querySelector('#addPersonModal .modal-title').textContent = '✏️ Editar Persona';
-        document.querySelector('#addPersonModal .btn-primary').textContent = '💾 Guardar Cambios';
 
-        document.getElementById('personDoc').value = p.dni;
-        document.getElementById('personDoc').disabled = true;
-        document.getElementById('personName').value = p.nombre || '';
-        document.getElementById('personPhone').value = p.telefono || '';
-        document.getElementById('personEmail').value = p.correo || '';
-        document.getElementById('personType').value = p.rol || '';
-        document.getElementById('personTypeSelect').value = p.tipo_persona || 'Natural'; // Asegurar tipo persona
-
-        // --- ESTABLECER TIPO DE DOCUMENTO ---
-        if (p.tipo_dni) { // Asumiendo que el backend devuelve tipo_dni
-            document.getElementById('personDocType').value = p.tipo_dni;
-        } else if (p.tipoDni) { // Otra posible clave
-            document.getElementById('personDocType').value = p.tipoDni;
-        }
-        // --- FIN ESTABLECER ---
-
-        const cargoField = document.getElementById('personRole');
-        let cargoTexto = '';
-        if (p.cargo_especialidad) {
-            cargoTexto = p.cargo_especialidad;
-        } else if (p.cargoEspecialidad) {
-            cargoTexto = typeof p.cargoEspecialidad === 'string'
-                ? p.cargoEspecialidad
-                : (p.cargoEspecialidad.nombre || '');
-        }
-        cargoField.value = cargoTexto;
-        cargoField.disabled = false;
-        cargoField.placeholder = 'Ej: Técnico, Contador, Proveedor de Equipos';
-
-        if (p.direccion && p.direccion.idDireccion) {
-            document.getElementById('personCity').value = p.direccion.idDireccion;
-        } else if (p.id_direccion) {
-            document.getElementById('personCity').value = p.id_direccion;
+        if (tipoEdit === 'Juridica' && tipoDniEdit !== 'NIT') {
+            alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
+            return;
         }
 
-        // Actualizar campos basados en el tipo de persona cargado
-        updateFormFieldsBasedOnType();
-
-        const tipo = p.tipo_persona || 'Natural';
-        // --- LÓGICA PARA MOSTRAR/OCULTAR CAMPOS AL EDITAR ---
-        const nitField = document.getElementById('nitField');
-        const representanteField = document.getElementById('representanteField');
-        const docGroup = document.getElementById('docGroup');
-        const docLabel = document.getElementById('docLabel');
-        const docInput = document.getElementById('personDoc');
-        const docTypeSelect = document.getElementById('personDocType');
-        const nitInput = document.getElementById('personNit');
-        const options = docTypeSelect.querySelectorAll('option');
-
-        if (tipo === 'Juridica') {
-            docGroup.style.display = 'none';
-            nitField.style.display = 'block';
-            representanteField.style.display = 'block';
-            docLabel.textContent = '🏢 NIT *';
-            docInput.required = false;
-            nitInput.required = true;
-            nitInput.value = p.nit || p.dni; // Asumiendo que p.dni era el NIT o que p.nit existe
-
-            // --- AJUSTAR TIPO DE DOCUMENTO ---
-            options.forEach(opt => {
-                if (opt.value === 'NIT') {
-                    opt.style.display = 'block';
-                    // Seleccionar NIT si era el tipo original o si no hay otro seleccionado
-                    if ((p.tipo_dni || p.tipoDni) === 'NIT' || !docTypeSelect.value) {
-                         docTypeSelect.value = 'NIT';
-                    }
-                } else {
-                    opt.style.display = 'none';
-                }
-            });
-            // --- FIN AJUSTE ---
-
-            document.getElementById('personRepresentante').value = p.representante_legal || '';
-        } else { // Natural
-            docGroup.style.display = 'block';
-            nitField.style.display = 'none';
-            representanteField.style.display = 'none';
-            docLabel.textContent = '🆔 Número de Documento *';
-            docInput.required = true;
-            nitInput.required = false;
-            docInput.value = p.dni; // Asegurar que el DNI se carga en el input correcto
-
-            // --- AJUSTAR TIPO DE DOCUMENTO ---
-            options.forEach(opt => {
-                if (opt.value === 'NIT') {
-                    opt.style.display = 'none';
-                } else { // CC o CE
-                    opt.style.display = 'block';
-                }
-            });
-            // Seleccionar el tipo original si era CC o CE
-            if ((p.tipo_dni || p.tipoDni) && (p.tipo_dni || p.tipoDni) !== 'NIT') {
-                docTypeSelect.value = p.tipo_dni || p.tipoDni;
-            } else {
-                docTypeSelect.value = ''; // Limpiar si no coincide o era NIT
-            }
-            // --- FIN AJUSTE ---
+        if (!tipoDniEdit || tipoDniEdit.trim() === '') {
+            alert("Por favor seleccione un tipo de documento.");
+            return;
         }
-        // --- FIN LÓGICA ---
 
-        const form = document.getElementById('addPersonForm');
-form.onsubmit = async (e) => {
-    e.preventDefault();
-
-    const tipoEdit = document.getElementById('personTypeSelect').value;
-    const ciudadEdit = document.getElementById('personCity').value;
-    const tipoDniEdit = document.getElementById('personDocType').value;
-
-    // ✅ VALIDACIÓN CORREGIDA PARA EDICIÓN
-    if (tipoEdit === 'Natural' && tipoDniEdit === 'NIT') {
-        alert("❌ Para una persona natural, el tipo de documento no puede ser NIT. Seleccione CC o CE.");
-        return;
-    }
-
-    if (tipoEdit === 'Juridica' && tipoDniEdit !== 'NIT') {
-        alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
-        return;
-    }
-
-    if (!tipoDniEdit || tipoDniEdit.trim() === '') {
-        alert("Por favor seleccione un tipo de documento.");
-        return;
-    }
-            // --- FIN SELECCIÓN ---
-
-            const datos = {
-                dni: String(p.dni), // El DNI original no cambia, pero el *valor* puede
-                tipo_dni: tipoDniEdit,
-                nombre: String(document.getElementById('personName').value.trim()),
-                telefono: String(document.getElementById('personPhone').value.trim()),
-                correo: String(document.getElementById('personEmail').value.trim()),
-                rol: String(document.getElementById('personType').value),
-                id_direccion: String(ciudadEdit),
-                tipo_persona: String(tipoEdit),
-                cargo_especialidad: String(document.getElementById('personRole').value.trim()) || null
-            };
-
-            // Solo agregar nit y representante si es Jurídica
-            if (tipoEdit === 'Juridica') {
-                datos.nit = dniEdit; // <-- El NIT es el nuevo valor del campo NIT
-                const repLegal = document.getElementById('personRepresentante').value.trim();
-                if (repLegal) {
-                    datos.representante_legal = String(repLegal);
-                }
-            }
-            // No se incluye `nit` si es persona Natural
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/personas/${p.dni}`, { // Usar p.dni original
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify(datos)
-                });
-
-                if (!res.ok) throw new Error(await res.text());
-
-                alert("✅ Persona actualizada exitosamente.");
-                closeModal('addPersonModal');
-                await loadData();
-            } catch (err) {
-                alert(`❌ Error: ${err.message}`);
-            }
+        const datos = {
+            dni: String(p.dni), // El DNI original no cambia
+            tipo_dni: tipoDniEdit,
+            nombre: String(document.getElementById('personName').value.trim()),
+            telefono: String(document.getElementById('personPhone').value.trim()),
+            correo: String(document.getElementById('personEmail').value.trim()),
+            rol: String(document.getElementById('personType').value),
+            id_direccion: String(ciudadEdit),
+            tipo_persona: String(tipoEdit),
+            cargo_especialidad: String(document.getElementById('personRole').value.trim()) || null
         };
-    }
+
+        // Solo agregar nit y representante si es Jurídica
+        if (tipoEdit === 'Juridica') {
+            datos.nit = document.getElementById('personNit').value.trim();
+            const repLegal = document.getElementById('personRepresentante').value.trim();
+            if (repLegal) {
+                datos.representante_legal = String(repLegal);
+            }
+        } else {
+            // Para naturales, asegurar que nit sea null
+            datos.nit = null;
+            datos.representante_legal = null;
+        }
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/personas/${p.dni}`, { // Usar p.dni original
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(datos)
+            });
+
+            if (!res.ok) throw new Error(await res.text());
+
+            alert("✅ Persona actualizada exitosamente.");
+            closeModal('addPersonModal');
+            await loadData();
+        } catch (err) {
+            alert(`❌ Error: ${err.message}`);
+        }
+    };
+}
 
 function crearTarjetaPersona(persona) {
     const rol = (persona.rol || 'Desconocido').toLowerCase();
@@ -1524,33 +1473,31 @@ function crearTarjetaPersona(persona) {
     }
 
     // --- LÓGICA CORREGIDA PARA OBTENER LA CIUDAD ---
-let ciudad = 'N/A';
+    let ciudad = 'N/A';
 
-// Intentar desde id_direccion (nivel raíz)
-if (persona.id_direccion != null && persona.id_direccion !== '') {
-    const key = String(persona.id_direccion).trim();
-    ciudad = CIUDADES_MAP[key] || 'N/A';
-}
+    // Intentar desde id_direccion (nivel raíz)
+    if (persona.id_direccion != null && persona.id_direccion !== '') {
+        const key = String(persona.id_direccion).trim();
+        ciudad = CIUDADES_MAP[key] || 'N/A';
+    }
 
-// Si no, intentar desde objeto direccion
-if (ciudad === 'N/A' && persona.direccion) {
-    // Si direccion es un string (error del backend), usarlo directamente
-    if (typeof persona.direccion === 'string') {
-        ciudad = persona.direccion;
-    } else {
-        // Si es objeto, buscar nombre, descripción o id
-        if (persona.direccion.nombre) {
-            ciudad = persona.direccion.nombre;
-        } else if (persona.direccion.descripcionAdicional) {
-            ciudad = persona.direccion.descripcionAdicional;
-        } else if (persona.direccion.idDireccion != null) {
-            const key = String(persona.direccion.idDireccion).trim();
-            ciudad = CIUDADES_MAP[key] || 'N/A';
+    // Si no, intentar desde objeto direccion
+    if (ciudad === 'N/A' && persona.direccion) {
+        // Si direccion es un string (error del backend), usarlo directamente
+        if (typeof persona.direccion === 'string') {
+            ciudad = persona.direccion;
+        } else {
+            // Si es objeto, buscar nombre, descripción o id
+            if (persona.direccion.nombre) {
+                ciudad = persona.direccion.nombre;
+            } else if (persona.direccion.descripcionAdicional) {
+                ciudad = persona.direccion.descripcionAdicional;
+            } else if (persona.direccion.idDireccion != null) {
+                const key = String(persona.direccion.idDireccion).trim();
+                ciudad = CIUDADES_MAP[key] || 'N/A';
+            }
         }
     }
-}
-
-
 
     let icono, colorClass, badgeText;
     switch (rol) {
@@ -1585,300 +1532,300 @@ if (ciudad === 'N/A' && persona.direccion) {
     return card;
 }
 
-    function renderizarPersonas(personas) {
-        const grid = document.getElementById('personnelGrid');
-        grid.innerHTML = '';
-        if (personas.length === 0) {
-            grid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron personas.</p>';
-            return;
-        }
-        personas.forEach(p => {
-            const card = crearTarjetaPersona(p);
-            grid.appendChild(card);
-        });
+function renderizarPersonas(personas) {
+    const grid = document.getElementById('personnelGrid');
+    grid.innerHTML = '';
+    if (personas.length === 0) {
+        grid.innerHTML = '<p style="text-align:center; color:#718096; grid-column: 1/-1;">No se encontraron personas.</p>';
+        return;
     }
+    personas.forEach(p => {
+        const card = crearTarjetaPersona(p);
+        grid.appendChild(card);
+    });
+}
 
-    function actualizarEstadisticas(personas) {
-        const clientes = personas.filter(p => (p.rol || '').toLowerCase() === 'cliente').length;
-        const empleados = personas.filter(p => (p.rol || '').toLowerCase() === 'empleado').length;
-        const proveedores = personas.filter(p => (p.rol || '').toLowerCase() === 'proveedor').length;
-        const total = personas.length;
+function actualizarEstadisticas(personas) {
+    const clientes = personas.filter(p => (p.rol || '').toLowerCase() === 'cliente').length;
+    const empleados = personas.filter(p => (p.rol || '').toLowerCase() === 'empleado').length;
+    const proveedores = personas.filter(p => (p.rol || '').toLowerCase() === 'proveedor').length;
+    const total = personas.length;
 
-        document.querySelector('.stat-card.clientes .stat-number').textContent = clientes;
-        document.querySelector('.stat-card.empleados .stat-number').textContent = empleados;
-        document.querySelector('.stat-card.proveedores .stat-number').textContent = proveedores;
-        document.querySelector('.stat-card.total .stat-number').textContent = total;
+    document.querySelector('.stat-card.clientes .stat-number').textContent = clientes;
+    document.querySelector('.stat-card.empleados .stat-number').textContent = empleados;
+    document.querySelector('.stat-card.proveedores .stat-number').textContent = proveedores;
+    document.querySelector('.stat-card.total .stat-number').textContent = total;
 
-        const tabs = {
-            cliente: document.querySelector('.nav-tab.clientes span'),
-            empleado: document.querySelector('.nav-tab.empleados span'),
-            proveedor: document.querySelector('.nav-tab.proveedores span')
-        };
-        if (tabs.cliente) tabs.cliente.textContent = clientes;
-        if (tabs.empleado) tabs.empleado.textContent = empleados;
-        if (tabs.proveedor) tabs.proveedor.textContent = proveedores;
-    }
-
-    function poblarFiltrosCiudad(personas) {
-        const ciudadesSet = new Set();
-        personas.forEach(p => {
-            if (p.direccion && p.direccion.nombre) ciudadesSet.add(p.direccion.nombre); // Prioridad 1: nombre
-            else if (p.direccion && p.direccion.descripcionAdicional) ciudadesSet.add(p.direccion.descripcionAdicional); // Prioridad 2: descripción
-        });
-        direcciones.forEach(d => {
-            if (d.nombre) ciudadesSet.add(d.nombre); // Prioridad 1: nombre
-            else if (d.descripcionAdicional) ciudadesSet.add(d.descripcionAdicional); // Prioridad 2: descripción
-        });
-        const ciudadesUnicas = Array.from(ciudadesSet).filter(c => c && c.trim() !== '');
-        const select = document.getElementById('cityFilter');
-        select.innerHTML = '<option value="">Todas las ciudades</option>';
-        ciudadesUnicas.forEach(ciudad => {
-            const opt = document.createElement('option');
-            opt.value = ciudad.toLowerCase().replace(/\s+/g, '-');
-            opt.textContent = ciudad;
-            select.appendChild(opt);
-        });
-    }
-
-    function showView(view, element) {
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        element.classList.add('active');
-        currentView = view;
-        aplicarFiltros();
-    }
-
-    function aplicarFiltros() {
-        let filtradas = [...todasLasPersonas];
-        if (currentView !== 'all') {
-            filtradas = filtradas.filter(p => (p.rol || '').toLowerCase() === currentView);
-        }
-        const busq = document.getElementById('searchInput').value.toLowerCase();
-        if (busq) {
-            filtradas = filtradas.filter(p =>
-                (p.nombre && p.nombre.toLowerCase().includes(busq)) ||
-                (p.correo && p.correo.toLowerCase().includes(busq)) ||
-                (p.dni && String(p.dni).includes(busq))
-            );
-        }
-        const estado = document.getElementById('statusFilter').value;
-        if (estado) filtradas = filtradas.filter(p => (p.estado || 'active') === estado);
-
-        const ciudad = document.getElementById('cityFilter').value;
-        if (ciudad) {
-            filtradas = filtradas.filter(p => {
-                let c = '';
-                if (p.direccion && p.direccion.descripcionAdicional) c = p.direccion.descripcionAdicional;
-                else if (p.direccion && p.direccion.nombre) c = p.direccion.nombre;
-                return c.toLowerCase().replace(/\s+/g, '-') === ciudad;
-            });
-        }
-        renderizarPersonas(filtradas);
-    }
-
-    function clearFilters() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('statusFilter').value = '';
-        document.getElementById('cityFilter').value = '';
-        currentView = 'all';
-        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-        document.querySelector('.nav-tab.all').classList.add('active');
-        renderizarPersonas(todasLasPersonas);
-    }
-
-    function updateFormFields() {
-        const type = document.getElementById('personType').value;
-        const field = document.getElementById('personRole');
-        if (!field) return;
-        
-        switch (type) {
-            case 'Cliente': field.placeholder = 'Ej: Cliente Corporativo'; break;
-            case 'Empleado': field.placeholder = 'Ej: Técnico Ambiental'; break;
-            case 'Proveedor': field.placeholder = 'Ej: Proveedor de Equipos'; break;
-            default: field.placeholder = 'Cargo o tipo de servicio';
-        }
-    }
-
-    function closeModal(id) {
-        document.getElementById(id).classList.remove('show');
-    }
-
-    function verPerfil(dni) {
-        const p = todasLasPersonas.find(p => String(p.dni) === String(dni));
-        if (p) {
-            let cargoTexto = 'Sin cargo';
-            if (p.cargoEspecialidad) {
-                if (typeof p.cargoEspecialidad === 'object' && p.cargoEspecialidad.nombre) {
-                    cargoTexto = p.cargoEspecialidad.nombre;
-                } else if (typeof p.cargoEspecialidad === 'string') {
-                    cargoTexto = p.cargoEspecialidad;
-                }
-            } else if (p.cargo_especialidad) {
-                cargoTexto = p.cargo_especialidad;
-            }
-            
-            alert(`Perfil: ${p.nombre}\nRol: ${p.rol}\nCargo: ${cargoTexto}\nDNI: ${p.dni}`);
-        }
-    }
-
-    async function eliminarPersona(dni) {
-        const p = todasLasPersonas.find(person => String(person.dni) === String(dni));
-        if (!p) {
-            alert("⚠️ Persona no encontrada.");
-            return;
-        }
-
-        if (!confirm(`¿Está seguro de eliminar a ${p.nombre}?\n\nEsta acción no se puede deshacer.`)) {
-            return;
-        }
-
-        try {
-            console.log(`🔍 Verificando vinculaciones para DNI: ${dni}`);
-            
-            // ⚠️ CAMBIO: Usar /servicios en lugar de /citas
-            const [cotizaciones, servicios, facturas] = await Promise.all([
-                fetch(`${API_BASE_URL}/cotizaciones`).then(r => r.ok ? r.json() : []).catch(err => {
-                    console.warn('Error cargando cotizaciones:', err);
-                    return [];
-                }),
-                fetch(`${API_BASE_URL}/servicios`).then(r => r.ok ? r.json() : []).catch(err => {
-                    console.warn('Error cargando servicios:', err);
-                    return [];
-                }),
-                fetch(`${API_BASE_URL}/facturas`).then(r => r.ok ? r.json() : []).catch(err => {
-                    console.warn('Error cargando facturas:', err);
-                    return [];
-                })
-            ]);
-
-            console.log('📊 Datos cargados:', {
-                cotizaciones: cotizaciones.length,
-                servicios: servicios.length,
-                facturas: facturas.length
-            });
-
-            // Función mejorada para obtener DNI de forma segura
-            const getDni = (obj, campo = null) => {
-                if (!obj) return null;
-                if (typeof obj === 'string' || typeof obj === 'number') return String(obj);
-                
-                if (campo && obj[campo]) {
-                    if (typeof obj[campo] === 'object' && obj[campo].dni) return String(obj[campo].dni);
-                    return String(obj[campo]);
-                }
-                
-                if (obj.dni) return String(obj.dni);
-                if (obj.cliente?.dni) return String(obj.cliente.dni);
-                if (obj.empleado?.dni) return String(obj.empleado.dni);
-                if (obj.empleadoAsignado?.dni) return String(obj.empleadoAsignado.dni);
-                
-                return null;
-            };
-
-            const dniStr = String(dni);
-            const errores = [];
-            let detalles = [];
-
-            // 1️⃣ Verificar cotizaciones (cliente o empleado)
-            const cotizacionesVinculadas = cotizaciones.filter(c => {
-                const dniClienteCot = getDni(c, 'dniCliente') || getDni(c.cliente);
-                const dniEmpleadoCot = getDni(c, 'dniEmpleado') || getDni(c.empleado);
-                return dniClienteCot === dniStr || dniEmpleadoCot === dniStr;
-            });
-
-            if (cotizacionesVinculadas.length > 0) {
-                errores.push(`${cotizacionesVinculadas.length} cotización(es)`);
-                detalles.push(`  • ${cotizacionesVinculadas.length} cotización(es) activa(s)`);
-                console.log('❌ Cotizaciones vinculadas:', cotizacionesVinculadas.map(c => c.idCotizacion));
-            }
-
-            // 2️⃣ Verificar servicios en agenda (cliente o técnico)
-            const serviciosVinculados = servicios.filter(s => {
-                // Intentar desde cotización primero
-                if (s.cotizacion && s.cotizacion.cliente) {
-                    const dniClienteCot = getDni(s.cotizacion.cliente);
-                    if (dniClienteCot === dniStr) return true;
-                }
-                
-                // Verificar cliente directo
-                const dniCliente = getDni(s, 'dniCliente') || getDni(s.cliente);
-                if (dniCliente === dniStr) return true;
-                
-                // Verificar técnico asignado
-                const dniTecnico = 
-                    getDni(s, 'dniEmpleadoAsignado') || 
-                    getDni(s.empleadoAsignado) ||
-                    getDni(s, 'dniEmpleado');
-                
-                return dniTecnico === dniStr;
-            });
-
-            if (serviciosVinculados.length > 0) {
-                errores.push(`${serviciosVinculados.length} servicio(s)`);
-                detalles.push(`  • ${serviciosVinculados.length} servicio(s) programado(s) en la agenda`);
-                console.log('❌ Servicios vinculados:', serviciosVinculados.map(s => s.idServicio));
-            }
-
-            // 3️⃣ Verificar facturas
-            const facturasVinculadas = facturas.filter(f => {
-                const dniClienteFact = getDni(f, 'dniCliente') || getDni(f.cliente);
-                return dniClienteFact === dniStr;
-            });
-
-            if (facturasVinculadas.length > 0) {
-                errores.push(`${facturasVinculadas.length} factura(s)`);
-                detalles.push(`  • ${facturasVinculadas.length} factura(s) emitida(s)`);
-                console.log('❌ Facturas vinculadas:', facturasVinculadas.map(f => f.idFactura));
-            }
-
-            // 🚫 Si hay registros vinculados, BLOQUEAR eliminación
-            if (errores.length > 0) {
-                console.warn(`❌ Eliminación BLOQUEADA para DNI ${dni}:`, {
-                    cotizaciones: cotizacionesVinculadas.length,
-                    servicios: serviciosVinculados.length,
-                    facturas: facturasVinculadas.length
-                });
-                
-                const mensaje = 
-                    `🚫 NO SE PUEDE ELIMINAR A ${p.nombre.toUpperCase()}\n\n` +
-                    `Esta persona está vinculada a:\n` +
-                    `${detalles.join('\n')}\n\n` +
-                    `⚠️ ACCIÓN REQUERIDA:\n` +
-                    `Debe eliminar o reasignar estos registros antes de poder eliminar a esta persona.\n\n` +
-                    `💡 Sugerencia:\n` +
-                    `1. Cancele o reasigne los servicios pendientes\n` +
-                    `2. Elimine las cotizaciones relacionadas\n` +
-                    `3. Archive las facturas si es necesario`;
-                
-                alert(mensaje);
-                return; // ← DETENER aquí, NO eliminar
-            }
-
-            console.log(`✅ Sin vinculaciones encontradas. Procediendo a eliminar DNI: ${dni}`);
-
-            // ✅ Si no hay vinculaciones, proceder con la eliminación
-            const response = await fetch(`${API_BASE_URL}/personas/${encodeURIComponent(dni)}`, {
-                method: 'DELETE'
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Error desconocido al eliminar');
-            }
-
-            alert(`✅ ${p.nombre} ha sido eliminado exitosamente.`);
-            await loadData();
-
-        } catch (error) {
-            console.error("❌ Error al eliminar persona:", error);
-            alert(`❌ Error al eliminar: ${error.message}\n\nPor favor, verifique la consola para más detalles.`);
-        }
-    }
-
-    window.onclick = function(event) {
-        if (event.target.classList.contains('modal')) {
-            event.target.classList.remove('show');
-        }
+    const tabs = {
+        cliente: document.querySelector('.nav-tab.clientes span'),
+        empleado: document.querySelector('.nav-tab.empleados span'),
+        proveedor: document.querySelector('.nav-tab.proveedores span')
     };
+    if (tabs.cliente) tabs.cliente.textContent = clientes;
+    if (tabs.empleado) tabs.empleado.textContent = empleados;
+    if (tabs.proveedor) tabs.proveedor.textContent = proveedores;
+}
+
+function poblarFiltrosCiudad(personas) {
+    const ciudadesSet = new Set();
+    personas.forEach(p => {
+        if (p.direccion && p.direccion.nombre) ciudadesSet.add(p.direccion.nombre); // Prioridad 1: nombre
+        else if (p.direccion && p.direccion.descripcionAdicional) ciudadesSet.add(p.direccion.descripcionAdicional); // Prioridad 2: descripción
+    });
+    direcciones.forEach(d => {
+        if (d.nombre) ciudadesSet.add(d.nombre); // Prioridad 1: nombre
+        else if (d.descripcionAdicional) ciudadesSet.add(d.descripcionAdicional); // Prioridad 2: descripción
+    });
+    const ciudadesUnicas = Array.from(ciudadesSet).filter(c => c && c.trim() !== '');
+    const select = document.getElementById('cityFilter');
+    select.innerHTML = '<option value="">Todas las ciudades</option>';
+    ciudadesUnicas.forEach(ciudad => {
+        const opt = document.createElement('option');
+        opt.value = ciudad.toLowerCase().replace(/\s+/g, '-');
+        opt.textContent = ciudad;
+        select.appendChild(opt);
+    });
+}
+
+function showView(view, element) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    element.classList.add('active');
+    currentView = view;
+    aplicarFiltros();
+}
+
+function aplicarFiltros() {
+    let filtradas = [...todasLasPersonas];
+    if (currentView !== 'all') {
+        filtradas = filtradas.filter(p => (p.rol || '').toLowerCase() === currentView);
+    }
+    const busq = document.getElementById('searchInput').value.toLowerCase();
+    if (busq) {
+        filtradas = filtradas.filter(p =>
+            (p.nombre && p.nombre.toLowerCase().includes(busq)) ||
+            (p.correo && p.correo.toLowerCase().includes(busq)) ||
+            (p.dni && String(p.dni).includes(busq))
+        );
+    }
+    const estado = document.getElementById('statusFilter').value;
+    if (estado) filtradas = filtradas.filter(p => (p.estado || 'active') === estado);
+
+    const ciudad = document.getElementById('cityFilter').value;
+    if (ciudad) {
+        filtradas = filtradas.filter(p => {
+            let c = '';
+            if (p.direccion && p.direccion.descripcionAdicional) c = p.direccion.descripcionAdicional;
+            else if (p.direccion && p.direccion.nombre) c = p.direccion.nombre;
+            return c.toLowerCase().replace(/\s+/g, '-') === ciudad;
+        });
+    }
+    renderizarPersonas(filtradas);
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('cityFilter').value = '';
+    currentView = 'all';
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelector('.nav-tab.all').classList.add('active');
+    renderizarPersonas(todasLasPersonas);
+}
+
+function updateFormFields() {
+    const type = document.getElementById('personType').value;
+    const field = document.getElementById('personRole');
+    if (!field) return;
+    
+    switch (type) {
+        case 'Cliente': field.placeholder = 'Ej: Cliente Corporativo'; break;
+        case 'Empleado': field.placeholder = 'Ej: Técnico Ambiental'; break;
+        case 'Proveedor': field.placeholder = 'Ej: Proveedor de Equipos'; break;
+        default: field.placeholder = 'Cargo o tipo de servicio';
+    }
+}
+
+function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+}
+
+function verPerfil(dni) {
+    const p = todasLasPersonas.find(p => String(p.dni) === String(dni));
+    if (p) {
+        let cargoTexto = 'Sin cargo';
+        if (p.cargoEspecialidad) {
+            if (typeof p.cargoEspecialidad === 'object' && p.cargoEspecialidad.nombre) {
+                cargoTexto = p.cargoEspecialidad.nombre;
+            } else if (typeof p.cargoEspecialidad === 'string') {
+                cargoTexto = p.cargoEspecialidad;
+            }
+        } else if (p.cargo_especialidad) {
+            cargoTexto = p.cargo_especialidad;
+        }
+        
+        alert(`Perfil: ${p.nombre}\nRol: ${p.rol}\nCargo: ${cargoTexto}\nDNI: ${p.dni}`);
+    }
+}
+
+async function eliminarPersona(dni) {
+    const p = todasLasPersonas.find(person => String(person.dni) === String(dni));
+    if (!p) {
+        alert("⚠️ Persona no encontrada.");
+        return;
+    }
+
+    if (!confirm(`¿Está seguro de eliminar a ${p.nombre}?\n\nEsta acción no se puede deshacer.`)) {
+        return;
+    }
+
+    try {
+        console.log(`🔍 Verificando vinculaciones para DNI: ${dni}`);
+        
+        // ⚠️ CAMBIO: Usar /servicios en lugar de /citas
+        const [cotizaciones, servicios, facturas] = await Promise.all([
+            fetch(`${API_BASE_URL}/cotizaciones`).then(r => r.ok ? r.json() : []).catch(err => {
+                console.warn('Error cargando cotizaciones:', err);
+                return [];
+            }),
+            fetch(`${API_BASE_URL}/servicios`).then(r => r.ok ? r.json() : []).catch(err => {
+                console.warn('Error cargando servicios:', err);
+                return [];
+            }),
+            fetch(`${API_BASE_URL}/facturas`).then(r => r.ok ? r.json() : []).catch(err => {
+                console.warn('Error cargando facturas:', err);
+                return [];
+            })
+        ]);
+
+        console.log('📊 Datos cargados:', {
+            cotizaciones: cotizaciones.length,
+            servicios: servicios.length,
+            facturas: facturas.length
+        });
+
+        // Función mejorada para obtener DNI de forma segura
+        const getDni = (obj, campo = null) => {
+            if (!obj) return null;
+            if (typeof obj === 'string' || typeof obj === 'number') return String(obj);
+            
+            if (campo && obj[campo]) {
+                if (typeof obj[campo] === 'object' && obj[campo].dni) return String(obj[campo].dni);
+                return String(obj[campo]);
+            }
+            
+            if (obj.dni) return String(obj.dni);
+            if (obj.cliente?.dni) return String(obj.cliente.dni);
+            if (obj.empleado?.dni) return String(obj.empleado.dni);
+            if (obj.empleadoAsignado?.dni) return String(obj.empleadoAsignado.dni);
+            
+            return null;
+        };
+
+        const dniStr = String(dni);
+        const errores = [];
+        let detalles = [];
+
+        // 1️⃣ Verificar cotizaciones (cliente o empleado)
+        const cotizacionesVinculadas = cotizaciones.filter(c => {
+            const dniClienteCot = getDni(c, 'dniCliente') || getDni(c.cliente);
+            const dniEmpleadoCot = getDni(c, 'dniEmpleado') || getDni(c.empleado);
+            return dniClienteCot === dniStr || dniEmpleadoCot === dniStr;
+        });
+
+        if (cotizacionesVinculadas.length > 0) {
+            errores.push(`${cotizacionesVinculadas.length} cotización(es)`);
+            detalles.push(`  • ${cotizacionesVinculadas.length} cotización(es) activa(s)`);
+            console.log('❌ Cotizaciones vinculadas:', cotizacionesVinculadas.map(c => c.idCotizacion));
+        }
+
+        // 2️⃣ Verificar servicios en agenda (cliente o técnico)
+        const serviciosVinculados = servicios.filter(s => {
+            // Intentar desde cotización primero
+            if (s.cotizacion && s.cotizacion.cliente) {
+                const dniClienteCot = getDni(s.cotizacion.cliente);
+                if (dniClienteCot === dniStr) return true;
+            }
+            
+            // Verificar cliente directo
+            const dniCliente = getDni(s, 'dniCliente') || getDni(s.cliente);
+            if (dniCliente === dniStr) return true;
+            
+            // Verificar técnico asignado
+            const dniTecnico = 
+                getDni(s, 'dniEmpleadoAsignado') || 
+                getDni(s.empleadoAsignado) ||
+                getDni(s, 'dniEmpleado');
+            
+            return dniTecnico === dniStr;
+        });
+
+        if (serviciosVinculados.length > 0) {
+            errores.push(`${serviciosVinculados.length} servicio(s)`);
+            detalles.push(`  • ${serviciosVinculados.length} servicio(s) programado(s) en la agenda`);
+            console.log('❌ Servicios vinculados:', serviciosVinculados.map(s => s.idServicio));
+        }
+
+        // 3️⃣ Verificar facturas
+        const facturasVinculadas = facturas.filter(f => {
+            const dniClienteFact = getDni(f, 'dniCliente') || getDni(f.cliente);
+            return dniClienteFact === dniStr;
+        });
+
+        if (facturasVinculadas.length > 0) {
+            errores.push(`${facturasVinculadas.length} factura(s)`);
+            detalles.push(`  • ${facturasVinculadas.length} factura(s) emitida(s)`);
+            console.log('❌ Facturas vinculadas:', facturasVinculadas.map(f => f.idFactura));
+        }
+
+        // 🚫 Si hay registros vinculados, BLOQUEAR eliminación
+        if (errores.length > 0) {
+            console.warn(`❌ Eliminación BLOQUEADA para DNI ${dni}:`, {
+                cotizaciones: cotizacionesVinculadas.length,
+                servicios: serviciosVinculados.length,
+                facturas: facturasVinculadas.length
+            });
+            
+            const mensaje = 
+                `🚫 NO SE PUEDE ELIMINAR A ${p.nombre.toUpperCase()}\n\n` +
+                `Esta persona está vinculada a:\n` +
+                `${detalles.join('\n')}\n\n` +
+                `⚠️ ACCIÓN REQUERIDA:\n` +
+                `Debe eliminar o reasignar estos registros antes de poder eliminar a esta persona.\n\n` +
+                `💡 Sugerencia:\n` +
+                `1. Cancele o reasigne los servicios pendientes\n` +
+                `2. Elimine las cotizaciones relacionadas\n` +
+                `3. Archive las facturas si es necesario`;
+            
+            alert(mensaje);
+            return; // ← DETENER aquí, NO eliminar
+        }
+
+        console.log(`✅ Sin vinculaciones encontradas. Procediendo a eliminar DNI: ${dni}`);
+
+        // ✅ Si no hay vinculaciones, proceder con la eliminación
+        const response = await fetch(`${API_BASE_URL}/personas/${encodeURIComponent(dni)}`, {
+            method: 'DELETE'
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Error desconocido al eliminar');
+        }
+
+        alert(`✅ ${p.nombre} ha sido eliminado exitosamente.`);
+        await loadData();
+
+    } catch (error) {
+        console.error("❌ Error al eliminar persona:", error);
+        alert(`❌ Error al eliminar: ${error.message}\n\nPor favor, verifique la consola para más detalles.`);
+    }
+}
+
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.classList.remove('show');
+    }
+};
 </script>
 </body>
 </html>
