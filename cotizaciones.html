@@ -73,13 +73,17 @@
     max-height: 80vh;
     overflow-y: auto;
 }
-        .sidebar {
+  .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             width: 280px;
             height: 100vh;
-            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            background: 
+                        url('backgroundMenu.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white;
             z-index: 1000;
             transition: transform 0.3s ease;
@@ -643,12 +647,8 @@
     
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">🌿</div>
-                <div class="logo-text">
-                    <h2>Gemini Admin</h2>
-                    <p>Panel de Control</p>
-                </div>
+        <div class="logo">
+                <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
         
@@ -958,7 +958,7 @@
     </div>
 </div>
 <script>
-    const API_BASE_URL = 'http://localhost:8080/api';
+    const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
     const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
     const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
     const API_SERVICIOS_URL = `${API_BASE_URL}/servicios`;
@@ -999,59 +999,75 @@
         }
     }
 
-    async function loadClientes() {
-        try {
-            const response = await fetch(API_PERSONAS_URL);
-            if (!response.ok) throw new Error('Error al cargar clientes');
-            const personas = await response.json();
-            clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
-            const select = document.getElementById('clienteSelect');
-            select.innerHTML = '<option value="">Seleccione un cliente</option>';
-            clientesData.forEach(cliente => {
-                const option = document.createElement('option');
-                option.value = cliente.dni;
-                option.textContent = `${cliente.nombre} - ${cliente.dni}`;
-                select.appendChild(option);
-            });
-        } catch (error) {
-            console.error('Error cargando clientes:', error);
-            document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
-        }
+ async function loadClientes() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
     }
+    const headers = { 'Authorization': 'Bearer ' + token };
 
-    async function loadServicios() {
-        try {
-            const response = await fetch(API_SERVICIOS_URL);
-            if (!response.ok) throw new Error('Error al cargar servicios');
-            allServicios = await response.json();
-        } catch (error) {
-            console.error('Error cargando servicios:', error);
-            allServicios = [];
-        }
+    try {
+        const response = await fetch(API_PERSONAS_URL, { headers });
+        if (!response.ok) throw new Error('Error al cargar clientes');
+        const personas = await response.json();
+        clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
+        const select = document.getElementById('clienteSelect');
+        select.innerHTML = '<option value="">Seleccione un cliente</option>';
+        clientesData.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.dni;
+            option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Error cargando clientes:', error);
+        document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
     }
+}
+
+async function loadServicios() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return;
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    try {
+        const response = await fetch(API_SERVICIOS_URL, { headers });
+        if (!response.ok) throw new Error('Error al cargar servicios');
+        allServicios = await response.json();
+    } catch (error) {
+        console.error('Error cargando servicios:', error);
+        allServicios = [];
+    }
+}
 
     // ✅ CARGAR PRODUCTOS
-    async function loadProductosCot() {
-        try {
-            const response = await fetch(API_PRODUCTOS_URL);
-            if (!response.ok) throw new Error('Error al cargar productos');
-            productosDataCot = await response.json();
-            const select = document.getElementById('productoSelectCot');
-            if (!select) return; // Si no existe el select, no cargar productos
-            select.innerHTML = '<option value="">Seleccione un producto</option>';
-            productosDataCot.forEach(prod => {
-                const option = document.createElement('option');
-                option.value = prod.idProducto;
-                option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
-                option.dataset.precio = prod.precioActual || 0;
-                select.appendChild(option);
-            });
-        } catch (error) {
-            console.error("Error al cargar productos:", error);
-            const select = document.getElementById('productoSelectCot');
-            if (select) select.innerHTML = '<option value="">Error al cargar</option>';
-        }
+async function loadProductosCot() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return;
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    try {
+        const response = await fetch(API_PRODUCTOS_URL, { headers });
+        if (!response.ok) throw new Error('Error al cargar productos');
+        productosDataCot = await response.json();
+        const select = document.getElementById('productoSelectCot');
+        if (!select) return;
+        select.innerHTML = '<option value="">Seleccione un producto</option>';
+        productosDataCot.forEach(prod => {
+            const option = document.createElement('option');
+            option.value = prod.idProducto;
+            option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
+            option.dataset.precio = prod.precioActual || 0;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error al cargar productos:", error);
+        const select = document.getElementById('productoSelectCot');
+        if (select) select.innerHTML = '<option value="">Error al cargar</option>';
     }
+}
 
     function isCotizacionVinculada(idCotizacion) {
         return allServicios.some(servicio => 
@@ -1170,18 +1186,25 @@
     // Añadir evento para recalcular cuando cambie el valor del servicio
     document.getElementById('valorServicioCotizacion')?.addEventListener('input', calcularCostoTotal);
 
-
 // --- FUNCIÓN PRINCIPAL CORREGIDA ---
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
-    calcularCostoTotal(); // Asegurar que el total esté actualizado antes de enviar
 
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        isSubmitting = false;
+        return;
+    }
+
+    calcularCostoTotal(); // Asegurar que el total esté actualizado antes de enviar
     const tipoCliente = document.getElementById('clienteTipo').value;
     const fechaPreferida = document.getElementById('fechaPreferida').value;
     const prioridad = document.getElementById('prioridad').value;
-    // No usamos más el campo 'costoTotal' anterior si no era parte del total final
     const descripcion = document.getElementById('descripcion').value.trim();
     const notas = document.getElementById('notas').value.trim();
     const estado = document.getElementById('estadoSelect').value;
@@ -1221,7 +1244,6 @@ async function handleQuoteFormSubmit(event) {
 
     // Calcular el costo total final antes de enviar
     const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
-
     // ✅ OBTENER EL VALOR DEL SERVICIO
     const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value || 0);
 
@@ -1239,8 +1261,10 @@ async function handleQuoteFormSubmit(event) {
         // ✅ CORRECCIÓN: Enviar detalleCotizacion correctamente formateado
         detalleCotizacion: detalleCotizacion.map(item => ({
             idProducto: item.idProducto,
+            nombreProducto: item.nombreProducto,
             cantidad: item.cantidad,
-            precioUnitario: (item.precioUnitario !== undefined && item.precioUnitario !== null) ? item.precioUnitario : 0
+            precioUnitario: Number((item.precioUnitario ?? 0).toFixed(2)),
+            subtotal: Number((item.subtotal ?? 0).toFixed(2))
         })),
         costoTotalCotizacion: costoTotalCalculado, // Enviar el total calculado
         // ✅ ENVIAR EL VALOR DEL SERVICIO COMO UN CAMPO SEPARADO
@@ -1254,28 +1278,27 @@ async function handleQuoteFormSubmit(event) {
         const url = currentEditId ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` : `${API_COTIZACIONES_URL}/con-productos`;
         const method = currentEditId ? 'PUT' : 'POST';
 
-        console.log("📡 URL:", url, "Método:", method);
+        // ✅ 2. Configurar los encabezados con el token de autenticación
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+        };
 
         const response = await fetch(url, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers, // ✅ Usar los headers aquí
             body: JSON.stringify(formData)
         });
 
         // ✅ DEBUG: Mostrar respuesta del servidor
         console.log("📥 Respuesta del servidor:", response.status, response.statusText);
-
         if (!response.ok) {
             const errorText = await response.text();
             console.error("❌ Error del servidor:", errorText);
             throw new Error(errorText || `Error ${response.status}`);
         }
-
         const responseData = await response.json();
         console.log("✅ Respuesta exitosa:", responseData);
-
         alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
         closeModal('addQuoteModal');
         await getAllCotizaciones(); // Recargar la lista de cotizaciones
@@ -1287,25 +1310,30 @@ async function handleQuoteFormSubmit(event) {
     }
 }
 
-
-    async function getAllCotizaciones() {
-        try {
-            const response = await fetch(API_COTIZACIONES_URL);
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || `Error ${response.status}`);
-            }
-            const data = await response.json();
-            console.log("Datos recibidos de /api/cotizaciones:", data); // <--- AÑADE ESTA LÍNEA
-
-            allCotizaciones = data;
-            renderCotizaciones(allCotizaciones);
-            updateStats(allCotizaciones);
-        } catch (error) {
-            console.error("Error al obtener cotizaciones:", error);
-            alert(`Error al cargar cotizaciones: ${error.message}`);
-        }
+async function getAllCotizaciones() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
     }
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    try {
+        const response = await fetch(API_COTIZACIONES_URL, { headers });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+        const data = await response.json();
+        allCotizaciones = data;
+        renderCotizaciones(allCotizaciones);
+        updateStats(allCotizaciones);
+    } catch (error) {
+        console.error("Error al obtener cotizaciones:", error);
+        alert(`Error al cargar cotizaciones: ${error.message}`);
+    }
+}
 
 function renderCotizaciones(cotizaciones) {
     const tbody = document.getElementById('cotizacionesTableBody');
@@ -1666,32 +1694,47 @@ async function editCotizacion(id) {
     currentEditId = id;
 }
 
-    async function deleteCotizacion(id) {
-        if (isCotizacionVinculada(id)) {
-            const serviciosVinculados = allServicios.filter(s => 
-                s.idCotizacion === id || 
-                (s.cotizacion && s.cotizacion.idCotizacion === id)
-            );
-            alert(`❌ No se puede eliminar esta cotización.
+async function deleteCotizacion(id) {
+    if (isCotizacionVinculada(id)) {
+        const serviciosVinculados = allServicios.filter(s => 
+            s.idCotizacion === id || 
+            (s.cotizacion && s.cotizacion.idCotizacion === id)
+        );
+        alert(`❌ No se puede eliminar esta cotización.
 Motivo: Tiene ${serviciosVinculados.length} servicio(s) asociado(s).
 Primero debe eliminar o desvincular los servicios relacionados.`);
-            return;
-        }
-        if (!confirm('¿Está seguro de eliminar esta cotización?\nEsta acción no se puede deshacer.')) return;
-        try {
-            const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
-                method: 'DELETE'
-            });
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(errorText || 'Error al eliminar');
-            }
-            alert('✅ Cotización eliminada exitosamente');
-            await getAllCotizaciones();
-        } catch (error) {
-            handleError(error);
-        }
+        return;
     }
+    if (!confirm('¿Está seguro de eliminar esta cotización?\nEsta acción no se puede deshacer.')) return;
+
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        return;
+    }
+
+    try {
+        // ✅ 2. Configurar los headers con el token de autenticación
+        const headers = {
+            'Authorization': 'Bearer ' + token
+        };
+
+        const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
+            method: 'DELETE',
+            headers: headers // ✅ Enviar los headers aquí
+        });
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || 'Error al eliminar');
+        }
+        alert('✅ Cotización eliminada exitosamente');
+        await getAllCotizaciones();
+    } catch (error) {
+        console.error("Error al eliminar cotización:", error);
+        alert(`❌ Error: ${error.message}`);
+    }
+}
 
     function formatDate(dateString) {
         if (!dateString) return 'N/A';

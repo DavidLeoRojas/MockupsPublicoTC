@@ -35,13 +35,17 @@
             --servicio-primary: #4a8b64;
             --servicio-secondary: #2c5f41;
         }
-        .sidebar {
+ .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             width: 280px;
             height: 100vh;
-            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            background: 
+                        url('backgroundMenu.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white;
             z-index: 1000;
             transition: transform 0.3s ease;
@@ -542,12 +546,8 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">🔧</div>
-                <div class="logo-text">
-                    <h2>Gemini Admin</h2>
-                    <p>Panel de Control</p>
-                </div>
+        <div class="logo">
+                <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
         <nav class="nav-menu">
@@ -703,7 +703,7 @@
 
 <script>
 // === CONFIGURACIÓN ===
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
 
 // === VARIABLES GLOBALES ===
 let todasLasCategorias = [];
@@ -718,23 +718,35 @@ let isSubmitting = false;
 // Cargar todos los datos iniciales
 async function loadServicesData() {
     console.log("Iniciando carga de servicios desde el backend...");
+    
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // ✅ 2. Configurar los encabezados con el token de autenticación
+    const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+    };
+
     try {
         // Cargar tipos de servicio
-        const serviciosRes = await fetch(`${API_BASE_URL}/tipos-servicio`);
+        const serviciosRes = await fetch(`${API_BASE_URL}/tipos-servicio`, { headers });
         if (!serviciosRes.ok) throw new Error(`HTTP error! status: ${serviciosRes.status}`);
         const serviciosData = await serviciosRes.json();
         todosLosServicios = Array.isArray(serviciosData) ? serviciosData : [];
-
         // Cargar categorías de servicio
-        const categoriasRes = await fetch(`${API_BASE_URL}/categorias-servicio`);
+        const categoriasRes = await fetch(`${API_BASE_URL}/categorias-servicio`, { headers });
         if (!categoriasRes.ok) throw new Error('Error al cargar categorías de servicio');
         todasLasCategorias = await categoriasRes.json();
-
         // Cargar servicios agendados
-        const agendadosRes = await fetch(`${API_BASE_URL}/servicios`);
+        const agendadosRes = await fetch(`${API_BASE_URL}/servicios`, { headers });
         if (!agendadosRes.ok) throw new Error('Error al cargar servicios agendados');
         serviciosAgendados = await agendadosRes.json();
-
         console.log(`Datos cargados: ${todosLosServicios.length} tipos de servicio, ${todasLasCategorias.length} categorías, ${serviciosAgendados.length} servicios agendados.`);
         actualizarEstadisticas(todosLosServicios);
         poblarFiltrosCategoria(todosLosServicios);
@@ -989,7 +1001,6 @@ function closeModal(modalId) {
 }
 
 // Manejar agregar/editar servicio
-// Manejar agregar/editar servicio
 async function handleAddServiceForm(event) {
     if (isSubmitting) {
         console.log("DEBUG: Ya se está procesando. Ignorando.");
@@ -997,64 +1008,77 @@ async function handleAddServiceForm(event) {
     }
     event.preventDefault();
     isSubmitting = true;
+
+    // ✅ 1. Obtener el token JWT
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        isSubmitting = false;
+        return;
+    }
+
     const submitButton = document.querySelector('#addServiceModal .btn-primary');
     if (submitButton) {
         submitButton.disabled = true;
         submitButton.textContent = '⏳ Procesando...';
     }
+
     try {
         const form = event.target;
         const formData = new FormData(form);
         const datosServicio = Object.fromEntries(formData.entries());
-        
+
         if (!datosServicio.serviceName || !datosServicio.serviceCategory || !datosServicio.serviceCost || !datosServicio.serviceDuration || !datosServicio.serviceFrequency || !datosServicio.serviceDescription) {
             alert("Por favor complete todos los campos obligatorios.");
             return;
         }
-        
+
         const costo = parseFloat(datosServicio.serviceCost);
         if (!validarCosto(costo)) {
             return;
         }
 
-        // === CAMBIO CRÍTICO AQUÍ ===
-        // En lugar de enviar un objeto { idCategoriaServicio: "..." }, enviamos solo el string.
         const datosParaEnviar = {
             nombreServicio: datosServicio.serviceName.trim(),
-            // ✅ Enviar 'descripcion' en lugar de 'descripcionExtendida'
             descripcion: datosServicio.serviceDescription.trim(),
             costo: costo,
             duracion: datosServicio.serviceDuration.trim(),
             frecuencia: datosServicio.serviceFrequency.trim(),
             estado: datosServicio.serviceStatus.trim(),
-            // Enviamos solo el ID como string, NO como objeto.
-            idCategoriaServicio: datosServicio.serviceCategory.trim() // <-- Cambiado aquí
+            idCategoriaServicio: datosServicio.serviceCategory.trim()
         };
-        
+
         if (datosServicio.serviceIcon && datosServicio.serviceIcon.trim() !== '') {
             datosParaEnviar.icono = datosServicio.serviceIcon.trim();
         }
-        
+
         console.log("Datos del servicio a enviar:", datosParaEnviar);
-        
+
+        // ✅ 2. Configurar los headers con el token
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
         let response;
         let message;
         if (currentEditingId) {
             response = await fetch(`${API_BASE_URL}/tipos-servicio/${currentEditingId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers, // ← ¡ESTO ES LO QUE FALTABA!
                 body: JSON.stringify(datosParaEnviar)
             });
             message = "✅ Servicio actualizado exitosamente!";
         } else {
             response = await fetch(`${API_BASE_URL}/tipos-servicio`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers, // ← ¡Y ESTO TAMBIÉN!
                 body: JSON.stringify(datosParaEnviar)
             });
             message = "✅ Servicio agregado exitosamente!";
         }
-        
+
         const responseText = await response.text();
         if (!response.ok) {
             let errorMessage = `Error HTTP ${response.status}`;
@@ -1066,13 +1090,12 @@ async function handleAddServiceForm(event) {
             }
             throw new Error(errorMessage);
         }
-        
+
         console.log("Respuesta del servidor:", responseText);
         alert(message);
         closeModal('addServiceModal');
         form.reset();
-        await loadServicesData(); // Recargar la lista de servicios
-        
+        await loadServicesData();
     } catch (error) {
         console.error("Error al procesar el servicio:", error);
         alert(`❌ Error: ${error.message}`);

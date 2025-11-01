@@ -34,13 +34,17 @@
             --admin-light: #faf5ff;
             --admin-dark: #553c9a;
         }
-        .sidebar {
+  .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             width: 280px;
             height: 100vh;
-            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            background: 
+                        url('backgroundMenu.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white;
             z-index: 1000;
             transition: transform 0.3s ease;
@@ -671,12 +675,8 @@
 <body>
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">🌿</div>
-                <div class="logo-text">
-                    <h2>Gemini Admin</h2>
-                    <p>Panel de Control</p>
-                </div>
+        <div class="logo">
+                <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
         <nav class="nav-menu">
@@ -892,7 +892,7 @@
 
 
 <script>
-    const API_BASE_URL = 'http://localhost:8080/api';
+    const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api/personas?rol=Cliente';
 
     let todasLasPersonas = [];
     let direcciones = [];
@@ -1086,6 +1086,15 @@ async function handleAddPersonForm(event) {
     if (isSubmitting) return;
     isSubmitting = true;
 
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        isSubmitting = false;
+        return;
+    }
+
     const tipoPersona = document.getElementById('personTypeSelect').value;
     const docInput = document.getElementById('personDoc');
     const nitInput = document.getElementById('personNit');
@@ -1097,48 +1106,40 @@ async function handleAddPersonForm(event) {
         isSubmitting = false;
         return;
     }
-
     // 🔥 CORRECCIÓN CRÍTICA: Validar que personas jurídicas usen NIT
     if (tipoPersona === 'Juridica' && tipoDni !== 'NIT') {
         alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
         isSubmitting = false;
         return;
     }
-
     if (!tipoDni || tipoDni.trim() === '') {
         alert("Por favor seleccione un tipo de documento.");
         isSubmitting = false;
         return;
     }
-
     const nombre = document.getElementById('personName').value.trim();
     const telefono = document.getElementById('personPhone').value.trim();
     const email = document.getElementById('personEmail').value.trim();
     const rol = document.getElementById('personType').value;
     const ciudad = document.getElementById('personCity').value.trim();
     const representanteLegal = document.getElementById('personRepresentante').value.trim();
-
     if (!nombre || !telefono || !email || !rol || !ciudad) {
         alert("Complete todos los campos obligatorios.");
         isSubmitting = false;
         return;
     }
-    
     if (!validarEmail(email)) {
         alert("El correo electrónico no es válido.");
         isSubmitting = false;
         return;
     }
-
     let dni = '';
     let nit = null;
-
     // 🔥 CORRECCIÓN CRÍTICA: Seguir la lógica del trigger
     if (tipoPersona === 'Juridica') {
         // Para jurídica: el DNI debe ser igual al NIT (según el trigger)
         nit = nitInput.value.trim();
         dni = nit; // El DNI es el mismo que el NIT para jurídicas
-        
         if (!dni) {
             alert("El NIT es obligatorio para personas jurídicas.");
             isSubmitting = false;
@@ -1153,35 +1154,29 @@ async function handleAddPersonForm(event) {
         // Para natural: solo usar documento, NIT debe ser null
         dni = docInput.value.trim();
         nit = null;
-        
         if (!dni) {
             alert("El documento es obligatorio.");
             isSubmitting = false;
             return;
         }
     }
-
     // Validaciones de longitud
     if (dni.length < 5 || dni.length > 20) {
         alert("El documento/NIT debe tener entre 5 y 20 caracteres.");
         isSubmitting = false;
         return;
     }
-    
     if (telefono.length < 7 || telefono.length > 15) {
         alert("El teléfono debe tener entre 7 y 15 dígitos.");
         isSubmitting = false;
         return;
     }
-    
     if (todasLasPersonas.some(p => String(p.dni) === String(dni))) {
         alert(`El documento/NIT "${dni}" ya está registrado.`);
         isSubmitting = false;
         return;
     }
-
     const cargoEspecialidad = document.getElementById('personRole').value.trim();
-
     const datosPersona = {
         dni: dni.toString(),
         tipo_dni: tipoDni.toString(),
@@ -1193,7 +1188,6 @@ async function handleAddPersonForm(event) {
         tipo_persona: tipoPersona.toUpperCase(), // "JURIDICA" o "NATURAL"
         cargo_especialidad: cargoEspecialidad || null
     };
-
     // 🔥 CORRECCIÓN DEFINITIVA: Enviar NIT solo para jurídicas, según el trigger
     if (tipoPersona === 'Juridica') {
         datosPersona.nit = nit.toString();
@@ -1204,22 +1198,23 @@ async function handleAddPersonForm(event) {
         datosPersona.nit = null;
         datosPersona.representante_legal = null;
     }
-
     console.log('Datos a enviar (CORREGIDOS):', datosPersona);
 
     try {
+        // ✅ 2. Configurar los encabezados con el token de autenticación
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+
         const response = await fetch(`${API_BASE_URL}/personas`, {
             method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
+            headers: headers,
             body: JSON.stringify(datosPersona)
         });
-
         const text = await response.text();
         console.log('Respuesta del servidor:', text);
-
         if (!response.ok) {
             let errorMsg = text;
             try {
@@ -1228,23 +1223,20 @@ async function handleAddPersonForm(event) {
             } catch (e) {
                 console.warn('La respuesta de error no es JSON:', e);
             }
-
             console.error('Error del servidor:', response.status, errorMsg);
-            
             if (text.includes('Duplicate entry')) {
                 alert(`❌ El documento/NIT "${dni}" ya existe en la base de datos.`);
             } else if (text.includes('persona natural') || text.includes('NIT')) {
-                alert(`❌ Error de validación: ${errorMsg}\n\nEl trigger de la base de datos está rechazando la inserción.`);
+                alert(`❌ Error de validación: ${errorMsg}
+El trigger de la base de datos está rechazando la inserción.`);
             } else {
                 alert(`❌ Error del servidor (${response.status}): ${errorMsg}`);
             }
             return;
         }
-
         alert("✅ Persona agregada exitosamente.");
         closeModal('addPersonModal');
         await loadData();
-
     } catch (error) {
         console.error("❌ Error de red o al procesar la solicitud:", error);
         alert("❌ Error de red o al procesar la solicitud.");
@@ -1254,17 +1246,30 @@ async function handleAddPersonForm(event) {
 }
 
 async function loadData() {
+    console.log("Iniciando carga de datos de personas...");
+    
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html'; // Redirige a la página de login
+        return;
+    }
+
+    // ✅ 2. Configurar los encabezados con el token de autenticación
+    const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+    };
+
     try {
         const [personasRes, direccionesRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/personas`).then(r => r.ok ? r.json() : []),
-            fetch(`${API_BASE_URL}/direcciones`).then(r => r.ok ? r.json() : []).catch(() => [])
+            fetch(`${API_BASE_URL}/personas`, { headers }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE_URL}/direcciones`, { headers }).then(r => r.ok ? r.json() : []).catch(() => [])
         ]);
         todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
         direcciones = Array.isArray(direccionesRes) ? direccionesRes : [];
-
-        // 👇 AÑADIR ESTA LÍNEA
         poblarCiudadesEnFormulario();
-
         actualizarEstadisticas(todasLasPersonas);
         renderizarPersonas(todasLasPersonas);
         poblarFiltrosCiudad(todasLasPersonas);
@@ -1280,27 +1285,21 @@ function editarPersona(dni) {
         alert("Persona no encontrada.");
         return;
     }
-    
     openAddPersonModal();
     document.querySelector('#addPersonModal .modal-title').textContent = '✏️ Editar Persona';
     document.querySelector('#addPersonModal .btn-primary').textContent = '💾 Guardar Cambios';
-
     document.getElementById('personDoc').value = p.dni;
     document.getElementById('personDoc').disabled = true;
     document.getElementById('personName').value = p.nombre || '';
     document.getElementById('personPhone').value = p.telefono || '';
     document.getElementById('personEmail').value = p.correo || '';
     document.getElementById('personType').value = p.rol || '';
-    document.getElementById('personTypeSelect').value = p.tipo_persona || 'Natural'; // Asegurar tipo persona
-
-    // --- ESTABLECER TIPO DE DOCUMENTO ---
-    if (p.tipo_dni) { // Asumiendo que el backend devuelve tipo_dni
+    document.getElementById('personTypeSelect').value = p.tipo_persona || 'Natural';
+    if (p.tipo_dni) {
         document.getElementById('personDocType').value = p.tipo_dni;
-    } else if (p.tipoDni) { // Otra posible clave
+    } else if (p.tipoDni) {
         document.getElementById('personDocType').value = p.tipoDni;
     }
-    // --- FIN ESTABLECER ---
-
     const cargoField = document.getElementById('personRole');
     let cargoTexto = '';
     if (p.cargo_especialidad) {
@@ -1311,20 +1310,13 @@ function editarPersona(dni) {
             : (p.cargoEspecialidad.nombre || '');
     }
     cargoField.value = cargoTexto;
-    cargoField.disabled = false;
-    cargoField.placeholder = 'Ej: Técnico, Contador, Proveedor de Equipos';
-
     if (p.direccion && p.direccion.idDireccion) {
         document.getElementById('personCity').value = p.direccion.idDireccion;
     } else if (p.id_direccion) {
         document.getElementById('personCity').value = p.id_direccion;
     }
-
-    // Actualizar campos basados en el tipo de persona cargado
     updateFormFieldsBasedOnType();
-
     const tipo = p.tipo_persona || 'Natural';
-    // --- LÓGICA PARA MOSTRAR/OCULTAR CAMPOS AL EDITAR ---
     const nitField = document.getElementById('nitField');
     const representanteField = document.getElementById('representanteField');
     const docGroup = document.getElementById('docGroup');
@@ -1332,8 +1324,6 @@ function editarPersona(dni) {
     const docInput = document.getElementById('personDoc');
     const docTypeSelect = document.getElementById('personDocType');
     const nitInput = document.getElementById('personNit');
-    const options = docTypeSelect.querySelectorAll('option');
-
     if (tipo === 'Juridica') {
         docGroup.style.display = 'none';
         nitField.style.display = 'block';
@@ -1341,76 +1331,45 @@ function editarPersona(dni) {
         docLabel.textContent = '🏢 NIT *';
         docInput.required = false;
         nitInput.required = true;
-        nitInput.value = p.nit || p.dni; // Asumiendo que p.dni era el NIT o que p.nit existe
-
-        // --- AJUSTAR TIPO DE DOCUMENTO ---
-        options.forEach(opt => {
-            if (opt.value === 'NIT') {
-                opt.style.display = 'block';
-                // Seleccionar NIT si era el tipo original o si no hay otro seleccionado
-                if ((p.tipo_dni || p.tipoDni) === 'NIT' || !docTypeSelect.value) {
-                     docTypeSelect.value = 'NIT';
-                }
-            } else {
-                opt.style.display = 'none';
-            }
-        });
-        // --- FIN AJUSTE ---
-
-        document.getElementById('personRepresentante').value = p.representante_legal || '';
-    } else { // Natural
+        nitInput.value = p.nit || p.dni;
+        docTypeSelect.value = 'NIT';
+    } else {
         docGroup.style.display = 'block';
         nitField.style.display = 'none';
         representanteField.style.display = 'none';
         docLabel.textContent = '🆔 Número de Documento *';
         docInput.required = true;
         nitInput.required = false;
-        docInput.value = p.dni; // Asegurar que el DNI se carga en el input correcto
-
-        // --- AJUSTAR TIPO DE DOCUMENTO ---
-        options.forEach(opt => {
-            if (opt.value === 'NIT') {
-                opt.style.display = 'none';
-            } else { // CC o CE
-                opt.style.display = 'block';
-            }
-        });
-        // Seleccionar el tipo original si era CC o CE
+        docInput.value = p.dni;
         if ((p.tipo_dni || p.tipoDni) && (p.tipo_dni || p.tipoDni) !== 'NIT') {
             docTypeSelect.value = p.tipo_dni || p.tipoDni;
-        } else {
-            docTypeSelect.value = ''; // Limpiar si no coincide o era NIT
         }
-        // --- FIN AJUSTE ---
     }
-    // --- FIN LÓGICA ---
-
     const form = document.getElementById('addPersonForm');
     form.onsubmit = async (e) => {
         e.preventDefault();
 
-        const tipoEdit = document.getElementById('personTypeSelect').value;
-        const ciudadEdit = document.getElementById('personCity').value;
-        const tipoDniEdit = document.getElementById('personDocType').value;
-
-        // ✅ VALIDACIÓN CORREGIDA PARA EDICIÓN
-        if (tipoEdit === 'Natural' && tipoDniEdit === 'NIT') {
-            alert("❌ Para una persona natural, el tipo de documento no puede ser NIT. Seleccione CC o CE.");
+        // ✅ 1. Obtener el token JWT
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            window.location.href = 'index.html';
             return;
         }
 
+        const tipoEdit = document.getElementById('personTypeSelect').value;
+        const ciudadEdit = document.getElementById('personCity').value;
+        const tipoDniEdit = document.getElementById('personDocType').value;
+        if (tipoEdit === 'Natural' && tipoDniEdit === 'NIT') {
+            alert("❌ Para una persona natural, el tipo de documento no puede ser NIT.");
+            return;
+        }
         if (tipoEdit === 'Juridica' && tipoDniEdit !== 'NIT') {
             alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
             return;
         }
-
-        if (!tipoDniEdit || tipoDniEdit.trim() === '') {
-            alert("Por favor seleccione un tipo de documento.");
-            return;
-        }
-
         const datos = {
-            dni: String(p.dni), // El DNI original no cambia
+            dni: String(p.dni),
             tipo_dni: tipoDniEdit,
             nombre: String(document.getElementById('personName').value.trim()),
             telefono: String(document.getElementById('personPhone').value.trim()),
@@ -1420,8 +1379,6 @@ function editarPersona(dni) {
             tipo_persona: String(tipoEdit),
             cargo_especialidad: String(document.getElementById('personRole').value.trim()) || null
         };
-
-        // Solo agregar nit y representante si es Jurídica
         if (tipoEdit === 'Juridica') {
             datos.nit = document.getElementById('personNit').value.trim();
             const repLegal = document.getElementById('personRepresentante').value.trim();
@@ -1429,23 +1386,24 @@ function editarPersona(dni) {
                 datos.representante_legal = String(repLegal);
             }
         } else {
-            // Para naturales, asegurar que nit sea null
             datos.nit = null;
             datos.representante_legal = null;
         }
 
         try {
-            const res = await fetch(`${API_BASE_URL}/personas/${p.dni}`, { // Usar p.dni original
+            // ✅ 2. Configurar los headers con el token
+            const headers = {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            };
+
+            const res = await fetch(`${API_BASE_URL}/personas/${p.dni}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
-                },
+                headers: headers,
                 body: JSON.stringify(datos)
             });
-
             if (!res.ok) throw new Error(await res.text());
-
             alert("✅ Persona actualizada exitosamente.");
             closeModal('addPersonModal');
             await loadData();
@@ -1673,151 +1631,104 @@ async function eliminarPersona(dni) {
         alert("⚠️ Persona no encontrada.");
         return;
     }
+    if (!confirm(`¿Está seguro de eliminar a ${p.nombre}?\nEsta acción no se puede deshacer.`)) {
+        return;
+    }
 
-    if (!confirm(`¿Está seguro de eliminar a ${p.nombre}?\n\nEsta acción no se puede deshacer.`)) {
+    // ✅ 1. Obtener el token JWT
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
         return;
     }
 
     try {
         console.log(`🔍 Verificando vinculaciones para DNI: ${dni}`);
-        
-        // ⚠️ CAMBIO: Usar /servicios en lugar de /citas
         const [cotizaciones, servicios, facturas] = await Promise.all([
-            fetch(`${API_BASE_URL}/cotizaciones`).then(r => r.ok ? r.json() : []).catch(err => {
-                console.warn('Error cargando cotizaciones:', err);
-                return [];
-            }),
-            fetch(`${API_BASE_URL}/servicios`).then(r => r.ok ? r.json() : []).catch(err => {
-                console.warn('Error cargando servicios:', err);
-                return [];
-            }),
-            fetch(`${API_BASE_URL}/facturas`).then(r => r.ok ? r.json() : []).catch(err => {
-                console.warn('Error cargando facturas:', err);
-                return [];
-            })
+            fetch(`${API_BASE_URL}/cotizaciones`, { headers: { 'Authorization': 'Bearer ' + token } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE_URL}/servicios`, { headers: { 'Authorization': 'Bearer ' + token } }).then(r => r.ok ? r.json() : []),
+            fetch(`${API_BASE_URL}/facturas`, { headers: { 'Authorization': 'Bearer ' + token } }).then(r => r.ok ? r.json() : [])
         ]);
 
-        console.log('📊 Datos cargados:', {
-            cotizaciones: cotizaciones.length,
-            servicios: servicios.length,
-            facturas: facturas.length
-        });
-
-        // Función mejorada para obtener DNI de forma segura
         const getDni = (obj, campo = null) => {
             if (!obj) return null;
             if (typeof obj === 'string' || typeof obj === 'number') return String(obj);
-            
             if (campo && obj[campo]) {
                 if (typeof obj[campo] === 'object' && obj[campo].dni) return String(obj[campo].dni);
                 return String(obj[campo]);
             }
-            
             if (obj.dni) return String(obj.dni);
             if (obj.cliente?.dni) return String(obj.cliente.dni);
             if (obj.empleado?.dni) return String(obj.empleado.dni);
             if (obj.empleadoAsignado?.dni) return String(obj.empleadoAsignado.dni);
-            
             return null;
         };
 
         const dniStr = String(dni);
         const errores = [];
-        let detalles = [];
+        const detalles = [];
 
-        // 1️⃣ Verificar cotizaciones (cliente o empleado)
         const cotizacionesVinculadas = cotizaciones.filter(c => {
             const dniClienteCot = getDni(c, 'dniCliente') || getDni(c.cliente);
             const dniEmpleadoCot = getDni(c, 'dniEmpleado') || getDni(c.empleado);
             return dniClienteCot === dniStr || dniEmpleadoCot === dniStr;
         });
-
         if (cotizacionesVinculadas.length > 0) {
             errores.push(`${cotizacionesVinculadas.length} cotización(es)`);
             detalles.push(`  • ${cotizacionesVinculadas.length} cotización(es) activa(s)`);
-            console.log('❌ Cotizaciones vinculadas:', cotizacionesVinculadas.map(c => c.idCotizacion));
         }
 
-        // 2️⃣ Verificar servicios en agenda (cliente o técnico)
         const serviciosVinculados = servicios.filter(s => {
-            // Intentar desde cotización primero
-            if (s.cotizacion && s.cotizacion.cliente) {
-                const dniClienteCot = getDni(s.cotizacion.cliente);
-                if (dniClienteCot === dniStr) return true;
-            }
-            
-            // Verificar cliente directo
             const dniCliente = getDni(s, 'dniCliente') || getDni(s.cliente);
-            if (dniCliente === dniStr) return true;
-            
-            // Verificar técnico asignado
-            const dniTecnico = 
-                getDni(s, 'dniEmpleadoAsignado') || 
-                getDni(s.empleadoAsignado) ||
-                getDni(s, 'dniEmpleado');
-            
-            return dniTecnico === dniStr;
+            const dniTecnico = getDni(s, 'dniEmpleadoAsignado') || getDni(s.empleadoAsignado) || getDni(s, 'dniEmpleado');
+            return dniCliente === dniStr || dniTecnico === dniStr;
         });
-
         if (serviciosVinculados.length > 0) {
             errores.push(`${serviciosVinculados.length} servicio(s)`);
             detalles.push(`  • ${serviciosVinculados.length} servicio(s) programado(s) en la agenda`);
-            console.log('❌ Servicios vinculados:', serviciosVinculados.map(s => s.idServicio));
         }
 
-        // 3️⃣ Verificar facturas
         const facturasVinculadas = facturas.filter(f => {
             const dniClienteFact = getDni(f, 'dniCliente') || getDni(f.cliente);
             return dniClienteFact === dniStr;
         });
-
         if (facturasVinculadas.length > 0) {
             errores.push(`${facturasVinculadas.length} factura(s)`);
             detalles.push(`  • ${facturasVinculadas.length} factura(s) emitida(s)`);
-            console.log('❌ Facturas vinculadas:', facturasVinculadas.map(f => f.idFactura));
         }
 
-        // 🚫 Si hay registros vinculados, BLOQUEAR eliminación
         if (errores.length > 0) {
-            console.warn(`❌ Eliminación BLOQUEADA para DNI ${dni}:`, {
-                cotizaciones: cotizacionesVinculadas.length,
-                servicios: serviciosVinculados.length,
-                facturas: facturasVinculadas.length
-            });
-            
             const mensaje = 
-                `🚫 NO SE PUEDE ELIMINAR A ${p.nombre.toUpperCase()}\n\n` +
+                `🚫 NO SE PUEDE ELIMINAR A ${p.nombre.toUpperCase()}\n` +
                 `Esta persona está vinculada a:\n` +
-                `${detalles.join('\n')}\n\n` +
+                `${detalles.join('\n')}\n` +
                 `⚠️ ACCIÓN REQUERIDA:\n` +
-                `Debe eliminar o reasignar estos registros antes de poder eliminar a esta persona.\n\n` +
-                `💡 Sugerencia:\n` +
-                `1. Cancele o reasigne los servicios pendientes\n` +
-                `2. Elimine las cotizaciones relacionadas\n` +
-                `3. Archive las facturas si es necesario`;
-            
+                `Debe eliminar o reasignar estos registros antes de poder eliminar a esta persona.`;
             alert(mensaje);
-            return; // ← DETENER aquí, NO eliminar
+            return;
         }
 
         console.log(`✅ Sin vinculaciones encontradas. Procediendo a eliminar DNI: ${dni}`);
 
-        // ✅ Si no hay vinculaciones, proceder con la eliminación
-        const response = await fetch(`${API_BASE_URL}/personas/${encodeURIComponent(dni)}`, {
-            method: 'DELETE'
-        });
+        // ✅ 2. Configurar los headers con el token para la eliminación
+        const headers = {
+            'Authorization': 'Bearer ' + token
+        };
 
+        const response = await fetch(`${API_BASE_URL}/personas/${encodeURIComponent(dni)}`, {
+            method: 'DELETE',
+            headers: headers
+        });
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(errorText || 'Error desconocido al eliminar');
         }
-
         alert(`✅ ${p.nombre} ha sido eliminado exitosamente.`);
         await loadData();
-
     } catch (error) {
         console.error("❌ Error al eliminar persona:", error);
-        alert(`❌ Error al eliminar: ${error.message}\n\nPor favor, verifique la consola para más detalles.`);
+        alert(`❌ Error al eliminar: ${error.message}`);
     }
 }
 

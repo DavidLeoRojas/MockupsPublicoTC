@@ -38,13 +38,17 @@
     border-color: #e53e3e;
     color: #742a2a;
 }
-        .sidebar {
+ .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             width: 280px;
             height: 100vh;
-            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            background: 
+                        url('backgroundMenu.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white;
             z-index: 1000;
             transition: transform 0.3s ease;
@@ -714,11 +718,7 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <div class="logo">
-                <div class="logo-icon">🌿</div>
-                <div class="logo-text">
-                    <h2>Gemini Admin</h2>
-                    <p>Panel de Control</p>
-                </div>
+                <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
         <nav class="nav-menu">
@@ -1059,7 +1059,7 @@
     </div>
 
     <script>
-        const API_BASE_URL = 'http://localhost:8080/api';
+        const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
         let currentMonth = new Date().getMonth();
         let currentYear = new Date().getFullYear();
         let servicios = [];
@@ -1187,73 +1187,74 @@
         }
 
 
-        // ========== CARGA DE DATOS ==========
-        async function loadAgendaData() {
-            console.log("🔄 Iniciando carga de datos de la agenda...");
-            try {
-                const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
-                    fetch(`${API_BASE_URL}/servicios`).then(r => {
-                        if (!r.ok) throw new Error('Error al cargar servicios');
-                        return r.json();
-                    }),
-                    fetch(`${API_BASE_URL}/personas`).then(r => {
-                        if (!r.ok) throw new Error('Error al cargar personas');
-                        return r.json();
-                    }),
-                    fetch(`${API_BASE_URL}/tipos-servicio`).then(r => {
-                        if (!r.ok) throw new Error('Error al cargar tipos de servicio');
-                        return r.json();
-                    }),
-                    fetch(`${API_BASE_URL}/cotizaciones`).then(r => {
-                        if (!r.ok) throw new Error('Error al cargar cotizaciones');
-                        return r.json();
-                    })
-                ]);
+// ========== CARGA DE DATOS ==========
+async function loadAgendaData() {
+    console.log("🔄 Iniciando carga de datos de la agenda...");
+    
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
+        setTimeout(() => {
+            window.location.href = 'index.html'; // Redirige a la página de login
+        }, 2000);
+        return;
+    }
 
-                // Filtrar solo servicios que tienen una fecha válida
-                servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => s.fecha) : [];
-                todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
-                // ✅ Filtrar solo tipos de servicio ACTIVOS
-                todosLosTiposServicio = Array.isArray(tiposServRes) ? tiposServRes.filter(t => t.estado === 'ACTIVO') : [];
-                cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
+    // ✅ 2. Configurar los encabezados con el token de autenticación
+    const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+    };
 
-                console.log(`✅ Datos cargados exitosamente:`);
-                console.log(`   📋 ${servicios.length} servicios`);
-                console.log(`   👥 ${todasLasPersonas.length} personas`);
-                console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio ACTIVOS`); // ✅ Log actualizado
-                console.log(`   💰 ${cotizaciones.length} cotizaciones`);
+    try {
+        const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar servicios');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/personas`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar personas');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/tipos-servicio`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar tipos de servicio');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/cotizaciones`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar cotizaciones');
+                return r.json();
+            })
+        ]);
 
-                // Mostrar datos de ejemplo
-                if (servicios.length > 0) {
-                    console.log('📦 Ejemplo de servicio:', servicios[0]);
-                }
-                if (todasLasPersonas.length > 0) {
-                    console.log('👤 Ejemplo de persona:', todasLasPersonas[0]);
-                }
-                if (todosLosTiposServicio.length > 0) {
-                    console.log('🔧 Ejemplo de tipo servicio ACTIVO:', todosLosTiposServicio[0]);
-                }
+        // Filtrar solo servicios que tienen una fecha válida
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => s.fecha) : [];
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+        // ✅ Filtrar solo tipos de servicio ACTIVOS (en mayúsculas)
+        todosLosTiposServicio = Array.isArray(tiposServRes) ? 
+            tiposServRes.filter(t => t.estado && t.estado.toUpperCase() === 'ACTIVO') : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
 
-                populateClienteSelect(todasLasPersonas);
-                populateTecnicoSelect(todasLasPersonas);
-                populateTipoServicioSelect(todosLosTiposServicio); // ✅ Solo se pasan los activos
-                populateCotizacionSelect(cotizaciones);
-                populateFilterTecnico(todasLasPersonas);
+        console.log(`✅ Datos cargados exitosamente:`);
+        console.log(`   📋 ${servicios.length} servicios`);
+        console.log(`   👥 ${todasLasPersonas.length} personas`);
+        console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio ACTIVOS`);
+        console.log(`   💰 ${cotizaciones.length} cotizaciones`);
 
-                // --- AÑADIDO PARA COLORES ---
-                // Renderizar el calendario con los servicios cargados
-                renderCalendar(currentMonth, currentYear);
-                // --- FIN AÑADIDO ---
+        populateClienteSelect(todasLasPersonas);
+        populateTecnicoSelect(todasLasPersonas);
+        populateTipoServicioSelect(todosLosTiposServicio);
+        populateCotizacionSelect(cotizaciones);
+        populateFilterTecnico(todasLasPersonas);
 
-                renderTodaySchedule(new Date());
-                
-                console.log('✅ Inicialización completada');
-            } catch (error) {
-                console.error('❌ Error al cargar datos de agenda:', error);
-                // alert('Error al cargar la agenda: ' + error.message + '\n\nPor favor, verifique que el backend esté corriendo.');
-                showCustomAlert('Error al cargar la agenda: ' + error.message + '\n\nPor favor, verifique que el backend esté corriendo.', 'Error', 'error');
-            }
-        }
+        renderCalendar(currentMonth, currentYear);
+        renderTodaySchedule(new Date());
+        console.log('✅ Inicialización completada');
+    } catch (error) {
+        console.error('❌ Error al cargar datos de agenda:', error);
+        showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
+    }
+}
         // ========== POPULATION FUNCTIONS ==========
         function populateClienteSelect(personas) {
             const selects = ['clienteId', 'editClienteId', 'quickCliente'];
@@ -1317,18 +1318,22 @@
         }
 
 
-        function populateCotizacionSelect(cotizaciones) {
-            const select = document.getElementById('cotizacionId');
-            if (!select) return;
-            select.innerHTML = '<option value="">Seleccionar cotización</option>';
-            cotizaciones.filter(c => c.estado !== 'Rechazada' && c.estado !== 'Finalizada').forEach(c => {
-                const option = document.createElement('option');
-                option.value = c.idCotizacion;
-                const clienteNombre = c.cliente?.nombre || 'Sin cliente';
-                option.textContent = `#${c.idCotizacion} - ${clienteNombre} - ${c.descripcionProblema || 'Sin descripción'}`;
-                select.appendChild(option);
-            });
-        }
+function populateCotizacionSelect(cotizaciones) {
+    const select = document.getElementById('cotizacionId');
+    if (!select) return;
+    select.innerHTML = '<option value="">Seleccionar cotización</option>';
+    
+    // ✅ SOLO mostrar cotizaciones APROBADAS (sin importar si ya se usaron)
+    const cotizacionesAprobadas = cotizaciones.filter(c => c.estado === 'Aprobada');
+    
+    cotizacionesAprobadas.forEach(c => {
+        const clienteNombre = c.cliente?.nombre || c.nombreCliente || 'Cliente desconocido';
+        const option = document.createElement('option');
+        option.value = c.idCotizacion;
+        option.textContent = `#${c.idCotizacion} - ${clienteNombre} - ${c.descripcionProblema || 'Sin descripción'}`;
+        select.appendChild(option);
+    });
+}
 
         function populateFilterTecnico(personas) {
             const select = document.getElementById('filterTecnico');
@@ -1580,70 +1585,80 @@
             console.log('✅ Modal de edición abierto');
         }
 
-        // Función para actualizar un servicio existente
-        async function updateService(event) {
-            event.preventDefault();
-            if (isSubmitting) return;
-            isSubmitting = true;
-            try {
-                const servicioId = document.getElementById('editServiceId').value;
-                const dniCliente = document.getElementById('editClienteId').value.trim();
-                const dniEmpleadoAsignado = document.getElementById('editTecnicoId').value.trim();
-                const idTipoServicio = document.getElementById('editTipoServicioId').value.trim();
-                const fecha = document.getElementById('editFecha').value; // Formato YYYY-MM-DD
-                const hora = document.getElementById('editHora').value; // Formato HH:MM
+// Función para actualizar un servicio existente
+async function updateService(event) {
+    event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
 
-                // ✅ VALIDAR QUE LA FECHA Y HORA NO SEAN PASADAS
-                const ahora = new Date();
-                const fechaSeleccionada = new Date(fecha + 'T' + hora + ':00'); // Crear un objeto Date con la fecha y hora seleccionadas
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
+        return;
+    }
 
-                if (fechaSeleccionada < ahora) {
-                    // alert("❌ No se puede programar un servicio en una fecha u hora pasada.");
-                    showCustomAlert("No se puede programar un servicio en una fecha u hora pasada.", 'Advertencia', 'warning');
-                    isSubmitting = false;
-                    return;
-                }
+    try {
+        const servicioId = document.getElementById('editServiceId').value;
+        const dniCliente = document.getElementById('editClienteId').value.trim();
+        const dniEmpleadoAsignado = document.getElementById('editTecnicoId').value.trim();
+        const idTipoServicio = document.getElementById('editTipoServicioId').value.trim();
+        const fecha = document.getElementById('editFecha').value; // Formato YYYY-MM-DD
+        const hora = document.getElementById('editHora').value; // Formato HH:MM
 
-                const observaciones = document.getElementById('editObservaciones').value.trim() || null;
-                const prioridad = document.getElementById('editPrioridad').value;
-
-                const servicioData = {
-                    idServicio: servicioId,
-                    dniCliente,
-                    dniEmpleadoAsignado,
-                    idTipoServicio,
-                    fecha,
-                    hora: hora + ':00', // Asegurar formato HH:MM:SS
-                    estado: document.getElementById('editEstado').value, // Mantener el estado actual
-                    observaciones,
-                    prioridad
-                };
-
-                console.log("🔄 Actualizando servicio:", servicioData);
-
-                const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(servicioData)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || `Error ${response.status}`);
-                }
-
-                // alert("✅ Servicio actualizado exitosamente.");
-                showCustomAlert("Servicio actualizado exitosamente.", 'Éxito', 'success');
-                closeModal('editServiceModal');
-                await loadAgendaData(); // Recargar la agenda
-            } catch (error) {
-                console.error("Error:", error);
-                // alert(`❌ Error: ${error.message}`);
-                showCustomAlert(`Error: ${error.message}`, 'Error', 'error');
-            } finally {
-                isSubmitting = false;
-            }
+        // ✅ VALIDAR QUE LA FECHA Y HORA NO SEAN PASADAS
+        const ahora = new Date();
+        const fechaSeleccionada = new Date(fecha + 'T' + hora + ':00');
+        if (fechaSeleccionada < ahora) {
+            showCustomAlert("No se puede programar un servicio en una fecha u hora pasada.", 'Advertencia', 'warning');
+            isSubmitting = false;
+            return;
         }
+
+        const observaciones = document.getElementById('editObservaciones').value.trim() || null;
+        const prioridad = document.getElementById('editPrioridad').value;
+        const servicioData = {
+            idServicio: servicioId,
+            dniCliente,
+            dniEmpleadoAsignado,
+            idTipoServicio,
+            fecha,
+            hora: hora + ':00', // Asegurar formato HH:MM:SS
+            estado: document.getElementById('editEstado').value,
+            observaciones,
+            prioridad
+        };
+
+        console.log("🔄 Actualizando servicio:", servicioData);
+
+        // ✅ 2. Configurar los headers con el token de autenticación
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
+        const response = await fetch(`${API_BASE_URL}/servicios/${servicioId}`, {
+            method: 'PUT',
+            headers: headers,
+            body: JSON.stringify(servicioData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+
+        showCustomAlert("Servicio actualizado exitosamente.", 'Éxito', 'success');
+        closeModal('editServiceModal');
+        await loadAgendaData(); // Recargar la agenda
+
+    } catch (error) {
+        console.error("Error:", error);
+        showCustomAlert(`Error: ${error.message}`, 'Error', 'error');
+    } finally {
+        isSubmitting = false;
+    }
+}
 
         // ========== CANCEL SERVICE ==========
         async function cancelService(servicioId) {
@@ -1791,30 +1806,25 @@ function openAddServiceModal(date = null) {
     if (serviceForm) {
         serviceForm.reset();
     }
-
-    // Comentamos o eliminamos la línea problemática
-    // const titleElement = document.getElementById('serviceModalTitle');
-    // if (titleElement) {
-    //     titleElement.textContent = 'Programar Nuevo Servicio'; // agenda.html:1791
-    // }
-
+    // ✅ CORREGIDO: Actualizar el título del modal
+    const titleElement = document.getElementById('serviceModalTitle');
+    if (titleElement) {
+        titleElement.textContent = 'Programar Nuevo Servicio';
+    }
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) {
         submitBtn.textContent = 'Programar Servicio';
     }
-
-    // Si se pasa una fecha, prellenarla
+    // ✅ CORREGIDO: Poner la fecha si se pasa
     if (date) {
-        const formattedDate = date.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+        const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
         const fechaInput = document.getElementById('fecha');
         if (fechaInput) {
             fechaInput.value = formattedDate;
         }
     }
-
     currentEditingId = null;
     isSubmitting = false;
-
     const addServiceModal = document.getElementById('addServiceModal');
     if (addServiceModal) {
         addServiceModal.classList.add('show');
@@ -1829,69 +1839,77 @@ function openAddServiceModal(date = null) {
             }
         }
 
-        // Función para agregar un nuevo servicio
-        async function addService(event) {
-            event.preventDefault();
-            if (isSubmitting) return;
-            isSubmitting = true;
-            try {
-                const formData = new FormData(event.target);
-                const dniCliente = document.getElementById('clienteId').value.trim();
-                const dniEmpleadoAsignado = document.getElementById('tecnicoId').value.trim();
-                const idTipoServicio = document.getElementById('tipoServicioId').value.trim();
-                const fecha = document.getElementById('fecha').value; // Formato YYYY-MM-DD
-                const hora = document.getElementById('hora').value; // Formato HH:MM
+// Función para agregar un nuevo servicio
+async function addService(event) {
+    event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
 
-                // ✅ VALIDAR QUE LA FECHA Y HORA NO SEAN PASADAS
-                const ahora = new Date();
-                const fechaSeleccionada = new Date(fecha + 'T' + hora + ':00'); // Crear un objeto Date con la fecha y hora seleccionadas
+    // ✅ Obtener el token JWT
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
+        return;
+    }
 
-                if (fechaSeleccionada < ahora) {
-                    // alert("❌ No se puede programar un servicio en una fecha u hora pasada.");
-                    showCustomAlert("No se puede programar un servicio en una fecha u hora pasada.", 'Advertencia', 'warning');
-                    isSubmitting = false;
-                    return;
-                }
+    try {
+        const formData = new FormData(event.target);
+        const dniCliente = document.getElementById('clienteId').value.trim();
+        const dniEmpleadoAsignado = document.getElementById('tecnicoId').value.trim();
+        const idTipoServicio = document.getElementById('tipoServicioId').value.trim();
+        const fecha = document.getElementById('fecha').value;
+        const hora = document.getElementById('hora').value;
 
-                const observaciones = document.getElementById('observaciones').value.trim() || null;
-                const prioridad = document.getElementById('prioridad').value;
-
-                const servicioData = {
-                    dniCliente,
-                    dniEmpleadoAsignado,
-                    idTipoServicio,
-                    fecha,
-                    hora: hora + ':00', // Asegurar formato HH:MM:SS
-                    estado: 'Programado',
-                    observaciones,
-                    prioridad
-                };
-
-                console.log("🚀 Enviando datos de servicio:", servicioData);
-
-                const response = await fetch(`${API_BASE_URL}/servicios`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(servicioData)
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(errorText || `Error ${response.status}`);
-                }
-
-                // alert("✅ Servicio programado exitosamente.");
-                showCustomAlert("Servicio programado exitosamente.", 'Éxito', 'success');
-                closeModal('addServiceModal');
-                await loadAgendaData(); // Recargar la agenda
-            } catch (error) {
-                console.error("Error:", error);
-                // alert(`❌ Error: ${error.message}`);
-                showCustomAlert(`Error: ${error.message}`, 'Error', 'error');
-            } finally {
-                isSubmitting = false;
-            }
+        const ahora = new Date();
+        const fechaSeleccionada = new Date(fecha + 'T' + hora + ':00');
+        if (fechaSeleccionada < ahora) {
+            showCustomAlert("No se puede programar un servicio en una fecha u hora pasada.", 'Advertencia', 'warning');
+            isSubmitting = false;
+            return;
         }
+
+        const observaciones = document.getElementById('observaciones').value.trim() || null;
+        const prioridad = document.getElementById('prioridad').value;
+        const servicioData = {
+            dniCliente,
+            dniEmpleadoAsignado,
+            idTipoServicio,
+            fecha,
+            hora: hora + ':00',
+            estado: 'Programado',
+            observaciones,
+            prioridad
+        };
+
+        console.log("🚀 Enviando datos de servicio:", servicioData);
+
+        // ✅ Configurar los headers con el token
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
+        const response = await fetch(`${API_BASE_URL}/servicios`, {
+            method: 'POST',
+            headers: headers, // <-- Usar los headers aquí
+            body: JSON.stringify(servicioData)
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+
+        showCustomAlert("Servicio programado exitosamente.", 'Éxito', 'success');
+        closeModal('addServiceModal');
+        await loadAgendaData();
+    } catch (error) {
+        console.error("Error:", error);
+        showCustomAlert(`Error: ${error.message}`, 'Error', 'error');
+    } finally {
+        isSubmitting = false;
+    }
+}
 
         // ========== QUICK ADD SERVICE ==========
         async function quickAddService() {

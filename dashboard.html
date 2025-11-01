@@ -19,14 +19,17 @@
         }
 
         /* Sidebar */
-        .sidebar {
+.sidebar {
             position: fixed;
             left: 0;
             top: 0;
             width: 280px;
             height: 100vh;
-            background-image: "Logo.png";
-            background: linear-gradient(135deg, #2c5f41, #1a4532);
+            background: 
+                        url('backgroundMenu.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             color: white;
             z-index: 1000;
             transition: transform 0.3s ease;
@@ -494,12 +497,8 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">🌿</div>
-                <div class="logo-text">
-                    <h2>Gemini Admin</h2>
-                    <p>Panel de Control</p>
-                </div>
+               <div class="logo">
+                <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
 
@@ -761,69 +760,80 @@
         </div>
     </div>
 <script>
-    // URL base de la API
-    const API_BASE_URL = 'http://localhost:8080/api';
+// URL base de la API
+const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
 
-    // Función para cargar datos del dashboard
-    async function loadDashboardData() {
-        console.log("Iniciando carga de datos del dashboard...");
-        try {
-            // Cargar todas las promesas en paralelo para mayor eficiencia
-            const [
-                clientesRes,
-                serviciosRes,
-                facturasRes,
-                productosRes
-            ] = await Promise.all([
-                fetch(`${API_BASE_URL}/personas?rol=Cliente`).then(r => r.json()),
-                fetch(`${API_BASE_URL}/servicios`).then(r => r.json()),
-                fetch(`${API_BASE_URL}/facturas`).then(r => r.json()),
-                fetch(`${API_BASE_URL}/productos`).then(r => r.json())
-            ]);
-
-            const clientes = Array.isArray(clientesRes) ? clientesRes : [];
-            const servicios = Array.isArray(serviciosRes) ? serviciosRes : [];
-            const facturas = Array.isArray(facturasRes) ? facturasRes : [];
-            const productos = Array.isArray(productosRes) ? productosRes : [];
-
-            console.log("Datos recibidos - Clientes:", clientes.length, "Servicios:", servicios.length, "Facturas:", facturas.length, "Productos:", productos.length);
-
-            // --- Actualizar Estadísticas ---
-            updateStatCard('primary', clientes.length); // Clientes Activos
-            updateStatCard('warning', servicios.filter(s => s.estado === 'Programado' || s.estado === 'En_Progreso').length); // Servicios Pendientes
-
-            // Calcular facturación mensual (simplificado: sumar montos de facturas del mes actual)
-            const currentMonth = new Date().getMonth();
-            const currentYear = new Date().getFullYear();
-            const facturacionMensual = facturas
-                .filter(f => {
-                    const fechaFactura = new Date(f.fechaEmision);
-                    return fechaFactura.getMonth() === currentMonth && fechaFactura.getFullYear() === currentYear;
-                })
-                .reduce((sum, f) => sum + (f.montoTotal || 0), 0);
-
-            updateStatCard('success', formatCurrency(facturacionMensual)); // Facturación Mensual
-            updateStatCard('info', productos.filter(p => p.stock > 0).length); // Productos en Stock
-
-            // --- Actualizar Actividades Recientes ---
-            // Para este ejemplo, simularemos actividades recientes combinando servicios y facturas recientes.
-            // En una implementación real, podrías tener un endpoint específico para actividades o combinar más entidades.
-            renderRecentActivities(servicios, facturas);
-
-        } catch (error) {
-            console.error('Error al cargar datos del dashboard:', error);
-            // Opcional: Mostrar mensaje de error en la UI
-            document.querySelector('.stat-number').textContent = 'Error';
-            // Limpiar actividades
-            const activitiesContainer = document.querySelector('.card'); // Primer .card es el de actividades
-            if (activitiesContainer) {
-                const existingItems = activitiesContainer.querySelectorAll('.activity-item');
-                existingItems.forEach(item => item.remove());
-                activitiesContainer.innerHTML += '<p style="color: #f56565;">Error al cargar actividades</p>';
-            }
-        }
+// Función para cargar datos del dashboard
+async function loadDashboardData() {
+    console.log("Iniciando carga de datos del dashboard...");
+    
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html'; // Redirige a la página de login
+        return;
     }
 
+    // ✅ 2. Configurar los encabezados con el token de autenticación
+    const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        // ✅ 3. Usar los headers en cada solicitud fetch
+        const [
+            clientesRes,
+            serviciosRes,
+            facturasRes,
+            productosRes
+        ] = await Promise.all([
+            fetch(`${API_BASE_URL}/personas?rol=Cliente`, { headers }).then(r => r.json()),
+            fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => r.json()),
+            fetch(`${API_BASE_URL}/facturas`, { headers }).then(r => r.json()),
+            fetch(`${API_BASE_URL}/productos`, { headers }).then(r => r.json())
+        ]);
+
+        const clientes = Array.isArray(clientesRes) ? clientesRes : [];
+        const servicios = Array.isArray(serviciosRes) ? serviciosRes : [];
+        const facturas = Array.isArray(facturasRes) ? facturasRes : [];
+        const productos = Array.isArray(productosRes) ? productosRes : [];
+
+        console.log("Datos recibidos - Clientes:", clientes.length, "Servicios:", servicios.length, "Facturas:", facturas.length, "Productos:", productos.length);
+
+        // --- Actualizar Estadísticas ---
+        updateStatCard('primary', clientes.length); // Clientes Activos
+        updateStatCard('warning', servicios.filter(s => s.estado === 'Programado' || s.estado === 'En_Progreso').length); // Servicios Pendientes
+
+        // Calcular facturación mensual
+        const currentMonth = new Date().getMonth();
+        const currentYear = new Date().getFullYear();
+        const facturacionMensual = facturas
+            .filter(f => {
+                const fechaFactura = new Date(f.fechaEmision);
+                return fechaFactura.getMonth() === currentMonth && fechaFactura.getFullYear() === currentYear;
+            })
+            .reduce((sum, f) => sum + (f.montoTotal || 0), 0);
+
+        updateStatCard('success', formatCurrency(facturacionMensual)); // Facturación Mensual
+        updateStatCard('info', productos.filter(p => p.stock > 0).length); // Productos en Stock
+
+        // --- Actualizar Actividades Recientes ---
+        renderRecentActivities(servicios, facturas);
+
+    } catch (error) {
+        console.error('Error al cargar datos del dashboard:', error);
+        // Mostrar mensaje de error en la UI
+        const statNumbers = document.querySelectorAll('.stat-number');
+        statNumbers.forEach(el => el.textContent = 'Error');
+        
+        const activitiesContainer = document.querySelector('.card');
+        if (activitiesContainer) {
+            activitiesContainer.innerHTML = '<p style="color: #f56565; text-align: center;">Error al cargar actividades</p>';
+        }
+    }
+}
     // Función para actualizar una tarjeta de estadística
     function updateStatCard(cardClass, value) {
         // Seleccionamos la primera tarjeta que coincida con la clase. 

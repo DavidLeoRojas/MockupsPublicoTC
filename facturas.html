@@ -17,17 +17,21 @@ body {
     color: #2d3748;
 }
 
-.sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 280px;
-    height: 100vh;
-    background: linear-gradient(135deg, #2c5f41, #1a4532);
-    color: white;
-    z-index: 1000;
-    transition: transform 0.3s ease;
-}
+ .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: 
+                        url('backgroundMenu.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            z-index: 1000;
+            transition: transform 0.3s ease;
+        }
 
 .sidebar-header {
     padding: 2rem;
@@ -677,12 +681,8 @@ input[type="date"] {
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <div class="logo-icon">🌿</div>
-                <div class="logo-text">
-                    <h2>Gemini Admin</h2>
-                    <p>Panel de Control</p>
-                </div>
+        <div class="logo">
+                <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
         <nav class="nav-menu">
@@ -937,7 +937,7 @@ input[type="date"] {
 <!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
-        const API_BASE_URL = 'http://localhost:8080/api';
+        const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
         const API_FACTURAS_URL = `${API_BASE_URL}/facturas`;
         const API_CLIENTES_URL = `${API_BASE_URL}/personas/clientes`;
         const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
@@ -966,87 +966,103 @@ input[type="date"] {
             }
         }
 
-        async function loadClientes() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/personas?rol=cliente`);
-                if (!response.ok) {
-                    throw new Error(`Error al cargar clientes: ${response.status} ${response.statusText}`);
-                }
-                const personas = await response.json();
-                clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
-                const select = document.getElementById('clienteSelect');
-                if (!select) {
-                    console.error("❌ No se encontró el elemento #clienteSelect");
-                    return;
-                }
-                select.innerHTML = '<option value="">Seleccione un cliente</option>';
-                clientesData.forEach(cliente => {
-                    const option = document.createElement('option');
-                    option.value = cliente.dni;
-                    option.textContent = `${cliente.nombre} - ${cliente.dni}`;
-                    select.appendChild(option);
-                });
-                console.log(`✅ Clientes cargados: ${clientesData.length}`);
-            } catch (error) {
-                console.error("❌ Error al cargar clientes:", error);
-                const select = document.getElementById('clienteSelect');
-                if (select) {
-                    select.innerHTML = '<option value="">Error al cargar clientes</option>';
-                }
-            }
-        }
+async function loadClientes() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+    const headers = { 'Authorization': 'Bearer ' + token };
 
-        async function loadCotizaciones() {
-            try {
-                const response = await fetch(API_COTIZACIONES_URL);
-                if (!response.ok) throw new Error('Error al cargar cotizaciones');
-                cotizacionesData = await response.json();
-                const select = document.getElementById('cotizacionSelect');
-                if (!select) {
-                    console.error("❌ No se encontró el elemento #cotizacionSelect");
-                    return;
-                }
-                select.innerHTML = '<option value="">Seleccione una cotización</option>';
-                cotizacionesData.forEach(cot => {
-                    const estado = cot.estado ? cot.estado.toLowerCase() : '';
-                    if (estado === 'aprobada' || estado === 'finalizada') {
-                        const option = document.createElement('option');
-                        option.value = cot.idCotizacion;
-                        const clienteNombre = cot.cliente?.nombre || cot.dniCliente || 'Cliente desconocido';
-                        const costoFormateado = formatCurrency(cot.costoTotalCotizacion || 0);
-                        option.textContent = `#${cot.idCotizacion} - ${clienteNombre} - $ ${costoFormateado} [${cot.estado}]`;
-                        select.appendChild(option);
-                    }
-                });
-                console.log(`✅ Cotizaciones cargadas: ${cotizacionesData.length} (filtradas para facturar)`);
-            } catch (error) {
-                console.error("Error al cargar cotizaciones:", error);
-                const select = document.getElementById('cotizacionSelect');
-                if (select) {
-                    select.innerHTML = '<option value="">Error al cargar cotizaciones</option>';
-                }
-            }
+    try {
+        const response = await fetch(`${API_BASE_URL}/personas?rol=cliente`, { headers });
+        if (!response.ok) {
+            throw new Error(`Error al cargar clientes: ${response.status} ${response.statusText}`);
         }
+        const personas = await response.json();
+        clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
+        const select = document.getElementById('clienteSelect');
+        if (!select) {
+            console.error("❌ No se encontró el elemento #clienteSelect");
+            return;
+        }
+        select.innerHTML = '<option value="">Seleccione un cliente</option>';
+        clientesData.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.dni;
+            option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+            select.appendChild(option);
+        });
+        console.log(`✅ Clientes cargados: ${clientesData.length}`);
+    } catch (error) {
+        console.error("❌ Error al cargar clientes:", error);
+        const select = document.getElementById('clienteSelect');
+        if (select) {
+            select.innerHTML = '<option value="">Error al cargar clientes</option>';
+        }
+    }
+}
 
-        async function loadProductos() {
-            try {
-                const response = await fetch(API_PRODUCTOS_URL);
-                if (!response.ok) throw new Error('Error al cargar productos');
-                productosData = await response.json();
-                const select = document.getElementById('productoSelect');
-                select.innerHTML = '<option value="">Seleccione un producto</option>';
-                productosData.forEach(prod => {
-                    const option = document.createElement('option');
-                    option.value = prod.idProducto;
-                    option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
-                    option.dataset.precio = prod.precioActual || 0;
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error("Error al cargar productos:", error);
-                document.getElementById('productoSelect').innerHTML = '<option value="">Error al cargar</option>';
-            }
+async function loadCotizaciones() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return;
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    try {
+        const response = await fetch(API_COTIZACIONES_URL, { headers });
+        if (!response.ok) throw new Error('Error al cargar cotizaciones');
+        cotizacionesData = await response.json();
+        const select = document.getElementById('cotizacionSelect');
+        if (!select) {
+            console.error("❌ No se encontró el elemento #cotizacionSelect");
+            return;
         }
+        select.innerHTML = '<option value="">Seleccione una cotización</option>';
+        cotizacionesData.forEach(cot => {
+            const estado = cot.estado ? cot.estado.toLowerCase() : '';
+            if (estado === 'aprobada' || estado === 'finalizada') {
+                const option = document.createElement('option');
+                option.value = cot.idCotizacion;
+                const clienteNombre = cot.cliente?.nombre || cot.dniCliente || 'Cliente desconocido';
+                const costoFormateado = formatCurrency(cot.costoTotalCotizacion || 0);
+                option.textContent = `#${cot.idCotizacion} - ${clienteNombre} - $ ${costoFormateado} [${cot.estado}]`;
+                select.appendChild(option);
+            }
+        });
+        console.log(`✅ Cotizaciones cargadas: ${cotizacionesData.length} (filtradas para facturar)`);
+    } catch (error) {
+        console.error("Error al cargar cotizaciones:", error);
+        const select = document.getElementById('cotizacionSelect');
+        if (select) {
+            select.innerHTML = '<option value="">Error al cargar cotizaciones</option>';
+        }
+    }
+}
+
+async function loadProductos() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) return;
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    try {
+        const response = await fetch(API_PRODUCTOS_URL, { headers });
+        if (!response.ok) throw new Error('Error al cargar productos');
+        productosData = await response.json();
+        const select = document.getElementById('productoSelect');
+        select.innerHTML = '<option value="">Seleccione un producto</option>';
+        productosData.forEach(prod => {
+            const option = document.createElement('option');
+            option.value = prod.idProducto;
+            option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
+            option.dataset.precio = prod.precioActual || 0;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error al cargar productos:", error);
+        document.getElementById('productoSelect').innerHTML = '<option value="">Error al cargar</option>';
+    }
+}
 
         // Formatear moneda
         function formatCurrency(value) {
@@ -1437,6 +1453,16 @@ async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
+
+    // ✅ 1. Obtener el token JWT del almacenamiento local
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        isSubmitting = false;
+        return;
+    }
+
     try {
         const formData = new FormData(event.target);
         const tipoFactura = document.getElementById('tipoFacturaSelect').value;
@@ -1454,9 +1480,7 @@ async function handleInvoiceFormSubmit(event) {
         let montoTotal = parseFloat(montoTotalInput.value) || 0;
 
         // ✅ CORRECCIÓN CLAVE: Agregar el valor manualmente al formData
-        // Eliminar el campo anterior si existe
         formData.delete('monto_total');
-        // Agregar el valor correcto
         formData.set('monto_total', montoTotal);
 
         // ✅ CORRECCIÓN CLAVE: Obtener valorServicio desde el input antes de usarlo
@@ -1482,18 +1506,28 @@ async function handleInvoiceFormSubmit(event) {
 
         const url = currentEditId ? `${API_FACTURAS_URL}/${currentEditId}` : API_FACTURAS_URL;
         const method = currentEditId ? 'PUT' : 'POST';
+
+        // ✅ 2. Configurar los encabezados con el token de autenticación
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
         const response = await fetch(url, {
             method: method,
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify(facturaData)
         });
+
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(errorText || `Error ${response.status}`);
         }
+
         alert(currentEditId ? "✅ Factura actualizada exitosamente." : "✅ Factura creada exitosamente.");
         closeModal('addInvoiceModal');
         await getAllFacturas();
+
     } catch (error) {
         console.error("Error:", error);
         alert(`❌ Error: ${error.message}`);
@@ -1551,19 +1585,27 @@ async function handleInvoiceFormSubmit(event) {
         }
 
         // Obtener todas las facturas
-        async function getAllFacturas() {
-            try {
-                const response = await fetch(API_FACTURAS_URL);
-                if (!response.ok) throw new Error('Error al obtener facturas');
-                allFacturas = await response.json();
-                console.log("Facturas cargadas:", allFacturas.length);
-                renderTable(allFacturas);
-                updateStats();
-            } catch (error) {
-                console.error("Error al obtener facturas:", error);
-                alert("Error al cargar la lista de facturas. Revisa la consola.");
-            }
-        }
+ async function getAllFacturas() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    try {
+        const response = await fetch(API_FACTURAS_URL, { headers });
+        if (!response.ok) throw new Error('Error al obtener facturas');
+        allFacturas = await response.json();
+        console.log("Facturas cargadas:", allFacturas.length);
+        renderTable(allFacturas);
+        updateStats();
+    } catch (error) {
+        console.error("Error al obtener facturas:", error);
+        alert("Error al cargar la lista de facturas. Revisa la consola.");
+    }
+}
 
         // Actualizar estadísticas
         function updateStats() {
