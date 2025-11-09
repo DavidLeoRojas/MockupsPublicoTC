@@ -333,51 +333,48 @@
     </div>
 
     <script>
-       document.getElementById('loginForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const email = document.getElementById('email').value;
-    const dni = document.getElementById('password').value;
+// Función mejorada para mostrar errores
+function showError(message) {
     const errorMessage = document.getElementById('errorMessage');
+    errorMessage.innerHTML = `
+        <strong>❌ Error:</strong> ${message}
+        <br><small>Verifica tus credenciales e intenta nuevamente.</small>
+    `;
+    errorMessage.style.display = 'block';
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 5000);
+}
 
-    // ✅ URL completa con https://
-    const url = 'https://backendgeminiambienta-v4-0.onrender.com/api/auth/login';
+// Función para mostrar loading
+function setLoading(loading) {
+    const submitBtn = document.querySelector('.login-btn');
+    if (loading) {
+        submitBtn.innerHTML = '⏳ Iniciando sesión...';
+        submitBtn.disabled = true;
+    } else {
+        submitBtn.innerHTML = 'Iniciar Sesión';
+        submitBtn.disabled = false;
+    }
+}
 
-    fetch(url, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json' // ✅ Header obligatorio
-        },
-        body: JSON.stringify({
-            email: email,
-            dni: dni
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => {
-                throw new Error(err.message || 'Credenciales inválidas');
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.token) {
-            localStorage.setItem('jwtToken', data.token);
-            localStorage.setItem('userId', data.id);
-            localStorage.setItem('userName', data.nombre);
-            alert('Inicio de sesión exitoso. Redirigiendo al dashboard...');
-            window.location.href = 'dashboard.html';
-        } else {
-            throw new Error('Respuesta inválida del servidor');
-        }
-    })
-    .catch(error => {
-        errorMessage.textContent = error.message;
-        errorMessage.style.display = 'block';
-        setTimeout(() => {
-            errorMessage.style.display = 'none';
-        }, 3000);
+// Función para verificar si el usuario ya está logueado
+function checkExistingLogin() {
+    const token = localStorage.getItem('jwtToken');
+    if (token) {
+        console.log('🔐 Usuario ya logueado, redirigiendo...');
+        window.location.href = 'dashboard.html';
+    }
+}
+
+// Verificar al cargar la página
+document.addEventListener('DOMContentLoaded', function() {
+    checkExistingLogin();
+    
+    // Auto-rellenar campos con credenciales de demo
+    document.querySelector('.demo-credentials').addEventListener('click', function() {
+        document.getElementById('email').value = 'admin@geminiambiental.com';
+        document.getElementById('password').value = '12345678';
     });
 });
 
@@ -386,6 +383,31 @@
             document.getElementById('email').value = 'admin@geminiambiental.com';
             document.getElementById('password').value = '12345678'; // DNI de demo
         });
+
+        // Función mejorada para mostrar errores
+function showError(message) {
+    const errorMessage = document.getElementById('errorMessage');
+    errorMessage.innerHTML = `
+        <strong>❌ Error:</strong> ${message}
+        <br><small>Verifica tus credenciales e intenta nuevamente.</small>
+    `;
+    errorMessage.style.display = 'block';
+    setTimeout(() => {
+        errorMessage.style.display = 'none';
+    }, 5000);
+}
+
+// Función para mostrar loading
+function setLoading(loading) {
+    const submitBtn = document.querySelector('.login-btn');
+    if (loading) {
+        submitBtn.innerHTML = '⏳ Iniciando sesión...';
+        submitBtn.disabled = true;
+    } else {
+        submitBtn.innerHTML = 'Iniciar Sesión';
+        submitBtn.disabled = false;
+    }
+}
     </script>
 </body>
 </html>
