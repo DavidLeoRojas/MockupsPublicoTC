@@ -998,32 +998,129 @@
             document.getElementById('nombreNuevo').removeAttribute('required');
         }
     }
-
+function handleAuthError() {
+    console.error('🔐 Error de autenticación - Redirigiendo al login');
+    alert('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
+    localStorage.removeItem('jwtToken'); // Limpiar token inválido
+    window.location.href = 'index.html';
+}
  async function loadClientes() {
-    const token = localStorage.getItem('jwtToken');
+    const token = getToken();
     if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html';
+        console.error('❌ No hay token disponible');
+        handleAuthError();
         return;
     }
-    const headers = { 'Authorization': 'Bearer ' + token };
+    
+    const headers = { 
+        'Authorization': token, // ✅ Usar token tal como está
+        'Content-Type': 'application/json'
+    };
 
     try {
         const response = await fetch(API_PERSONAS_URL, { headers });
+        
+        if (response.status === 401) {
+            handleAuthError();
+            return;
+        }
+        
         if (!response.ok) throw new Error('Error al cargar clientes');
+        
         const personas = await response.json();
         clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
         const select = document.getElementById('clienteSelect');
-        select.innerHTML = '<option value="">Seleccione un cliente</option>';
-        clientesData.forEach(cliente => {
-            const option = document.createElement('option');
-            option.value = cliente.dni;
-            option.textContent = `${cliente.nombre} - ${cliente.dni}`;
-            select.appendChild(option);
-        });
+        
+        if (select) {
+            select.innerHTML = '<option value="">Seleccione un cliente</option>';
+            clientesData.forEach(cliente => {
+                const option = document.createElement('option');
+                option.value = cliente.dni;
+                option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+                select.appendChild(option);
+            });
+        }
     } catch (error) {
         console.error('Error cargando clientes:', error);
-        document.getElementById('clienteSelect').innerHTML = '<option value="">Error al cargar</option>';
+        const select = document.getElementById('clienteSelect');
+        if (select) {
+            select.innerHTML = '<option value="">Error al cargar clientes</option>';
+        }
+    }
+}
+
+async function loadProductosCot() {
+    const token = getToken();
+    if (!token) {
+        console.error('❌ No hay token disponible');
+        handleAuthError();
+        return;
+    }
+    
+    const headers = { 
+        'Authorization': token, // ✅ Usar token tal como está
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        const response = await fetch(API_PRODUCTOS_URL, { headers });
+        
+        if (response.status === 401) {
+            handleAuthError();
+            return;
+        }
+        
+        if (!response.ok) throw new Error('Error al cargar productos');
+        
+        productosDataCot = await response.json();
+        const select = document.getElementById('productoSelectCot');
+        
+        if (select) {
+            select.innerHTML = '<option value="">Seleccione un producto</option>';
+            productosDataCot.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod.idProducto;
+                option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
+                option.dataset.precio = prod.precioActual || 0;
+                select.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error("Error al cargar productos:", error);
+        const select = document.getElementById('productoSelectCot');
+        if (select) {
+            select.innerHTML = '<option value="">Error al cargar productos</option>';
+        }
+    }
+}
+
+async function loadServicios() {
+    const token = getToken();
+    if (!token) {
+        console.error('❌ No hay token disponible');
+        handleAuthError();
+        return;
+    }
+    
+    const headers = { 
+        'Authorization': token, // ✅ Usar token tal como está
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        const response = await fetch(API_SERVICIOS_URL, { headers });
+        
+        if (response.status === 401) {
+            handleAuthError();
+            return;
+        }
+        
+        if (!response.ok) throw new Error('Error al cargar servicios');
+        
+        allServicios = await response.json();
+    } catch (error) {
+        console.error('Error cargando servicios:', error);
+        allServicios = [];
     }
 }
 
@@ -1326,13 +1423,16 @@ async function handleQuoteFormSubmit(event) {
 }
 
 async function getAllCotizaciones() {
-    const token = localStorage.getItem('jwtToken');
+    const token = getToken();
     if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html';
+        handleAuthError();
         return;
     }
-    const headers = { 'Authorization': 'Bearer ' + token };
+    
+    const headers = { 
+        'Authorization': token, // ✅ Usar token tal como está
+        'Content-Type': 'application/json'
+    };
 
     try {
         console.log("🔄 Solicitando cotizaciones...");
@@ -1340,6 +1440,12 @@ async function getAllCotizaciones() {
         // Primero probar la conexión con endpoint simple
         console.log("🧪 Probando endpoint simple...");
         const testResponse = await fetch(`${API_COTIZACIONES_URL}/test-simple`, { headers });
+        
+        if (testResponse.status === 401) {
+            handleAuthError();
+            return;
+        }
+        
         const testData = await testResponse.json();
         console.log("✅ Test simple:", testData);
         
@@ -1350,6 +1456,11 @@ async function getAllCotizaciones() {
         // Luego intentar obtener cotizaciones completas
         console.log("📨 Solicitando cotizaciones completas...");
         const response = await fetch(API_COTIZACIONES_URL, { headers });
+        
+        if (response.status === 401) {
+            handleAuthError();
+            return;
+        }
         
         console.log("📥 Respuesta recibida:", response.status, response.statusText);
         
@@ -1379,8 +1490,12 @@ async function getAllCotizaciones() {
         console.error("❌ Error al obtener cotizaciones:", error);
         alert(`Error al cargar cotizaciones: ${error.message}`);
         
-        // Cargar datos de ejemplo
-        loadExampleData();
+        // ✅ CORRECCIÓN: Remover la referencia a loadExampleData o definirla
+        // Mostrar estado vacío en lugar de llamar a función no definida
+        const tbody = document.getElementById('cotizacionesTableBody');
+        if (tbody) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Error al cargar cotizaciones</td></tr>';
+        }
     }
 }
 
@@ -1689,7 +1804,7 @@ async function editCotizacion(id) {
 }
 
 function verifyToken() {
-    const token = localStorage.getItem('jwtToken');
+    let token = localStorage.getItem('jwtToken');
     if (!token) {
         console.error('❌ No hay token en localStorage');
         return false;
@@ -1697,15 +1812,25 @@ function verifyToken() {
     
     console.log('✅ Token encontrado:', token.substring(0, 20) + '...');
     
-    // Verificar formato del token
-    if (!token.startsWith('Bearer ')) {
-        console.warn('⚠️ Token no comienza con "Bearer ", agregando...');
+    // ✅ CORRECCIÓN: Verificar y corregir el formato SIN duplicar "Bearer "
+    if (token.startsWith('Bearer ')) {
+        console.log('✅ Token ya tiene formato correcto');
+    } else {
+        console.log('⚠️ Token sin "Bearer ", corrigiendo...');
+        // Guardar solo si no tiene "Bearer "
         localStorage.setItem('jwtToken', 'Bearer ' + token);
     }
     
     return true;
+}   
+function getToken() {
+    let token = localStorage.getItem('jwtToken');
+    if (!token) return null;
+    
+    // ✅ CORRECCIÓN: Si el token ya tiene "Bearer ", devolverlo tal cual
+    // Si no lo tiene, NO agregarlo aquí, dejar que verifyToken lo corrija
+    return token;
 }
-
 // En todas las funciones que usan fetch, agrega:
 // ✅ FUNCIÓN viewCotizacion CORREGIDA
 async function viewCotizacion(idCotizacion) {
@@ -1895,26 +2020,32 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Verificar token primero
     if (!verifyToken()) {
-        alert('Sesión expirada. Por favor, inicie sesión nuevamente.');
-        window.location.href = 'index.html';
+        handleAuthError();
         return;
     }
     
-    // Cargar datos en paralelo para mejor rendimiento
-    await Promise.all([
-        loadClientes(),
-        loadServicios(),
-        loadProductosCot()
-    ]);
-    
-    await getAllCotizaciones();
-    
-    // Establecer fecha por defecto
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    document.getElementById('fechaPreferida').value = tomorrow.toISOString().split('T')[0];
-    
-    console.log("✅ Aplicación inicializada correctamente");
+    try {
+        // Cargar datos en paralelo
+        await Promise.all([
+            loadClientes(),
+            loadServicios(),
+            loadProductosCot()
+        ]);
+        
+        await getAllCotizaciones();
+        
+        // Establecer fecha por defecto
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const fechaInput = document.getElementById('fechaPreferida');
+        if (fechaInput) {
+            fechaInput.value = tomorrow.toISOString().split('T')[0];
+        }
+        
+        console.log("✅ Aplicación inicializada correctamente");
+    } catch (error) {
+        console.error("❌ Error en inicialización:", error);
+    }
 });
     function openAddQuoteModal() {
         document.getElementById('estadoGroup').style.display = 'none';
