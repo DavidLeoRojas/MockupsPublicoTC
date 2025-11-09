@@ -1249,34 +1249,62 @@
         document.getElementById('cantidadProductoCot').value = '1';
     });
 
-    function renderDetalleCotizacion() {
-        const container = document.getElementById('detalleCotizacionList');
-        if (!container) return;
-        
-        if (detalleCotizacion.length === 0) {
-            container.innerHTML = '<p style="text-align: center; color: #718096;">No hay productos agregados.</p>';
-            calcularCostoTotal();
-            return;
-        }
-        
-        container.innerHTML = '';
-        detalleCotizacion.forEach((item, index) => {
-            const div = document.createElement('div');
-            div.className = 'detalle-factura-item';
-            div.innerHTML = `
-                <div>
-                    <strong>${item.nombreProducto}</strong><br>
-                    Cantidad: ${item.cantidad} x $${item.precioUnitario.toFixed(2)} = $${item.subtotal.toFixed(2)}
-                </div>
-                <div class="detalle-factura-controls">
-                    <button class="btn-sm edit-btn" onclick="editDetalleCotItem(${index})">✏️</button>
-                    <button class="btn-sm remove-btn" onclick="removeDetalleCotItem(${index})">🗑️</button>
-                </div>
-            `;
-            container.appendChild(div);
-        });
-        calcularCostoTotal();
+ function renderDetalleCotizacion() {
+    const container = document.getElementById('detalleCotizacionList');
+    if (!container) {
+        console.error('❌ No se encontró el contenedor de productos');
+        return;
     }
+    
+    console.log("🔄 Renderizando productos:", detalleCotizacion);
+    
+    if (detalleCotizacion.length === 0) {
+        container.innerHTML = '<p style="text-align: center; color: #718096; padding: 2rem;">No hay productos agregados.</p>';
+        calcularCostoTotal();
+        return;
+    }
+    
+    container.innerHTML = '';
+    detalleCotizacion.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'detalle-factura-item';
+        div.style.cssText = `
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+        `;
+        
+        div.innerHTML = `
+            <div style="flex: 1;">
+                <strong style="color: #2c5f41;">${item.nombreProducto}</strong><br>
+                <small style="color: #718096;">ID: ${item.idProducto}</small><br>
+                <span style="color: #4a5568; font-size: 0.9em;">
+                    Cantidad: ${item.cantidad} x $${item.precioUnitario?.toFixed(2) || '0.00'} = 
+                    <strong>$${item.subtotal?.toFixed(2) || '0.00'}</strong>
+                </span>
+            </div>
+            <div class="detalle-factura-controls" style="display: flex; gap: 0.5rem;">
+                <button class="btn-sm edit-btn" onclick="editDetalleCotItem(${index})" 
+                        style="background: #f6ad55; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                    ✏️
+                </button>
+                <button class="btn-sm remove-btn" onclick="removeDetalleCotItem(${index})" 
+                        style="background: #f56565; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                    🗑️
+                </button>
+            </div>
+        `;
+        container.appendChild(div);
+    });
+    
+    calcularCostoTotal();
+    console.log("✅ Productos renderizados correctamente");
+}
 
     function editDetalleCotItem(index) {
         const item = detalleCotizacion[index];
@@ -1401,7 +1429,7 @@ function validarDatosAntesDeEnviar(formData) {
 }
 
     // ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
-    async function handleQuoteFormSubmit(event) {
+ async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
@@ -1476,13 +1504,6 @@ function validarDatosAntesDeEnviar(formData) {
         const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
 
-        // Validar que el costo total sea válido
-        if (isNaN(costoTotalCalculado) || costoTotalCalculado < 0) {
-            alert("El costo total debe ser un número válido y positivo.");
-            isSubmitting = false;
-            return;
-        }
-
         // Preparar detalle de productos
         let detalleCotizacionData = [];
         if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
@@ -1493,63 +1514,68 @@ function validarDatosAntesDeEnviar(formData) {
                 precioUnitario: parseFloat(item.precioUnitario) || 0,
                 subtotal: parseFloat(item.subtotal) || 0
             }));
-
-            // Validar cada producto
-            for (let producto of detalleCotizacionData) {
-                if (!producto.idProducto) {
-                    alert("Todos los productos deben tener un ID válido.");
-                    isSubmitting = false;
-                    return;
-                }
-                if (producto.cantidad <= 0) {
-                    alert("La cantidad de productos debe ser mayor a 0.");
-                    isSubmitting = false;
-                    return;
-                }
-            }
         }
 
-        // Estructura de datos - PROBAR DIFERENTES ESTRUCTURAS
-        const formData = {
-            dniCliente: dniCliente,
-            fechaPreferida: fechaPreferida,
-            prioridad: prioridad,
-            descripcionProblema: descripcion,
-            notasInternas: notas || '',
-            estado: estadoBackend,
-            detalleCotizacion: detalleCotizacionData,
-            costoTotalCotizacion: costoTotalCalculado,
-            valorServicio: valorServicioInput
-        };
+        // ✅ CORRECCIÓN CRÍTICA: ESTRUCTURA DE DATOS DIFERENTE PARA CREAR VS EDITAR
+        let formData;
+        
+        if (currentEditId) {
+            // ✅ PARA EDITAR - Incluir el ID de la cotización
+            formData = {
+                idCotizacion: currentEditId, // ← ESTE ES EL CAMPO CLAVE QUE FALTABA
+                dniCliente: dniCliente,
+                fechaPreferida: fechaPreferida,
+                prioridad: prioridad,
+                descripcionProblema: descripcion,
+                notasInternas: notas || '',
+                estado: estadoBackend,
+                detalleCotizacion: detalleCotizacionData,
+                costoTotalCotizacion: costoTotalCalculado,
+                valorServicio: valorServicioInput
+            };
+        } else {
+            // ✅ PARA CREAR NUEVA - El backend necesita que generemos el ID
+            const nuevoId = generarIdCotizacion(); // Función que vamos a crear
+            formData = {
+                idCotizacion: nuevoId, // ← GENERAR ID PARA NUEVA COTIZACIÓN
+                dniCliente: dniCliente,
+                fechaPreferida: fechaPreferida,
+                prioridad: prioridad,
+                descripcionProblema: descripcion,
+                notasInternas: notas || '',
+                estado: estadoBackend,
+                detalleCotizacion: detalleCotizacionData,
+                costoTotalCotizacion: costoTotalCalculado,
+                valorServicio: valorServicioInput
+            };
+        }
 
         console.log("🚀 ENVIANDO DATOS AL BACKEND:", JSON.stringify(formData, null, 2));
 
-        const url = currentEditId 
-            ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
-            : `${API_COTIZACIONES_URL}/con-productos`;
-        const method = currentEditId ? 'PUT' : 'POST';
+        // ✅ CORRECCIÓN: Usar endpoint diferente para crear vs editar
+        let url, method;
+        
+        if (currentEditId) {
+            // Editar - PUT al endpoint específico
+            url = `${API_COTIZACIONES_URL}/${currentEditId}/con-productos`;
+            method = 'PUT';
+        } else {
+            // Crear - POST al endpoint base
+            url = `${API_COTIZACIONES_URL}/con-productos`;
+            method = 'POST';
+        }
 
         console.log("📤 Realizando petición:", { url, method });
-
-        // Realizar la petición con timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
 
         const response = await fetch(url, {
             method: method,
             headers: headers,
-            body: JSON.stringify(formData),
-            signal: controller.signal
+            body: JSON.stringify(formData)
         });
-
-        clearTimeout(timeoutId);
 
         console.log("📥 RESPUESTA DEL SERVIDOR:", {
             status: response.status,
-            statusText: response.statusText,
-            headers: Object.fromEntries(response.headers.entries()),
-            ok: response.ok,
-            url: response.url
+            statusText: response.statusText
         });
 
         // Obtener el contenido de la respuesta
@@ -1559,31 +1585,13 @@ function validarDatosAntesDeEnviar(formData) {
         if (!response.ok) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;
             
-            // Intentar extraer más información del error
             if (responseText) {
                 try {
                     const errorJson = JSON.parse(responseText);
-                    errorMessage = errorJson.message || errorJson.error || errorJson.details || responseText;
+                    errorMessage = errorJson.message || errorJson.error || responseText;
                 } catch {
                     errorMessage = responseText || errorMessage;
                 }
-            }
-
-            // Errores específicos por código de estado
-            switch (response.status) {
-                case 400:
-                    errorMessage = `Error de validación (400): ${errorMessage}\n\nPosibles causas:\n- Estructura de datos incorrecta\n- Campos requeridos faltantes\n- Tipos de datos inválidos\n- Validaciones de negocio no cumplidas`;
-                    break;
-                case 401:
-                    errorMessage = `No autorizado (401): ${errorMessage}`;
-                    handleAuthError();
-                    return;
-                case 404:
-                    errorMessage = `Recurso no encontrado (404): ${errorMessage}`;
-                    break;
-                case 500:
-                    errorMessage = `Error interno del servidor (500): ${errorMessage}`;
-                    break;
             }
 
             throw new Error(errorMessage);
@@ -1604,13 +1612,8 @@ function validarDatosAntesDeEnviar(formData) {
         await getAllCotizaciones();
         
     } catch (error) {
-        console.error("❌ ERROR COMPLETO AL GUARDAR COTIZACIÓN:", error);
-        
-        if (error.name === 'AbortError') {
-            alert('⏰ La solicitud tardó demasiado tiempo. Por favor, intente nuevamente.');
-        } else {
-            alert(`❌ Error al guardar la cotización:\n\n${error.message}`);
-        }
+        console.error("❌ ERROR AL GUARDAR COTIZACIÓN:", error);
+        alert(`❌ Error al guardar la cotización:\n\n${error.message}`);
         
     } finally {
         // Restaurar estado del botón
@@ -1618,6 +1621,29 @@ function validarDatosAntesDeEnviar(formData) {
         submitBtn.disabled = false;
         isSubmitting = false;
     }
+}
+
+
+// Función para generar ID de cotización única
+function generarIdCotizacion() {
+    // Obtener el último ID de las cotizaciones existentes
+    if (allCotizaciones.length === 0) {
+        return 'COT001';
+    }
+    
+    // Encontrar el número más alto
+    const numeros = allCotizaciones
+        .map(cot => {
+            const match = cot.idCotizacion?.match(/COT(\d+)/);
+            return match ? parseInt(match[1]) : 0;
+        })
+        .filter(num => !isNaN(num));
+    
+    const maxNum = Math.max(...numeros);
+    const nuevoNum = maxNum + 1;
+    
+    // Formatear con 3 dígitos
+    return `COT${nuevoNum.toString().padStart(3, '0')}`;
 }
 async function probarDiferentesEstructuras(datosOriginales) {
     console.log("🧪 PROBANDO DIFERENTES ESTRUCTURAS DE DATOS");
@@ -2108,39 +2134,58 @@ async function editCotizacion(id) {
         
         // Esperar a que se carguen los clientes antes de seleccionar
         setTimeout(() => {
-            document.getElementById('clienteSelect').value = cot.dniCliente;
-        }, 100);
+            const clienteSelect = document.getElementById('clienteSelect');
+            if (clienteSelect) {
+                clienteSelect.value = cot.dniCliente;
+            }
+        }, 500);
         
         document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
         document.getElementById('prioridad').value = cot.prioridad || 'Media';
         document.getElementById('descripcion').value = cot.descripcionProblema || '';
         document.getElementById('notas').value = cot.notasInternas || '';
 
-        // Cargar productos de la cotización
+        // ✅ CORRECCIÓN CRÍTICA: Cargar productos de la cotización
+        console.log("📦 Procesando productos de la cotización:", cot.detalleCotizacion);
+        
+        detalleCotizacion = []; // Limpiar array
+        
         if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
-            detalleCotizacion = cot.detalleCotizacion
-                .filter(item => item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO")
-                .map(item => ({
-                    idProducto: item.idProducto,
-                    nombreProducto: item.nombreProducto || 'Producto no disponible',
-                    cantidad: item.cantidad || 1,
-                    precioUnitario: item.precioUnitario || 0,
-                    subtotal: (item.precioUnitario || 0) * (item.cantidad || 1)
-                }));
+            cot.detalleCotizacion.forEach((item, index) => {
+                // ✅ FILTRAR PRODUCTOS VÁLIDOS - El backend tiene productos null
+                if (item && item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO") {
+                    const productoValido = {
+                        idProducto: item.idProducto,
+                        nombreProducto: item.nombreProducto || `Producto ${index + 1}`,
+                        cantidad: parseInt(item.cantidad) || 1,
+                        precioUnitario: parseFloat(item.precioUnitario) || 0,
+                        subtotal: parseFloat(item.subtotal) || 0
+                    };
+                    
+                    console.log(`✅ Agregando producto ${index + 1}:`, productoValido);
+                    detalleCotizacion.push(productoValido);
+                } else {
+                    console.warn(`⚠️ Producto ${index + 1} inválido o eliminado:`, item);
+                }
+            });
+            
+            console.log(`📊 Total de productos válidos cargados: ${detalleCotizacion.length}`);
         } else {
+            console.log("📭 No hay productos en esta cotización");
             detalleCotizacion = [];
         }
         
+        // Renderizar productos
         renderDetalleCotizacion();
         calcularCostoTotal();
 
         // Guardar ID para la actualización
         currentEditId = id;
         
-        console.log("✅ Formulario de edición listo para cotización:", id);
+        console.log("✅ Formulario de edición listo para cotización:", id, "con", detalleCotizacion.length, "productos");
 
     } catch (error) {
-        console.error('Error al cargar cotización para editar:', error);
+        console.error('❌ Error al cargar cotización para editar:', error);
         alert('Error al cargar la cotización para editar: ' + error.message);
     }
 }
