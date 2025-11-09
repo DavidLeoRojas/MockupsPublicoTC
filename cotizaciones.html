@@ -17,70 +17,68 @@
             color: #2d3748;
         }
 
-/* Modal de productos */
-/* Estilos para el botón de ver productos */
-.btn-ver-productos {
-    background: #4a8b64;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9em;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    transition: all 0.3s ease;
-    font-weight: 600;
-}
+        .btn-ver-productos {
+            background: #4a8b64;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
 
-.btn-ver-productos:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-}
+        .btn-ver-productos:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
 
-.btn-ver-productos:active {
-    transform: translateY(0);
-}
+        .btn-ver-productos:active {
+            transform: translateY(0);
+        }
 
-/* Estado cuando no hay productos */
-.btn-ver-productos[style*="background: #718096"] {
-    background: #718096 !important;
-}
+        .btn-ver-productos[style*="background: #718096"] {
+            background: #718096 !important;
+        }
 
-.btn-ver-productos[style*="background: #718096"]:hover {
-    background: #5a6c7d !important;
-}
-.productos-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-}
+        .btn-ver-productos[style*="background: #718096"]:hover {
+            background: #5a6c7d !important;
+        }
 
-.productos-modal-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 600px;
-    width: 90%;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-.sidebar {
+        .productos-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .productos-modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .sidebar {
             position: fixed;
             left: 0;
             top: 0;
             width: 280px;
             height: 100vh;
-            background: 
-                        url('docs/assets/img/BackgroundMenu.png');
+            background: url('docs/assets/img/BackgroundMenu.png');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
@@ -128,32 +126,7 @@
         .nav-item {
             margin: 0.5rem 1rem;
         }
-.token-expired-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-}
 
-.token-expired-content {
-    background: white;
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-}
-
-.token-expired-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
         .nav-link {
             display: flex;
             align-items: center;
@@ -431,31 +404,31 @@
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
-.productos-cell:hover {
-    background-color: #f7fafc !important;
-}
 
-/* Tooltip mejorado */
-.productos-cell {
-    position: relative;
-}
+        .productos-cell:hover {
+            background-color: #f7fafc !important;
+        }
 
-.productos-cell:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #2d3748;
-    color: white;
-    padding: 0.5rem;
-    border-radius: 6px;
-    font-size: 0.8em;
-    white-space: pre-line;
-    z-index: 1000;
-    min-width: 200px;
-    text-align: left;
-}
+        .productos-cell {
+            position: relative;
+        }
+
+        .productos-cell:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2d3748;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 6px;
+            font-size: 0.8em;
+            white-space: pre-line;
+            z-index: 1000;
+            min-width: 200px;
+            text-align: left;
+        }
 
         .quotes-table th {
             background: #f7fafc;
@@ -511,8 +484,8 @@
             cursor: pointer;
             border: none;
             transition: all 0.3s ease;
-            width: 80px; /* Añadimos esta línea para fijar el ancho */
-            text-align: center; /* Opcional: para centrar el texto dentro del botón */
+            width: 80px;
+            text-align: center;
         }
 
         .btn-view {
@@ -628,6 +601,33 @@
             margin-left: 0.5rem;
         }
 
+        .token-expired-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .token-expired-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .token-expired-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
@@ -672,7 +672,7 @@
     
     <div class="sidebar">
         <div class="sidebar-header">
-        <div class="logo">
+            <div class="logo">
                 <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
@@ -794,7 +794,7 @@
                             <option value="">Todos</option>
                             <option value="PENDIENTE">Pendiente</option>
                             <option value="APROBADA">Aprobada</option>
-                            <option value="RECHAZADA">Rechazada</option> <!-- ← CAMBIADO -->
+                            <option value="RECHAZADA">Rechazada</option>
                             <option value="FINALIZADA">Finalizada</option>
                         </select>
                     </div>
@@ -834,7 +834,7 @@
                     </thead>
                     <tbody id="cotizacionesTableBody">
                         <tr>
-                            <td colspan="7" class="loading">Cargando cotizaciones...</td>
+                            <td colspan="8" class="loading">Cargando cotizaciones...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -842,312 +842,192 @@
         </div>
     </div>
 
- <!-- Modal Agregar/Editar Cotización -->
-<div class="modal" id="addQuoteModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2 class="modal-title" id="quoteModalTitle">Nueva Cotización</h2>
-            <button class="close-btn" onclick="closeModal('addQuoteModal')">&times;</button>
+    <!-- Modal Agregar/Editar Cotización -->
+    <div class="modal" id="addQuoteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title" id="quoteModalTitle">Nueva Cotización</h2>
+                <button class="close-btn" onclick="closeModal('addQuoteModal')">&times;</button>
+            </div>
+            <form id="quoteForm">
+                <input type="hidden" id="editingQuoteId" value="">
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Tipo Cliente *</label>
+                        <select id="clienteTipo" class="form-control" onchange="toggleClienteInput()" required>
+                            <option value="existente">Cliente Existente</option>
+                            <option value="nuevo">Nuevo Cliente</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="clienteExistenteGroup">
+                        <label>Seleccionar Cliente *</label>
+                        <select name="dni_cliente" id="clienteSelect" class="form-control" required>
+                            <option value="">Cargando clientes...</option>
+                        </select>
+                    </div>
+                </div>
+                <div id="nuevoClienteFields" style="display: none;">
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>DNI *</label>
+                            <input type="text" name="dni_nuevo" id="dniNuevo" class="form-control" placeholder="123456789">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo DNI *</label>
+                            <select name="tipo_dni" id="tipoDniNuevo" class="form-control">
+                                <option value="CC">CC - Cédula</option>
+                                <option value="NIT">NIT - Empresa</option>
+                                <option value="CE">CE - Extranjería</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Nombre Completo *</label>
+                            <input type="text" name="nombre_nuevo" id="nombreNuevo" class="form-control" placeholder="Nombre del cliente">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="tel" name="telefono_nuevo" id="telefonoNuevo" class="form-control" placeholder="3001234567">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Correo</label>
+                        <input type="email" name="correo_nuevo" id="correoNuevo" class="form-control" placeholder="cliente@email.com">
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha Preferida *</label>
+                        <input type="date" name="fecha_preferida" id="fechaPreferida" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridad</label>
+                        <select name="prioridad" id="prioridad" class="form-control">
+                            <option value="Media">Media</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Baja">Baja</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group" id="estadoGroup" style="display: none;">
+                    <label>Estado</label>
+                    <select name="estado" id="estadoSelect" class="form-control">
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Aprobada">Aprobada</option>
+                        <option value="Rechazada">Rechazada</option>
+                        <option value="Finalizada">Finalizada</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="valorServicioCotizacion">Valor del Servicio (COP)</label>
+                    <input type="number"
+                        name="valorServicioCotizacion"
+                        id="valorServicioCotizacion"
+                        class="form-control"
+                        min="0"
+                        step="1000"
+                        placeholder="Ej: 200000">
+                    <small class="form-text text-muted">Valor específico para el servicio principal en esta cotización.</small>
+                </div>
+                <div class="form-group">
+                    <label>Descripción del Problema *</label>
+                    <textarea name="descripcion" id="descripcion" class="form-control" rows="3" required placeholder="Describa el servicio requerido..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notas Internas</label>
+                    <textarea name="notas" id="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="costoTotalCalculado">Valor Total de la Cotización (COP)</label>
+                    <input type="number"
+                        name="costoTotalCalculado"
+                        id="costoTotalCalculado"
+                        class="form-control bg-light"
+                        readonly
+                        style="font-weight: bold; color: #2c5f41;"
+                        placeholder="Total se calculará aquí">
+                    <small class="form-text text-muted">Este valor incluye el 'Valor del Servicio' y el costo de los productos seleccionados.</small>
+                </div>
+
+                <div class="form-group">
+                    <h3 style="color: #2c5f41; margin-top: 1.5rem;">Productos del Inventario</h3>
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label>Producto</label>
+                            <select id="productoSelectCot" class="form-control">
+                                <option value="">Cargando productos...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Cantidad</label>
+                            <input type="number" id="cantidadProductoCot" class="form-control" min="1" value="1">
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" id="addProductBtnCot">Agregar Producto</button>
+                    <div class="detalle-cotizacion-container" style="background: #f9f9f9; padding: 1rem; border-radius: 12px; margin-top: 1rem;">
+                        <h4>Productos Agregados</h4>
+                        <div id="detalleCotizacionList">
+                            <!-- Productos se renderizan aquí -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addQuoteModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Cotización</button>
+                </div>
+            </form>
         </div>
-        <form id="quoteForm">
-            <input type="hidden" id="editingQuoteId" value="">
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label>Tipo Cliente *</label>
-                    <select id="clienteTipo" class="form-control" onchange="toggleClienteInput()" required>
-                        <option value="existente">Cliente Existente</option>
-                        <option value="nuevo">Nuevo Cliente</option>
-                    </select>
-                </div>
-                <div class="form-group" id="clienteExistenteGroup">
-                    <label>Seleccionar Cliente *</label>
-                    <select name="dni_cliente" id="clienteSelect" class="form-control" required>
-                        <option value="">Cargando clientes...</option>
-                    </select>
-                </div>
-            </div>
-            <div id="nuevoClienteFields" style="display: none;">
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>DNI *</label>
-                        <input type="text" name="dni_nuevo" id="dniNuevo" class="form-control" placeholder="123456789">
-                    </div>
-                    <div class="form-group">
-                        <label>Tipo DNI *</label>
-                        <select name="tipo_dni" id="tipoDniNuevo" class="form-control">
-                            <option value="CC">CC - Cédula</option>
-                            <option value="NIT">NIT - Empresa</option>
-                            <option value="CE">CE - Extranjería</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Nombre Completo *</label>
-                        <input type="text" name="nombre_nuevo" id="nombreNuevo" class="form-control" placeholder="Nombre del cliente">
-                    </div>
-                    <div class="form-group">
-                        <label>Teléfono</label>
-                        <input type="tel" name="telefono_nuevo" id="telefonoNuevo" class="form-control" placeholder="3001234567">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Correo</label>
-                    <input type="email" name="correo_nuevo" id="correoNuevo" class="form-control" placeholder="cliente@email.com">
-                </div>
-            </div>
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label>Fecha Preferida *</label>
-                    <input type="date" name="fecha_preferida" id="fechaPreferida" class="form-control" required>
-                </div>
-                <div class="form-group">
-                    <label>Prioridad</label>
-                    <select name="prioridad" id="prioridad" class="form-control">
-                        <option value="Media">Media</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Baja">Baja</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-group" id="estadoGroup" style="display: none;">
-                <label>Estado</label>
-                <select name="estado" id="estadoSelect" class="form-control">
-                    <option value="Pendiente">Pendiente</option>
-                    <option value="Aprobada">Aprobada</option>
-                    <option value="Rechazada">Rechazada</option>
-                    <option value="Finalizada">Finalizada</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="valorServicioCotizacion">Valor del Servicio (COP)</label>
-                <input type="number"
-                    name="valorServicioCotizacion"
-                    id="valorServicioCotizacion"
-                    class="form-control"
-                    min="0"
-                    step="1000"
-                    placeholder="Ej: 200000">
-                <small class="form-text text-muted">Valor específico para el servicio principal en esta cotización.</small>
-            </div>
-            <div class="form-group">
-                <label>Descripción del Problema *</label>
-                <textarea name="descripcion" id="descripcion" class="form-control" rows="3" required placeholder="Describa el servicio requerido..."></textarea>
-            </div>
-            <div class="form-group">
-                <label>Notas Internas</label>
-                <textarea name="notas" id="notas" class="form-control" rows="2" placeholder="Notas para uso interno..."></textarea>
-            </div>
-            <div class="form-group mt-3">
-                <label for="costoTotalCalculado">Valor Total de la Cotización (COP)</label>
-                <input type="number"
-                    name="costoTotalCalculado"
-                    id="costoTotalCalculado"
-                    class="form-control bg-light"
-                    readonly
-                    style="font-weight: bold; color: #2c5f41;"
-                    placeholder="Total se calculará aquí">
-                <small class="form-text text-muted">Este valor incluye el 'Valor del Servicio' y el costo de los productos seleccionados.</small>
-            </div>
-
-            <!-- 👇 SECCIÓN DE PRODUCTOS (NUEVA) 👇 -->
-            <div class="form-group">
-                <h3 style="color: #2c5f41; margin-top: 1.5rem;">Productos del Inventario</h3>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Producto</label>
-                        <select id="productoSelectCot" class="form-control">
-                            <option value="">Cargando productos...</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Cantidad</label>
-                        <input type="number" id="cantidadProductoCot" class="form-control" min="1" value="1">
-                    </div>
-                </div>
-                <button type="button" class="btn btn-primary" id="addProductBtnCot">Agregar Producto</button>
-                <div class="detalle-cotizacion-container" style="background: #f9f9f9; padding: 1rem; border-radius: 12px; margin-top: 1rem;">
-                    <h4>Productos Agregados</h4>
-                    <div id="detalleCotizacionList">
-                        <!-- Productos se renderizan aquí -->
-                    </div>
-                </div>
-            </div>
-            <!-- 👆 FIN SECCIÓN DE PRODUCTOS 👆 -->
-
-            <div class="form-grid-2" style="margin-top: 2rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addQuoteModal')">Cancelar</button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">Guardar Cotización</button>
-            </div>
-        </form>
     </div>
-</div>
+
 <script>
     const API_BASE_URL = 'https://backendgeminiambienta-v4-0-428l.onrender.com/api';
     const API_COTIZACIONES_URL = `${API_BASE_URL}/cotizaciones`;
     const API_PERSONAS_URL = `${API_BASE_URL}/personas`;
     const API_SERVICIOS_URL = `${API_BASE_URL}/servicios`;
-    // ✅ USAR PRODUCTOS
     const API_PRODUCTOS_URL = `${API_BASE_URL}/productos`;
 
     let allCotizaciones = [];
     let allServicios = [];
     let clientesData = [];
-    // ✅ USAR productosDataCot
     let productosDataCot = [];
     let currentEditId = null;
     let isSubmitting = false;
-    // ✅ USAR idProducto en el array
-    let detalleCotizacion = []; // Array para almacenar los productos de la cotización
+    let detalleCotizacion = [];
 
-
-
-    // ===== SISTEMA MEJORADO DE GESTIÓN DE TOKENS =====
-class TokenManager {
-    static async getValidToken() {
-        let token = localStorage.getItem('jwtToken');
-        
+    // ===== SISTEMA SIMPLIFICADO DE AUTENTICACIÓN =====
+    function getAuthHeaders() {
+        const token = localStorage.getItem('jwtToken');
         if (!token) {
-            console.log('❌ No hay token disponible');
-            throw new Error('NO_TOKEN');
-        }
-
-        // Verificar si el token es válido
-        if (await this.isTokenValid(token)) {
-            console.log('✅ Token válido');
-            return token;
-        }
-
-        // Intentar renovar el token
-        console.log('🔄 Token expirado, intentando renovar...');
-        return await this.renewToken();
-    }
-
-    static async isTokenValid(token) {
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const expirationTime = payload.exp * 1000;
-            const currentTime = Date.now();
-            const bufferTime = 5 * 60 * 1000; // 5 minutos de buffer
-
-            const isValid = expirationTime - currentTime > bufferTime;
-            
-            console.log('🔍 Verificación token:', {
-                expira: new Date(expirationTime).toLocaleString(),
-                actual: new Date(currentTime).toLocaleString(),
-                minutosRestantes: Math.floor((expirationTime - currentTime) / 1000 / 60),
-                válido: isValid
-            });
-
-            return isValid;
-        } catch (error) {
-            console.error('❌ Error verificando token:', error);
-            return false;
-        }
-    }
-
-    static async renewToken() {
-        try {
-            console.log('🔄 Iniciando renovación de token...');
-            
-            const savedEmail = localStorage.getItem('userEmail');
-            const savedPassword = localStorage.getItem('userPassword');
-            
-            if (!savedEmail || !savedPassword) {
-                console.error('❌ No hay credenciales guardadas');
-                throw new Error('NO_CREDENTIALS');
-            }
-
-            const loginData = {
-                correo: savedEmail,
-                password: savedPassword
-            };
-
-            console.log('📤 Enviando solicitud de renovación...');
-            const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(loginData)
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('❌ Error en respuesta de renovación:', errorText);
-                throw new Error(`RENEW_FAILED: ${errorText}`);
-            }
-
-            const data = await response.json();
-            const newToken = data.token;
-
-            if (!newToken) {
-                throw new Error('NO_TOKEN_RECEIVED');
-            }
-
-            // Guardar el nuevo token
-            localStorage.setItem('jwtToken', newToken);
-            console.log('✅ Token renovado exitosamente');
-
-            return newToken;
-        } catch (error) {
-            console.error('❌ Error renovando token:', error);
-            this.clearAuthData();
-            throw error;
-        }
-    }
-
-    static clearAuthData() {
-        localStorage.removeItem('jwtToken');
-        localStorage.removeItem('userEmail');
-        localStorage.removeItem('userPassword');
-    }
-
-    static async getAuthHeaders() {
-        try {
-            const token = await this.getValidToken();
-            return {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            };
-        } catch (error) {
-            console.error('❌ Error obteniendo headers de autenticación:', error);
-            this.handleAuthError(error.message);
+            console.error('❌ No hay token disponible');
+            handleAuthError();
             return {};
         }
+        
+        return {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
     }
 
-    static handleAuthError(errorType) {
-        console.error('🔐 Error de autenticación:', errorType);
+    function handleAuthError() {
+        console.error('🔐 Error de autenticación - Token inválido o expirado');
+        localStorage.removeItem('jwtToken');
         
-        // Evitar múltiples modales
-        if (document.getElementById('tokenExpiredModal')) return;
-
+        // Mostrar modal de error
         const modal = document.createElement('div');
-        modal.id = 'tokenExpiredModal';
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        `;
-        
+        modal.className = 'token-expired-modal';
         modal.innerHTML = `
-            <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 400px; width: 90%; text-align: center;">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">🔐</div>
+            <div class="token-expired-content">
+                <div class="token-expired-icon">🔐</div>
                 <h3 style="color: #e53e3e; margin-bottom: 1rem;">Sesión Expirada</h3>
                 <p style="margin-bottom: 1.5rem; color: #4a5568;">
                     Su sesión ha expirado o el token es inválido.<br>
                     Por favor, inicie sesión nuevamente.
                 </p>
-                <button onclick="TokenManager.redirectToLogin()" 
+                <button onclick="redirectToLogin()" 
                         style="background: #e53e3e; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
                     Iniciar Sesión
                 </button>
@@ -1156,11 +1036,14 @@ class TokenManager {
         document.body.appendChild(modal);
     }
 
-    static redirectToLogin() {
-        this.clearAuthData();
+    function redirectToLogin() {
+        localStorage.removeItem('jwtToken');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userPassword');
         window.location.href = 'index.html';
     }
-}
+
+    // ===== FUNCIONES PRINCIPALES =====
     function handleError(error) {
         console.error('Error:', error);
         alert('Error: ' + (error.message || 'Por favor, intente nuevamente.'));
@@ -1170,6 +1053,7 @@ class TokenManager {
         const tipo = document.getElementById('clienteTipo').value;
         const existenteGroup = document.getElementById('clienteExistenteGroup');
         const nuevoFields = document.getElementById('nuevoClienteFields');
+        
         if (tipo === 'nuevo') {
             existenteGroup.style.display = 'none';
             nuevoFields.style.display = 'block';
@@ -1184,177 +1068,174 @@ class TokenManager {
             document.getElementById('nombreNuevo').removeAttribute('required');
         }
     }
-function handleAuthError() {
-    TokenManager.handleAuthError('AUTH_ERROR');
-}
-async function loadClientes() {
-    try {
-        const headers = await getAuthHeaders();
-        if (!headers.Authorization) return;
 
-        console.log('🔄 Cargando clientes...');
-        const response = await fetch(API_PERSONAS_URL, { headers });
-        
-        if (response.status === 401) {
-            throw new Error('UNAUTHORIZED');
-        }
-        
-        if (!response.ok) throw new Error('Error al cargar clientes');
-        
-        const personas = await response.json();
-        clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
-        const select = document.getElementById('clienteSelect');
-        
-        if (select) {
-            select.innerHTML = '<option value="">Seleccione un cliente</option>';
-            clientesData.forEach(cliente => {
-                const option = document.createElement('option');
-                option.value = cliente.dni;
-                option.textContent = `${cliente.nombre} - ${cliente.dni}`;
-                select.appendChild(option);
-            });
-        }
-        console.log('✅ Clientes cargados:', clientesData.length);
-    } catch (error) {
-        console.error('Error cargando clientes:', error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
+    async function loadClientes() {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers.Authorization) return;
+
+            console.log('🔄 Cargando clientes...');
+            const response = await fetch(API_PERSONAS_URL, { headers });
+            
+            if (response.status === 401) {
+                handleAuthError();
+                return;
+            }
+            
+            if (!response.ok) throw new Error('Error al cargar clientes');
+            
+            const personas = await response.json();
+            clientesData = personas.filter(p => p.rol && p.rol.toLowerCase() === 'cliente');
+            const select = document.getElementById('clienteSelect');
+            
+            if (select) {
+                select.innerHTML = '<option value="">Seleccione un cliente</option>';
+                clientesData.forEach(cliente => {
+                    const option = document.createElement('option');
+                    option.value = cliente.dni;
+                    option.textContent = `${cliente.nombre} - ${cliente.dni}`;
+                    select.appendChild(option);
+                });
+            }
+            console.log('✅ Clientes cargados:', clientesData.length);
+        } catch (error) {
+            console.error('Error cargando clientes:', error);
+            const select = document.getElementById('clienteSelect');
+            if (select) {
+                select.innerHTML = '<option value="">Error al cargar clientes</option>';
+            }
         }
     }
-}
 
-async function loadProductosCot() {
-    try {
-        const headers = await getAuthHeaders();
-        if (!headers.Authorization) return;
-        
-        console.log('🔄 Cargando productos...');
-        const response = await fetch(API_PRODUCTOS_URL, { headers });
-        
-        if (response.status === 401) {
-            throw new Error('UNAUTHORIZED');
-        }
-        
-        if (!response.ok) throw new Error('Error al cargar productos');
-        
-        productosDataCot = await response.json();
-        const select = document.getElementById('productoSelectCot');
-        
-        if (select) {
-            select.innerHTML = '<option value="">Seleccione un producto</option>';
-            productosDataCot.forEach(prod => {
-                const option = document.createElement('option');
-                option.value = prod.idProducto;
-                option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
-                option.dataset.precio = prod.precioActual || 0;
-                select.appendChild(option);
-            });
-        }
-        console.log('✅ Productos cargados:', productosDataCot.length);
-    } catch (error) {
-        console.error("Error al cargar productos:", error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
+    async function loadProductosCot() {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers.Authorization) return;
+            
+            console.log('🔄 Cargando productos...');
+            const response = await fetch(API_PRODUCTOS_URL, { headers });
+            
+            if (response.status === 401) {
+                handleAuthError();
+                return;
+            }
+            
+            if (!response.ok) throw new Error('Error al cargar productos');
+            
+            productosDataCot = await response.json();
+            const select = document.getElementById('productoSelectCot');
+            
+            if (select) {
+                select.innerHTML = '<option value="">Seleccione un producto</option>';
+                productosDataCot.forEach(prod => {
+                    const option = document.createElement('option');
+                    option.value = prod.idProducto;
+                    option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
+                    option.dataset.precio = prod.precioActual || 0;
+                    select.appendChild(option);
+                });
+            }
+            console.log('✅ Productos cargados:', productosDataCot.length);
+        } catch (error) {
+            console.error("Error al cargar productos:", error);
+            const select = document.getElementById('productoSelectCot');
+            if (select) {
+                select.innerHTML = '<option value="">Error al cargar productos</option>';
+            }
         }
     }
-}
 
-async function loadServicios() {
-    try {
-        const headers = await getAuthHeaders();
-        if (!headers.Authorization) return;
-        
-        console.log('🔄 Cargando servicios...');
-        const response = await fetch(API_SERVICIOS_URL, { headers });
-        
-        if (response.status === 401) {
-            throw new Error('UNAUTHORIZED');
-        }
-        
-        if (!response.ok) throw new Error('Error al cargar servicios');
-        
-        allServicios = await response.json();
-        console.log('✅ Servicios cargados:', allServicios.length);
-    } catch (error) {
-        console.error('Error cargando servicios:', error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
-        }
-        allServicios = [];
-    }
-}
-
-    // ✅ CARGAR PRODUCTOS
-async function loadProductosCot() {
-    try {
-        const headers = await getAuthHeaders(); // ← Agregar await
-        if (!headers.Authorization) return;
-        
-        console.log('🔄 Cargando productos...');
-        const response = await fetch(API_PRODUCTOS_URL, { headers });
-        
-        if (response.status === 401) {
-            handleAuthError();
-            return;
-        }
-        
-        if (!response.ok) throw new Error('Error al cargar productos');
-        
-        productosDataCot = await response.json();
-        const select = document.getElementById('productoSelectCot');
-        
-        if (select) {
-            select.innerHTML = '<option value="">Seleccione un producto</option>';
-            productosDataCot.forEach(prod => {
-                const option = document.createElement('option');
-                option.value = prod.idProducto;
-                option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
-                option.dataset.precio = prod.precioActual || 0;
-                select.appendChild(option);
-            });
-        }
-        console.log('✅ Productos cargados:', productosDataCot.length);
-    } catch (error) {
-        console.error("Error al cargar productos:", error);
-        const select = document.getElementById('productoSelectCot');
-        if (select) {
-            select.innerHTML = '<option value="">Error al cargar productos</option>';
+    async function loadServicios() {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers.Authorization) return;
+            
+            console.log('🔄 Cargando servicios...');
+            const response = await fetch(API_SERVICIOS_URL, { headers });
+            
+            if (response.status === 401) {
+                handleAuthError();
+                return;
+            }
+            
+            if (!response.ok) throw new Error('Error al cargar servicios');
+            
+            allServicios = await response.json();
+            console.log('✅ Servicios cargados:', allServicios.length);
+        } catch (error) {
+            console.error('Error cargando servicios:', error);
+            allServicios = [];
         }
     }
-}
 
-    function isCotizacionVinculada(idCotizacion) {
-        return allServicios.some(servicio => 
-            servicio.idCotizacion === idCotizacion || 
-            (servicio.cotizacion && servicio.cotizacion.idCotizacion === idCotizacion)
-        );
+    async function getAllCotizaciones() {
+        try {
+            const headers = getAuthHeaders();
+            if (!headers.Authorization) return;
+            
+            console.log("🔄 Solicitando cotizaciones...");
+            
+            const response = await fetch(API_COTIZACIONES_URL, { headers });
+            
+            if (response.status === 401) {
+                handleAuthError();
+                return;
+            }
+            
+            console.log("📥 Respuesta recibida:", response.status);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || `Error ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log("✅ Cotizaciones cargadas:", data.length);
+            
+            allCotizaciones = data;
+            renderCotizaciones(allCotizaciones);
+            updateStats(allCotizaciones);
+            
+        } catch (error) {
+            console.error("❌ Error al obtener cotizaciones:", error);
+            
+            const tbody = document.getElementById('cotizacionesTableBody');
+            if (tbody) {
+                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Error al cargar cotizaciones: ' + error.message + '</td></tr>';
+            }
+        }
     }
 
-    // === PRODUCTOS EN COTIZACIÓN ===
+    // ===== FUNCIONES DE PRODUCTOS EN COTIZACIÓN =====
     document.getElementById('addProductBtnCot')?.addEventListener('click', function() {
         const productoId = document.getElementById('productoSelectCot').value;
         const cantidad = parseInt(document.getElementById('cantidadProductoCot').value) || 0;
+        
         if (!productoId || cantidad <= 0) {
             alert('⚠️ Seleccione un producto y una cantidad válida.');
             return;
         }
+        
         const producto = productosDataCot.find(p => p.idProducto === productoId);
         if (!producto) {
             alert('❌ Producto no encontrado.');
             return;
         }
+        
         if (cantidad > producto.stock) {
             alert(`❌ Stock insuficiente. Disponible: ${producto.stock}`);
             return;
         }
+        
         const precioUnitario = parseFloat(producto.precioActual) || 0;
         const subtotal = precioUnitario * cantidad;
         const existingItem = detalleCotizacion.find(item => item.idProducto === productoId);
+        
         if (existingItem) {
             alert(`⚠️ El producto "${producto.nombre}" ya está agregado.`);
             return;
         }
-        // ✅ AGREGAR CON idProducto
+        
         detalleCotizacion.push({
             idProducto: productoId,
             nombreProducto: producto.nombre,
@@ -1362,6 +1243,7 @@ async function loadProductosCot() {
             precioUnitario: precioUnitario,
             subtotal: subtotal
         });
+        
         renderDetalleCotizacion();
         document.getElementById('productoSelectCot').value = '';
         document.getElementById('cantidadProductoCot').value = '1';
@@ -1370,17 +1252,17 @@ async function loadProductosCot() {
     function renderDetalleCotizacion() {
         const container = document.getElementById('detalleCotizacionList');
         if (!container) return;
+        
         if (detalleCotizacion.length === 0) {
-            // ✅ MENSAJE DE PRODUCTOS
             container.innerHTML = '<p style="text-align: center; color: #718096;">No hay productos agregados.</p>';
-            calcularCostoTotal(); // <-- Recalcular total si se eliminan todos
+            calcularCostoTotal();
             return;
         }
+        
         container.innerHTML = '';
         detalleCotizacion.forEach((item, index) => {
             const div = document.createElement('div');
             div.className = 'detalle-factura-item';
-            // ✅ MOSTRAR nombreProducto
             div.innerHTML = `
                 <div>
                     <strong>${item.nombreProducto}</strong><br>
@@ -1393,13 +1275,14 @@ async function loadProductosCot() {
             `;
             container.appendChild(div);
         });
-        calcularCostoTotal(); // <-- Recalcular total cuando se renderiza la lista
+        calcularCostoTotal();
     }
 
     function editDetalleCotItem(index) {
         const item = detalleCotizacion[index];
         const nuevaCantidad = prompt(`Editar cantidad para "${item.nombreProducto}":`, item.cantidad);
         const cantidadNum = parseInt(nuevaCantidad);
+        
         if (!isNaN(cantidadNum) && cantidadNum > 0) {
             const producto = productosDataCot.find(p => p.idProducto === item.idProducto);
             if (producto && cantidadNum <= producto.stock) {
@@ -1413,815 +1296,242 @@ async function loadProductosCot() {
     }
 
     function removeDetalleCotItem(index) {
-        if (confirm('¿Remover este producto?')) { // ✅ MENSAJE
+        if (confirm('¿Remover este producto?')) {
             detalleCotizacion.splice(index, 1);
             renderDetalleCotizacion();
         }
     }
 
-    // === CORRECCIÓN EN calcularCostoTotal ===
-function calcularCostoTotal() {
-    // 1. Obtener el valor del servicio
-    const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
-
-    // 2. Calcular costo total desde productos
-    let costoTotalProductos = 0;
-    if (detalleCotizacion && Array.isArray(detalleCotizacion)) {
-        costoTotalProductos = detalleCotizacion.reduce((sum, item) => {
-            return sum + (parseFloat(item.subtotal) || 0);
-        }, 0);
-    }
-
-    // 3. Calcular el costo total final
-    const costoTotalFinal = valorServicioInput + costoTotalProductos;
-
-    // 4. Actualizar el campo
-    document.getElementById('costoTotalCalculado').value = costoTotalFinal.toFixed(2);
-    
-    console.log("💰 Cálculo total:", {
-        valorServicio: valorServicioInput,
-        costoProductos: costoTotalProductos,
-        total: costoTotalFinal
-    });
-}
-
-// === CORRECCIÓN DEL MAPEO DE ESTADOS ===
-
-async function handleQuoteFormSubmit(event) {
-    event.preventDefault();
-    if (isSubmitting) return;
-    isSubmitting = true;
-
-    try {
-        const headers = await TokenManager.getAuthHeaders();
-        if (!headers.Authorization) {
-            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-            window.location.href = 'index.html';
-            isSubmitting = false;
-            return;
-        }
-
-        // Calcular totales antes de enviar
-        calcularCostoTotal();
-        
-        const tipoCliente = document.getElementById('clienteTipo').value;
-        const fechaPreferida = document.getElementById('fechaPreferida').value;
-        const prioridad = document.getElementById('prioridad').value;
-        const descripcion = document.getElementById('descripcion').value.trim();
-        const notas = document.getElementById('notas').value.trim();
-        const estado = document.getElementById('estadoSelect').value;
-
-        // Validaciones básicas
-        if (!fechaPreferida || !descripcion) {
-            alert("Complete todos los campos obligatorios (Fecha Preferida y Descripción del Problema).");
-            isSubmitting = false;
-            return;
-        }
-
-        let dniCliente = '';
-        if (tipoCliente === 'existente') {
-            const clienteSelect = document.getElementById('clienteSelect');
-            dniCliente = clienteSelect.value.trim();
-            if (!dniCliente) {
-                alert("Seleccione un cliente válido.");
-                isSubmitting = false;
-                return;
-            }
-        } else {
-            dniCliente = document.getElementById('dniNuevo').value.trim();
-            if (!dniCliente) {
-                alert("Ingrese el DNI del cliente nuevo.");
-                isSubmitting = false;
-                return;
-            }
-        }
-
-        // Mapeo de estados
-        const estadoMap = {
-            'Pendiente': 'PENDIENTE',
-            'Aprobada': 'APROBADA', 
-            'Rechazada': 'RECHAZADA',
-            'Finalizada': 'FINALIZADA'
-        };
-
-        const estadoBackend = estadoMap[estado] || 'PENDIENTE';
-
-        // Validar productos
-        if (detalleCotizacion.length === 0) {
-            const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar?");
-            if (!confirmarSinProductos) {
-                isSubmitting = false;
-                return;
-            }
-        }
-
-        // Obtener valores numéricos correctos
-        const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
+    function calcularCostoTotal() {
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
-        const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
+        let costoTotalProductos = 0;
+        
+        if (detalleCotizacion && Array.isArray(detalleCotizacion)) {
+            costoTotalProductos = detalleCotizacion.reduce((sum, item) => {
+                return sum + (parseFloat(item.subtotal) || 0);
+            }, 0);
+        }
 
-        // Estructura de datos corregida
-        const formData = {
-            dniCliente: dniCliente,
-            fechaPreferida: fechaPreferidaParaEnviar,
-            prioridad: prioridad,
-            descripcionProblema: descripcion,
-            notasInternas: notas,
-            estado: estadoBackend,
-            detalleCotizacion: detalleCotizacion.map(item => ({
-                idProducto: item.idProducto,
-                nombreProducto: item.nombreProducto,
-                cantidad: parseInt(item.cantidad),
-                precioUnitario: parseFloat(item.precioUnitario),
-                subtotal: parseFloat(item.subtotal)
-            })),
-            costoTotalCotizacion: parseFloat(costoTotalCalculado),
-            valorServicio: parseFloat(valorServicioInput)
-        };
-
-        console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
-
-        const url = currentEditId 
-            ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
-            : `${API_COTIZACIONES_URL}/con-productos`;
-        const method = currentEditId ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-            method: method,
-            headers: headers,
-            body: JSON.stringify(formData)
+        const costoTotalFinal = valorServicioInput + costoTotalProductos;
+        document.getElementById('costoTotalCalculado').value = costoTotalFinal.toFixed(2);
+        
+        console.log("💰 Cálculo total:", {
+            valorServicio: valorServicioInput,
+            costoProductos: costoTotalProductos,
+            total: costoTotalFinal
         });
+    }
 
-        console.log("📥 Respuesta del servidor:", response.status);
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('UNAUTHORIZED');
+    // ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
+    async function handleQuoteFormSubmit(event) {
+        event.preventDefault();
+        if (isSubmitting) return;
+        isSubmitting = true;
+
+        try {
+            const headers = getAuthHeaders();
+            if (!headers.Authorization) {
+                alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                window.location.href = 'index.html';
+                isSubmitting = false;
+                return;
             }
-            const errorText = await response.text();
-            console.error("❌ Error del servidor:", errorText);
-            throw new Error(errorText || `Error ${response.status}`);
-        }
-        
-        const responseData = await response.json();
-        console.log("✅ Respuesta exitosa:", responseData);
-        alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
-        closeModal('addQuoteModal');
-        await getAllCotizaciones();
-        
-    } catch (error) {
-        console.error("❌ Error al guardar la cotización:", error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
-        } else {
-            alert(`❌ Error: ${error.message}`);
-        }
-    } finally {
-        isSubmitting = false;
-    }
-}
-    event.preventDefault();
-    if (isSubmitting) return;
-    isSubmitting = true;
 
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html';
-        isSubmitting = false;
-        return;
-    }
+            // Calcular totales antes de enviar
+            calcularCostoTotal();
+            
+            const tipoCliente = document.getElementById('clienteTipo').value;
+            const fechaPreferida = document.getElementById('fechaPreferida').value;
+            const prioridad = document.getElementById('prioridad').value;
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const notas = document.getElementById('notas').value.trim();
+            const estado = document.getElementById('estadoSelect').value;
 
-    // Calcular totales antes de enviar
-    calcularCostoTotal();
-    
-    const tipoCliente = document.getElementById('clienteTipo').value;
-    const fechaPreferida = document.getElementById('fechaPreferida').value;
-    const prioridad = document.getElementById('prioridad').value;
-    const descripcion = document.getElementById('descripcion').value.trim();
-    const notas = document.getElementById('notas').value.trim();
-    const estado = document.getElementById('estadoSelect').value;
-
-    // Validaciones básicas
-    if (!fechaPreferida || !descripcion) {
-        alert("Complete todos los campos obligatorios (Fecha Preferida y Descripción del Problema).");
-        isSubmitting = false;
-        return;
-    }
-
-    let dniCliente = '';
-    if (tipoCliente === 'existente') {
-        const clienteSelect = document.getElementById('clienteSelect');
-        dniCliente = clienteSelect.value.trim();
-        if (!dniCliente) {
-            alert("Seleccione un cliente válido.");
-            isSubmitting = false;
-            return;
-        }
-    } else {
-        dniCliente = document.getElementById('dniNuevo').value.trim();
-        if (!dniCliente) {
-            alert("Ingrese el DNI del cliente nuevo.");
-            isSubmitting = false;
-            return;
-        }
-    }
-
-    // ✅ CORRECCIÓN CRÍTICA: Mapeo correcto de estados
-    const estadoMap = {
-        'Pendiente': 'PENDIENTE',
-        'Aprobada': 'APROBADA', 
-        'Rechazada': 'RECHAZADA',
-        'Finalizada': 'FINALIZADA'
-    };
-
-    const estadoBackend = estadoMap[estado] || 'PENDIENTE';
-
-    // Validar productos
-    if (detalleCotizacion.length === 0) {
-        const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar?");
-        if (!confirmarSinProductos) {
-            isSubmitting = false;
-            return;
-        }
-    }
-
-    // ✅ CORRECCIÓN: Obtener valores numéricos correctos
-    const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
-    const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
-    const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
-
-    // ✅ CORRECCIÓN: Estructura de datos corregida
-    const formData = {
-        dniCliente: dniCliente,
-        fechaPreferida: fechaPreferidaParaEnviar,
-        prioridad: prioridad,
-        descripcionProblema: descripcion,
-        notasInternas: notas,
-        estado: estadoBackend, // ← ESTADO CORRECTO EN MAYÚSCULAS
-        detalleCotizacion: detalleCotizacion.map(item => ({
-            idProducto: item.idProducto,
-            nombreProducto: item.nombreProducto,
-            cantidad: parseInt(item.cantidad),
-            precioUnitario: parseFloat(item.precioUnitario),
-            subtotal: parseFloat(item.subtotal)
-        })),
-        costoTotalCotizacion: parseFloat(costoTotalCalculado),
-        valorServicio: parseFloat(valorServicioInput)
-    };
-
-    console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
-
-    try {
-        const url = currentEditId 
-            ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
-            : `${API_COTIZACIONES_URL}/con-productos`;
-        const method = currentEditId ? 'PUT' : 'POST';
-
-        const headers = {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-        };
-
-        const response = await fetch(url, {
-            method: method,
-            headers: headers,
-            body: JSON.stringify(formData)
-        });
-
-        console.log("📥 Respuesta del servidor:", response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("❌ Error del servidor:", errorText);
-            throw new Error(errorText || `Error ${response.status}`);
-        }
-        
-        const responseData = await response.json();
-        console.log("✅ Respuesta exitosa:", responseData);
-        alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
-        closeModal('addQuoteModal');
-        await getAllCotizaciones();
-        
-    } catch (error) {
-        console.error("❌ Error al guardar la cotización:", error);
-        alert(`❌ Error: ${error.message}`);
-    } finally {
-        isSubmitting = false;
-    }
-}
-
-async function getAllCotizaciones() {
-    try {
-        const headers = await getAuthHeaders();
-        if (!headers.Authorization) return;
-        
-        console.log("🔄 Solicitando cotizaciones...");
-        
-        const response = await fetch(API_COTIZACIONES_URL, { headers });
-        
-        if (response.status === 401) {
-            throw new Error('UNAUTHORIZED');
-        }
-        
-        console.log("📥 Respuesta recibida:", response.status);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Error ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log("✅ Cotizaciones cargadas:", data.length);
-        
-        allCotizaciones = data;
-        renderCotizaciones(allCotizaciones);
-        updateStats(allCotizaciones);
-        
-    } catch (error) {
-        console.error("❌ Error al obtener cotizaciones:", error);
-        
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
-        } else {
-            const tbody = document.getElementById('cotizacionesTableBody');
-            if (tbody) {
-                tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Error al cargar cotizaciones: ' + error.message + '</td></tr>';
+            // Validaciones básicas
+            if (!fechaPreferida || !descripcion) {
+                alert("Complete todos los campos obligatorios (Fecha Preferida y Descripción del Problema).");
+                isSubmitting = false;
+                return;
             }
-        }
-    }
-}
-// Agrega esta función para verificar y renovar el token
 
-
-// Función para renovar el token
-
-
-// === CORRECCIÓN EN renderCotizaciones - Mostrar cantidades correctas ===
-function renderCotizaciones(cotizaciones) {
-    const tbody = document.getElementById('cotizacionesTableBody');
-    if (cotizaciones.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay cotizaciones</td></tr>';
-        return;
-    }
-    
-    tbody.innerHTML = '';
-    cotizaciones.forEach(cot => {
-        console.log("🚀 Datos de la cotización para renderizar:", cot);
-
-        // Obtener nombre del cliente
-        const clienteNombre = cot.nombreCliente || 
-                              cot.cliente?.nombre || 
-                              clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
-                              'Cliente desconocido';
-
-        // ✅ CORRECCIÓN: Verificar productos correctamente
-        const tieneProductos = cot.detalleCotizacion && 
-                              Array.isArray(cot.detalleCotizacion) && 
-                              cot.detalleCotizacion.length > 0;
-        const cantidadProductos = tieneProductos ? cot.detalleCotizacion.length : 0;
-
-        // ✅ CORRECCIÓN: Mostrar costo total correctamente
-        const costoTotal = cot.costoTotalCotizacion || 0;
-
-        // Crear fila
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${cot.idCotizacion || 'N/A'}</td>
-            <td>${clienteNombre}</td>
-            <td>${formatDate(cot.fechaSolicitud)}</td>
-            <td>${formatDate(cot.fechaPreferida)}</td>
-            <td>
-                <button class="btn-ver-productos" 
-                        onclick="mostrarProductosCotizacion('${cot.idCotizacion}')"
-                        style="
-                            background: ${tieneProductos ? '#4a8b64' : '#718096'};
-                            color: white;
-                            border: none;
-                            padding: 0.5rem 1rem;
-                            border-radius: 8px;
-                            cursor: pointer;
-                            font-size: 0.9em;
-                            display: flex;
-                            align-items: center;
-                            gap: 0.5rem;
-                            transition: all 0.3s ease;
-                        "
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)'"
-                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                    ${tieneProductos ? '📦' : '📭'}
-                    ${tieneProductos ? `Ver Productos (${cantidadProductos})` : 'Sin Productos'}
-                </button>
-            </td>
-            <td>${formatCurrency(costoTotal)}</td>
-            <td>
-                <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">
-                    ${cot.estado || 'Pendiente'}
-                </span>
-                ${isCotizacionVinculada(cot.idCotizacion) ? '<span class="warning-badge">🔗 Con servicio</span>' : ''}
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-sm btn-view" onclick="viewCotizacion('${cot.idCotizacion}')">Ver</button>
-                    <button class="btn-sm btn-edit" onclick="editCotizacion('${cot.idCotizacion}')">Editar</button>
-                    <button class="btn-sm btn-delete" 
-                        onclick="deleteCotizacion('${cot.idCotizacion}')"
-                        ${isCotizacionVinculada(cot.idCotizacion) ? 'disabled title="No se puede eliminar: tiene servicios asociados"' : ''}>
-                        Eliminar
-                    </button>
-                </div>
-            </td>
-        `;
-        tbody.appendChild(row);
-    });
-}
-async function mostrarProductosCotizacion(idCotizacion) {
-    try {
-        const headers = await TokenManager.getAuthHeaders();
-        if (!headers.Authorization) {
-            TokenManager.handleAuthError('NO_TOKEN');
-            return;
-        }
-
-        console.log("🔄 Cargando detalles de cotización:", idCotizacion);
-        
-        // Obtener los datos completos de la cotización
-        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('UNAUTHORIZED');
+            let dniCliente = '';
+            if (tipoCliente === 'existente') {
+                const clienteSelect = document.getElementById('clienteSelect');
+                dniCliente = clienteSelect.value.trim();
+                if (!dniCliente) {
+                    alert("Seleccione un cliente válido.");
+                    isSubmitting = false;
+                    return;
+                }
+            } else {
+                dniCliente = document.getElementById('dniNuevo').value.trim();
+                if (!dniCliente) {
+                    alert("Ingrese el DNI del cliente nuevo.");
+                    isSubmitting = false;
+                    return;
+                }
             }
-            throw new Error('Cotización no encontrada');
-        }
-        
-        const cot = await response.json();
-        console.log("✅ Detalles de cotización cargados:", cot);
 
-        const clienteNombre = cot.nombreCliente || 
-                             cot.cliente?.nombre || 
-                             clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
-                             'Cliente desconocido';
+            // Mapeo de estados
+            const estadoMap = {
+                'Pendiente': 'PENDIENTE',
+                'Aprobada': 'APROBADA', 
+                'Rechazada': 'RECHAZADA',
+                'Finalizada': 'FINALIZADA'
+            };
 
-        // Verificar si hay productos
-        const tieneProductos = cot.detalleCotizacion && cot.detalleCotizacion.length > 0;
+            const estadoBackend = estadoMap[estado] || 'PENDIENTE';
 
-        let productosHTML = `
-            <div style="text-align: left; max-width: 500px;">
-                <h3 style="color: #2c5f41; margin-bottom: 1rem;">📦 Productos en Cotización</h3>
-                <p><strong>Cliente:</strong> ${clienteNombre}</p>
-                <p><strong>ID Cotización:</strong> ${cot.idCotizacion}</p>
-                <p><strong>Estado:</strong> ${cot.estado || 'Pendiente'}</p>
-                <hr style="margin: 1rem 0;">
-        `;
+            // Validar productos
+            if (detalleCotizacion.length === 0) {
+                const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar?");
+                if (!confirmarSinProductos) {
+                    isSubmitting = false;
+                    return;
+                }
+            }
 
-        if (tieneProductos) {
-            productosHTML += `
-                <div style="max-height: 300px; overflow-y: auto;">
-                    <h4 style="color: #4a5568; margin-bottom: 1rem;">Productos agregados (${cot.detalleCotizacion.length}):</h4>
-            `;
+            // Obtener valores numéricos
+            const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
+            const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
+            const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
 
-            cot.detalleCotizacion.forEach((producto, index) => {
-                productosHTML += `
-                    <div style="background: #f8f9fa; padding: 1rem; margin-bottom: 0.5rem; border-radius: 8px; border-left: 4px solid #4a8b64;">
-                        <strong>${index + 1}. ${producto.nombreProducto || 'Producto'}</strong><br>
-                        <span style="color: #666; font-size: 0.9em;">
-                            ID: ${producto.idProducto} | 
-                            Cantidad: ${producto.cantidad} | 
-                            Precio unitario: $${formatCurrency(producto.precioUnitario)}<br>
-                            <strong style="color: #2c5f41;">Subtotal: $${formatCurrency(producto.subtotal)}</strong>
-                        </span>
-                    </div>
-                `;
+            // Estructura de datos
+            const formData = {
+                dniCliente: dniCliente,
+                fechaPreferida: fechaPreferidaParaEnviar,
+                prioridad: prioridad,
+                descripcionProblema: descripcion,
+                notasInternas: notas,
+                estado: estadoBackend,
+                detalleCotizacion: detalleCotizacion.map(item => ({
+                    idProducto: item.idProducto,
+                    nombreProducto: item.nombreProducto,
+                    cantidad: parseInt(item.cantidad),
+                    precioUnitario: parseFloat(item.precioUnitario),
+                    subtotal: parseFloat(item.subtotal)
+                })),
+                costoTotalCotizacion: parseFloat(costoTotalCalculado),
+                valorServicio: parseFloat(valorServicioInput)
+            };
+
+            console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
+
+            const url = currentEditId 
+                ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
+                : `${API_COTIZACIONES_URL}/con-productos`;
+            const method = currentEditId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: headers,
+                body: JSON.stringify(formData)
             });
 
-            productosHTML += `
-                </div>
-                <hr style="margin: 1rem 0;">
-                <div style="background: #e8f5e8; padding: 1rem; border-radius: 8px; text-align: center;">
-                    <strong style="color: #2c5f41; font-size: 1.1em;">
-                        TOTAL COTIZACIÓN: $${formatCurrency(cot.costoTotalCotizacion)}
-                    </strong>
-                </div>
-            `;
-        } else {
-            productosHTML += `
-                <div style="text-align: center; padding: 2rem; background: #f7fafc; border-radius: 8px;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
-                    <h4 style="color: #718096; margin-bottom: 0.5rem;">No hay productos</h4>
-                    <p style="color: #a0aec0; font-size: 0.9em;">
-                        Esta cotización no tiene productos agregados.<br>
-                        Puede ser una cotización de solo servicios.
-                    </p>
-                </div>
-            `;
-        }
-
-        productosHTML += `</div>`;
-
-        // Crear modal
-        const modal = document.createElement('div');
-        modal.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 10000;
-        `;
-        
-        modal.innerHTML = `
-            <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                    <h3 style="color: #2c5f41; margin: 0;">
-                        ${tieneProductos ? '📦 Productos de la Cotización' : '📭 Sin Productos'}
-                    </h3>
-                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                            style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0.5rem;">
-                        ×
-                    </button>
-                </div>
-                ${productosHTML}
-                <div style="text-align: center; margin-top: 1.5rem;">
-                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                            style="background: #4a8b64; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-
-        // Cerrar modal al hacer click fuera
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-
-    } catch (error) {
-        console.error('Error al cargar productos:', error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
-        } else {
-            alert('Error al cargar los productos de la cotización: ' + error.message);
-        }
-    }
-}
-
-
- // === CORRECCIÓN EN editCotizacion ===
-async function editCotizacion(id) {
-    try {
-        const headers = await TokenManager.getAuthHeaders();
-        if (!headers.Authorization) {
-            TokenManager.handleAuthError('NO_TOKEN');
-            return;
-        }
-
-        const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, { headers });
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('UNAUTHORIZED');
-            }
-            throw new Error('Cotización no encontrada');
-        }
-        const cot = await response.json();
-
-        openAddQuoteModal();
-        document.getElementById('estadoGroup').style.display = 'block';
-        
-        // Mapeo inverso correcto
-        const estadoMapInverso = {
-            'PENDIENTE': 'Pendiente',
-            'APROBADA': 'Aprobada',
-            'RECHAZADA': 'Rechazada', 
-            'FINALIZADA': 'Finalizada'
-        };
-        
-        document.getElementById('estadoSelect').value = estadoMapInverso[cot.estado] || 'Pendiente';
-        document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
-        document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
-        
-        // Asignar valores correctamente
-        document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
-        document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
-        document.getElementById('clienteTipo').value = 'existente';
-        toggleClienteInput();
-        document.getElementById('clienteSelect').value = cot.dniCliente;
-        document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
-        document.getElementById('prioridad').value = cot.prioridad || 'Media';
-        document.getElementById('descripcion').value = cot.descripcionProblema || '';
-        document.getElementById('notas').value = cot.notasInternas || '';
-
-        // Cargar productos correctamente
-        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
-            detalleCotizacion = cot.detalleCotizacion
-                .filter(item => item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO")
-                .map(item => ({
-                    idProducto: item.idProducto,
-                    nombreProducto: item.nombreProducto || 'Producto no disponible',
-                    cantidad: item.cantidad || 1,
-                    precioUnitario: item.precioUnitario || 0,
-                    subtotal: (item.precioUnitario || 0) * (item.cantidad || 1)
-                }));
-        } else {
-            detalleCotizacion = [];
-        }
-        renderDetalleCotizacion();
-        calcularCostoTotal(); // ← RECALCULAR TOTALES
-
-        currentEditId = id;
-    } catch (error) {
-        console.error('Error al editar cotización:', error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
-        } else {
-            handleError(error);
-        }
-    }
-}
-
-
-
-async function getAuthHeaders() {
-    return await TokenManager.getAuthHeaders();
-}
-// En todas las funciones que usan fetch, agrega:
-// ✅ FUNCIÓN viewCotizacion CORREGIDA
-async function viewCotizacion(idCotizacion) {
-    try {
-        const headers = await TokenManager.getAuthHeaders();
-        if (!headers.Authorization) {
-            TokenManager.handleAuthError('NO_TOKEN');
-            return;
-        }
-
-        console.log('🔍 Viendo cotización:', idCotizacion);
-        
-        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('UNAUTHORIZED');
-            }
-            throw new Error('Cotización no encontrada');
-        }
-        
-        const cotizacion = await response.json();
-        
-        // Mostrar detalles en un modal
-        mostrarDetallesCotizacion(cotizacion);
-        
-    } catch (error) {
-        console.error('Error al cargar cotización:', error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
-        } else {
-            alert('Error al cargar los detalles: ' + error.message);
-        }
-    }
-}
-
-// ✅ FUNCIÓN PARA MOSTRAR DETALLES
-function mostrarDetallesCotizacion(cotizacion) {
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-    `;
-    
-    const productosHTML = cotizacion.detalleCotizacion && cotizacion.detalleCotizacion.length > 0 
-        ? cotizacion.detalleCotizacion.map((prod, index) => `
-            <div style="background: #f8f9fa; padding: 1rem; margin-bottom: 0.5rem; border-radius: 8px;">
-                <strong>${index + 1}. ${prod.nombreProducto || 'Producto'}</strong><br>
-                <span style="color: #666;">
-                    Cantidad: ${prod.cantidad} | 
-                    Precio: $${formatCurrency(prod.precioUnitario)} | 
-                    Subtotal: $${formatCurrency(prod.subtotal)}
-                </span>
-            </div>
-        `).join('')
-        : '<p style="text-align: center; color: #718096;">No hay productos</p>';
-
-    modal.innerHTML = `
-        <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="color: #2c5f41; margin: 0;">📄 Detalles de Cotización</h3>
-                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666;">
-                    ×
-                </button>
-            </div>
+            console.log("📥 Respuesta del servidor:", response.status);
             
-            <div style="margin-bottom: 1.5rem;">
-                <p><strong>ID:</strong> ${cotizacion.idCotizacion}</p>
-                <p><strong>Cliente:</strong> ${cotizacion.nombreCliente || 'N/A'}</p>
-                <p><strong>Estado:</strong> ${cotizacion.estado}</p>
-                <p><strong>Fecha Solicitud:</strong> ${formatDate(cotizacion.fechaSolicitud)}</p>
-                <p><strong>Fecha Preferida:</strong> ${formatDate(cotizacion.fechaPreferida)}</p>
-                <p><strong>Prioridad:</strong> ${cotizacion.prioridad || 'No especificada'}</p>
-                <p><strong>Descripción:</strong> ${cotizacion.descripcionProblema || 'N/A'}</p>
-                <p><strong>Notas:</strong> ${cotizacion.notasInternas || 'Ninguna'}</p>
-                <p><strong>Costo Total:</strong> ${formatCurrency(cotizacion.costoTotalCotizacion)}</p>
-            </div>
-            
-            <div>
-                <h4 style="color: #4a5568; margin-bottom: 1rem;">📦 Productos</h4>
-                ${productosHTML}
-            </div>
-            
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
-                        style="background: #4a8b64; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer;">
-                    Cerrar
-                </button>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Cerrar modal al hacer click fuera
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
-}
-
-// ✅ CORRECCIÓN EN updateStats
-function updateStats(cotizaciones) {
-    // Usar los valores del enum del backend
-    const pendientes = cotizaciones.filter(c => c.estado === 'PENDIENTE').length;
-    const aprobadas = cotizaciones.filter(c => c.estado === 'APROBADA').length;
-    const finalizadas = cotizaciones.filter(c => c.estado === 'FINALIZADA').length;
-    const rechazadas = cotizaciones.filter(c => c.estado === 'RECHAZADA').length;
-    
-    document.getElementById('statPendientes').textContent = pendientes;
-    document.getElementById('statAprobadas').textContent = aprobadas;
-    document.getElementById('statFinalizadas').textContent = finalizadas;
-    document.getElementById('statRechazadas').textContent = rechazadas;
-}
-
-
-
-async function deleteCotizacion(id) {
-    if (isCotizacionVinculada(id)) {
-        const serviciosVinculados = allServicios.filter(s => 
-            s.idCotizacion === id || 
-            (s.cotizacion && s.cotizacion.idCotizacion === id)
-        );
-        alert(`❌ No se puede eliminar esta cotización.
-Motivo: Tiene ${serviciosVinculados.length} servicio(s) asociado(s).
-Primero debe eliminar o desvincular los servicios relacionados.`);
-        return;
-    }
-    if (!confirm('¿Está seguro de eliminar esta cotización?\nEsta acción no se puede deshacer.')) return;
-
-    try {
-        const headers = await TokenManager.getAuthHeaders();
-        if (!headers.Authorization) {
-            TokenManager.handleAuthError('NO_TOKEN');
-            return;
-        }
-
-        const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
-            method: 'DELETE',
-            headers: headers
-        });
-        
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('UNAUTHORIZED');
+            if (!response.ok) {
+                if (response.status === 401) {
+                    handleAuthError();
+                    return;
+                }
+                const errorText = await response.text();
+                console.error("❌ Error del servidor:", errorText);
+                throw new Error(errorText || `Error ${response.status}`);
             }
-            const errorText = await response.text();
-            throw new Error(errorText || 'Error al eliminar');
-        }
-        
-        alert('✅ Cotización eliminada exitosamente');
-        await getAllCotizaciones();
-    } catch (error) {
-        console.error("Error al eliminar cotización:", error);
-        if (error.message === 'UNAUTHORIZED') {
-            TokenManager.handleAuthError('UNAUTHORIZED');
-        } else {
+            
+            const responseData = await response.json();
+            console.log("✅ Respuesta exitosa:", responseData);
+            alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
+            closeModal('addQuoteModal');
+            await getAllCotizaciones();
+            
+        } catch (error) {
+            console.error("❌ Error al guardar la cotización:", error);
             alert(`❌ Error: ${error.message}`);
+        } finally {
+            isSubmitting = false;
         }
     }
-}
+
+    // ===== FUNCIONES DE RENDERIZADO Y UTILIDAD =====
+    function renderCotizaciones(cotizaciones) {
+        const tbody = document.getElementById('cotizacionesTableBody');
+        if (cotizaciones.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay cotizaciones</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = '';
+        cotizaciones.forEach(cot => {
+            const clienteNombre = cot.nombreCliente || 
+                                  cot.cliente?.nombre || 
+                                  clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
+                                  'Cliente desconocido';
+
+            const tieneProductos = cot.detalleCotizacion && 
+                                  Array.isArray(cot.detalleCotizacion) && 
+                                  cot.detalleCotizacion.length > 0;
+            const cantidadProductos = tieneProductos ? cot.detalleCotizacion.length : 0;
+            const costoTotal = cot.costoTotalCotizacion || 0;
+
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${cot.idCotizacion || 'N/A'}</td>
+                <td>${clienteNombre}</td>
+                <td>${formatDate(cot.fechaSolicitud)}</td>
+                <td>${formatDate(cot.fechaPreferida)}</td>
+                <td>
+                    <button class="btn-ver-productos" 
+                            onclick="mostrarProductosCotizacion('${cot.idCotizacion}')"
+                            style="
+                                background: ${tieneProductos ? '#4a8b64' : '#718096'};
+                                color: white;
+                                border: none;
+                                padding: 0.5rem 1rem;
+                                border-radius: 8px;
+                                cursor: pointer;
+                                font-size: 0.9em;
+                                display: flex;
+                                align-items: center;
+                                gap: 0.5rem;
+                                transition: all 0.3s ease;
+                            "
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0,0,0,0.2)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                        ${tieneProductos ? '📦' : '📭'}
+                        ${tieneProductos ? `Ver Productos (${cantidadProductos})` : 'Sin Productos'}
+                    </button>
+                </td>
+                <td>${formatCurrency(costoTotal)}</td>
+                <td>
+                    <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">
+                        ${cot.estado || 'Pendiente'}
+                    </span>
+                    ${isCotizacionVinculada(cot.idCotizacion) ? '<span class="warning-badge">🔗 Con servicio</span>' : ''}
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn-sm btn-view" onclick="viewCotizacion('${cot.idCotizacion}')">Ver</button>
+                        <button class="btn-sm btn-edit" onclick="editCotizacion('${cot.idCotizacion}')">Editar</button>
+                        <button class="btn-sm btn-delete" 
+                            onclick="deleteCotizacion('${cot.idCotizacion}')"
+                            ${isCotizacionVinculada(cot.idCotizacion) ? 'disabled title="No se puede eliminar: tiene servicios asociados"' : ''}>
+                            Eliminar
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function isCotizacionVinculada(idCotizacion) {
+        return allServicios.some(servicio => 
+            servicio.idCotizacion === idCotizacion || 
+            (servicio.cotizacion && servicio.cotizacion.idCotizacion === idCotizacion)
+        );
+    }
 
     function formatDate(dateString) {
         if (!dateString) return 'N/A';
@@ -2233,50 +1543,29 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
         });
     }
 
-// === AGREGAR ESTA FUNCIÓN PARA MEJORAR LA VISUALIZACIÓN ===
-function formatCurrency(amount) {
-    if (amount === null || amount === undefined || isNaN(amount)) return '$0';
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount);
-}
-
-// === INICIALIZACIÓN MEJORADA ===
-document.addEventListener('DOMContentLoaded', async function() {
-    console.log("🔄 Inicializando aplicación de cotizaciones...");
-    
-    try {
-        // Verificar si hay un token disponible
-        const token = localStorage.getItem('jwtToken');
-        if (!token) {
-            TokenManager.handleAuthError('NO_TOKEN');
-            return;
-        }
-
-        // Cargar datos en paralelo con manejo de errores individual
-        await Promise.allSettled([
-            loadClientes(),
-            loadServicios(),
-            loadProductosCot(),
-            getAllCotizaciones()
-        ]);
-        
-        // Establecer fecha por defecto
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        const fechaInput = document.getElementById('fechaPreferida');
-        if (fechaInput) {
-            fechaInput.value = tomorrow.toISOString().split('T')[0];
-        }
-        
-        console.log("✅ Aplicación de cotizaciones inicializada correctamente");
-    } catch (error) {
-        console.error("❌ Error en inicialización:", error);
+    function formatCurrency(amount) {
+        if (amount === null || amount === undefined || isNaN(amount)) return '$0';
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        }).format(amount);
     }
-});
+
+    function updateStats(cotizaciones) {
+        const pendientes = cotizaciones.filter(c => c.estado === 'PENDIENTE').length;
+        const aprobadas = cotizaciones.filter(c => c.estado === 'APROBADA').length;
+        const finalizadas = cotizaciones.filter(c => c.estado === 'FINALIZADA').length;
+        const rechazadas = cotizaciones.filter(c => c.estado === 'RECHAZADA').length;
+        
+        document.getElementById('statPendientes').textContent = pendientes;
+        document.getElementById('statAprobadas').textContent = aprobadas;
+        document.getElementById('statFinalizadas').textContent = finalizadas;
+        document.getElementById('statRechazadas').textContent = rechazadas;
+    }
+
+    // ===== FUNCIONES DE MODALES =====
     function openAddQuoteModal() {
         document.getElementById('estadoGroup').style.display = 'none';
         document.getElementById('addQuoteModal').classList.add('show');
@@ -2289,24 +1578,42 @@ document.addEventListener('DOMContentLoaded', async function() {
         currentEditId = null;
         detalleCotizacion = [];
         renderDetalleCotizacion();
-        calcularCostoTotal(); // <-- Limpiar total al abrir
+        calcularCostoTotal();
+        
+        // Establecer fecha por defecto (mañana)
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('fechaPreferida').value = tomorrow.toISOString().split('T')[0];
     }
 
     function closeModal(modalId) {
         const modal = document.getElementById(modalId);
         modal.classList.remove('show');
-        const form = document.getElementById('quoteForm');
-        if (form) form.reset();
-        document.getElementById('clienteTipo').value = 'existente';
-        toggleClienteInput();
-        document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
-        document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
-        document.getElementById('estadoGroup').style.display = 'none';
-        currentEditId = null;
-        detalleCotizacion = [];
-        renderDetalleCotizacion();
     }
 
+    // ===== INICIALIZACIÓN =====
+    document.addEventListener('DOMContentLoaded', async function() {
+        console.log("🔄 Inicializando aplicación de cotizaciones...");
+        
+        // Verificar token
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            handleAuthError();
+            return;
+        }
+
+        // Cargar datos
+        await Promise.all([
+            loadClientes(),
+            loadServicios(),
+            loadProductosCot(),
+            getAllCotizaciones()
+        ]);
+        
+        console.log("✅ Aplicación de cotizaciones inicializada correctamente");
+    });
+
+    // ===== EVENT LISTENERS =====
     document.getElementById('quoteForm').addEventListener('submit', handleQuoteFormSubmit);
 
     document.getElementById('filterForm').addEventListener('submit', async (e) => {
@@ -2316,7 +1623,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         const estadoFilter = formData.get('estado');
         const fechaDesde = formData.get('fecha_desde');
         const fechaHasta = formData.get('fecha_hasta');
+        
         let filtered = [...allCotizaciones];
+        
         if (searchText) {
             filtered = filtered.filter(c => 
                 c.dniCliente?.toLowerCase().includes(searchText) ||
@@ -2324,15 +1633,19 @@ document.addEventListener('DOMContentLoaded', async function() {
                 (clientesData.find(cl => cl.dni === c.dniCliente)?.nombre.toLowerCase().includes(searchText))
             );
         }
+        
         if (estadoFilter) {
             filtered = filtered.filter(c => c.estado === estadoFilter);
         }
+        
         if (fechaDesde) {
             filtered = filtered.filter(c => new Date(c.fechaSolicitud) >= new Date(fechaDesde));
         }
+        
         if (fechaHasta) {
             filtered = filtered.filter(c => new Date(c.fechaSolicitud) <= new Date(fechaHasta));
         }
+        
         renderCotizaciones(filtered);
         updateStats(filtered);
     });
@@ -2344,11 +1657,54 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // ===== FUNCIONES FALTANTES (placeholder) =====
+    async function mostrarProductosCotizacion(idCotizacion) {
+        alert('Función mostrarProductosCotizacion en desarrollo');
+    }
+
+    async function editCotizacion(id) {
+        alert('Función editCotizacion en desarrollo');
+    }
+
+    async function viewCotizacion(idCotizacion) {
+        alert('Función viewCotizacion en desarrollo');
+    }
+
+    async function deleteCotizacion(id) {
+        if (isCotizacionVinculada(id)) {
+            alert('No se puede eliminar: tiene servicios asociados');
+            return;
+        }
+        
+        if (!confirm('¿Está seguro de eliminar esta cotización?\nEsta acción no se puede deshacer.')) return;
+
+        try {
+            const headers = getAuthHeaders();
+            if (!headers.Authorization) return;
+
+            const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
+                method: 'DELETE',
+                headers: headers
+            });
+            
+            if (!response.ok) {
+                throw new Error('Error al eliminar');
+            }
+            
+            alert('✅ Cotización eliminada exitosamente');
+            await getAllCotizaciones();
+        } catch (error) {
+            console.error("Error al eliminar cotización:", error);
+            alert(`❌ Error: ${error.message}`);
+        }
+    }
+
     function exportarCotizaciones() {
         if (allCotizaciones.length === 0) {
             alert('No hay cotizaciones para exportar');
             return;
         }
+        
         let csv = 'ID,Cliente,DNI_Cliente,Estado,Fecha_Solicitud,Fecha_Preferida,Prioridad,Costo_Total,Descripcion,Vinculada_Servicio\n';
         allCotizaciones.forEach(c => {
             const clienteNombre = c.cliente?.nombre || 
@@ -2366,6 +1722,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             csv += `"${(c.descripcionProblema || '').replace(/"/g, '""')}",`;
             csv += `"${isVinculada ? 'Sí' : 'No'}"\n`;
         });
+        
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -2376,17 +1733,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         link.click();
         document.body.removeChild(link);
     }
-
-    document.addEventListener('DOMContentLoaded', async function() {
-        await loadClientes();
-        await loadServicios();
-        // ✅ CARGAR PRODUCTOS
-        await loadProductosCot();
-        await getAllCotizaciones();
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        document.getElementById('fechaPreferida').value = tomorrow.toISOString().split('T')[0];
-    });
 </script>
 </body>
 </html>
