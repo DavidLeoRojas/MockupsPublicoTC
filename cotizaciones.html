@@ -1321,24 +1321,40 @@ async function getAllCotizaciones() {
 
     try {
         console.log("🔄 Solicitando cotizaciones...");
+        
+        // Primero probar la conexión con endpoint simple
+        console.log("🧪 Probando endpoint simple...");
+        const testResponse = await fetch(`${API_COTIZACIONES_URL}/test-simple`, { headers });
+        const testData = await testResponse.json();
+        console.log("✅ Test simple:", testData);
+        
+        if (!testResponse.ok) {
+            throw new Error(`Test failed: ${JSON.stringify(testData)}`);
+        }
+        
+        // Luego intentar obtener cotizaciones completas
+        console.log("📨 Solicitando cotizaciones completas...");
         const response = await fetch(API_COTIZACIONES_URL, { headers });
         
         console.log("📥 Respuesta recibida:", response.status, response.statusText);
         
+        const responseText = await response.text();
+        console.log("📄 Contenido de la respuesta:", responseText);
+        
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("❌ Error del servidor:", errorText);
-            throw new Error(`Error ${response.status}: ${errorText}`);
+            let errorMessage = `Error ${response.status}`;
+            try {
+                const errorData = JSON.parse(responseText);
+                errorMessage += `: ${errorData.message || errorData.error || responseText}`;
+            } catch (e) {
+                errorMessage += `: ${responseText || 'Sin mensaje de error'}`;
+            }
+            throw new Error(errorMessage);
         }
         
-        const data = await response.json();
-        console.log("✅ Datos recibidos del backend:", data);
-        
-        // ✅ DEBUG: Verificar la estructura de los datos
-        if (data && data.length > 0) {
-            console.log("🔍 Primera cotización:", data[0]);
-            console.log("📦 Detalles de primera cotización:", data[0].detalleCotizacion);
-        }
+        // Parsear la respuesta
+        const data = responseText ? JSON.parse(responseText) : [];
+        console.log("✅ Datos parseados:", data);
         
         allCotizaciones = data;
         renderCotizaciones(allCotizaciones);
@@ -1346,9 +1362,33 @@ async function getAllCotizaciones() {
         
     } catch (error) {
         console.error("❌ Error al obtener cotizaciones:", error);
-        
-        // Mostrar el error real al usuario
         alert(`Error al cargar cotizaciones: ${error.message}`);
+        
+        // Cargar datos de ejemplo
+        loadExampleData();
+    }
+}
+
+async function testBackendConnection() {
+    const token = localStorage.getItem('jwtToken');
+    const headers = { 'Authorization': 'Bearer ' + token };
+
+    try {
+        console.log("🧪 Probando conexión con backend...");
+        
+        // Test 1: Endpoint simple
+        const testResponse = await fetch(`${API_COTIZACIONES_URL}/test-simple`, { headers });
+        const testData = await testResponse.json();
+        console.log("✅ Test simple:", testData);
+        
+        if (!testResponse.ok) {
+            throw new Error(`Test failed: ${JSON.stringify(testData)}`);
+        }
+        
+        return testData;
+    } catch (error) {
+        console.error("❌ Test de conexión falló:", error);
+        throw error;
     }
 }
 
