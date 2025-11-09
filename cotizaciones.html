@@ -1165,29 +1165,34 @@ async function loadProductosCot() {
         }
     }
 
-    // - FUNCIÓN DE CÁLCULO DEL TOTAL -
-    function calcularCostoTotal() {
-        // 1. Obtener el valor del servicio
-        const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value || 0);
+    // === CORRECCIÓN EN calcularCostoTotal ===
+function calcularCostoTotal() {
+    // 1. Obtener el valor del servicio
+    const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
 
-        // 2. Calcular costo total desde productos (detalleCotizacion)
-        let costoTotalProductos = 0;
-        if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
-            costoTotalProductos = detalleCotizacion.reduce((sum, item) => sum + (item.subtotal || 0), 0);
-        }
-
-        // 3. Calcular el costo total final
-        const costoTotalFinal = valorServicioInput + costoTotalProductos;
-
-        // 4. Actualizar el campo de solo lectura del total
-        document.getElementById('costoTotalCalculado').value = costoTotalFinal.toFixed(2); // Ajusta decimales si usas enteros
+    // 2. Calcular costo total desde productos
+    let costoTotalProductos = 0;
+    if (detalleCotizacion && Array.isArray(detalleCotizacion)) {
+        costoTotalProductos = detalleCotizacion.reduce((sum, item) => {
+            return sum + (parseFloat(item.subtotal) || 0);
+        }, 0);
     }
 
-    // Añadir evento para recalcular cuando cambie el valor del servicio
-    document.getElementById('valorServicioCotizacion')?.addEventListener('input', calcularCostoTotal);
+    // 3. Calcular el costo total final
+    const costoTotalFinal = valorServicioInput + costoTotalProductos;
 
-// --- FUNCIÓN PRINCIPAL CORREGIDA ---
-// ✅ CORRECCIÓN EN handleQuoteFormSubmit - Mapeo de estados
+    // 4. Actualizar el campo
+    document.getElementById('costoTotalCalculado').value = costoTotalFinal.toFixed(2);
+    
+    console.log("💰 Cálculo total:", {
+        valorServicio: valorServicioInput,
+        costoProductos: costoTotalProductos,
+        total: costoTotalFinal
+    });
+}
+
+// === CORRECCIÓN DEL MAPEO DE ESTADOS ===
+// ✅ CORRECCIÓN COMPLETA EN handleQuoteFormSubmit
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1201,7 +1206,9 @@ async function handleQuoteFormSubmit(event) {
         return;
     }
 
+    // Calcular totales antes de enviar
     calcularCostoTotal();
+    
     const tipoCliente = document.getElementById('clienteTipo').value;
     const fechaPreferida = document.getElementById('fechaPreferida').value;
     const prioridad = document.getElementById('prioridad').value;
@@ -1209,6 +1216,7 @@ async function handleQuoteFormSubmit(event) {
     const notas = document.getElementById('notas').value.trim();
     const estado = document.getElementById('estadoSelect').value;
 
+    // Validaciones básicas
     if (!fechaPreferida || !descripcion) {
         alert("Complete todos los campos obligatorios (Fecha Preferida y Descripción del Problema).");
         isSubmitting = false;
@@ -1219,7 +1227,7 @@ async function handleQuoteFormSubmit(event) {
     if (tipoCliente === 'existente') {
         const clienteSelect = document.getElementById('clienteSelect');
         dniCliente = clienteSelect.value.trim();
-        if (!dniCliente || dniCliente === '') {
+        if (!dniCliente) {
             alert("Seleccione un cliente válido.");
             isSubmitting = false;
             return;
@@ -1227,13 +1235,13 @@ async function handleQuoteFormSubmit(event) {
     } else {
         dniCliente = document.getElementById('dniNuevo').value.trim();
         if (!dniCliente) {
-             alert("Error: No se pudo obtener el DNI del cliente nuevo.");
-             isSubmitting = false;
-             return;
+            alert("Ingrese el DNI del cliente nuevo.");
+            isSubmitting = false;
+            return;
         }
     }
 
-    // ✅ CORRECCIÓN: Mapear estados del frontend al backend
+    // ✅ CORRECCIÓN CRÍTICA: Mapeo correcto de estados
     const estadoMap = {
         'Pendiente': 'PENDIENTE',
         'Aprobada': 'APROBADA', 
@@ -1245,40 +1253,43 @@ async function handleQuoteFormSubmit(event) {
 
     // Validar productos
     if (detalleCotizacion.length === 0) {
-        const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar con una cotización sin productos?");
+        const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar?");
         if (!confirmarSinProductos) {
             isSubmitting = false;
             return;
         }
     }
 
+    // ✅ CORRECCIÓN: Obtener valores numéricos correctos
     const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
-    const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value || 0);
+    const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
     const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
 
-    // ✅ CORRECCIÓN: Usar estadoBackend en lugar de estado
+    // ✅ CORRECCIÓN: Estructura de datos corregida
     const formData = {
         dniCliente: dniCliente,
         fechaPreferida: fechaPreferidaParaEnviar,
         prioridad: prioridad,
         descripcionProblema: descripcion,
         notasInternas: notas,
-        estado: estadoBackend, // ← USAR ESTADO CORRECTO
+        estado: estadoBackend, // ← ESTADO CORRECTO EN MAYÚSCULAS
         detalleCotizacion: detalleCotizacion.map(item => ({
             idProducto: item.idProducto,
             nombreProducto: item.nombreProducto,
-            cantidad: item.cantidad,
-            precioUnitario: Number((item.precioUnitario ?? 0).toFixed(2)),
-            subtotal: Number((item.subtotal ?? 0).toFixed(2))
+            cantidad: parseInt(item.cantidad),
+            precioUnitario: parseFloat(item.precioUnitario),
+            subtotal: parseFloat(item.subtotal)
         })),
-        costoTotalCotizacion: costoTotalCalculado,
-        valorServicio: valorServicioInput
+        costoTotalCotizacion: parseFloat(costoTotalCalculado),
+        valorServicio: parseFloat(valorServicioInput)
     };
 
     console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
 
     try {
-        const url = currentEditId ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` : `${API_COTIZACIONES_URL}/con-productos`;
+        const url = currentEditId 
+            ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
+            : `${API_COTIZACIONES_URL}/con-productos`;
         const method = currentEditId ? 'PUT' : 'POST';
 
         const headers = {
@@ -1292,17 +1303,20 @@ async function handleQuoteFormSubmit(event) {
             body: JSON.stringify(formData)
         });
 
-        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
+        console.log("📥 Respuesta del servidor:", response.status);
+        
         if (!response.ok) {
             const errorText = await response.text();
             console.error("❌ Error del servidor:", errorText);
             throw new Error(errorText || `Error ${response.status}`);
         }
+        
         const responseData = await response.json();
         console.log("✅ Respuesta exitosa:", responseData);
         alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
         closeModal('addQuoteModal');
         await getAllCotizaciones();
+        
     } catch (error) {
         console.error("❌ Error al guardar la cotización:", error);
         alert(`❌ Error: ${error.message}`);
@@ -1393,15 +1407,17 @@ async function testBackendConnection() {
     }
 }
 
+// === CORRECCIÓN EN renderCotizaciones - Mostrar cantidades correctas ===
 function renderCotizaciones(cotizaciones) {
     const tbody = document.getElementById('cotizacionesTableBody');
     if (cotizaciones.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No hay cotizaciones</td></tr>';
         return;
     }
+    
     tbody.innerHTML = '';
     cotizaciones.forEach(cot => {
-        console.log("🚀 Datos de la cotización para renderizar:", cot); // <-- AÑADE ESTA LÍNEA PARA DEPURAR
+        console.log("🚀 Datos de la cotización para renderizar:", cot);
 
         // Obtener nombre del cliente
         const clienteNombre = cot.nombreCliente || 
@@ -1409,9 +1425,14 @@ function renderCotizaciones(cotizaciones) {
                               clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
                               'Cliente desconocido';
 
-        // ✅ DETECTAR SI HAY PRODUCTOS - verificar si el array existe y tiene elementos
-        const tieneProductos = cot.detalleCotizacion && cot.detalleCotizacion.length > 0;
+        // ✅ CORRECCIÓN: Verificar productos correctamente
+        const tieneProductos = cot.detalleCotizacion && 
+                              Array.isArray(cot.detalleCotizacion) && 
+                              cot.detalleCotizacion.length > 0;
         const cantidadProductos = tieneProductos ? cot.detalleCotizacion.length : 0;
+
+        // ✅ CORRECCIÓN: Mostrar costo total correctamente
+        const costoTotal = cot.costoTotalCotizacion || 0;
 
         // Crear fila
         const row = document.createElement('tr');
@@ -1442,9 +1463,11 @@ function renderCotizaciones(cotizaciones) {
                     ${tieneProductos ? `Ver Productos (${cantidadProductos})` : 'Sin Productos'}
                 </button>
             </td>
-            <td>${formatCurrency(cot.costoTotalCotizacion)}</td> <!-- ✅ Esta línea parece correcta -->
+            <td>${formatCurrency(costoTotal)}</td>
             <td>
-                <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">${cot.estado || 'Pendiente'}</span>
+                <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">
+                    ${cot.estado || 'Pendiente'}
+                </span>
                 ${isCotizacionVinculada(cot.idCotizacion) ? '<span class="warning-badge">🔗 Con servicio</span>' : ''}
             </td>
             <td>
@@ -1601,7 +1624,7 @@ async function mostrarProductosCotizacion(idCotizacion) {
 }
 
 
-// ✅ FUNCIÓN editCotizacion CORREGIDA
+ // === CORRECCIÓN EN editCotizacion ===
 async function editCotizacion(id) {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -1619,7 +1642,7 @@ async function editCotizacion(id) {
         openAddQuoteModal();
         document.getElementById('estadoGroup').style.display = 'block';
         
-        // ✅ CORRECCIÓN: Mapeo inverso de estados (backend → frontend)
+        // ✅ CORRECCIÓN: Mapeo inverso correcto
         const estadoMapInverso = {
             'PENDIENTE': 'Pendiente',
             'APROBADA': 'Aprobada',
@@ -1631,6 +1654,7 @@ async function editCotizacion(id) {
         document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
         document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
         
+        // ✅ CORRECCIÓN: Asignar valores correctamente
         document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
         document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
         document.getElementById('clienteTipo').value = 'existente';
@@ -1641,7 +1665,7 @@ async function editCotizacion(id) {
         document.getElementById('descripcion').value = cot.descripcionProblema || '';
         document.getElementById('notas').value = cot.notasInternas || '';
 
-        // Cargar productos
+        // ✅ CORRECCIÓN: Cargar productos correctamente
         if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
             detalleCotizacion = cot.detalleCotizacion
                 .filter(item => item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO")
@@ -1656,6 +1680,7 @@ async function editCotizacion(id) {
             detalleCotizacion = [];
         }
         renderDetalleCotizacion();
+        calcularCostoTotal(); // ← RECALCULAR TOTALES
 
         currentEditId = id;
     } catch (error) {
@@ -1853,15 +1878,44 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
         });
     }
 
-    function formatCurrency(amount) {
-        if (!amount && amount !== 0) return '$0';
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0
-        }).format(amount);
-    }
+// === AGREGAR ESTA FUNCIÓN PARA MEJORAR LA VISUALIZACIÓN ===
+function formatCurrency(amount) {
+    if (amount === null || amount === undefined || isNaN(amount)) return '$0';
+    return new Intl.NumberFormat('es-CO', {
+        style: 'currency',
+        currency: 'COP',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(amount);
+}
 
+// === INICIALIZACIÓN MEJORADA ===
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log("🔄 Inicializando aplicación...");
+    
+    // Verificar token primero
+    if (!verifyToken()) {
+        alert('Sesión expirada. Por favor, inicie sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    // Cargar datos en paralelo para mejor rendimiento
+    await Promise.all([
+        loadClientes(),
+        loadServicios(),
+        loadProductosCot()
+    ]);
+    
+    await getAllCotizaciones();
+    
+    // Establecer fecha por defecto
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    document.getElementById('fechaPreferida').value = tomorrow.toISOString().split('T')[0];
+    
+    console.log("✅ Aplicación inicializada correctamente");
+});
     function openAddQuoteModal() {
         document.getElementById('estadoGroup').style.display = 'none';
         document.getElementById('addQuoteModal').classList.add('show');
