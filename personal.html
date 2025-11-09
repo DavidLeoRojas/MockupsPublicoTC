@@ -944,63 +944,67 @@ function updateFormFieldsBasedOnType() {
     const docInput = document.getElementById('personDoc');
     const docTypeSelect = document.getElementById('personDocType');
     const nitInput = document.getElementById('personNit');
+    const representanteInput = document.getElementById('personRepresentante');
 
     if (tipo === 'Juridica') {
+        // Ocultar/mostrar campos apropiados
         docGroup.style.display = 'none';
         nitField.style.display = 'block';
         representanteField.style.display = 'block';
+        
+        // Actualizar etiquetas y requerimientos
         docLabel.textContent = '🏢 NIT *';
         docInput.required = false;
         nitInput.required = true;
+        representanteInput.required = true;
 
-        // 🔥 CORRECCIÓN: NO limpiar docInput, transferir valor si existe
+        // 🔥 MEJORA: Transferir valor entre campos manteniendo datos
         if (docInput.value && !nitInput.value) {
             nitInput.value = docInput.value;
         }
 
-        // Configurar tipo de documento para jurídica
+        // Configurar opciones de tipo de documento
         const options = docTypeSelect.querySelectorAll('option');
         options.forEach(opt => {
-            if (opt.value === 'NIT') {
-                opt.style.display = 'block';
-                opt.disabled = false;
-            } else {
-                opt.style.display = 'none';
-            }
+            const isNIT = opt.value === 'NIT';
+            opt.style.display = isNIT ? 'block' : 'none';
+            opt.disabled = !isNIT;
         });
         
-        // Forzar NIT
+        // Forzar selección de NIT
         docTypeSelect.value = 'NIT';
         
     } else { // Natural
+        // Ocultar/mostrar campos apropiados
         docGroup.style.display = 'block';
         nitField.style.display = 'none';
         representanteField.style.display = 'none';
+        
+        // Actualizar etiquetas y requerimientos
         docLabel.textContent = '🆔 Número de Documento *';
         docInput.required = true;
         nitInput.required = false;
+        representanteInput.required = false;
         
-        // 🔥 CORRECCIÓN: Transferir valor de nitInput a docInput si es necesario
+        // 🔥 MEJORA: Transferir valor entre campos manteniendo datos
         if (nitInput.value && !docInput.value) {
             docInput.value = nitInput.value;
         }
         
-        document.getElementById('personRepresentante').value = ''; // Limpiar representante
+        // Limpiar campos que no aplican
+        representanteInput.value = '';
 
-        // Configurar tipo de documento para natural
+        // Configurar opciones de tipo de documento
         const options = docTypeSelect.querySelectorAll('option');
         options.forEach(opt => {
-            if (opt.value === 'NIT') {
-                opt.style.display = 'none';
-            } else {
-                opt.style.display = 'block';
-                opt.disabled = false;
-            }
+            const isNIT = opt.value === 'NIT';
+            opt.style.display = isNIT ? 'none' : 'block';
+            opt.disabled = isNIT;
         });
         
-        // Limpiar selección si era NIT
+        // Ajustar selección si era NIT
         if (docTypeSelect.value === 'NIT') {
-            docTypeSelect.value = '';
+            docTypeSelect.value = 'CC'; // Valor por defecto para naturales
         }
     }
 }
@@ -1114,6 +1118,8 @@ async function handleAddPersonForm(event) {
         const email = document.getElementById('personEmail').value.trim();
         const rol = document.getElementById('personType').value;
         const ciudad = document.getElementById('personCity').value;
+        const direccion = document.getElementById('personAddress').value.trim();
+        const observaciones = document.getElementById('personNotes').value.trim();
         const representanteLegal = document.getElementById('personRepresentante').value.trim();
         const cargoEspecialidad = document.getElementById('personRole').value.trim();
 
@@ -1160,20 +1166,21 @@ async function handleAddPersonForm(event) {
             return;
         }
 
-        // 🔥 CORRECCIÓN: Estructura de datos corregida
+        // 🔥 CORRECCIÓN: Estructura de datos corregida según lo que espera el backend
         const datosPersona = {
             dni: dni,
             tipo_dni: tipoDni,
             nombre: nombre,
             telefono: telefono,
             correo: email,
-            // 🔥 AGREGAR CONTRASEÑA (requerida por el backend)
-            password: "123456", // Contraseña por defecto, puedes cambiarla
+            // 🔥 AGREGAR CAMPOS FALTANTES QUE ESPERA EL BACKEND
+            password: "123456", // Contraseña por defecto (requerida)
             rol: rol.charAt(0).toUpperCase() + rol.slice(1).toLowerCase(),
-            // 🔥 CORREGIR: id_direccion debe ser número
-            id_direccion: parseInt(ciudad) || 5413, // Valor por defecto si falla
+            id_direccion: parseInt(ciudad) || 5413,
             tipo_persona: tipoPersona.toUpperCase(),
-            cargo_especialidad: cargoEspecialidad || null
+            cargo_especialidad: cargoEspecialidad || null,
+            direccion: direccion || null,
+            observaciones: observaciones || null
         };
 
         // 🔥 CORRECCIÓN: Manejar NIT y representante legal según el tipo
