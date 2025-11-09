@@ -999,25 +999,21 @@
         }
     }
 function handleAuthError() {
-    console.error('🔐 Error de autenticación - Redirigiendo al login');
-    alert('Su sesión ha expirado. Por favor, inicie sesión nuevamente.');
-    localStorage.removeItem('jwtToken'); // Limpiar token inválido
+    console.error('🔐 Error de autenticación - Token inválido o expirado');
+    
+    // Limpiar token inválido
+    localStorage.removeItem('jwtToken');
+    
+    // Mostrar mensaje y redirigir
+    alert('Su sesión ha expirado o el token es inválido. Por favor, inicie sesión nuevamente.');
     window.location.href = 'index.html';
 }
- async function loadClientes() {
-    const token = getToken();
-    if (!token) {
-        console.error('❌ No hay token disponible');
-        handleAuthError();
-        return;
-    }
-    
-    const headers = { 
-        'Authorization': token, // ✅ Usar token tal como está
-        'Content-Type': 'application/json'
-    };
-
+async function loadClientes() {
     try {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) return; // Si no hay token, salir
+        
+        console.log('🔄 Cargando clientes...');
         const response = await fetch(API_PERSONAS_URL, { headers });
         
         if (response.status === 401) {
@@ -1040,6 +1036,7 @@ function handleAuthError() {
                 select.appendChild(option);
             });
         }
+        console.log('✅ Clientes cargados:', clientesData.length);
     } catch (error) {
         console.error('Error cargando clientes:', error);
         const select = document.getElementById('clienteSelect');
@@ -1050,19 +1047,11 @@ function handleAuthError() {
 }
 
 async function loadProductosCot() {
-    const token = getToken();
-    if (!token) {
-        console.error('❌ No hay token disponible');
-        handleAuthError();
-        return;
-    }
-    
-    const headers = { 
-        'Authorization': token, // ✅ Usar token tal como está
-        'Content-Type': 'application/json'
-    };
-
     try {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) return;
+        
+        console.log('🔄 Cargando productos...');
         const response = await fetch(API_PRODUCTOS_URL, { headers });
         
         if (response.status === 401) {
@@ -1085,6 +1074,7 @@ async function loadProductosCot() {
                 select.appendChild(option);
             });
         }
+        console.log('✅ Productos cargados:', productosDataCot.length);
     } catch (error) {
         console.error("Error al cargar productos:", error);
         const select = document.getElementById('productoSelectCot');
@@ -1423,38 +1413,15 @@ async function handleQuoteFormSubmit(event) {
 }
 
 async function getAllCotizaciones() {
-    const token = getToken();
-    if (!token) {
-        handleAuthError();
-        return;
-    }
-    
-    const headers = { 
-        'Authorization': token, // ✅ Usar token tal como está
-        'Content-Type': 'application/json'
-    };
-
     try {
-        console.log("🔄 Solicitando cotizaciones...");
-        
-        // Primero probar la conexión con endpoint simple
-        console.log("🧪 Probando endpoint simple...");
-        const testResponse = await fetch(`${API_COTIZACIONES_URL}/test-simple`, { headers });
-        
-        if (testResponse.status === 401) {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) {
             handleAuthError();
             return;
         }
         
-        const testData = await testResponse.json();
-        console.log("✅ Test simple:", testData);
+        console.log("🔄 Solicitando cotizaciones con headers:", headers);
         
-        if (!testResponse.ok) {
-            throw new Error(`Test failed: ${JSON.stringify(testData)}`);
-        }
-        
-        // Luego intentar obtener cotizaciones completas
-        console.log("📨 Solicitando cotizaciones completas...");
         const response = await fetch(API_COTIZACIONES_URL, { headers });
         
         if (response.status === 401) {
@@ -1462,25 +1429,15 @@ async function getAllCotizaciones() {
             return;
         }
         
-        console.log("📥 Respuesta recibida:", response.status, response.statusText);
-        
-        const responseText = await response.text();
-        console.log("📄 Contenido de la respuesta:", responseText);
+        console.log("📥 Respuesta recibida:", response.status);
         
         if (!response.ok) {
-            let errorMessage = `Error ${response.status}`;
-            try {
-                const errorData = JSON.parse(responseText);
-                errorMessage += `: ${errorData.message || errorData.error || responseText}`;
-            } catch (e) {
-                errorMessage += `: ${responseText || 'Sin mensaje de error'}`;
-            }
-            throw new Error(errorMessage);
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
         }
         
-        // Parsear la respuesta
-        const data = responseText ? JSON.parse(responseText) : [];
-        console.log("✅ Datos parseados:", data);
+        const data = await response.json();
+        console.log("✅ Cotizaciones cargadas:", data.length);
         
         allCotizaciones = data;
         renderCotizaciones(allCotizaciones);
@@ -1488,13 +1445,10 @@ async function getAllCotizaciones() {
         
     } catch (error) {
         console.error("❌ Error al obtener cotizaciones:", error);
-        alert(`Error al cargar cotizaciones: ${error.message}`);
         
-        // ✅ CORRECCIÓN: Remover la referencia a loadExampleData o definirla
-        // Mostrar estado vacío en lugar de llamar a función no definida
         const tbody = document.getElementById('cotizacionesTableBody');
         if (tbody) {
-            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Error al cargar cotizaciones</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-state">Error al cargar cotizaciones: ' + error.message + '</td></tr>';
         }
     }
 }
@@ -1804,32 +1758,53 @@ async function editCotizacion(id) {
 }
 
 function verifyToken() {
-    let token = localStorage.getItem('jwtToken');
+    const token = localStorage.getItem('jwtToken');
     if (!token) {
         console.error('❌ No hay token en localStorage');
         return false;
     }
     
-    console.log('✅ Token encontrado:', token.substring(0, 20) + '...');
+    console.log('✅ Token verificado, longitud:', token.length);
     
-    // ✅ CORRECCIÓN: Verificar y corregir el formato SIN duplicar "Bearer "
-    if (token.startsWith('Bearer ')) {
-        console.log('✅ Token ya tiene formato correcto');
-    } else {
-        console.log('⚠️ Token sin "Bearer ", corrigiendo...');
-        // Guardar solo si no tiene "Bearer "
-        localStorage.setItem('jwtToken', 'Bearer ' + token);
-    }
-    
+    // ✅ CORRECCIÓN: Solo verificar, no modificar el token aquí
+    // La corrección se hace en getToken() cuando se usa
     return true;
-}   
+}
 function getToken() {
     let token = localStorage.getItem('jwtToken');
-    if (!token) return null;
+    if (!token) {
+        console.error('❌ No se encontró token en localStorage');
+        return null;
+    }
     
-    // ✅ CORRECCIÓN: Si el token ya tiene "Bearer ", devolverlo tal cual
-    // Si no lo tiene, NO agregarlo aquí, dejar que verifyToken lo corrija
-    return token;
+    console.log('🔍 Token encontrado:', token.substring(0, 20) + '...');
+    
+    // ✅ CORRECCIÓN: Verificar si ya tiene "Bearer " y manejarlo consistentemente
+    if (token.startsWith('Bearer ')) {
+        console.log('✅ Token ya tiene formato correcto');
+        return token;
+    } else {
+        console.log('⚠️ Token sin "Bearer ", agregando...');
+        return 'Bearer ' + token;
+    }
+}
+
+function getAuthHeaders() {
+    const token = getToken();
+    
+    if (!token) {
+        console.error('❌ No hay token disponible');
+        handleAuthError();
+        return {};
+    }
+    
+    console.log('✅ Usando token en headers:', token.substring(0, 25) + '...');
+    
+    return {
+        'Authorization': token,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    };
 }
 // En todas las funciones que usan fetch, agrega:
 // ✅ FUNCIÓN viewCotizacion CORREGIDA
