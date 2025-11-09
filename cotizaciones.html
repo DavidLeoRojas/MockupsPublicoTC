@@ -1982,69 +1982,7 @@ async function probarEstructurasCotizacion() {
     console.log("❌ Ninguna estructura funcionó");
     return null;
 }
-// Función para diagnosticar el problema
-async function diagnosticarProblemaCotizacion() {
-    console.log("🔍 DIAGNOSTICANDO PROBLEMA DE COTIZACIONES");
-    
-    // 1. Verificar autenticación
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        console.error("❌ No hay token JWT");
-        return;
-    }
-    console.log("✅ Token JWT presente");
-    
-    // 2. Verificar que los endpoints existan
-    try {
-        const headers = getAuthHeaders();
-        const testResponse = await fetch(API_COTIZACIONES_URL, { headers });
-        console.log("✅ Endpoint de cotizaciones accesible:", testResponse.status);
-    } catch (error) {
-        console.error("❌ Endpoint de cotizaciones no accesible:", error);
-    }
-    
-    // 3. Verificar datos de prueba mínimos
-    const datosMinimos = {
-        idCotizacion: "COT_DIAG_" + Date.now(),
-        dniCliente: "111111111", // Usar un DNI que exista
-        fechaPreferida: "2024-01-15",
-        descripcionProblema: "Diagnóstico"
-    };
-    
-    console.log("📋 Datos mínimos a enviar:", datosMinimos);
-    
-    // 4. Probar envío mínimo
-    try {
-        const headers = getAuthHeaders();
-        const response = await fetch(`${API_COTIZACIONES_URL}/con-productos`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(datosMinimos)
-        });
-        
-        console.log("📥 Respuesta diagnóstico:", response.status, response.statusText);
-        
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("❌ Error diagnóstico:", errorText);
-            
-            // Intentar parsear como JSON para más detalles
-            try {
-                const errorJson = JSON.parse(errorText);
-                console.error("❌ Error JSON:", errorJson);
-            } catch {
-                console.error("❌ Error texto:", errorText);
-            }
-        } else {
-            const result = await response.json();
-            console.log("✅ Diagnóstico exitoso:", result);
-        }
-    } catch (error) {
-        console.error("❌ Error en diagnóstico:", error);
-    }
-}
 
-// Ejecutar en consola: diagnosticarProblemaCotizacion()
 // Ejecutar en consola: probarEstructurasCotizacion()
 
 // Función para generar ID de cotización única
