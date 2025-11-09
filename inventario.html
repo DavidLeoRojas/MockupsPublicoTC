@@ -718,7 +718,8 @@
                     </div>
                     <div class="form-group">
                         <label>Código *</label>
-                        <input type="text" class="form-control" id="productCode" required>
+                        <input type="text" class="form-control" id="productCode" required readonly>
+                        <small style="color: #666; font-size: 0.8em;">El código se genera automáticamente</small>
                     </div>
                     <div class="form-group">
                         <label>Lote</label>
@@ -808,6 +809,17 @@ async function loadInventarioData() {
     }
 }
 
+// Función para generar código secuencial
+function generateNextCode() {
+    // Buscar el máximo código numérico existente
+    const existingCodes = productos
+        .map(p => p.idProducto)
+        .filter(id => id.startsWith('PRD'))
+        .map(id => parseInt(id.replace('PRD', '')) || 0);
+    
+    const maxCode = existingCodes.length > 0 ? Math.max(...existingCodes) : 0;
+    return `PRD${String(maxCode + 1).padStart(3, '0')}`;
+}
 function populateCategoryFilter(categorias) {
     const select = document.getElementById('categoryFilter');
     select.innerHTML = '<option value="">Todos</option>';
@@ -921,11 +933,16 @@ function filterProducts() {
 }
 
 // Abrir modal para agregar producto
+
 function openAddProductModal() {
     document.getElementById('productForm').reset();
     document.getElementById('productModalTitle').textContent = 'Agregar Nuevo Producto';
     document.getElementById('saveProductBtn').textContent = 'Agregar Producto';
     document.getElementById('productIdInput').value = '';
+    
+    // ✅ CORREGIDO: Generar y mostrar el próximo código automáticamente
+    document.getElementById('productCode').value = generateNextCode();
+    
     document.getElementById('addProductModal').classList.add('show');
 }
 
@@ -953,7 +970,7 @@ async function openEditProductModal(id) {
     document.getElementById('addProductModal').classList.add('show');
 }
 
-// Guardar producto (Agregar o Editar)
+// Modificar la función saveProduct
 async function saveProduct(event) {
     event.preventDefault();
     if (!checkAuth()) return;
@@ -961,9 +978,9 @@ async function saveProduct(event) {
     const token = localStorage.getItem('jwtToken');
     const isEdit = document.getElementById('productIdInput').value !== '';
 
-    // ✅ CORREGIDO: Usar 'codigo' en lugar de duplicar 'idProducto'
+    // ✅ CORREGIDO: Generar código secuencial para nuevos productos
     const formData = {
-        idProducto: document.getElementById('productIdInput').value || generateId(), // ID interno
+        idProducto: isEdit ? document.getElementById('productIdInput').value : generateNextCode(),
         nombre: document.getElementById('productName').value,
         stock: parseInt(document.getElementById('productStock').value) || 0,
         precioActual: parseFloat(document.getElementById('productPrice').value) || 0,
