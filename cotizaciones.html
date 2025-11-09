@@ -1085,19 +1085,11 @@ async function loadProductosCot() {
 }
 
 async function loadServicios() {
-    const token = getToken();
-    if (!token) {
-        console.error('❌ No hay token disponible');
-        handleAuthError();
-        return;
-    }
-    
-    const headers = { 
-        'Authorization': token, // ✅ Usar token tal como está
-        'Content-Type': 'application/json'
-    };
-
     try {
+        const headers = await getAuthHeaders(); // ← Agregar await
+        if (!headers.Authorization) return;
+        
+        console.log('🔄 Cargando servicios...');
         const response = await fetch(API_SERVICIOS_URL, { headers });
         
         if (response.status === 401) {
@@ -1108,21 +1100,7 @@ async function loadServicios() {
         if (!response.ok) throw new Error('Error al cargar servicios');
         
         allServicios = await response.json();
-    } catch (error) {
-        console.error('Error cargando servicios:', error);
-        allServicios = [];
-    }
-}
-
-async function loadServicios() {
-    const token = localStorage.getItem('jwtToken');
-    if (!token) return;
-    const headers = { 'Authorization': 'Bearer ' + token };
-
-    try {
-        const response = await fetch(API_SERVICIOS_URL, { headers });
-        if (!response.ok) throw new Error('Error al cargar servicios');
-        allServicios = await response.json();
+        console.log('✅ Servicios cargados:', allServicios.length);
     } catch (error) {
         console.error('Error cargando servicios:', error);
         allServicios = [];
@@ -1131,28 +1109,40 @@ async function loadServicios() {
 
     // ✅ CARGAR PRODUCTOS
 async function loadProductosCot() {
-    const token = localStorage.getItem('jwtToken');
-    if (!token) return;
-    const headers = { 'Authorization': 'Bearer ' + token };
-
     try {
+        const headers = await getAuthHeaders(); // ← Agregar await
+        if (!headers.Authorization) return;
+        
+        console.log('🔄 Cargando productos...');
         const response = await fetch(API_PRODUCTOS_URL, { headers });
+        
+        if (response.status === 401) {
+            handleAuthError();
+            return;
+        }
+        
         if (!response.ok) throw new Error('Error al cargar productos');
+        
         productosDataCot = await response.json();
         const select = document.getElementById('productoSelectCot');
-        if (!select) return;
-        select.innerHTML = '<option value="">Seleccione un producto</option>';
-        productosDataCot.forEach(prod => {
-            const option = document.createElement('option');
-            option.value = prod.idProducto;
-            option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
-            option.dataset.precio = prod.precioActual || 0;
-            select.appendChild(option);
-        });
+        
+        if (select) {
+            select.innerHTML = '<option value="">Seleccione un producto</option>';
+            productosDataCot.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod.idProducto;
+                option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
+                option.dataset.precio = prod.precioActual || 0;
+                select.appendChild(option);
+            });
+        }
+        console.log('✅ Productos cargados:', productosDataCot.length);
     } catch (error) {
         console.error("Error al cargar productos:", error);
         const select = document.getElementById('productoSelectCot');
-        if (select) select.innerHTML = '<option value="">Error al cargar</option>';
+        if (select) {
+            select.innerHTML = '<option value="">Error al cargar productos</option>';
+        }
     }
 }
 
@@ -1279,7 +1269,7 @@ function calcularCostoTotal() {
 }
 
 // === CORRECCIÓN DEL MAPEO DE ESTADOS ===
-// ✅ CORRECCIÓN COMPLETA EN handleQuoteFormSubmit
+
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1452,7 +1442,88 @@ async function getAllCotizaciones() {
         }
     }
 }
+// Agrega esta función para verificar y renovar el token
+async function verifyAndRenewToken() {
+    const token = localStorage.getItem('jwtToken');
+    
+    if (!token) {
+        console.error('❌ No hay token disponible');
+        return false;
+    }
+    
+    try {
+        // Verificar si el token está expirado
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const expirationTime = payload.exp * 1000; // Convertir a milisegundos
+        const currentTime = Date.now();
+        
+        console.log('🔍 Verificando token:');
+        console.log(' - Expira en:', new Date(expirationTime).toLocaleString());
+        console.log(' - Tiempo actual:', new Date(currentTime).toLocaleString());
+        console.log(' - Válido por:', Math.floor((expirationTime - currentTime) / 1000 / 60), 'minutos');
+        
+        // Si el token expira en menos de 5 minutos, renovarlo
+        if (expirationTime - currentTime < 5 * 60 * 1000) {
+            console.log('🔄 Token cerca de expirar, renovando...');
+            await renewToken();
+            return true;
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('❌ Error verificando token:', error);
+        return false;
+    }
+}
 
+// Función para renovar el token
+async function renewToken() {
+    try {
+        console.log('🔄 Renovando token...');
+        
+        // Obtener credenciales del localStorage o pedirlas al usuario
+        const savedEmail = localStorage.getItem('userEmail');
+        const savedPassword = localStorage.getItem('userPassword');
+        
+        if (!savedEmail || !savedPassword) {
+            console.error('❌ No hay credenciales guardadas para renovar el token');
+            handleAuthError();
+            return;
+        }
+        
+        const loginData = {
+            correo: savedEmail,
+            password: savedPassword
+        };
+        
+        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('Error al renovar token');
+        }
+        
+        const data = await response.json();
+        const newToken = data.token;
+        
+        if (newToken) {
+            // Guardar el nuevo token
+            localStorage.setItem('jwtToken', newToken);
+            console.log('✅ Token renovado exitosamente');
+        } else {
+            throw new Error('No se recibió token en la respuesta');
+        }
+        
+    } catch (error) {
+        console.error('❌ Error renovando token:', error);
+        handleAuthError();
+    }
+}
 async function testBackendConnection() {
     const token = localStorage.getItem('jwtToken');
     const headers = { 'Authorization': 'Bearer ' + token };
@@ -1789,19 +1860,27 @@ function getToken() {
     }
 }
 
-function getAuthHeaders() {
-    const token = getToken();
+async function getAuthHeaders() {
+    // Verificar y renovar el token si es necesario
+    const tokenValid = await verifyAndRenewToken();
     
-    if (!token) {
-        console.error('❌ No hay token disponible');
+    if (!tokenValid) {
         handleAuthError();
         return {};
     }
     
-    console.log('✅ Usando token en headers:', token.substring(0, 25) + '...');
+    const token = localStorage.getItem('jwtToken');
+    
+    if (!token) {
+        console.error('❌ No hay token disponible después de la verificación');
+        handleAuthError();
+        return {};
+    }
+    
+    console.log('✅ Usando token verificado:', token.substring(0, 25) + '...');
     
     return {
-        'Authorization': token,
+        'Authorization': token.startsWith('Bearer ') ? token : 'Bearer ' + token,
         'Content-Type': 'application/json',
         'Accept': 'application/json'
     };
@@ -1993,13 +2072,14 @@ function formatCurrency(amount) {
 document.addEventListener('DOMContentLoaded', async function() {
     console.log("🔄 Inicializando aplicación...");
     
-    // Verificar token primero
-    if (!verifyToken()) {
-        handleAuthError();
-        return;
-    }
-    
     try {
+        // Verificar token primero
+        const tokenValid = await verifyAndRenewToken();
+        if (!tokenValid) {
+            handleAuthError();
+            return;
+        }
+        
         // Cargar datos en paralelo
         await Promise.all([
             loadClientes(),
