@@ -1303,156 +1303,293 @@
     }
 
     function calcularCostoTotal() {
+    try {
+        // 1. Obtener el valor del servicio
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
+
+        // 2. Calcular costo total desde productos
         let costoTotalProductos = 0;
-        
         if (detalleCotizacion && Array.isArray(detalleCotizacion)) {
             costoTotalProductos = detalleCotizacion.reduce((sum, item) => {
-                return sum + (parseFloat(item.subtotal) || 0);
+                const subtotal = parseFloat(item.subtotal) || 0;
+                if (isNaN(subtotal)) {
+                    console.warn('⚠️ Subtotal inválido encontrado:', item);
+                    return sum;
+                }
+                return sum + subtotal;
             }, 0);
         }
 
+        // 3. Calcular el costo total final
         const costoTotalFinal = valorServicioInput + costoTotalProductos;
+
+        // 4. Validar que no sea NaN
+        if (isNaN(costoTotalFinal)) {
+            console.error('❌ Error: costoTotalFinal es NaN');
+            document.getElementById('costoTotalCalculado').value = '0';
+            return;
+        }
+
+        // 5. Actualizar el campo
         document.getElementById('costoTotalCalculado').value = costoTotalFinal.toFixed(2);
         
-        console.log("💰 Cálculo total:", {
+        console.log("💰 Cálculo total detallado:", {
             valorServicio: valorServicioInput,
             costoProductos: costoTotalProductos,
-            total: costoTotalFinal
+            total: costoTotalFinal,
+            productosCount: detalleCotizacion?.length || 0
+        });
+        
+    } catch (error) {
+        console.error('❌ Error en calcularCostoTotal:', error);
+        document.getElementById('costoTotalCalculado').value = '0';
+    }
+}
+
+function validarDatosAntesDeEnviar(formData) {
+    console.log("🔍 Validando datos antes de enviar:");
+    
+    const errores = [];
+    
+    // Validar DNI cliente
+    if (!formData.dniCliente || formData.dniCliente.trim() === '') {
+        errores.push('DNI del cliente es requerido');
+    }
+    
+    // Validar fecha preferida
+    if (!formData.fechaPreferida) {
+        errores.push('Fecha preferida es requerida');
+    }
+    
+    // Validar descripción
+    if (!formData.descripcionProblema || formData.descripcionProblema.trim() === '') {
+        errores.push('Descripción del problema es requerida');
+    }
+    
+    // Validar costo total
+    if (isNaN(formData.costoTotalCotizacion) || formData.costoTotalCotizacion < 0) {
+        errores.push('Costo total debe ser un número válido y positivo');
+    }
+    
+    // Validar valor servicio
+    if (isNaN(formData.valorServicio) || formData.valorServicio < 0) {
+        errores.push('Valor del servicio debe ser un número válido y positivo');
+    }
+    
+    // Validar productos
+    if (formData.detalleCotizacion && Array.isArray(formData.detalleCotizacion)) {
+        formData.detalleCotizacion.forEach((producto, index) => {
+            if (!producto.idProducto) {
+                errores.push(`Producto ${index + 1}: ID de producto es requerido`);
+            }
+            if (isNaN(producto.cantidad) || producto.cantidad <= 0) {
+                errores.push(`Producto ${index + 1}: Cantidad debe ser mayor a 0`);
+            }
+            if (isNaN(producto.precioUnitario) || producto.precioUnitario < 0) {
+                errores.push(`Producto ${index + 1}: Precio unitario debe ser un número válido`);
+            }
         });
     }
+    
+    if (errores.length > 0) {
+        console.error('❌ Errores de validación:', errores);
+        return false;
+    }
+    
+    console.log('✅ Validación exitosa');
+    return true;
+}
 
     // ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
     async function handleQuoteFormSubmit(event) {
-        event.preventDefault();
-        if (isSubmitting) return;
-        isSubmitting = true;
+    event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
 
-        try {
-            const headers = getAuthHeaders();
-            if (!headers.Authorization) {
-                alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-                window.location.href = 'index.html';
-                isSubmitting = false;
-                return;
-            }
-
-            // Calcular totales antes de enviar
-            calcularCostoTotal();
-            
-            const tipoCliente = document.getElementById('clienteTipo').value;
-            const fechaPreferida = document.getElementById('fechaPreferida').value;
-            const prioridad = document.getElementById('prioridad').value;
-            const descripcion = document.getElementById('descripcion').value.trim();
-            const notas = document.getElementById('notas').value.trim();
-            const estado = document.getElementById('estadoSelect').value;
-
-            // Validaciones básicas
-            if (!fechaPreferida || !descripcion) {
-                alert("Complete todos los campos obligatorios (Fecha Preferida y Descripción del Problema).");
-                isSubmitting = false;
-                return;
-            }
-
-            let dniCliente = '';
-            if (tipoCliente === 'existente') {
-                const clienteSelect = document.getElementById('clienteSelect');
-                dniCliente = clienteSelect.value.trim();
-                if (!dniCliente) {
-                    alert("Seleccione un cliente válido.");
-                    isSubmitting = false;
-                    return;
-                }
-            } else {
-                dniCliente = document.getElementById('dniNuevo').value.trim();
-                if (!dniCliente) {
-                    alert("Ingrese el DNI del cliente nuevo.");
-                    isSubmitting = false;
-                    return;
-                }
-            }
-
-            // Mapeo de estados
-            const estadoMap = {
-                'Pendiente': 'PENDIENTE',
-                'Aprobada': 'APROBADA', 
-                'Rechazada': 'RECHAZADA',
-                'Finalizada': 'FINALIZADA'
-            };
-
-            const estadoBackend = estadoMap[estado] || 'PENDIENTE';
-
-            // Validar productos
-            if (detalleCotizacion.length === 0) {
-                const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar?");
-                if (!confirmarSinProductos) {
-                    isSubmitting = false;
-                    return;
-                }
-            }
-
-            // Obtener valores numéricos
-            const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
-            const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
-            const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
-
-            // Estructura de datos
-            const formData = {
-                dniCliente: dniCliente,
-                fechaPreferida: fechaPreferidaParaEnviar,
-                prioridad: prioridad,
-                descripcionProblema: descripcion,
-                notasInternas: notas,
-                estado: estadoBackend,
-                detalleCotizacion: detalleCotizacion.map(item => ({
-                    idProducto: item.idProducto,
-                    nombreProducto: item.nombreProducto,
-                    cantidad: parseInt(item.cantidad),
-                    precioUnitario: parseFloat(item.precioUnitario),
-                    subtotal: parseFloat(item.subtotal)
-                })),
-                costoTotalCotizacion: parseFloat(costoTotalCalculado),
-                valorServicio: parseFloat(valorServicioInput)
-            };
-
-            console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
-
-            const url = currentEditId 
-                ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
-                : `${API_COTIZACIONES_URL}/con-productos`;
-            const method = currentEditId ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method: method,
-                headers: headers,
-                body: JSON.stringify(formData)
-            });
-
-            console.log("📥 Respuesta del servidor:", response.status);
-            
-            if (!response.ok) {
-                if (response.status === 401) {
-                    handleAuthError();
-                    return;
-                }
-                const errorText = await response.text();
-                console.error("❌ Error del servidor:", errorText);
-                throw new Error(errorText || `Error ${response.status}`);
-            }
-            
-            const responseData = await response.json();
-            console.log("✅ Respuesta exitosa:", responseData);
-            alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
-            closeModal('addQuoteModal');
-            await getAllCotizaciones();
-            
-        } catch (error) {
-            console.error("❌ Error al guardar la cotización:", error);
-            alert(`❌ Error: ${error.message}`);
-        } finally {
+    try {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) {
+            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            window.location.href = 'index.html';
             isSubmitting = false;
+            return;
         }
+
+        // Calcular totales antes de enviar
+        calcularCostoTotal();
+        
+        const tipoCliente = document.getElementById('clienteTipo').value;
+        const fechaPreferida = document.getElementById('fechaPreferida').value;
+        const prioridad = document.getElementById('prioridad').value;
+        const descripcion = document.getElementById('descripcion').value.trim();
+        const notas = document.getElementById('notas').value.trim();
+        const estado = document.getElementById('estadoSelect').value;
+
+        // Validaciones básicas mejoradas
+        if (!fechaPreferida) {
+            alert("La fecha preferida es obligatoria.");
+            isSubmitting = false;
+            return;
+        }
+
+        if (!descripcion) {
+            alert("La descripción del problema es obligatoria.");
+            isSubmitting = false;
+            return;
+        }
+
+        let dniCliente = '';
+        if (tipoCliente === 'existente') {
+            const clienteSelect = document.getElementById('clienteSelect');
+            dniCliente = clienteSelect.value.trim();
+            if (!dniCliente) {
+                alert("Seleccione un cliente válido.");
+                isSubmitting = false;
+                return;
+            }
+        } else {
+            dniCliente = document.getElementById('dniNuevo').value.trim();
+            const nombreNuevo = document.getElementById('nombreNuevo').value.trim();
+            
+            if (!dniCliente) {
+                alert("Ingrese el DNI del cliente nuevo.");
+                isSubmitting = false;
+                return;
+            }
+            
+            if (!nombreNuevo) {
+                alert("Ingrese el nombre del cliente nuevo.");
+                isSubmitting = false;
+                return;
+            }
+        }
+
+        // Mapeo de estados
+        const estadoMap = {
+            'Pendiente': 'PENDIENTE',
+            'Aprobada': 'APROBADA', 
+            'Rechazada': 'RECHAZADA',
+            'Finalizada': 'FINALIZADA'
+        };
+
+        const estadoBackend = estadoMap[estado] || 'PENDIENTE';
+
+        // Validar que el costo total sea un número válido
+        const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
+        const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
+        
+        if (costoTotalCalculado < 0) {
+            alert("El costo total no puede ser negativo.");
+            isSubmitting = false;
+            return;
+        }
+
+        // Validar productos - estructura mejorada
+        let detalleCotizacionData = [];
+        if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
+            detalleCotizacionData = detalleCotizacion.map(item => ({
+                idProducto: item.idProducto?.toString() || '',
+                nombreProducto: item.nombreProducto?.toString() || '',
+                cantidad: parseInt(item.cantidad) || 1,
+                precioUnitario: parseFloat(item.precioUnitario) || 0,
+                subtotal: parseFloat(item.subtotal) || 0
+            }));
+        }
+
+        // Si no hay productos, preguntar si continuar
+        if (detalleCotizacionData.length === 0) {
+            const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar con solo el servicio?");
+            if (!confirmarSinProductos) {
+                isSubmitting = false;
+                return;
+            }
+        }
+
+        // Estructura de datos corregida
+        const formData = {
+            dniCliente: dniCliente.toString(),
+            fechaPreferida: fechaPreferida ? fechaPreferida : null,
+            prioridad: prioridad || 'Media',
+            descripcionProblema: descripcion,
+            notasInternas: notas || '',
+            estado: estadoBackend,
+            detalleCotizacion: detalleCotizacionData,
+            costoTotalCotizacion: parseFloat(costoTotalCalculado),
+            valorServicio: parseFloat(valorServicioInput)
+        };
+        // Validar datos antes de enviar
+        if (!validarDatosAntesDeEnviar(formData)) {
+            alert('❌ Por favor, corrija los errores en el formulario antes de enviar.');
+            isSubmitting = false;
+            return;
+        }
+        console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
+
+        const url = currentEditId 
+            ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
+            : `${API_COTIZACIONES_URL}/con-productos`;
+        const method = currentEditId ? 'PUT' : 'POST';
+
+        console.log("📤 URL:", url);
+        console.log("📤 Method:", method);
+
+        const response = await fetch(url, {
+            method: method,
+            headers: headers,
+            body: JSON.stringify(formData)
+        });
+
+        console.log("📥 Respuesta del servidor:", response.status);
+        console.log("📥 Respuesta headers:", response.headers);
+        
+        if (!response.ok) {
+            let errorMessage = `Error ${response.status}`;
+            
+            try {
+                const errorText = await response.text();
+                console.error("❌ Error detallado del servidor:", errorText);
+                
+                // Intentar parsear como JSON
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || errorJson.error || errorText;
+                } catch {
+                    errorMessage = errorText || `Error ${response.status}`;
+                }
+            } catch (parseError) {
+                console.error("❌ Error parseando respuesta de error:", parseError);
+                errorMessage = `Error ${response.status} - No se pudo leer la respuesta del servidor`;
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
+        const responseData = await response.json();
+        console.log("✅ Respuesta exitosa:", responseData);
+        
+        alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
+        closeModal('addQuoteModal');
+        await getAllCotizaciones();
+        
+    } catch (error) {
+        console.error("❌ Error al guardar la cotización:", error);
+        
+        // Mensajes de error más específicos
+        if (error.message.includes('400')) {
+            alert(`❌ Error de validación: ${error.message}\n\nRevise que todos los campos estén completos y en el formato correcto.`);
+        } else if (error.message.includes('401')) {
+            handleAuthError();
+        } else if (error.message.includes('404')) {
+            alert('❌ Recurso no encontrado. Verifique la URL del endpoint.');
+        } else if (error.message.includes('500')) {
+            alert('❌ Error interno del servidor. Por favor, contacte al administrador.');
+        } else {
+            alert(`❌ Error: ${error.message}`);
+        }
+    } finally {
+        isSubmitting = false;
     }
+}
 
     // ===== FUNCIONES DE RENDERIZADO Y UTILIDAD =====
     function renderCotizaciones(cotizaciones) {
