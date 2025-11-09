@@ -128,7 +128,32 @@
         .nav-item {
             margin: 0.5rem 1rem;
         }
+.token-expired-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
 
+.token-expired-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+}
+
+.token-expired-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
         .nav-link {
             display: flex;
             align-items: center;
@@ -1427,6 +1452,138 @@ async function handleQuoteFormSubmit(event) {
     if (isSubmitting) return;
     isSubmitting = true;
 
+    try {
+        const headers = await TokenManager.getAuthHeaders();
+        if (!headers.Authorization) {
+            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            window.location.href = 'index.html';
+            isSubmitting = false;
+            return;
+        }
+
+        // Calcular totales antes de enviar
+        calcularCostoTotal();
+        
+        const tipoCliente = document.getElementById('clienteTipo').value;
+        const fechaPreferida = document.getElementById('fechaPreferida').value;
+        const prioridad = document.getElementById('prioridad').value;
+        const descripcion = document.getElementById('descripcion').value.trim();
+        const notas = document.getElementById('notas').value.trim();
+        const estado = document.getElementById('estadoSelect').value;
+
+        // Validaciones básicas
+        if (!fechaPreferida || !descripcion) {
+            alert("Complete todos los campos obligatorios (Fecha Preferida y Descripción del Problema).");
+            isSubmitting = false;
+            return;
+        }
+
+        let dniCliente = '';
+        if (tipoCliente === 'existente') {
+            const clienteSelect = document.getElementById('clienteSelect');
+            dniCliente = clienteSelect.value.trim();
+            if (!dniCliente) {
+                alert("Seleccione un cliente válido.");
+                isSubmitting = false;
+                return;
+            }
+        } else {
+            dniCliente = document.getElementById('dniNuevo').value.trim();
+            if (!dniCliente) {
+                alert("Ingrese el DNI del cliente nuevo.");
+                isSubmitting = false;
+                return;
+            }
+        }
+
+        // Mapeo de estados
+        const estadoMap = {
+            'Pendiente': 'PENDIENTE',
+            'Aprobada': 'APROBADA', 
+            'Rechazada': 'RECHAZADA',
+            'Finalizada': 'FINALIZADA'
+        };
+
+        const estadoBackend = estadoMap[estado] || 'PENDIENTE';
+
+        // Validar productos
+        if (detalleCotizacion.length === 0) {
+            const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar?");
+            if (!confirmarSinProductos) {
+                isSubmitting = false;
+                return;
+            }
+        }
+
+        // Obtener valores numéricos correctos
+        const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
+        const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
+        const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
+
+        // Estructura de datos corregida
+        const formData = {
+            dniCliente: dniCliente,
+            fechaPreferida: fechaPreferidaParaEnviar,
+            prioridad: prioridad,
+            descripcionProblema: descripcion,
+            notasInternas: notas,
+            estado: estadoBackend,
+            detalleCotizacion: detalleCotizacion.map(item => ({
+                idProducto: item.idProducto,
+                nombreProducto: item.nombreProducto,
+                cantidad: parseInt(item.cantidad),
+                precioUnitario: parseFloat(item.precioUnitario),
+                subtotal: parseFloat(item.subtotal)
+            })),
+            costoTotalCotizacion: parseFloat(costoTotalCalculado),
+            valorServicio: parseFloat(valorServicioInput)
+        };
+
+        console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
+
+        const url = currentEditId 
+            ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
+            : `${API_COTIZACIONES_URL}/con-productos`;
+        const method = currentEditId ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+            method: method,
+            headers: headers,
+            body: JSON.stringify(formData)
+        });
+
+        console.log("📥 Respuesta del servidor:", response.status);
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('UNAUTHORIZED');
+            }
+            const errorText = await response.text();
+            console.error("❌ Error del servidor:", errorText);
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+        
+        const responseData = await response.json();
+        console.log("✅ Respuesta exitosa:", responseData);
+        alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
+        closeModal('addQuoteModal');
+        await getAllCotizaciones();
+        
+    } catch (error) {
+        console.error("❌ Error al guardar la cotización:", error);
+        if (error.message === 'UNAUTHORIZED') {
+            TokenManager.handleAuthError('UNAUTHORIZED');
+        } else {
+            alert(`❌ Error: ${error.message}`);
+        }
+    } finally {
+        isSubmitting = false;
+    }
+}
+    event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
+
     const token = localStorage.getItem('jwtToken');
     if (!token) {
         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -1678,25 +1835,22 @@ function renderCotizaciones(cotizaciones) {
         tbody.appendChild(row);
     });
 }
-
 async function mostrarProductosCotizacion(idCotizacion) {
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html';
-        return;
-    }
-    const headers = { 'Authorization': 'Bearer ' + token };
-
     try {
+        const headers = await TokenManager.getAuthHeaders();
+        if (!headers.Authorization) {
+            TokenManager.handleAuthError('NO_TOKEN');
+            return;
+        }
+
         console.log("🔄 Cargando detalles de cotización:", idCotizacion);
         
-        // Obtener los datos completos de la cotización CON EL TOKEN
+        // Obtener los datos completos de la cotización
         const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
         
         if (!response.ok) {
             if (response.status === 401) {
-                throw new Error('No autorizado - Token inválido o expirado');
+                throw new Error('UNAUTHORIZED');
             }
             throw new Error('Cotización no encontrada');
         }
@@ -1812,30 +1966,37 @@ async function mostrarProductosCotizacion(idCotizacion) {
 
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        alert('Error al cargar los productos de la cotización: ' + error.message);
+        if (error.message === 'UNAUTHORIZED') {
+            TokenManager.handleAuthError('UNAUTHORIZED');
+        } else {
+            alert('Error al cargar los productos de la cotización: ' + error.message);
+        }
     }
 }
 
 
  // === CORRECCIÓN EN editCotizacion ===
 async function editCotizacion(id) {
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html';
-        return;
-    }
-    const headers = { 'Authorization': 'Bearer ' + token };
-
     try {
+        const headers = await TokenManager.getAuthHeaders();
+        if (!headers.Authorization) {
+            TokenManager.handleAuthError('NO_TOKEN');
+            return;
+        }
+
         const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, { headers });
-        if (!response.ok) throw new Error('Cotización no encontrada');
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('UNAUTHORIZED');
+            }
+            throw new Error('Cotización no encontrada');
+        }
         const cot = await response.json();
 
         openAddQuoteModal();
         document.getElementById('estadoGroup').style.display = 'block';
         
-        // ✅ CORRECCIÓN: Mapeo inverso correcto
+        // Mapeo inverso correcto
         const estadoMapInverso = {
             'PENDIENTE': 'Pendiente',
             'APROBADA': 'Aprobada',
@@ -1847,7 +2008,7 @@ async function editCotizacion(id) {
         document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
         document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
         
-        // ✅ CORRECCIÓN: Asignar valores correctamente
+        // Asignar valores correctamente
         document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
         document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
         document.getElementById('clienteTipo').value = 'existente';
@@ -1858,7 +2019,7 @@ async function editCotizacion(id) {
         document.getElementById('descripcion').value = cot.descripcionProblema || '';
         document.getElementById('notas').value = cot.notasInternas || '';
 
-        // ✅ CORRECCIÓN: Cargar productos correctamente
+        // Cargar productos correctamente
         if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
             detalleCotizacion = cot.detalleCotizacion
                 .filter(item => item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO")
@@ -1877,7 +2038,12 @@ async function editCotizacion(id) {
 
         currentEditId = id;
     } catch (error) {
-        handleError(error);
+        console.error('Error al editar cotización:', error);
+        if (error.message === 'UNAUTHORIZED') {
+            TokenManager.handleAuthError('UNAUTHORIZED');
+        } else {
+            handleError(error);
+        }
     }
 }
 
@@ -1889,20 +2055,22 @@ async function getAuthHeaders() {
 // En todas las funciones que usan fetch, agrega:
 // ✅ FUNCIÓN viewCotizacion CORREGIDA
 async function viewCotizacion(idCotizacion) {
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html';
-        return;
-    }
-    
-    const headers = { 'Authorization': 'Bearer ' + token };
-
     try {
+        const headers = await TokenManager.getAuthHeaders();
+        if (!headers.Authorization) {
+            TokenManager.handleAuthError('NO_TOKEN');
+            return;
+        }
+
         console.log('🔍 Viendo cotización:', idCotizacion);
         
         const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
-        if (!response.ok) throw new Error('Cotización no encontrada');
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('UNAUTHORIZED');
+            }
+            throw new Error('Cotización no encontrada');
+        }
         
         const cotizacion = await response.json();
         
@@ -1911,7 +2079,11 @@ async function viewCotizacion(idCotizacion) {
         
     } catch (error) {
         console.error('Error al cargar cotización:', error);
-        alert('Error al cargar los detalles: ' + error.message);
+        if (error.message === 'UNAUTHORIZED') {
+            TokenManager.handleAuthError('UNAUTHORIZED');
+        } else {
+            alert('Error al cargar los detalles: ' + error.message);
+        }
     }
 }
 
@@ -2019,32 +2191,35 @@ Primero debe eliminar o desvincular los servicios relacionados.`);
     }
     if (!confirm('¿Está seguro de eliminar esta cotización?\nEsta acción no se puede deshacer.')) return;
 
-    // ✅ 1. Obtener el token JWT del almacenamiento local
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        return;
-    }
-
     try {
-        // ✅ 2. Configurar los headers con el token de autenticación
-        const headers = {
-            'Authorization': 'Bearer ' + token
-        };
+        const headers = await TokenManager.getAuthHeaders();
+        if (!headers.Authorization) {
+            TokenManager.handleAuthError('NO_TOKEN');
+            return;
+        }
 
         const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, {
             method: 'DELETE',
-            headers: headers // ✅ Enviar los headers aquí
+            headers: headers
         });
+        
         if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('UNAUTHORIZED');
+            }
             const errorText = await response.text();
             throw new Error(errorText || 'Error al eliminar');
         }
+        
         alert('✅ Cotización eliminada exitosamente');
         await getAllCotizaciones();
     } catch (error) {
         console.error("Error al eliminar cotización:", error);
-        alert(`❌ Error: ${error.message}`);
+        if (error.message === 'UNAUTHORIZED') {
+            TokenManager.handleAuthError('UNAUTHORIZED');
+        } else {
+            alert(`❌ Error: ${error.message}`);
+        }
     }
 }
 
