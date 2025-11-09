@@ -1434,7 +1434,6 @@ function validarDatosAntesDeEnviar(formData) {
     if (isSubmitting) return;
     isSubmitting = true;
 
-    // Mostrar indicador de carga
     const submitBtn = document.getElementById('submitBtn');
     const originalText = submitBtn.textContent;
     submitBtn.textContent = '⏳ Guardando...';
@@ -1474,8 +1473,7 @@ function validarDatosAntesDeEnviar(formData) {
 
         let dniCliente = '';
         if (tipoCliente === 'existente') {
-            const clienteSelect = document.getElementById('clienteSelect');
-            dniCliente = clienteSelect.value.trim();
+            dniCliente = document.getElementById('clienteSelect').value.trim();
             if (!dniCliente) {
                 alert("Seleccione un cliente válido.");
                 isSubmitting = false;
@@ -1516,51 +1514,37 @@ function validarDatosAntesDeEnviar(formData) {
             }));
         }
 
-        // ✅ CORRECCIÓN CRÍTICA: ESTRUCTURA DE DATOS DIFERENTE PARA CREAR VS EDITAR
-        let formData;
-        
+        // ✅ GENERAR ID SIEMPRE PARA NUEVAS COTIZACIONES
+        let idCotizacion;
         if (currentEditId) {
-            // ✅ PARA EDITAR - Incluir el ID de la cotización
-            formData = {
-                idCotizacion: currentEditId, // ← ESTE ES EL CAMPO CLAVE QUE FALTABA
-                dniCliente: dniCliente,
-                fechaPreferida: fechaPreferida,
-                prioridad: prioridad,
-                descripcionProblema: descripcion,
-                notasInternas: notas || '',
-                estado: estadoBackend,
-                detalleCotizacion: detalleCotizacionData,
-                costoTotalCotizacion: costoTotalCalculado,
-                valorServicio: valorServicioInput
-            };
+            idCotizacion = currentEditId;
         } else {
-            // ✅ PARA CREAR NUEVA - El backend necesita que generemos el ID
-            const nuevoId = generarIdCotizacion(); // Función que vamos a crear
-            formData = {
-                idCotizacion: nuevoId, // ← GENERAR ID PARA NUEVA COTIZACIÓN
-                dniCliente: dniCliente,
-                fechaPreferida: fechaPreferida,
-                prioridad: prioridad,
-                descripcionProblema: descripcion,
-                notasInternas: notas || '',
-                estado: estadoBackend,
-                detalleCotizacion: detalleCotizacionData,
-                costoTotalCotizacion: costoTotalCalculado,
-                valorServicio: valorServicioInput
-            };
+            idCotizacion = generarIdCotizacion();
+            console.log("🆕 ID generado para nueva cotización:", idCotizacion);
         }
 
-        console.log("🚀 ENVIANDO DATOS AL BACKEND:", JSON.stringify(formData, null, 2));
+        // Estructura de datos
+        const formData = {
+            idCotizacion: idCotizacion, // ← SIEMPRE incluir el ID
+            dniCliente: dniCliente,
+            fechaPreferida: fechaPreferida,
+            prioridad: prioridad,
+            descripcionProblema: descripcion,
+            notasInternas: notas || '',
+            estado: estadoBackend,
+            detalleCotizacion: detalleCotizacionData,
+            costoTotalCotizacion: costoTotalCalculado,
+            valorServicio: valorServicioInput
+        };
 
-        // ✅ CORRECCIÓN: Usar endpoint diferente para crear vs editar
+        console.log("🚀 ENVIANDO DATOS:", JSON.stringify(formData, null, 2));
+
+        // Determinar URL y método
         let url, method;
-        
         if (currentEditId) {
-            // Editar - PUT al endpoint específico
             url = `${API_COTIZACIONES_URL}/${currentEditId}/con-productos`;
             method = 'PUT';
         } else {
-            // Crear - POST al endpoint base
             url = `${API_COTIZACIONES_URL}/con-productos`;
             method = 'POST';
         }
@@ -1573,50 +1557,24 @@ function validarDatosAntesDeEnviar(formData) {
             body: JSON.stringify(formData)
         });
 
-        console.log("📥 RESPUESTA DEL SERVIDOR:", {
-            status: response.status,
-            statusText: response.statusText
-        });
-
-        // Obtener el contenido de la respuesta
-        const responseText = await response.text();
-        console.log("📥 CONTENIDO DE LA RESPUESTA:", responseText);
+        console.log("📥 Respuesta del servidor:", response.status);
 
         if (!response.ok) {
-            let errorMessage = `Error ${response.status}: ${response.statusText}`;
-            
-            if (responseText) {
-                try {
-                    const errorJson = JSON.parse(responseText);
-                    errorMessage = errorJson.message || errorJson.error || responseText;
-                } catch {
-                    errorMessage = responseText || errorMessage;
-                }
-            }
-
-            throw new Error(errorMessage);
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}: ${response.statusText}`);
         }
 
-        // Procesar respuesta exitosa
-        let responseData;
-        try {
-            responseData = responseText ? JSON.parse(responseText) : {};
-        } catch (e) {
-            responseData = { message: 'Cotización procesada exitosamente' };
-        }
-
-        console.log("✅ RESPUESTA EXITOSA:", responseData);
+        const responseData = await response.json();
+        console.log("✅ Éxito:", responseData);
         
-        alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
+        alert(currentEditId ? "✅ Cotización actualizada" : "✅ Cotización creada");
         closeModal('addQuoteModal');
         await getAllCotizaciones();
         
     } catch (error) {
-        console.error("❌ ERROR AL GUARDAR COTIZACIÓN:", error);
-        alert(`❌ Error al guardar la cotización:\n\n${error.message}`);
-        
+        console.error("❌ Error:", error);
+        alert(`❌ Error al guardar:\n\n${error.message}`);
     } finally {
-        // Restaurar estado del botón
         submitBtn.textContent = originalText;
         submitBtn.disabled = false;
         isSubmitting = false;
@@ -1626,20 +1584,22 @@ function validarDatosAntesDeEnviar(formData) {
 
 // Función para generar ID de cotización única
 function generarIdCotizacion() {
-    // Obtener el último ID de las cotizaciones existentes
+    // Verificar si hay cotizaciones existentes
     if (allCotizaciones.length === 0) {
         return 'COT001';
     }
     
-    // Encontrar el número más alto
+    // Extraer números de IDs existentes
     const numeros = allCotizaciones
         .map(cot => {
-            const match = cot.idCotizacion?.match(/COT(\d+)/);
+            if (!cot.idCotizacion) return 0;
+            const match = cot.idCotizacion.match(/COT(\d+)/);
             return match ? parseInt(match[1]) : 0;
         })
-        .filter(num => !isNaN(num));
+        .filter(num => !isNaN(num) && num > 0);
     
-    const maxNum = Math.max(...numeros);
+    // Encontrar el número más alto
+    const maxNum = numeros.length > 0 ? Math.max(...numeros) : 0;
     const nuevoNum = maxNum + 1;
     
     // Formatear con 3 dígitos
@@ -1852,26 +1812,27 @@ async function probarDiferentesEstructuras(datosOriginales) {
     }
 
     // ===== INICIALIZACIÓN =====
-    document.addEventListener('DOMContentLoaded', async function() {
-        console.log("🔄 Inicializando aplicación de cotizaciones...");
-        
-        // Verificar token
-        const token = localStorage.getItem('jwtToken');
-        if (!token) {
-            handleAuthError();
-            return;
-        }
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log("🔄 Inicializando aplicación...");
+    
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        handleAuthError();
+        return;
+    }
 
-        // Cargar datos
-        await Promise.all([
-            loadClientes(),
-            loadServicios(),
-            loadProductosCot(),
-            getAllCotizaciones()
-        ]);
+    try {
+        // Cargar datos en secuencia para evitar race conditions
+        await loadClientes();
+        await loadServicios();
+        await loadProductosCot();
+        await getAllCotizaciones(); // ← Esto debe ejecutarse correctamente
         
-        console.log("✅ Aplicación de cotizaciones inicializada correctamente");
-    });
+        console.log("✅ Aplicación inicializada correctamente");
+    } catch (error) {
+        console.error("❌ Error en inicialización:", error);
+    }
+});
 
     // ===== EVENT LISTENERS =====
     document.getElementById('quoteForm').addEventListener('submit', handleQuoteFormSubmit);
