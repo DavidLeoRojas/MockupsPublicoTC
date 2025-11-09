@@ -1462,13 +1462,30 @@ function renderCotizaciones(cotizaciones) {
     });
 }
 
-// ✅ FUNCIÓN MEJORADA para mostrar productos
 async function mostrarProductosCotizacion(idCotizacion) {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+    const headers = { 'Authorization': 'Bearer ' + token };
+
     try {
-        // Obtener los datos completos de la cotización
-        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`);
-        if (!response.ok) throw new Error('Cotización no encontrada');
+        console.log("🔄 Cargando detalles de cotización:", idCotizacion);
+        
+        // Obtener los datos completos de la cotización CON EL TOKEN
+        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('No autorizado - Token inválido o expirado');
+            }
+            throw new Error('Cotización no encontrada');
+        }
+        
         const cot = await response.json();
+        console.log("✅ Detalles de cotización cargados:", cot);
 
         const clienteNombre = cot.nombreCliente || 
                              cot.cliente?.nombre || 
@@ -1578,62 +1595,63 @@ async function mostrarProductosCotizacion(idCotizacion) {
 
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        alert('Error al cargar los productos de la cotización');
+        alert('Error al cargar los productos de la cotización: ' + error.message);
     }
 }
 
 
 // ✅ También actualiza la función viewCotizacion para mostrar mejor los productos
-async function viewCotizacion(id) {
+async function editCotizacion(id) {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+    const headers = { 'Authorization': 'Bearer ' + token };
+
     try {
-        const response = await fetch(`${API_COTIZACIONES_URL}/${id}`);
+        const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, { headers });
         if (!response.ok) throw new Error('Cotización no encontrada');
         const cot = await response.json();
+
+        openAddQuoteModal();
+        document.getElementById('estadoGroup').style.display = 'block';
+        document.getElementById('estadoSelect').value = cot.estado || 'Pendiente';
+        document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
+        document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
         
-        const isVinculada = isCotizacionVinculada(id);
-        const serviciosVinculados = allServicios.filter(s => 
-            s.idCotizacion === id || 
-            (s.cotizacion && s.cotizacion.idCotizacion === id)
-        );
+        // Cargar costo total calculado
+        document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
 
-        const clienteNombre = cot.cliente?.nombre || 
-                              clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
-                              'Cliente desconocido';
+        // ✅ CARGAR EL VALOR DEL SERVICIO
+        document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
 
-        // ✅ MEJORADA: Mostrar productos de manera más detallada
-        let productosInfo = 'No hay productos.';
-        if (cot.detalleCotizacion && cot.detalleCotizacion.length > 0) {
-            productosInfo = cot.detalleCotizacion.map((item, index) => {
-                return `${index + 1}. ${item.nombreProducto || 'Producto'} (x${item.cantidad}) - $${formatCurrency(item.subtotal || 0)}`;
-            }).join('\n');
+        document.getElementById('clienteTipo').value = 'existente';
+        toggleClienteInput();
+        document.getElementById('clienteSelect').value = cot.dniCliente;
+        document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
+        document.getElementById('prioridad').value = cot.prioridad || 'Media';
+        document.getElementById('descripcion').value = cot.descripcionProblema || '';
+        document.getElementById('notas').value = cot.notasInternas || '';
+
+        // ✅ CARGAR PRODUCTOS SI EXISTEN
+        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
+            detalleCotizacion = cot.detalleCotizacion.map(item => {
+                return {
+                    idProducto: item.idProducto,
+                    nombreProducto: item.nombreProducto,
+                    cantidad: item.cantidad,
+                    precioUnitario: item.precioUnitario || 0,
+                    subtotal: (item.precioUnitario || 0) * item.cantidad
+                };
+            });
+        } else {
+            detalleCotizacion = [];
         }
+        renderDetalleCotizacion();
 
-        const detalles = `
-COTIZACIÓN: ${cot.idCotizacion || 'N/A'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-👤 Cliente: ${clienteNombre}
-📧 DNI: ${cot.dniCliente}
-📊 Estado: ${cot.estado || 'Pendiente'}
-📅 Fecha Solicitud: ${formatDate(cot.fechaSolicitud)}
-📅 Fecha Preferida: ${formatDate(cot.fechaPreferida)}
-⚡ Prioridad: ${cot.prioridad || 'N/A'}
-💰 Costo Total: ${formatCurrency(cot.costoTotalCotizacion)}
-
-📝 Descripción:
-${cot.descripcionProblema || 'Sin descripción'}
-
-📋 Notas Internas:
-${cot.notasInternas || 'Sin notas'}
-
-📦 PRODUCTOS (${cot.detalleCotizacion ? cot.detalleCotizacion.length : 0}):
-${productosInfo}
-${isVinculada ? `
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ SERVICIOS VINCULADOS: ${serviciosVinculados.length}
-${serviciosVinculados.map(s => `- Servicio #${s.idServicio} (${s.fecha || 'Sin fecha'})`).join('\n')}
-` : ''}
-        `;
-        alert(detalles);
+        currentEditId = id;
     } catch (error) {
         handleError(error);
     }
@@ -1650,61 +1668,9 @@ ${serviciosVinculados.map(s => `- Servicio #${s.idServicio} (${s.fecha || 'Sin f
         document.getElementById('statRechazadas').textContent = rechazadas;
     }
 
-    async function viewCotizacion(id) {
-        try {
-            const response = await fetch(`${API_COTIZACIONES_URL}/${id}`);
-            if (!response.ok) throw new Error('Cotización no encontrada');
-            const cot = await response.json();
-            const isVinculada = isCotizacionVinculada(id);
-            const serviciosVinculados = allServicios.filter(s => 
-                s.idCotizacion === id || 
-                (s.cotizacion && s.cotizacion.idCotizacion === id)
-            );
-
-            // ✅ Mostrar NOMBRE del cliente
-            const clienteNombre = cot.cliente?.nombre || 
-                                  clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
-                                  'Cliente desconocido';
-
-            // ✅ VOLVER A MOSTRAR PRODUCTOS
-            let productosInfo = 'No hay productos.';
-            if (cot.detalleCotizacion && cot.detalleCotizacion.length > 0) {
-                // ✅ CAMBIAR: Usar nombreProducto (esperando que el backend lo devuelva)
-                productosInfo = cot.detalleCotizacion.map(item => {
-                    // El backend debería devolver nombreProducto si la relación es con Producto
-                    return `- ${item.nombreProducto || 'Producto desconocido'} (x${item.cantidad})`;
-                }).join('\n');
-            }
-
-            const detalles = `
-COTIZACIÓN: ${cot.idCotizacion || 'N/A'}
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-Cliente: ${clienteNombre}
-DNI: ${cot.dniCliente}
-Estado: ${cot.estado || 'Pendiente'}
-Fecha Solicitud: ${formatDate(cot.fechaSolicitud)}
-Fecha Preferida: ${formatDate(cot.fechaPreferida)}
-Prioridad: ${cot.prioridad || 'N/A'}
-Costo Total: ${formatCurrency(cot.costoTotalCotizacion)}
-Descripción:
-${cot.descripcionProblema || 'Sin descripción'}
-Notas Internas:
-${cot.notasInternas || 'Sin notas'}
-Productos:
-${productosInfo}
-${isVinculada ? `
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ SERVICIOS VINCULADOS: ${serviciosVinculados.length}
-${serviciosVinculados.map(s => `- Servicio #${s.idServicio} (${s.fecha || 'Sin fecha'})`).join('\n')}
-` : ''}
-            `;
-            alert(detalles);
-        } catch (error) {
-            handleError(error);
-        }
-    }
 
 async function editCotizacion(id) {
+    const token = localStorage.getItem('jwtToken');
     const cot = allCotizaciones.find(c => c.idCotizacion === id);
     if (!cot) {
         alert("Cotización no encontrada.");
