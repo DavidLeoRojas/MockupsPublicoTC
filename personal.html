@@ -1067,11 +1067,16 @@ function resetForm() {
 
 function poblarCiudadesEnFormulario() {
     const select = document.getElementById('personCity');
+    if (!select) {
+        console.error('❌ No se encontró el elemento personCity');
+        return;
+    }
+    
     select.innerHTML = '<option value="">Seleccionar ciudad</option>';
     
     if (!Array.isArray(direcciones) || direcciones.length === 0) {
-        console.warn('No hay direcciones disponibles');
-        // Agregar opciones por defecto
+        console.warn('No hay direcciones disponibles, usando opciones por defecto');
+        // Agregar opciones por defecto con valores numéricos
         select.innerHTML += `
             <option value="5413">Bogotá</option>
             <option value="5414">Medellín</option>
@@ -1082,7 +1087,7 @@ function poblarCiudadesEnFormulario() {
 
     direcciones.forEach(dir => {
         const option = document.createElement('option');
-        option.value = dir.idDireccion;
+        option.value = dir.idDireccion; // 🔥 Esto debe ser un número
         
         // Usar el nombre más descriptivo disponible
         let texto = dir.descripcionAdicional || dir.nombre || `Ciudad ${dir.idDireccion}`;
@@ -1117,7 +1122,8 @@ async function handleAddPersonForm(event) {
         const telefono = document.getElementById('personPhone').value.trim();
         const email = document.getElementById('personEmail').value.trim();
         const rol = document.getElementById('personType').value;
-        const ciudad = document.getElementById('personCity').value;
+        const ciudadSelect = document.getElementById('personCity');
+        const ciudad = ciudadSelect ? ciudadSelect.value : '';
         const direccion = document.getElementById('personAddress').value.trim();
         const observaciones = document.getElementById('personNotes').value.trim();
         const representanteLegal = document.getElementById('personRepresentante').value.trim();
@@ -1133,8 +1139,15 @@ async function handleAddPersonForm(event) {
             nit = null;
         }
 
+        // 🔥 CORRECCIÓN CRÍTICA: Validar que ciudad tenga un valor válido
+        if (!ciudad) {
+            alert("❌ Debe seleccionar una ciudad válida.");
+            isSubmitting = false;
+            return;
+        }
+
         // Validaciones básicas
-        if (!dni || !nombre || !telefono || !email || !rol || !ciudad) {
+        if (!dni || !nombre || !telefono || !email || !rol) {
             alert("❌ Complete todos los campos obligatorios.");
             isSubmitting = false;
             return;
@@ -1166,7 +1179,7 @@ async function handleAddPersonForm(event) {
             return;
         }
 
-        // 🔥 ESTRUCTURA CORREGIDA - Versión simplificada
+        // 🔥 ESTRUCTURA CORREGIDA - Asegurar que id_direccion sea número
         const datosPersona = {
             dni: dni,
             tipo_dni: tipoDni,
@@ -1174,8 +1187,8 @@ async function handleAddPersonForm(event) {
             telefono: telefono,
             correo: email,
             password: "123456", // Contraseña por defecto
-            rol: rol.toLowerCase(), // 🔥 IMPORTANTE: enviar en minúsculas
-            id_direccion: parseInt(ciudad)
+            rol: rol.toLowerCase(),
+            id_direccion: parseInt(ciudad) || 5413 // 🔥 VALOR POR DEFECTO SI FALLA
         };
 
         // 🔥 Campos adicionales solo si tienen valor
@@ -1201,7 +1214,7 @@ async function handleAddPersonForm(event) {
             datosPersona.nit = nit;
             datosPersona.representante_legal = representanteLegal;
         } else {
-            // Para naturales, no enviar estos campos o enviar null explícitamente
+            // Para naturales, no enviar estos campos
             datosPersona.nit = null;
             datosPersona.representante_legal = null;
         }
@@ -1243,7 +1256,7 @@ async function handleAddPersonForm(event) {
             } else if (responseText.includes('persona natural') || responseText.includes('NIT')) {
                 alert(`❌ Error de validación: ${errorMessage}`);
             } else if (response.status === 500) {
-                alert(`❌ Error interno del servidor (500). Detalles en consola.`);
+                alert(`❌ Error interno del servidor (500). Verifica que la ciudad esté seleccionada.`);
                 console.error('Error 500 completo:', responseText);
             } else {
                 alert(`❌ Error (${response.status}): ${errorMessage}`);
