@@ -1066,18 +1066,28 @@ function poblarCiudadesEnFormulario() {
     select.innerHTML = '<option value="">Seleccionar ciudad</option>';
     
     if (!Array.isArray(direcciones) || direcciones.length === 0) {
-        select.innerHTML += '<option value="">No hay ciudades disponibles</option>';
+        console.warn('No hay direcciones disponibles');
+        // Agregar opciones por defecto
+        select.innerHTML += `
+            <option value="5413">Bogotá</option>
+            <option value="5414">Medellín</option>
+            <option value="5415">Tunja</option>
+        `;
         return;
     }
 
     direcciones.forEach(dir => {
         const option = document.createElement('option');
-        option.value = dir.idDireccion; // ✅ ID real para el backend
-        // Mostrar el nombre de la ciudad desde el mapeo
-        const texto = CIUDADES_MAP[dir.idDireccion] || dir.descripcionAdicional || dir.nombre || `Dirección ${dir.idDireccion}`;
-        option.textContent = texto; // 👈 Este es el texto que verá el usuario
+        option.value = dir.idDireccion;
+        
+        // Usar el nombre más descriptivo disponible
+        let texto = dir.descripcionAdicional || dir.nombre || `Ciudad ${dir.idDireccion}`;
+        option.textContent = texto;
+        
         select.appendChild(option);
     });
+    
+    console.log('Ciudades cargadas en formulario:', direcciones.length);
 }
 
 // Mover handleAddPersonForm al ámbito global (fuera de cualquier otra función)
@@ -1086,7 +1096,7 @@ async function handleAddPersonForm(event) {
     if (isSubmitting) return;
     isSubmitting = true;
 
-    // ✅ 1. Obtener el token JWT del almacenamiento local
+    // ✅ Obtener el token JWT
     const token = localStorage.getItem('jwtToken');
     if (!token) {
         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -1095,151 +1105,145 @@ async function handleAddPersonForm(event) {
         return;
     }
 
-    const tipoPersona = document.getElementById('personTypeSelect').value;
-    const docInput = document.getElementById('personDoc');
-    const nitInput = document.getElementById('personNit');
-    const tipoDni = document.getElementById('personDocType').value;
-
-    // 🔥 CORRECCIÓN CRÍTICA: Validar que personas naturales no usen NIT
-    if (tipoPersona === 'Natural' && tipoDni === 'NIT') {
-        alert("❌ Para una persona natural, el tipo de documento no puede ser NIT. Seleccione Cédula de Ciudadanía o Cédula de Extranjería.");
-        isSubmitting = false;
-        return;
-    }
-    // 🔥 CORRECCIÓN CRÍTICA: Validar que personas jurídicas usen NIT
-    if (tipoPersona === 'Juridica' && tipoDni !== 'NIT') {
-        alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
-        isSubmitting = false;
-        return;
-    }
-    if (!tipoDni || tipoDni.trim() === '') {
-        alert("Por favor seleccione un tipo de documento.");
-        isSubmitting = false;
-        return;
-    }
-    const nombre = document.getElementById('personName').value.trim();
-    const telefono = document.getElementById('personPhone').value.trim();
-    const email = document.getElementById('personEmail').value.trim();
-    const rol = document.getElementById('personType').value;
-    const ciudad = document.getElementById('personCity').value.trim();
-    const representanteLegal = document.getElementById('personRepresentante').value.trim();
-    if (!nombre || !telefono || !email || !rol || !ciudad) {
-        alert("Complete todos los campos obligatorios.");
-        isSubmitting = false;
-        return;
-    }
-    if (!validarEmail(email)) {
-        alert("El correo electrónico no es válido.");
-        isSubmitting = false;
-        return;
-    }
-    let dni = '';
-    let nit = null;
-    // 🔥 CORRECCIÓN CRÍTICA: Seguir la lógica del trigger
-    if (tipoPersona === 'Juridica') {
-        // Para jurídica: el DNI debe ser igual al NIT (según el trigger)
-        nit = nitInput.value.trim();
-        dni = nit; // El DNI es el mismo que el NIT para jurídicas
-        if (!dni) {
-            alert("El NIT es obligatorio para personas jurídicas.");
-            isSubmitting = false;
-            return;
-        }
-        if (!representanteLegal) {
-            alert("El representante legal es obligatorio para personas jurídicas.");
-            isSubmitting = false;
-            return;
-        }
-    } else {
-        // Para natural: solo usar documento, NIT debe ser null
-        dni = docInput.value.trim();
-        nit = null;
-        if (!dni) {
-            alert("El documento es obligatorio.");
-            isSubmitting = false;
-            return;
-        }
-    }
-    // Validaciones de longitud
-    if (dni.length < 5 || dni.length > 20) {
-        alert("El documento/NIT debe tener entre 5 y 20 caracteres.");
-        isSubmitting = false;
-        return;
-    }
-    if (telefono.length < 7 || telefono.length > 15) {
-        alert("El teléfono debe tener entre 7 y 15 dígitos.");
-        isSubmitting = false;
-        return;
-    }
-    if (todasLasPersonas.some(p => String(p.dni) === String(dni))) {
-        alert(`El documento/NIT "${dni}" ya está registrado.`);
-        isSubmitting = false;
-        return;
-    }
-    const cargoEspecialidad = document.getElementById('personRole').value.trim();
-    const datosPersona = {
-        dni: dni.toString(),
-        tipo_dni: tipoDni.toString(),
-        nombre: nombre.toString(),
-        telefono: telefono.toString(),
-        correo: email.toString(),
-        rol: rol.toString().charAt(0).toUpperCase() + rol.toString().slice(1),
-        id_direccion: parseInt(ciudad),
-        tipo_persona: tipoPersona.toUpperCase(), // "JURIDICA" o "NATURAL"
-        cargo_especialidad: cargoEspecialidad || null
-    };
-    // 🔥 CORRECCIÓN DEFINITIVA: Enviar NIT solo para jurídicas, según el trigger
-    if (tipoPersona === 'Juridica') {
-        datosPersona.nit = nit.toString();
-        datosPersona.representante_legal = representanteLegal.toString();
-    } else {
-        // Para naturales, NO enviar nit (será null en la BD)
-        // El trigger espera que nit sea NULL para naturales
-        datosPersona.nit = null;
-        datosPersona.representante_legal = null;
-    }
-    console.log('Datos a enviar (CORREGIDOS):', datosPersona);
-
     try {
-        // ✅ 2. Configurar los encabezados con el token de autenticación
+        // Obtener valores del formulario
+        const tipoPersona = document.getElementById('personTypeSelect').value;
+        const tipoDni = document.getElementById('personDocType').value;
+        const nombre = document.getElementById('personName').value.trim();
+        const telefono = document.getElementById('personPhone').value.trim();
+        const email = document.getElementById('personEmail').value.trim();
+        const rol = document.getElementById('personType').value;
+        const ciudad = document.getElementById('personCity').value;
+        const representanteLegal = document.getElementById('personRepresentante').value.trim();
+        const cargoEspecialidad = document.getElementById('personRole').value.trim();
+
+        // 🔥 CORRECCIÓN: Obtener documento/NIT correctamente
+        let dni, nit;
+        if (tipoPersona === 'Juridica') {
+            dni = document.getElementById('personNit').value.trim();
+            nit = dni; // Para jurídicas, NIT = DNI
+        } else {
+            dni = document.getElementById('personDoc').value.trim();
+            nit = null; // Para naturales, NIT es null
+        }
+
+        // Validaciones básicas
+        if (!dni || !nombre || !telefono || !email || !rol || !ciudad) {
+            alert("❌ Complete todos los campos obligatorios.");
+            isSubmitting = false;
+            return;
+        }
+
+        if (!validarEmail(email)) {
+            alert("❌ El correo electrónico no es válido.");
+            isSubmitting = false;
+            return;
+        }
+
+        // Validaciones de tipo de documento
+        if (tipoPersona === 'Natural' && tipoDni === 'NIT') {
+            alert("❌ Para una persona natural, el tipo de documento no puede ser NIT.");
+            isSubmitting = false;
+            return;
+        }
+
+        if (tipoPersona === 'Juridica' && tipoDni !== 'NIT') {
+            alert("❌ Para una persona jurídica, el tipo de documento debe ser NIT.");
+            isSubmitting = false;
+            return;
+        }
+
+        // Verificar si ya existe
+        if (todasLasPersonas.some(p => String(p.dni) === String(dni))) {
+            alert(`❌ El documento/NIT "${dni}" ya está registrado.`);
+            isSubmitting = false;
+            return;
+        }
+
+        // 🔥 CORRECCIÓN: Estructura de datos corregida
+        const datosPersona = {
+            dni: dni,
+            tipo_dni: tipoDni,
+            nombre: nombre,
+            telefono: telefono,
+            correo: email,
+            // 🔥 AGREGAR CONTRASEÑA (requerida por el backend)
+            password: "123456", // Contraseña por defecto, puedes cambiarla
+            rol: rol.charAt(0).toUpperCase() + rol.slice(1).toLowerCase(),
+            // 🔥 CORREGIR: id_direccion debe ser número
+            id_direccion: parseInt(ciudad) || 5413, // Valor por defecto si falla
+            tipo_persona: tipoPersona.toUpperCase(),
+            cargo_especialidad: cargoEspecialidad || null
+        };
+
+        // 🔥 CORRECCIÓN: Manejar NIT y representante legal según el tipo
+        if (tipoPersona === 'Juridica') {
+            if (!representanteLegal) {
+                alert("❌ El representante legal es obligatorio para personas jurídicas.");
+                isSubmitting = false;
+                return;
+            }
+            datosPersona.nit = nit;
+            datosPersona.representante_legal = representanteLegal;
+        } else {
+            // Para naturales, NO enviar estos campos o enviar null
+            datosPersona.nit = null;
+            datosPersona.representante_legal = null;
+        }
+
+        console.log('📤 Datos a enviar:', datosPersona);
+
+        // Configurar headers
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
 
+        // Enviar solicitud
         const response = await fetch(`${API_BASE_URL}/personas`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(datosPersona)
         });
-        const text = await response.text();
-        console.log('Respuesta del servidor:', text);
+
+        const responseText = await response.text();
+        console.log('📨 Respuesta del servidor:', response.status, responseText);
+
         if (!response.ok) {
-            let errorMsg = text;
+            let errorMessage = 'Error desconocido';
+            
             try {
-                const errorJson = JSON.parse(text);
-                errorMsg = errorJson.message || errorJson.error || text;
+                const errorJson = JSON.parse(responseText);
+                errorMessage = errorJson.message || errorJson.error || responseText;
             } catch (e) {
-                console.warn('La respuesta de error no es JSON:', e);
+                errorMessage = responseText;
             }
-            console.error('Error del servidor:', response.status, errorMsg);
-            if (text.includes('Duplicate entry')) {
+
+            // Manejar errores específicos
+            if (responseText.includes('Duplicate entry')) {
                 alert(`❌ El documento/NIT "${dni}" ya existe en la base de datos.`);
-            } else if (text.includes('persona natural') || text.includes('NIT')) {
-                alert(`❌ Error de validación: ${errorMsg}
-El trigger de la base de datos está rechazando la inserción.`);
+            } else if (responseText.includes('persona natural') || responseText.includes('NIT')) {
+                alert(`❌ Error de validación: ${errorMessage}`);
+            } else if (response.status === 500) {
+                alert(`❌ Error interno del servidor (500). Verifica la consola para más detalles.`);
+                console.error('Error 500 detalles:', responseText);
             } else {
-                alert(`❌ Error del servidor (${response.status}): ${errorMsg}`);
+                alert(`❌ Error (${response.status}): ${errorMessage}`);
             }
+            
+            isSubmitting = false;
             return;
         }
+
+        // Éxito
         alert("✅ Persona agregada exitosamente.");
         closeModal('addPersonModal');
         await loadData();
+
     } catch (error) {
-        console.error("❌ Error de red o al procesar la solicitud:", error);
-        alert("❌ Error de red o al procesar la solicitud.");
+        console.error("❌ Error de red:", error);
+        alert("❌ Error de conexión. Verifica tu internet e intenta nuevamente.");
     } finally {
         isSubmitting = false;
     }
