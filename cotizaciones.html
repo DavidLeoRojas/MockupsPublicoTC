@@ -1406,6 +1406,12 @@ function validarDatosAntesDeEnviar(formData) {
     if (isSubmitting) return;
     isSubmitting = true;
 
+    // Mostrar indicador de carga
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '⏳ Guardando...';
+    submitBtn.disabled = true;
+
     try {
         const headers = getAuthHeaders();
         if (!headers.Authorization) {
@@ -1425,7 +1431,7 @@ function validarDatosAntesDeEnviar(formData) {
         const notas = document.getElementById('notas').value.trim();
         const estado = document.getElementById('estadoSelect').value;
 
-        // Validaciones básicas mejoradas
+        // Validaciones básicas
         if (!fechaPreferida) {
             alert("La fecha preferida es obligatoria.");
             isSubmitting = false;
@@ -1449,16 +1455,8 @@ function validarDatosAntesDeEnviar(formData) {
             }
         } else {
             dniCliente = document.getElementById('dniNuevo').value.trim();
-            const nombreNuevo = document.getElementById('nombreNuevo').value.trim();
-            
             if (!dniCliente) {
                 alert("Ingrese el DNI del cliente nuevo.");
-                isSubmitting = false;
-                return;
-            }
-            
-            if (!nombreNuevo) {
-                alert("Ingrese el nombre del cliente nuevo.");
                 isSubmitting = false;
                 return;
             }
@@ -1474,17 +1472,18 @@ function validarDatosAntesDeEnviar(formData) {
 
         const estadoBackend = estadoMap[estado] || 'PENDIENTE';
 
-        // Validar que el costo total sea un número válido
+        // Obtener valores numéricos
         const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
-        
-        if (costoTotalCalculado < 0) {
-            alert("El costo total no puede ser negativo.");
+
+        // Validar que el costo total sea válido
+        if (isNaN(costoTotalCalculado) || costoTotalCalculado < 0) {
+            alert("El costo total debe ser un número válido y positivo.");
             isSubmitting = false;
             return;
         }
 
-        // Validar productos - estructura mejorada
+        // Preparar detalle de productos
         let detalleCotizacionData = [];
         if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
             detalleCotizacionData = detalleCotizacion.map(item => ({
@@ -1494,103 +1493,201 @@ function validarDatosAntesDeEnviar(formData) {
                 precioUnitario: parseFloat(item.precioUnitario) || 0,
                 subtotal: parseFloat(item.subtotal) || 0
             }));
-        }
 
-        // Si no hay productos, preguntar si continuar
-        if (detalleCotizacionData.length === 0) {
-            const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar con solo el servicio?");
-            if (!confirmarSinProductos) {
-                isSubmitting = false;
-                return;
+            // Validar cada producto
+            for (let producto of detalleCotizacionData) {
+                if (!producto.idProducto) {
+                    alert("Todos los productos deben tener un ID válido.");
+                    isSubmitting = false;
+                    return;
+                }
+                if (producto.cantidad <= 0) {
+                    alert("La cantidad de productos debe ser mayor a 0.");
+                    isSubmitting = false;
+                    return;
+                }
             }
         }
 
-        // Estructura de datos corregida
+        // Estructura de datos - PROBAR DIFERENTES ESTRUCTURAS
         const formData = {
-            dniCliente: dniCliente.toString(),
-            fechaPreferida: fechaPreferida ? fechaPreferida : null,
-            prioridad: prioridad || 'Media',
+            dniCliente: dniCliente,
+            fechaPreferida: fechaPreferida,
+            prioridad: prioridad,
             descripcionProblema: descripcion,
             notasInternas: notas || '',
             estado: estadoBackend,
             detalleCotizacion: detalleCotizacionData,
-            costoTotalCotizacion: parseFloat(costoTotalCalculado),
-            valorServicio: parseFloat(valorServicioInput)
+            costoTotalCotizacion: costoTotalCalculado,
+            valorServicio: valorServicioInput
         };
-        // Validar datos antes de enviar
-        if (!validarDatosAntesDeEnviar(formData)) {
-            alert('❌ Por favor, corrija los errores en el formulario antes de enviar.');
-            isSubmitting = false;
-            return;
-        }
-        console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
+
+        console.log("🚀 ENVIANDO DATOS AL BACKEND:", JSON.stringify(formData, null, 2));
 
         const url = currentEditId 
             ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` 
             : `${API_COTIZACIONES_URL}/con-productos`;
         const method = currentEditId ? 'PUT' : 'POST';
 
-        console.log("📤 URL:", url);
-        console.log("📤 Method:", method);
+        console.log("📤 Realizando petición:", { url, method });
+
+        // Realizar la petición con timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 segundos timeout
 
         const response = await fetch(url, {
             method: method,
             headers: headers,
-            body: JSON.stringify(formData)
+            body: JSON.stringify(formData),
+            signal: controller.signal
         });
 
-        console.log("📥 Respuesta del servidor:", response.status);
-        console.log("📥 Respuesta headers:", response.headers);
-        
+        clearTimeout(timeoutId);
+
+        console.log("📥 RESPUESTA DEL SERVIDOR:", {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries()),
+            ok: response.ok,
+            url: response.url
+        });
+
+        // Obtener el contenido de la respuesta
+        const responseText = await response.text();
+        console.log("📥 CONTENIDO DE LA RESPUESTA:", responseText);
+
         if (!response.ok) {
-            let errorMessage = `Error ${response.status}`;
+            let errorMessage = `Error ${response.status}: ${response.statusText}`;
             
-            try {
-                const errorText = await response.text();
-                console.error("❌ Error detallado del servidor:", errorText);
-                
-                // Intentar parsear como JSON
+            // Intentar extraer más información del error
+            if (responseText) {
                 try {
-                    const errorJson = JSON.parse(errorText);
-                    errorMessage = errorJson.message || errorJson.error || errorText;
+                    const errorJson = JSON.parse(responseText);
+                    errorMessage = errorJson.message || errorJson.error || errorJson.details || responseText;
                 } catch {
-                    errorMessage = errorText || `Error ${response.status}`;
+                    errorMessage = responseText || errorMessage;
                 }
-            } catch (parseError) {
-                console.error("❌ Error parseando respuesta de error:", parseError);
-                errorMessage = `Error ${response.status} - No se pudo leer la respuesta del servidor`;
             }
-            
+
+            // Errores específicos por código de estado
+            switch (response.status) {
+                case 400:
+                    errorMessage = `Error de validación (400): ${errorMessage}\n\nPosibles causas:\n- Estructura de datos incorrecta\n- Campos requeridos faltantes\n- Tipos de datos inválidos\n- Validaciones de negocio no cumplidas`;
+                    break;
+                case 401:
+                    errorMessage = `No autorizado (401): ${errorMessage}`;
+                    handleAuthError();
+                    return;
+                case 404:
+                    errorMessage = `Recurso no encontrado (404): ${errorMessage}`;
+                    break;
+                case 500:
+                    errorMessage = `Error interno del servidor (500): ${errorMessage}`;
+                    break;
+            }
+
             throw new Error(errorMessage);
         }
-        
-        const responseData = await response.json();
-        console.log("✅ Respuesta exitosa:", responseData);
+
+        // Procesar respuesta exitosa
+        let responseData;
+        try {
+            responseData = responseText ? JSON.parse(responseText) : {};
+        } catch (e) {
+            responseData = { message: 'Cotización procesada exitosamente' };
+        }
+
+        console.log("✅ RESPUESTA EXITOSA:", responseData);
         
         alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
         closeModal('addQuoteModal');
         await getAllCotizaciones();
         
     } catch (error) {
-        console.error("❌ Error al guardar la cotización:", error);
+        console.error("❌ ERROR COMPLETO AL GUARDAR COTIZACIÓN:", error);
         
-        // Mensajes de error más específicos
-        if (error.message.includes('400')) {
-            alert(`❌ Error de validación: ${error.message}\n\nRevise que todos los campos estén completos y en el formato correcto.`);
-        } else if (error.message.includes('401')) {
-            handleAuthError();
-        } else if (error.message.includes('404')) {
-            alert('❌ Recurso no encontrado. Verifique la URL del endpoint.');
-        } else if (error.message.includes('500')) {
-            alert('❌ Error interno del servidor. Por favor, contacte al administrador.');
+        if (error.name === 'AbortError') {
+            alert('⏰ La solicitud tardó demasiado tiempo. Por favor, intente nuevamente.');
         } else {
-            alert(`❌ Error: ${error.message}`);
+            alert(`❌ Error al guardar la cotización:\n\n${error.message}`);
         }
+        
     } finally {
+        // Restaurar estado del botón
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
         isSubmitting = false;
     }
 }
+async function probarDiferentesEstructuras(datosOriginales) {
+    console.log("🧪 PROBANDO DIFERENTES ESTRUCTURAS DE DATOS");
+    
+    const estructuras = [
+        {
+            nombre: "Estructura Original",
+            datos: datosOriginales
+        },
+        {
+            nombre: "Sin productos (array vacío)",
+            datos: {
+                ...datosOriginales,
+                detalleCotizacion: []
+            }
+        },
+        {
+            nombre: "Sin campo detalleCotizacion",
+            datos: {
+                dniCliente: datosOriginales.dniCliente,
+                fechaPreferida: datosOriginales.fechaPreferida,
+                prioridad: datosOriginales.prioridad,
+                descripcionProblema: datosOriginales.descripcionProblema,
+                notasInternas: datosOriginales.notasInternas,
+                estado: datosOriginales.estado,
+                costoTotalCotizacion: datosOriginales.costoTotalCotizacion,
+                valorServicio: datosOriginales.valorServicio
+            }
+        },
+        {
+            nombre: "Solo campos básicos",
+            datos: {
+                dniCliente: datosOriginales.dniCliente,
+                fechaPreferida: datosOriginales.fechaPreferida,
+                descripcionProblema: datosOriginales.descripcionProblema,
+                estado: datosOriginales.estado
+            }
+        }
+    ];
 
+    for (let estructura of estructuras) {
+        console.log(`\n🔍 Probando: ${estructura.nombre}`);
+        console.log("📤 Datos:", JSON.stringify(estructura.datos, null, 2));
+        
+        try {
+            const headers = getAuthHeaders();
+            const url = `${API_COTIZACIONES_URL}/con-productos`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(estructura.datos)
+            });
+
+            console.log(`📥 Respuesta (${estructura.nombre}):`, {
+                status: response.status,
+                statusText: response.statusText
+            });
+
+            if (response.ok) {
+                console.log(`✅ ÉXITO con: ${estructura.nombre}`);
+                return estructura.datos;
+            }
+        } catch (error) {
+            console.log(`❌ Error con ${estructura.nombre}:`, error.message);
+        }
+    }
+
+    return null;
+}
     // ===== FUNCIONES DE RENDERIZADO Y UTILIDAD =====
     function renderCotizaciones(cotizaciones) {
         const tbody = document.getElementById('cotizacionesTableBody');
