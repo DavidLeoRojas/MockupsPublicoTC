@@ -768,7 +768,7 @@
 const API_BASE_URL = 'https://backendgeminiambienta-v4-0-428l.onrender.com/api';
 
 let productos = [];
-let categorias = []; // Opcional: para llenar el select de categorías
+let categorias = [];
 
 // Verificar si el usuario está autenticado
 function checkAuth() {
@@ -779,6 +779,35 @@ function checkAuth() {
         return false;
     }
     return true;
+}
+
+// Obtener clase CSS para estado de stock
+function getStatusClass(stock) {
+    if (stock === 0) return 'agotado';
+    if (stock <= 5) return 'bajo';
+    return 'disponible';
+}
+
+// Obtener texto para estado de stock
+function getStatusText(stock) {
+    if (stock === 0) return 'Agotado';
+    if (stock <= 5) return 'Bajo';
+    return 'Disponible';
+}
+
+// Función para generar código secuencial
+function generateNextCode() {
+    // Buscar el máximo código numérico existente
+    const existingCodes = productos
+        .map(p => p.idProducto)
+        .filter(id => id.startsWith('PRD'))
+        .map(id => {
+            const numStr = id.replace('PRD', '');
+            return parseInt(numStr) || 0;
+        });
+    
+    const maxCode = existingCodes.length > 0 ? Math.max(...existingCodes) : 0;
+    return `PRD${String(maxCode + 1).padStart(3, '0')}`;
 }
 
 // Cargar productos y categorías al iniciar
@@ -796,9 +825,13 @@ async function loadInventarioData() {
             fetch(`${API_BASE_URL}/productos`, { headers }).then(r => r.json()),
             fetch(`${API_BASE_URL}/categorias-producto`, { headers }).then(r => r.json())
         ]);
+        
         productos = productosRes;
         categorias = categoriasRes;
+        
         console.log("Datos de inventario cargados:", productos.length);
+        console.log("Estructura del primer producto:", productos[0]);
+        
         populateCategoryFilter(categorias);
         populateCategorySelect(categorias);
         renderTable(productos);
@@ -809,17 +842,6 @@ async function loadInventarioData() {
     }
 }
 
-// Función para generar código secuencial
-function generateNextCode() {
-    // Buscar el máximo código numérico existente
-    const existingCodes = productos
-        .map(p => p.idProducto)
-        .filter(id => id.startsWith('PRD'))
-        .map(id => parseInt(id.replace('PRD', '')) || 0);
-    
-    const maxCode = existingCodes.length > 0 ? Math.max(...existingCodes) : 0;
-    return `PRD${String(maxCode + 1).padStart(3, '0')}`;
-}
 function populateCategoryFilter(categorias) {
     const select = document.getElementById('categoryFilter');
     select.innerHTML = '<option value="">Todos</option>';
@@ -845,8 +867,11 @@ function populateCategorySelect(categorias) {
 // Renderizar tabla - ACTUALIZADA para DTO
 function renderTable(data) {
     const tbody = document.getElementById('inventoryTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+    if (!tbody) {
+        console.error("No se encontró el tbody de la tabla.");
+        return;
+    }
+    tbody.innerHTML = ''; // Limpiar
 
     if (data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #718096;">No hay productos en el inventario.</td></tr>';
@@ -877,19 +902,11 @@ function renderTable(data) {
     });
 }
 
-// Obtener clase CSS para estado de stock
-function getStatusClass(stock) {
-    if (stock === 0) return 'agotado';
-    if (stock <= 5) return 'bajo'; // Umbral configurable
-    return 'disponible';
-}
-
-
 // Actualizar estadísticas
 function updateStats() {
     const total = productos.length;
-    const disponibles = productos.filter(p => p.stock > 5).length; // > 5
-    const bajo = productos.filter(p => p.stock > 0 && p.stock <= 5).length; // 0 < stock <= 5
+    const disponibles = productos.filter(p => p.stock > 5).length;
+    const bajo = productos.filter(p => p.stock > 0 && p.stock <= 5).length;
     const agotados = productos.filter(p => p.stock === 0).length;
 
     document.getElementById('statProductosDisponibles').textContent = disponibles;
@@ -928,14 +945,13 @@ function filterProducts() {
 }
 
 // Abrir modal para agregar producto
-
 function openAddProductModal() {
     document.getElementById('productForm').reset();
     document.getElementById('productModalTitle').textContent = 'Agregar Nuevo Producto';
     document.getElementById('saveProductBtn').textContent = 'Agregar Producto';
     document.getElementById('productIdInput').value = '';
     
-    // ✅ CORREGIDO: Generar y mostrar el próximo código automáticamente
+    // ✅ GENERAR CÓDIGO AUTOMÁTICAMENTE
     document.getElementById('productCode').value = generateNextCode();
     
     document.getElementById('addProductModal').classList.add('show');
@@ -944,7 +960,10 @@ function openAddProductModal() {
 // Abrir modal para editar - ACTUALIZADO para DTO
 async function openEditProductModal(id) {
     const prod = productos.find(p => p.idProducto === id);
-    if (!prod) return;
+    if (!prod) {
+        console.error("Producto no encontrado:", id);
+        return;
+    }
 
     console.log("Editando producto DTO:", prod);
 
@@ -1047,11 +1066,6 @@ async function deleteProduct(id) {
         console.error('Error al eliminar producto:', error);
         alert(`❌ Error al eliminar producto: ${error.message}`);
     }
-}
-
-// Generar ID (simplificado)
-function generateId() {
-    return 'prod_' + Date.now(); // No es ideal para producción, usar UUID o backend
 }
 
 function closeModal(modalId) {
