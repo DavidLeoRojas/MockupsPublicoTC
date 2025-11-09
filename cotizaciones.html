@@ -1003,6 +1003,7 @@
 
 
     // ===== SISTEMA MEJORADO DE GESTIÓN DE TOKENS =====
+// ===== SISTEMA MEJORADO DE GESTIÓN DE TOKENS =====
 class TokenManager {
     static async getValidToken() {
         let token = localStorage.getItem('jwtToken');
@@ -1010,6 +1011,17 @@ class TokenManager {
         if (!token) {
             console.log('❌ No hay token disponible');
             throw new Error('NO_TOKEN');
+        }
+
+        // Limpiar y verificar el token
+        token = this.cleanToken(token);
+        
+        console.log('🔍 Token procesado:', token.substring(0, 50) + '...');
+
+        // Verificar formato básico del token
+        if (!this.isValidTokenFormat(token)) {
+            console.error('❌ Formato de token inválido');
+            throw new Error('INVALID_TOKEN_FORMAT');
         }
 
         // Verificar si el token es válido
@@ -1023,20 +1035,53 @@ class TokenManager {
         return await this.renewToken();
     }
 
+    static cleanToken(token) {
+        // Remover "Bearer " si está presente
+        if (token.startsWith('Bearer ')) {
+            token = token.substring(7);
+        }
+        // Remover comillas si las tiene
+        token = token.replace(/^"(.*)"$/, '$1');
+        // Trim espacios
+        return token.trim();
+    }
+
+    static isValidTokenFormat(token) {
+        // Un token JWT válido debe tener 3 partes separadas por puntos
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+            console.error('❌ Token no tiene formato JWT válido (3 partes)');
+            return false;
+        }
+        
+        try {
+            // Intentar decodificar el payload
+            const payload = JSON.parse(atob(parts[1]));
+            console.log('📋 Payload del token:', payload);
+            return true;
+        } catch (error) {
+            console.error('❌ Error decodificando token:', error);
+            return false;
+        }
+    }
+
     static async isTokenValid(token) {
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
+            const parts = token.split('.');
+            const payload = JSON.parse(atob(parts[1]));
             const expirationTime = payload.exp * 1000;
             const currentTime = Date.now();
             const bufferTime = 5 * 60 * 1000; // 5 minutos de buffer
 
             const isValid = expirationTime - currentTime > bufferTime;
             
-            console.log('🔍 Verificación token:', {
+            console.log('🔍 Verificación token detallada:', {
                 expira: new Date(expirationTime).toLocaleString(),
                 actual: new Date(currentTime).toLocaleString(),
                 minutosRestantes: Math.floor((expirationTime - currentTime) / 1000 / 60),
-                válido: isValid
+                válido: isValid,
+                userId: payload.sub || payload.userId,
+                issuer: payload.iss
             });
 
             return isValid;
@@ -1063,7 +1108,7 @@ class TokenManager {
                 password: savedPassword
             };
 
-            console.log('📤 Enviando solicitud de renovación...');
+            console.log('📤 Enviando solicitud de renovación a:', `${API_BASE_URL}/auth/login`);
             const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
@@ -1072,24 +1117,34 @@ class TokenManager {
                 body: JSON.stringify(loginData)
             });
 
+            console.log('📥 Respuesta de renovación - Status:', response.status);
+            
             if (!response.ok) {
                 const errorText = await response.text();
-                console.error('❌ Error en respuesta de renovación:', errorText);
-                throw new Error(`RENEW_FAILED: ${errorText}`);
+                console.error('❌ Error en respuesta de renovación:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorText
+                });
+                throw new Error(`RENEW_FAILED: ${response.status} - ${errorText}`);
             }
 
             const data = await response.json();
-            const newToken = data.token;
+            console.log('✅ Datos de renovación recibidos:', data);
+            
+            const newToken = data.token || data.access_token;
 
             if (!newToken) {
+                console.error('❌ No se recibió token en la respuesta:', data);
                 throw new Error('NO_TOKEN_RECEIVED');
             }
 
-            // Guardar el nuevo token
-            localStorage.setItem('jwtToken', newToken);
-            console.log('✅ Token renovado exitosamente');
+            // Guardar el nuevo token limpio
+            const cleanedToken = this.cleanToken(newToken);
+            localStorage.setItem('jwtToken', cleanedToken);
+            console.log('✅ Token renovado y guardado exitosamente');
 
-            return newToken;
+            return cleanedToken;
         } catch (error) {
             console.error('❌ Error renovando token:', error);
             this.clearAuthData();
@@ -1101,16 +1156,24 @@ class TokenManager {
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('userEmail');
         localStorage.removeItem('userPassword');
+        console.log('🧹 Datos de autenticación limpiados');
     }
 
     static async getAuthHeaders() {
         try {
             const token = await this.getValidToken();
-            return {
+            const headers = {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             };
+            
+            console.log('🚀 Headers preparados:', {
+                ...headers,
+                Authorization: headers.Authorization.substring(0, 50) + '...'
+            });
+            
+            return headers;
         } catch (error) {
             console.error('❌ Error obteniendo headers de autenticación:', error);
             this.handleAuthError(error.message);
@@ -1122,7 +1185,10 @@ class TokenManager {
         console.error('🔐 Error de autenticación:', errorType);
         
         // Evitar múltiples modales
-        if (document.getElementById('tokenExpiredModal')) return;
+        if (document.getElementById('tokenExpiredModal')) {
+            console.log('ℹ️ Modal de token ya existe');
+            return;
+        }
 
         const modal = document.createElement('div');
         modal.id = 'tokenExpiredModal';
@@ -1154,11 +1220,50 @@ class TokenManager {
             </div>
         `;
         document.body.appendChild(modal);
+        console.log('ℹ️ Modal de token expirado mostrado');
     }
 
     static redirectToLogin() {
+        console.log('🔄 Redirigiendo al login...');
         this.clearAuthData();
         window.location.href = 'index.html';
+    }
+}
+  // Agregar esta función al inicio del script, después de las constantes
+async function diagnoseTokenIssue() {
+    console.log('🔍 INICIANDO DIAGNÓSTICO DE TOKEN...');
+    
+    const token = localStorage.getItem('jwtToken');
+    console.log('📋 Token en localStorage:', token);
+    
+    if (!token) {
+        console.error('❌ NO HAY TOKEN EN LOCALSTORAGE');
+        return;
+    }
+    
+    console.log('📏 Longitud del token:', token.length);
+    console.log('🔤 Primeros 50 caracteres:', token.substring(0, 50));
+    console.log('🔚 Últimos 20 caracteres:', token.substring(token.length - 20));
+    
+    // Verificar si tiene "Bearer "
+    if (token.startsWith('Bearer ')) {
+        console.log('⚠️ Token incluye "Bearer ", esto puede causar problemas');
+    }
+    
+    // Verificar si está entre comillas
+    if (token.startsWith('"') && token.endsWith('"')) {
+        console.log('⚠️ Token está entre comillas, esto puede causar problemas');
+    }
+    
+    try {
+        const cleanedToken = TokenManager.cleanToken(token);
+        console.log('🧹 Token limpiado:', cleanedToken.substring(0, 50) + '...');
+        
+        const isValid = TokenManager.isValidTokenFormat(cleanedToken);
+        console.log('✅ Formato de token válido:', isValid);
+        
+    } catch (error) {
+        console.error('❌ Error en diagnóstico:', error);
     }
 }
     function handleError(error) {
@@ -2049,11 +2154,15 @@ async function editCotizacion(id) {
 
 
 
+// ✅ REEMPLAZAR CON ESTA VERSIÓN SIMPLIFICADA:
 async function getAuthHeaders() {
-    return await TokenManager.getAuthHeaders();
+    const headers = await TokenManager.getAuthHeaders();
+    if (!headers.Authorization) {
+        console.error('❌ No se pudieron obtener headers de autenticación');
+        throw new Error('NO_AUTH_HEADERS');
+    }
+    return headers;
 }
-// En todas las funciones que usan fetch, agrega:
-// ✅ FUNCIÓN viewCotizacion CORREGIDA
 async function viewCotizacion(idCotizacion) {
     try {
         const headers = await TokenManager.getAuthHeaders();
@@ -2245,18 +2354,32 @@ function formatCurrency(amount) {
 }
 
 // === INICIALIZACIÓN MEJORADA ===
+// === INICIALIZACIÓN MEJORADA ===
 document.addEventListener('DOMContentLoaded', async function() {
     console.log("🔄 Inicializando aplicación de cotizaciones...");
     
     try {
+        // Ejecutar diagnóstico primero
+        await diagnoseTokenIssue();
+        
         // Verificar si hay un token disponible
         const token = localStorage.getItem('jwtToken');
         if (!token) {
+            console.error('❌ No hay token disponible, redirigiendo...');
             TokenManager.handleAuthError('NO_TOKEN');
             return;
         }
 
+        // Probar el token primero con una solicitud simple
+        console.log('🧪 Probando token con solicitud simple...');
+        const testHeaders = await TokenManager.getAuthHeaders();
+        if (!testHeaders.Authorization) {
+            console.error('❌ No se pudieron obtener headers válidos');
+            return;
+        }
+
         // Cargar datos en paralelo con manejo de errores individual
+        console.log('📦 Cargando datos en paralelo...');
         await Promise.allSettled([
             loadClientes(),
             loadServicios(),
@@ -2275,8 +2398,28 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.log("✅ Aplicación de cotizaciones inicializada correctamente");
     } catch (error) {
         console.error("❌ Error en inicialización:", error);
+        TokenManager.handleAuthError('INIT_ERROR');
     }
 });
+// Función para forzar renovación manual (útil para debugging)
+async function forceTokenRenewal() {
+    console.log('🔄 Forzando renovación manual de token...');
+    try {
+        TokenManager.clearAuthData();
+        const newToken = await TokenManager.renewToken();
+        console.log('✅ Token renovado manualmente:', newToken.substring(0, 50) + '...');
+        location.reload(); // Recargar la página
+    } catch (error) {
+        console.error('❌ Error en renovación manual:', error);
+        TokenManager.handleAuthError('MANUAL_RENEW_FAILED');
+    }
+}
+
+// Agregar esto temporalmente para debugging
+window.debugToken = function() {
+    diagnoseTokenIssue();
+    console.log('🔧 Para forzar renovación ejecuta: forceTokenRenewal()');
+};
     function openAddQuoteModal() {
         document.getElementById('estadoGroup').style.display = 'none';
         document.getElementById('addQuoteModal').classList.add('show');
