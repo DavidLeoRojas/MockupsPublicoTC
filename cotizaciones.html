@@ -1320,17 +1320,34 @@ async function getAllCotizaciones() {
     const headers = { 'Authorization': 'Bearer ' + token };
 
     try {
+        console.log("🔄 Solicitando cotizaciones...");
         const response = await fetch(API_COTIZACIONES_URL, { headers });
+        
+        console.log("📥 Respuesta recibida:", response.status, response.statusText);
+        
         if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(errorText || `Error ${response.status}`);
+            console.error("❌ Error del servidor:", errorText);
+            throw new Error(`Error ${response.status}: ${errorText}`);
         }
+        
         const data = await response.json();
+        console.log("✅ Datos recibidos del backend:", data);
+        
+        // ✅ DEBUG: Verificar la estructura de los datos
+        if (data && data.length > 0) {
+            console.log("🔍 Primera cotización:", data[0]);
+            console.log("📦 Detalles de primera cotización:", data[0].detalleCotizacion);
+        }
+        
         allCotizaciones = data;
         renderCotizaciones(allCotizaciones);
         updateStats(allCotizaciones);
+        
     } catch (error) {
-        console.error("Error al obtener cotizaciones:", error);
+        console.error("❌ Error al obtener cotizaciones:", error);
+        
+        // Mostrar el error real al usuario
         alert(`Error al cargar cotizaciones: ${error.message}`);
     }
 }
