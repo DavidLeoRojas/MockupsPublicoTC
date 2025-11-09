@@ -767,10 +767,10 @@
                         <label>Estado</label>
                         <select name="estado" class="form-control">
                             <option value="">Todos</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="Aprobada">Aprobada</option>
-                            <option value="Rechazada">Rechazada</option>
-                            <option value="Finalizada">Finalizada</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="APROBADA">Aprobada</option>
+                            <option value="RECHAZADA">Rechazada</option> <!-- ← CAMBIADO -->
+                            <option value="FINALIZADA">Finalizada</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -1617,7 +1617,7 @@ async function editCotizacion(id) {
 
         openAddQuoteModal();
         document.getElementById('estadoGroup').style.display = 'block';
-        document.getElementById('estadoSelect').value = cot.estado || 'Pendiente';
+        document.getElementById('estadoSelect').value = cot.estado || 'PENDIENTE'; // ← CORREGIDO
         document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
         document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
         
@@ -1635,17 +1635,19 @@ async function editCotizacion(id) {
         document.getElementById('descripcion').value = cot.descripcionProblema || '';
         document.getElementById('notas').value = cot.notasInternas || '';
 
-        // ✅ CARGAR PRODUCTOS SI EXISTEN
+        // ✅ CARGAR PRODUCTOS SI EXISTEN - FILTRAR PRODUCTOS INVÁLIDOS
         if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
-            detalleCotizacion = cot.detalleCotizacion.map(item => {
-                return {
-                    idProducto: item.idProducto,
-                    nombreProducto: item.nombreProducto,
-                    cantidad: item.cantidad,
-                    precioUnitario: item.precioUnitario || 0,
-                    subtotal: (item.precioUnitario || 0) * item.cantidad
-                };
-            });
+            detalleCotizacion = cot.detalleCotizacion
+                .filter(item => item.idProducto !== "PRODUCTO_ELIMINADO") // ← FILTRAR
+                .map(item => {
+                    return {
+                        idProducto: item.idProducto,
+                        nombreProducto: item.nombreProducto,
+                        cantidad: item.cantidad,
+                        precioUnitario: item.precioUnitario || 0,
+                        subtotal: (item.precioUnitario || 0) * item.cantidad
+                    };
+                });
         } else {
             detalleCotizacion = [];
         }
@@ -1655,6 +1657,40 @@ async function editCotizacion(id) {
     } catch (error) {
         handleError(error);
     }
+}
+
+function verifyToken() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        console.error('❌ No hay token en localStorage');
+        return false;
+    }
+    
+    console.log('✅ Token encontrado:', token.substring(0, 20) + '...');
+    
+    // Verificar formato del token
+    if (!token.startsWith('Bearer ')) {
+        console.warn('⚠️ Token no comienza con "Bearer ", agregando...');
+        localStorage.setItem('jwtToken', 'Bearer ' + token);
+    }
+    
+    return true;
+}
+
+// En todas las funciones que usan fetch, agrega:
+async function viewCotizacion(id) {
+    if (!verifyToken()) {
+        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
+    
+    const token = localStorage.getItem('jwtToken');
+    // Asegurar que el token tenga el formato correcto
+    const formattedToken = token.startsWith('Bearer ') ? token : 'Bearer ' + token;
+    const headers = { 'Authorization': formattedToken };
+
+    // ... resto del código
 }
 
     function updateStats(cotizaciones) {
