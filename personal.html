@@ -947,64 +947,63 @@ function updateFormFieldsBasedOnType() {
     const representanteInput = document.getElementById('personRepresentante');
 
     if (tipo === 'Juridica') {
-        // Ocultar/mostrar campos apropiados
         docGroup.style.display = 'none';
         nitField.style.display = 'block';
         representanteField.style.display = 'block';
-        
-        // Actualizar etiquetas y requerimientos
         docLabel.textContent = '🏢 NIT *';
         docInput.required = false;
         nitInput.required = true;
-        representanteInput.required = true;
+        representanteInput.required = true; // ✅ Requerido para jurídica
 
-        // 🔥 MEJORA: Transferir valor entre campos manteniendo datos
+        // Transferir valor si existe
         if (docInput.value && !nitInput.value) {
             nitInput.value = docInput.value;
         }
 
-        // Configurar opciones de tipo de documento
+        // Configurar tipo de documento para jurídica
         const options = docTypeSelect.querySelectorAll('option');
         options.forEach(opt => {
-            const isNIT = opt.value === 'NIT';
-            opt.style.display = isNIT ? 'block' : 'none';
-            opt.disabled = !isNIT;
+            if (opt.value === 'NIT') {
+                opt.style.display = 'block';
+                opt.disabled = false;
+            } else {
+                opt.style.display = 'none';
+            }
         });
         
-        // Forzar selección de NIT
         docTypeSelect.value = 'NIT';
         
     } else { // Natural
-        // Ocultar/mostrar campos apropiados
         docGroup.style.display = 'block';
         nitField.style.display = 'none';
         representanteField.style.display = 'none';
-        
-        // Actualizar etiquetas y requerimientos
         docLabel.textContent = '🆔 Número de Documento *';
         docInput.required = true;
         nitInput.required = false;
-        representanteInput.required = false;
+        representanteInput.required = false; // ✅ NO requerido para natural
         
-        // 🔥 MEJORA: Transferir valor entre campos manteniendo datos
+        // Transferir valor si es necesario
         if (nitInput.value && !docInput.value) {
             docInput.value = nitInput.value;
         }
         
-        // Limpiar campos que no aplican
+        // Limpiar representante
         representanteInput.value = '';
 
-        // Configurar opciones de tipo de documento
+        // Configurar tipo de documento para natural
         const options = docTypeSelect.querySelectorAll('option');
         options.forEach(opt => {
-            const isNIT = opt.value === 'NIT';
-            opt.style.display = isNIT ? 'none' : 'block';
-            opt.disabled = isNIT;
+            if (opt.value === 'NIT') {
+                opt.style.display = 'none';
+            } else {
+                opt.style.display = 'block';
+                opt.disabled = false;
+            }
         });
         
-        // Ajustar selección si era NIT
+        // Limpiar selección si era NIT
         if (docTypeSelect.value === 'NIT') {
-            docTypeSelect.value = 'CC'; // Valor por defecto para naturales
+            docTypeSelect.value = '';
         }
     }
 }
@@ -1022,37 +1021,14 @@ function resetForm() {
         // Reiniciar el tipo de persona a Natural por defecto
         document.getElementById('personTypeSelect').value = 'Natural';
 
-        // Mostrar campos por defecto para persona Natural
-        const nitField = document.getElementById('nitField');
-        const representanteField = document.getElementById('representanteField');
-        const docGroup = document.getElementById('docGroup');
-        const docLabel = document.getElementById('docLabel');
-        const docInput = document.getElementById('personDoc');
-        const docTypeSelect = document.getElementById('personDocType');
-
-        if (docGroup) docGroup.style.display = 'block';
-        if (nitField) nitField.style.display = 'none';
-        if (representanteField) representanteField.style.display = 'none';
-        if (docLabel) docLabel.textContent = '🆔 Número de Documento *';
-
-        // Resetear requerimientos
-        if (docInput) docInput.required = true;
-        const nitInput = document.getElementById('personNit');
-        if (nitInput) nitInput.required = false;
-
-        // Configurar opciones de tipo de documento
-        if (docTypeSelect) {
-            const options = docTypeSelect.querySelectorAll('option');
-            options.forEach(opt => {
-                if (opt.value === 'NIT') {
-                    opt.style.display = 'none';
-                } else {
-                    opt.style.display = 'block';
-                    opt.disabled = false;
-                }
-            });
-            docTypeSelect.value = '';
+        // 🔥 CORRECCIÓN: Quitar required del representante legal
+        const representanteInput = document.getElementById('personRepresentante');
+        if (representanteInput) {
+            representanteInput.required = false;
         }
+
+        // Forzar actualización de campos
+        updateFormFieldsBasedOnType();
 
         const modalTitle = document.querySelector('#addPersonModal .modal-title');
         const submitButton = document.querySelector('#addPersonModal .btn-primary');
@@ -1060,7 +1036,6 @@ function resetForm() {
         if (modalTitle) modalTitle.textContent = 'Agregar Nueva Persona';
         if (submitButton) submitButton.textContent = 'Agregar Persona';
         
-        // 🔥 CORRECCIÓN: Asignar el event listener correctamente
         form.onsubmit = handleAddPersonForm;
     }
 }
