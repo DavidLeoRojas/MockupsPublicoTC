@@ -842,7 +842,7 @@ function populateCategorySelect(categorias) {
     });
 }
 
-// Renderizar tabla
+// Renderizar tabla - MEJORADO para debug de categorías
 function renderTable(data) {
     const tbody = document.getElementById('inventoryTableBody');
     if (!tbody) {
@@ -857,15 +857,22 @@ function renderTable(data) {
     }
 
     data.forEach(prod => {
+        // Debug: ver qué información de categoría tiene cada producto
+        console.log(`Producto: ${prod.nombre}, Categoría:`, prod.categoriaProducto);
+        
+        const categoriaNombre = prod.categoriaProducto 
+            ? (prod.categoriaProducto.nombre || 'Sin nombre') 
+            : 'Sin categoría';
+        
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${prod.nombre}</td>
-            <td>${prod.categoriaProducto ? prod.categoriaProducto.nombre : 'Sin categoría'}</td>
+            <td>${categoriaNombre}</td>
             <td>${prod.idProducto}</td>
-            <td>${prod.lote || 'N/A'}</td> <!-- Asumiendo que Producto.java tiene un campo 'lote' -->
+            <td>${prod.lote || 'N/A'}</td>
             <td>${prod.stock}</td>
             <td><span class="status-badge ${getStatusClass(prod.stock)}">${getStatusText(prod.stock)}</span></td>
-            <td>${prod.proveedor || 'N/A'}</td> <!-- Asumiendo que Producto.java tiene un campo 'proveedor' -->
+            <td>${prod.proveedor || 'N/A'}</td>
             <td>
                 <div class="action-buttons">
                     <button class="btn-sm btn-edit" onclick="openEditProductModal('${prod.idProducto}')">✏️ Editar</button>
@@ -970,7 +977,7 @@ async function openEditProductModal(id) {
     document.getElementById('addProductModal').classList.add('show');
 }
 
-// Modificar la función saveProduct
+// Guardar producto - CORREGIDO para categorías
 async function saveProduct(event) {
     event.preventDefault();
     if (!checkAuth()) return;
@@ -978,18 +985,28 @@ async function saveProduct(event) {
     const token = localStorage.getItem('jwtToken');
     const isEdit = document.getElementById('productIdInput').value !== '';
 
-    // ✅ CORREGIDO: Generar código secuencial para nuevos productos
+    // Obtener el valor de categoría
+    const categoriaValue = document.getElementById('productCategory').value;
+    
     const formData = {
-        idProducto: isEdit ? document.getElementById('productIdInput').value : generateNextCode(),
+        idProducto: document.getElementById('productCode').value,
         nombre: document.getElementById('productName').value,
         stock: parseInt(document.getElementById('productStock').value) || 0,
         precioActual: parseFloat(document.getElementById('productPrice').value) || 0,
         lote: document.getElementById('productLote').value || null,
         observaciones: document.getElementById('productObservations').value || null,
-        id_categoria_producto: document.getElementById('productCategory').value || null,
         unidadMedida: document.getElementById('productUnit').value || 'Unidad',
         proveedor: document.getElementById('productProvider').value || null
     };
+
+    // ✅ CORREGIDO: Manejar categoría correctamente
+    if (categoriaValue) {
+        formData.id_categoria_producto = categoriaValue;
+        // O alternativamente, dependiendo de lo que espere el backend:
+        // formData.categoriaProducto = { idCategoriaProducto: categoriaValue };
+    }
+
+    console.log("Datos a enviar:", formData); // Para debug
 
     try {
         const url = isEdit ? `${API_BASE_URL}/productos/${formData.idProducto}` : `${API_BASE_URL}/productos`;
@@ -1005,10 +1022,10 @@ async function saveProduct(event) {
         });
 
         if (!response.ok) {
-            throw new Error(`Error al ${isEdit ? 'actualizar' : 'crear'} producto: ${response.statusText}`);
+            const errorText = await response.text();
+            throw new Error(`Error ${response.status}: ${errorText}`);
         }
 
-        // Recargar datos
         await loadInventarioData();
         closeModal('addProductModal');
         alert(`✅ Producto ${isEdit ? 'actualizado' : 'creado'} exitosamente.`);
