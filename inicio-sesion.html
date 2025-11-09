@@ -333,86 +333,51 @@
     </div>
 
     <script>
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
+       document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     const email = document.getElementById('email').value;
     const dni = document.getElementById('password').value;
     const errorMessage = document.getElementById('errorMessage');
 
-    // ✅ URL correcta
+    // ✅ URL completa con https://
     const url = 'https://backendgeminiambienta-v4-0-428l.onrender.com/api/auth/login';
 
     fetch(url, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json' // ✅ Header obligatorio
         },
         body: JSON.stringify({
-            correo: email,    // ✅ CAMBIAR de 'email' a 'correo'
-            dni: dni          // ✅ 'dni' está correcto
+            email: email,
+            dni: dni
         })
     })
     .then(response => {
-        console.log('📥 Respuesta del servidor:', response.status);
         if (!response.ok) {
-            return response.text().then(text => {
-                console.error('❌ Error del servidor:', text);
-                let errorMsg = 'Credenciales inválidas';
-                try {
-                    const errorData = JSON.parse(text);
-                    errorMsg = errorData.message || errorData.error || text;
-                } catch (e) {
-                    errorMsg = text || 'Error de conexión';
-                }
-                throw new Error(errorMsg);
+            return response.json().then(err => {
+                throw new Error(err.message || 'Credenciales inválidas');
             });
         }
         return response.json();
     })
     .then(data => {
-        console.log('✅ Login exitoso:', data);
         if (data.token) {
-            // ✅ GUARDAR TOKEN CORRECTAMENTE con "Bearer "
-            localStorage.setItem('jwtToken', 'Bearer ' + data.token);
-            localStorage.setItem('userId', data.id || '');
-            localStorage.setItem('userName', data.nombre || '');
-            localStorage.setItem('userEmail', data.correo || '');
-            
-            console.log('🔐 Token guardado:', 'Bearer ' + data.token.substring(0, 20) + '...');
-            alert('✅ Inicio de sesión exitoso. Redirigiendo al dashboard...');
+            localStorage.setItem('jwtToken', data.token);
+            localStorage.setItem('userId', data.id);
+            localStorage.setItem('userName', data.nombre);
+            alert('Inicio de sesión exitoso. Redirigiendo al dashboard...');
             window.location.href = 'dashboard.html';
         } else {
-            throw new Error('No se recibió token del servidor');
+            throw new Error('Respuesta inválida del servidor');
         }
     })
     .catch(error => {
-        console.error('❌ Error en login:', error);
         errorMessage.textContent = error.message;
         errorMessage.style.display = 'block';
         setTimeout(() => {
             errorMessage.style.display = 'none';
-        }, 5000);
-    });
-});
-
-// Función para verificar si el usuario ya está logueado
-function checkExistingLogin() {
-    const token = localStorage.getItem('jwtToken');
-    if (token) {
-        console.log('🔐 Usuario ya logueado, redirigiendo...');
-        window.location.href = 'dashboard.html';
-    }
-}
-
-// Verificar al cargar la página
-document.addEventListener('DOMContentLoaded', function() {
-    checkExistingLogin();
-    
-    // Auto-rellenar campos con credenciales de demo
-    document.querySelector('.demo-credentials').addEventListener('click', function() {
-        document.getElementById('email').value = 'admin@geminiambiental.com';
-        document.getElementById('password').value = '12345678';
+        }, 3000);
     });
 });
 
@@ -421,31 +386,6 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('email').value = 'admin@geminiambiental.com';
             document.getElementById('password').value = '12345678'; // DNI de demo
         });
-
-        // Función mejorada para mostrar errores
-function showError(message) {
-    const errorMessage = document.getElementById('errorMessage');
-    errorMessage.innerHTML = `
-        <strong>❌ Error:</strong> ${message}
-        <br><small>Verifica tus credenciales e intenta nuevamente.</small>
-    `;
-    errorMessage.style.display = 'block';
-    setTimeout(() => {
-        errorMessage.style.display = 'none';
-    }, 5000);
-}
-
-// Función para mostrar loading
-function setLoading(loading) {
-    const submitBtn = document.querySelector('.login-btn');
-    if (loading) {
-        submitBtn.innerHTML = '⏳ Iniciando sesión...';
-        submitBtn.disabled = true;
-    } else {
-        submitBtn.innerHTML = 'Iniciar Sesión';
-        submitBtn.disabled = false;
-    }
-}
     </script>
 </body>
 </html>
