@@ -842,14 +842,11 @@ function populateCategorySelect(categorias) {
     });
 }
 
-// Renderizar tabla - MEJORADO para debug de categorías
+// Renderizar tabla - ACTUALIZADA para DTO
 function renderTable(data) {
     const tbody = document.getElementById('inventoryTableBody');
-    if (!tbody) {
-        console.error("No se encontró el tbody de la tabla.");
-        return;
-    }
-    tbody.innerHTML = ''; // Limpiar
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
     if (data.length === 0) {
         tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #718096;">No hay productos en el inventario.</td></tr>';
@@ -857,12 +854,8 @@ function renderTable(data) {
     }
 
     data.forEach(prod => {
-        // Debug: ver qué información de categoría tiene cada producto
-        console.log(`Producto: ${prod.nombre}, Categoría:`, prod.categoriaProducto);
-        
-        const categoriaNombre = prod.categoriaProducto 
-            ? (prod.categoriaProducto.nombre || 'Sin nombre') 
-            : 'Sin categoría';
+        // ✅ AHORA usa nombreCategoria del DTO
+        const categoriaNombre = prod.nombreCategoria || 'Sin categoría';
         
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -891,12 +884,6 @@ function getStatusClass(stock) {
     return 'disponible';
 }
 
-// Obtener texto para estado de stock
-function getStatusText(stock) {
-    if (stock === 0) return 'Agotado';
-    if (stock <= 5) return 'Bajo';
-    return 'Disponible';
-}
 
 // Actualizar estadísticas
 function updateStats() {
@@ -911,29 +898,30 @@ function updateStats() {
     document.getElementById('statProductosTotal').textContent = total;
 }
 
-// Filtrar productos (básico)
+// Filtrar productos - ACTUALIZADO para DTO
 function filterProducts() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const categoriaFilter = document.getElementById('categoryFilter').value;
     const estadoFilter = document.getElementById('statusFilter').value;
-    const proveedorFilter = document.getElementById('providerFilter').value; // Asumiendo que 'prod.proveedor' es el campo correcto
+    const proveedorFilter = document.getElementById('providerFilter').value;
 
     let filtered = productos;
 
     if (searchTerm) {
-        filtered = filtered.filter(p => p.nombre.toLowerCase().includes(searchTerm) || p.idProducto.toLowerCase().includes(searchTerm));
+        filtered = filtered.filter(p => 
+            p.nombre.toLowerCase().includes(searchTerm) || 
+            p.idProducto.toLowerCase().includes(searchTerm)
+        );
     }
     if (categoriaFilter) {
-        filtered = filtered.filter(p => p.categoriaProducto && p.categoriaProducto.idCategoriaProducto === categoriaFilter);
+        // ✅ ACTUALIZADO: Usar idCategoriaProducto del DTO
+        filtered = filtered.filter(p => p.idCategoriaProducto === categoriaFilter);
     }
     if (estadoFilter) {
         filtered = filtered.filter(p => getStatusText(p.stock) === estadoFilter);
     }
     if (proveedorFilter) {
-         // Ajusta esta línea según cómo se almacene el proveedor en el backend
-         // Si es un string: p.proveedor === proveedorFilter
-         // Si es un objeto con nombre: p.proveedor && p.proveedor.nombre === proveedorFilter
-         filtered = filtered.filter(p => p.proveedor === proveedorFilter);
+        filtered = filtered.filter(p => p.proveedor === proveedorFilter);
     }
 
     renderTable(filtered);
@@ -953,31 +941,33 @@ function openAddProductModal() {
     document.getElementById('addProductModal').classList.add('show');
 }
 
-// Abrir modal para editar producto
+// Abrir modal para editar - ACTUALIZADO para DTO
 async function openEditProductModal(id) {
     const prod = productos.find(p => p.idProducto === id);
-    if (!prod) {
-        console.error("Producto no encontrado:", id);
-        return;
-    }
+    if (!prod) return;
+
+    console.log("Editando producto DTO:", prod);
 
     document.getElementById('productModalTitle').textContent = 'Editar Producto';
     document.getElementById('saveProductBtn').textContent = 'Actualizar Producto';
     document.getElementById('productIdInput').value = prod.idProducto;
     document.getElementById('productName').value = prod.nombre;
-    document.getElementById('productCode').value = prod.idProducto; // Usar ID como código
+    document.getElementById('productCode').value = prod.idProducto;
     document.getElementById('productStock').value = prod.stock;
-    document.getElementById('productPrice').value = prod.precioActual ? parseFloat(prod.precioActual).toFixed(2) : 0; // Asegurar formato decimal
+    document.getElementById('productPrice').value = prod.precioActual ? parseFloat(prod.precioActual).toFixed(2) : 0;
     document.getElementById('productLote').value = prod.lote || '';
-    document.getElementById('productObservations').value = prod.observaciones || ''; // Asumiendo que Producto.java tiene un campo 'observaciones'
-    document.getElementById('productCategory').value = prod.categoriaProducto ? prod.categoriaProducto.idCategoriaProducto : '';
+    document.getElementById('productObservations').value = prod.observaciones || '';
+    
+    // ✅ ACTUALIZADO: Usar idCategoriaProducto del DTO
+    document.getElementById('productCategory').value = prod.idCategoriaProducto || '';
+    
     document.getElementById('productUnit').value = prod.unidadMedida || 'Unidad';
-    document.getElementById('productProvider').value = prod.proveedor || ''; // Asumiendo que Producto.java tiene un campo 'proveedor'
+    document.getElementById('productProvider').value = prod.proveedor || '';
 
     document.getElementById('addProductModal').classList.add('show');
 }
 
-// Guardar producto - CORREGIDO para categorías
+// Guardar producto - ACTUALIZADO para DTO
 async function saveProduct(event) {
     event.preventDefault();
     if (!checkAuth()) return;
@@ -985,9 +975,7 @@ async function saveProduct(event) {
     const token = localStorage.getItem('jwtToken');
     const isEdit = document.getElementById('productIdInput').value !== '';
 
-    // Obtener el valor de categoría
-    const categoriaValue = document.getElementById('productCategory').value;
-    
+    // ✅ ACTUALIZADO: Usar la estructura del DTO
     const formData = {
         idProducto: document.getElementById('productCode').value,
         nombre: document.getElementById('productName').value,
@@ -996,17 +984,11 @@ async function saveProduct(event) {
         lote: document.getElementById('productLote').value || null,
         observaciones: document.getElementById('productObservations').value || null,
         unidadMedida: document.getElementById('productUnit').value || 'Unidad',
-        proveedor: document.getElementById('productProvider').value || null
+        proveedor: document.getElementById('productProvider').value || null,
+        idCategoriaProducto: document.getElementById('productCategory').value || null  // ✅ Campo corregido
     };
 
-    // ✅ CORREGIDO: Manejar categoría correctamente
-    if (categoriaValue) {
-        formData.id_categoria_producto = categoriaValue;
-        // O alternativamente, dependiendo de lo que espere el backend:
-        // formData.categoriaProducto = { idCategoriaProducto: categoriaValue };
-    }
-
-    console.log("Datos a enviar:", formData); // Para debug
+    console.log("Datos a enviar:", formData);
 
     try {
         const url = isEdit ? `${API_BASE_URL}/productos/${formData.idProducto}` : `${API_BASE_URL}/productos`;
