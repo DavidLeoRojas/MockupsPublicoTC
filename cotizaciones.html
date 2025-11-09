@@ -1658,17 +1658,464 @@
     }
 
     // ===== FUNCIONES FALTANTES (placeholder) =====
-    async function mostrarProductosCotizacion(idCotizacion) {
-        alert('Función mostrarProductosCotizacion en desarrollo');
+async function mostrarProductosCotizacion(idCotizacion) {
+    try {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) {
+            handleAuthError();
+            return;
+        }
+
+        console.log("🔄 Cargando productos de cotización:", idCotizacion);
+        
+        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleAuthError();
+                return;
+            }
+            throw new Error('Cotización no encontrada');
+        }
+        
+        const cot = await response.json();
+        console.log("✅ Productos de cotización cargados:", cot);
+
+        const clienteNombre = cot.nombreCliente || 
+                             cot.cliente?.nombre || 
+                             clientesData.find(c => c.dni === cot.dniCliente)?.nombre || 
+                             'Cliente desconocido';
+
+        const tieneProductos = cot.detalleCotizacion && cot.detalleCotizacion.length > 0;
+
+        let productosHTML = `
+            <div style="text-align: left; max-width: 700px;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <div>
+                        <h3 style="color: #2c5f41; margin-bottom: 0.5rem;">📦 Productos en Cotización</h3>
+                        <p style="color: #718096; margin: 0;"><strong>Cliente:</strong> ${clienteNombre}</p>
+                        <p style="color: #718096; margin: 0;"><strong>ID Cotización:</strong> ${cot.idCotizacion}</p>
+                    </div>
+                    <span class="status-badge ${(cot.estado || 'Pendiente').toLowerCase()}">
+                        ${cot.estado || 'Pendiente'}
+                    </span>
+                </div>
+                <hr style="margin: 1rem 0;">
+        `;
+
+        if (tieneProductos) {
+            let totalProductos = 0;
+            
+            productosHTML += `
+                <div style="max-height: 400px; overflow-y: auto;">
+                    <h4 style="color: #4a5568; margin-bottom: 1rem;">Productos agregados (${cot.detalleCotizacion.length}):</h4>
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 1rem;">
+                        <thead>
+                            <tr style="background: #f7fafc;">
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 2px solid #e2e8f0;">Producto</th>
+                                <th style="padding: 0.75rem; text-align: center; border-bottom: 2px solid #e2e8f0;">Cantidad</th>
+                                <th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e2e8f0;">Precio Unitario</th>
+                                <th style="padding: 0.75rem; text-align: right; border-bottom: 2px solid #e2e8f0;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            cot.detalleCotizacion.forEach((producto, index) => {
+                totalProductos += producto.subtotal;
+                productosHTML += `
+                    <tr>
+                        <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">
+                            <strong>${producto.nombreProducto || 'Producto'}</strong>
+                            <br><small style="color: #718096;">ID: ${producto.idProducto}</small>
+                        </td>
+                        <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e2e8f0;">${producto.cantidad}</td>
+                        <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e2e8f0;">${formatCurrency(producto.precioUnitario)}</td>
+                        <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: 600; color: #2c5f41;">${formatCurrency(producto.subtotal)}</td>
+                    </tr>
+                `;
+            });
+
+            productosHTML += `
+                        </tbody>
+                    </table>
+                    
+                    <!-- Resumen -->
+                    <div style="background: #f0fff4; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <strong style="color: #22543d;">Total Productos:</strong>
+                            <strong style="color: #22543d; font-size: 1.1em;">${formatCurrency(totalProductos)}</strong>
+                        </div>
+                        ${cot.valorServicio ? `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+                            <strong style="color: #22543d;">Valor del Servicio:</strong>
+                            <strong style="color: #22543d;">${formatCurrency(cot.valorServicio)}</strong>
+                        </div>
+                        ` : ''}
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 2px solid #c6f6d5;">
+                            <strong style="color: #2c5f41; font-size: 1.2em;">TOTAL COTIZACIÓN:</strong>
+                            <strong style="color: #2c5f41; font-size: 1.2em;">${formatCurrency(cot.costoTotalCotizacion)}</strong>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            productosHTML += `
+                <div style="text-align: center; padding: 3rem; background: #f7fafc; border-radius: 8px;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📭</div>
+                    <h4 style="color: #718096; margin-bottom: 0.5rem;">No hay productos</h4>
+                    <p style="color: #a0aec0; font-size: 0.9em;">
+                        Esta cotización no tiene productos agregados.<br>
+                        Puede ser una cotización de solo servicios.
+                    </p>
+                </div>
+            `;
+        }
+
+        productosHTML += `</div>`;
+
+        // Crear modal
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 800px; width: 95%; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3 style="color: #2c5f41; margin: 0;">
+                        ${tieneProductos ? '📦 Productos de la Cotización' : '📭 Sin Productos'}
+                    </h3>
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                            style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0.5rem;">
+                        ×
+                    </button>
+                </div>
+                ${productosHTML}
+                <div style="text-align: center; margin-top: 1.5rem;">
+                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                            style="background: #4a8b64; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Cerrar modal al hacer click fuera
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+
+    } catch (error) {
+        console.error('Error al cargar productos:', error);
+        alert('Error al cargar los productos de la cotización: ' + error.message);
+    }
+}
+
+async function editCotizacion(id) {
+    try {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) {
+            handleAuthError();
+            return;
+        }
+
+        console.log('✏️ Cargando cotización para editar:', id);
+        const response = await fetch(`${API_COTIZACIONES_URL}/${id}`, { headers });
+        
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleAuthError();
+                return;
+            }
+            throw new Error('Cotización no encontrada');
+        }
+        
+        const cot = await response.json();
+        console.log("✅ Datos de cotización cargados para edición:", cot);
+
+        // Abrir modal de edición
+        openAddQuoteModal();
+        document.getElementById('estadoGroup').style.display = 'block';
+        
+        // Mapeo inverso de estados
+        const estadoMapInverso = {
+            'PENDIENTE': 'Pendiente',
+            'APROBADA': 'Aprobada',
+            'RECHAZADA': 'Rechazada', 
+            'FINALIZADA': 'Finalizada'
+        };
+        
+        // Llenar formulario con datos existentes
+        document.getElementById('estadoSelect').value = estadoMapInverso[cot.estado] || 'Pendiente';
+        document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
+        document.getElementById('submitBtn').textContent = '💾 Actualizar Cotización';
+        
+        // Información básica
+        document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
+        document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
+        
+        // Configurar cliente
+        document.getElementById('clienteTipo').value = 'existente';
+        toggleClienteInput();
+        
+        // Esperar a que se carguen los clientes antes de seleccionar
+        setTimeout(() => {
+            document.getElementById('clienteSelect').value = cot.dniCliente;
+        }, 100);
+        
+        document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
+        document.getElementById('prioridad').value = cot.prioridad || 'Media';
+        document.getElementById('descripcion').value = cot.descripcionProblema || '';
+        document.getElementById('notas').value = cot.notasInternas || '';
+
+        // Cargar productos de la cotización
+        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
+            detalleCotizacion = cot.detalleCotizacion
+                .filter(item => item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO")
+                .map(item => ({
+                    idProducto: item.idProducto,
+                    nombreProducto: item.nombreProducto || 'Producto no disponible',
+                    cantidad: item.cantidad || 1,
+                    precioUnitario: item.precioUnitario || 0,
+                    subtotal: (item.precioUnitario || 0) * (item.cantidad || 1)
+                }));
+        } else {
+            detalleCotizacion = [];
+        }
+        
+        renderDetalleCotizacion();
+        calcularCostoTotal();
+
+        // Guardar ID para la actualización
+        currentEditId = id;
+        
+        console.log("✅ Formulario de edición listo para cotización:", id);
+
+    } catch (error) {
+        console.error('Error al cargar cotización para editar:', error);
+        alert('Error al cargar la cotización para editar: ' + error.message);
+    }
+}
+
+async function viewCotizacion(idCotizacion) {
+    try {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) return;
+
+        console.log('🔍 Cargando cotización para vista previa:', idCotizacion);
+        
+        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
+        if (!response.ok) {
+            if (response.status === 401) {
+                handleAuthError();
+                return;
+            }
+            throw new Error('Cotización no encontrada');
+        }
+        
+        const cotizacion = await response.json();
+        console.log("✅ Detalles de cotización cargados:", cotizacion);
+        
+        // Mostrar vista previa completa
+        mostrarVistaPreviaCotizacion(cotizacion);
+        
+    } catch (error) {
+        console.error('Error al cargar cotización:', error);
+        alert('Error al cargar los detalles: ' + error.message);
+    }
+}
+
+function mostrarVistaPreviaCotizacion(cotizacion) {
+    const clienteNombre = cotizacion.nombreCliente || 
+                         cotizacion.cliente?.nombre || 
+                         clientesData.find(c => c.dni === cotizacion.dniCliente)?.nombre || 
+                         'Cliente desconocido';
+
+    const tieneProductos = cotizacion.detalleCotizacion && 
+                          Array.isArray(cotizacion.detalleCotizacion) && 
+                          cotizacion.detalleCotizacion.length > 0;
+
+    // Crear HTML para productos
+    let productosHTML = '';
+    let totalProductos = 0;
+    
+    if (tieneProductos) {
+        productosHTML = `
+            <div style="margin-top: 1.5rem;">
+                <h4 style="color: #2c5f41; margin-bottom: 1rem; border-bottom: 2px solid #4a8b64; padding-bottom: 0.5rem;">
+                    📦 Productos de la Cotización (${cotizacion.detalleCotizacion.length})
+                </h4>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: #f7fafc;">
+                                <th style="padding: 0.75rem; text-align: left; border-bottom: 1px solid #e2e8f0;">Producto</th>
+                                <th style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e2e8f0;">Cantidad</th>
+                                <th style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e2e8f0;">Precio Unitario</th>
+                                <th style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e2e8f0;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+        `;
+        
+        cotizacion.detalleCotizacion.forEach((producto, index) => {
+            totalProductos += producto.subtotal;
+            productosHTML += `
+                <tr>
+                    <td style="padding: 0.75rem; border-bottom: 1px solid #e2e8f0;">
+                        <strong>${producto.nombreProducto || 'Producto'}</strong>
+                        <br><small style="color: #718096;">ID: ${producto.idProducto}</small>
+                    </td>
+                    <td style="padding: 0.75rem; text-align: center; border-bottom: 1px solid #e2e8f0;">${producto.cantidad}</td>
+                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e2e8f0;">${formatCurrency(producto.precioUnitario)}</td>
+                    <td style="padding: 0.75rem; text-align: right; border-bottom: 1px solid #e2e8f0; font-weight: 600;">${formatCurrency(producto.subtotal)}</td>
+                </tr>
+            `;
+        });
+        
+        productosHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    } else {
+        productosHTML = `
+            <div style="text-align: center; padding: 2rem; background: #f7fafc; border-radius: 8px; margin-top: 1rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                <h4 style="color: #718096; margin-bottom: 0.5rem;">No hay productos</h4>
+                <p style="color: #a0aec0; font-size: 0.9em;">
+                    Esta cotización no tiene productos agregados.
+                </p>
+            </div>
+        `;
     }
 
-    async function editCotizacion(id) {
-        alert('Función editCotizacion en desarrollo');
-    }
+    // Calcular totales
+    const valorServicio = cotizacion.valorServicio || 0;
+    const costoTotal = cotizacion.costoTotalCotizacion || 0;
 
-    async function viewCotizacion(idCotizacion) {
-        alert('Función viewCotizacion en desarrollo');
-    }
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 2px solid #4a8b64; padding-bottom: 1rem;">
+                <h2 style="color: #2c5f41; margin: 0; display: flex; align-items: center; gap: 0.5rem;">
+                    📄 Vista Previa - Cotización #${cotizacion.idCotizacion}
+                </h2>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666; padding: 0.5rem;">
+                    ×
+                </button>
+            </div>
+            
+            <!-- Información General -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                <div>
+                    <h4 style="color: #4a5568; margin-bottom: 1rem;">👤 Información del Cliente</h4>
+                    <p><strong>Nombre:</strong> ${clienteNombre}</p>
+                    <p><strong>DNI:</strong> ${cotizacion.dniCliente || 'N/A'}</p>
+                </div>
+                <div>
+                    <h4 style="color: #4a5568; margin-bottom: 1rem;">📋 Detalles de la Cotización</h4>
+                    <p><strong>Estado:</strong> <span class="status-badge ${(cotizacion.estado || 'Pendiente').toLowerCase()}">${cotizacion.estado || 'Pendiente'}</span></p>
+                    <p><strong>Prioridad:</strong> ${cotizacion.prioridad || 'No especificada'}</p>
+                    <p><strong>Fecha Solicitud:</strong> ${formatDate(cotizacion.fechaSolicitud)}</p>
+                    <p><strong>Fecha Preferida:</strong> ${formatDate(cotizacion.fechaPreferida)}</p>
+                </div>
+            </div>
+
+            <!-- Descripción y Notas -->
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: #4a5568; margin-bottom: 0.5rem;">📝 Descripción del Problema</h4>
+                <div style="background: #f7fafc; padding: 1rem; border-radius: 8px; border-left: 4px solid #4a8b64;">
+                    ${cotizacion.descripcionProblema || 'No hay descripción disponible'}
+                </div>
+            </div>
+
+            ${cotizacion.notasInternas ? `
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: #4a5568; margin-bottom: 0.5rem;">📋 Notas Internas</h4>
+                <div style="background: #fffbf0; padding: 1rem; border-radius: 8px; border-left: 4px solid #f6ad55;">
+                    ${cotizacion.notasInternas}
+                </div>
+            </div>
+            ` : ''}
+
+            <!-- Productos -->
+            ${productosHTML}
+
+            <!-- Resumen de Costos -->
+            <div style="background: #f0fff4; padding: 1.5rem; border-radius: 8px; margin-top: 2rem; border: 2px solid #c6f6d5;">
+                <h4 style="color: #22543d; margin-bottom: 1rem; text-align: center;">💰 Resumen de Costos</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <p><strong>Valor del Servicio:</strong></p>
+                        ${tieneProductos ? `<p><strong>Costo de Productos:</strong></p>` : ''}
+                        <p style="font-size: 1.1em; font-weight: bold; color: #2c5f41;">TOTAL COTIZACIÓN:</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <p>${formatCurrency(valorServicio)}</p>
+                        ${tieneProductos ? `<p>${formatCurrency(totalProductos)}</p>` : ''}
+                        <p style="font-size: 1.1em; font-weight: bold; color: #2c5f41;">${formatCurrency(costoTotal)}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem; display: flex; gap: 1rem; justify-content: center;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                        style="background: #4a8b64; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                    Cerrar Vista Previa
+                </button>
+                <button onclick="imprimirCotizacion('${cotizacion.idCotizacion}')" 
+                        style="background: #3182ce; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                    🖨️ Imprimir
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Cerrar modal al hacer click fuera
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+// Función auxiliar para imprimir
+function imprimirCotizacion(idCotizacion) {
+    alert(`Función de impresión para cotización #${idCotizacion} - En desarrollo`);
+    // Aquí puedes implementar la lógica de impresión
+}
 
     async function deleteCotizacion(id) {
         if (isCotizacionVinculada(id)) {
