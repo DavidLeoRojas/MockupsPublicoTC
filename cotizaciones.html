@@ -1187,12 +1187,12 @@ async function loadProductosCot() {
     document.getElementById('valorServicioCotizacion')?.addEventListener('input', calcularCostoTotal);
 
 // --- FUNCIÓN PRINCIPAL CORREGIDA ---
+// ✅ CORRECCIÓN EN handleQuoteFormSubmit - Mapeo de estados
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
 
-    // ✅ 1. Obtener el token JWT del almacenamiento local
     const token = localStorage.getItem('jwtToken');
     if (!token) {
         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -1201,7 +1201,7 @@ async function handleQuoteFormSubmit(event) {
         return;
     }
 
-    calcularCostoTotal(); // Asegurar que el total esté actualizado antes de enviar
+    calcularCostoTotal();
     const tipoCliente = document.getElementById('clienteTipo').value;
     const fechaPreferida = document.getElementById('fechaPreferida').value;
     const prioridad = document.getElementById('prioridad').value;
@@ -1224,7 +1224,7 @@ async function handleQuoteFormSubmit(event) {
             isSubmitting = false;
             return;
         }
-    } else { // tipoCliente === 'nuevo'
+    } else {
         dniCliente = document.getElementById('dniNuevo').value.trim();
         if (!dniCliente) {
              alert("Error: No se pudo obtener el DNI del cliente nuevo.");
@@ -1233,7 +1233,17 @@ async function handleQuoteFormSubmit(event) {
         }
     }
 
-    // ✅ CORRECCIÓN: Validar que haya productos si se agregaron
+    // ✅ CORRECCIÓN: Mapear estados del frontend al backend
+    const estadoMap = {
+        'Pendiente': 'PENDIENTE',
+        'Aprobada': 'APROBADA', 
+        'Rechazada': 'RECHAZADA',
+        'Finalizada': 'FINALIZADA'
+    };
+
+    const estadoBackend = estadoMap[estado] || 'PENDIENTE';
+
+    // Validar productos
     if (detalleCotizacion.length === 0) {
         const confirmarSinProductos = confirm("⚠️ No ha agregado productos a esta cotización. ¿Desea continuar con una cotización sin productos?");
         if (!confirmarSinProductos) {
@@ -1242,23 +1252,18 @@ async function handleQuoteFormSubmit(event) {
         }
     }
 
-    // Calcular el costo total final antes de enviar
     const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
-    // ✅ OBTENER EL VALOR DEL SERVICIO
     const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value || 0);
-
-    // Convertir fechaPreferida a formato LocalDate (sin hora)
     const fechaPreferidaParaEnviar = fechaPreferida ? fechaPreferida : null;
 
-    // ✅ CORRECCIÓN: Preparar los datos para enviar
+    // ✅ CORRECCIÓN: Usar estadoBackend en lugar de estado
     const formData = {
         dniCliente: dniCliente,
         fechaPreferida: fechaPreferidaParaEnviar,
         prioridad: prioridad,
         descripcionProblema: descripcion,
         notasInternas: notas,
-        estado: estado,
-        // ✅ CORRECCIÓN: Enviar detalleCotizacion correctamente formateado
+        estado: estadoBackend, // ← USAR ESTADO CORRECTO
         detalleCotizacion: detalleCotizacion.map(item => ({
             idProducto: item.idProducto,
             nombreProducto: item.nombreProducto,
@@ -1266,19 +1271,16 @@ async function handleQuoteFormSubmit(event) {
             precioUnitario: Number((item.precioUnitario ?? 0).toFixed(2)),
             subtotal: Number((item.subtotal ?? 0).toFixed(2))
         })),
-        costoTotalCotizacion: costoTotalCalculado, // Enviar el total calculado
-        // ✅ ENVIAR EL VALOR DEL SERVICIO COMO UN CAMPO SEPARADO
+        costoTotalCotizacion: costoTotalCalculado,
         valorServicio: valorServicioInput
     };
 
-    // ✅ DEBUG: Mostrar datos que se enviarán
     console.log("🚀 Enviando datos al backend:", JSON.stringify(formData, null, 2));
 
     try {
         const url = currentEditId ? `${API_COTIZACIONES_URL}/${currentEditId}/con-productos` : `${API_COTIZACIONES_URL}/con-productos`;
         const method = currentEditId ? 'PUT' : 'POST';
 
-        // ✅ 2. Configurar los encabezados con el token de autenticación
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
@@ -1286,11 +1288,10 @@ async function handleQuoteFormSubmit(event) {
 
         const response = await fetch(url, {
             method: method,
-            headers: headers, // ✅ Usar los headers aquí
+            headers: headers,
             body: JSON.stringify(formData)
         });
 
-        // ✅ DEBUG: Mostrar respuesta del servidor
         console.log("📥 Respuesta del servidor:", response.status, response.statusText);
         if (!response.ok) {
             const errorText = await response.text();
@@ -1301,7 +1302,7 @@ async function handleQuoteFormSubmit(event) {
         console.log("✅ Respuesta exitosa:", responseData);
         alert(currentEditId ? "✅ Cotización actualizada exitosamente." : "✅ Cotización creada exitosamente.");
         closeModal('addQuoteModal');
-        await getAllCotizaciones(); // Recargar la lista de cotizaciones
+        await getAllCotizaciones();
     } catch (error) {
         console.error("❌ Error al guardar la cotización:", error);
         alert(`❌ Error: ${error.message}`);
@@ -1600,7 +1601,7 @@ async function mostrarProductosCotizacion(idCotizacion) {
 }
 
 
-// ✅ También actualiza la función viewCotizacion para mostrar mejor los productos
+// ✅ FUNCIÓN editCotizacion CORREGIDA
 async function editCotizacion(id) {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -1617,16 +1618,21 @@ async function editCotizacion(id) {
 
         openAddQuoteModal();
         document.getElementById('estadoGroup').style.display = 'block';
-        document.getElementById('estadoSelect').value = cot.estado || 'PENDIENTE'; // ← CORREGIDO
+        
+        // ✅ CORRECCIÓN: Mapeo inverso de estados (backend → frontend)
+        const estadoMapInverso = {
+            'PENDIENTE': 'Pendiente',
+            'APROBADA': 'Aprobada',
+            'RECHAZADA': 'Rechazada', 
+            'FINALIZADA': 'Finalizada'
+        };
+        
+        document.getElementById('estadoSelect').value = estadoMapInverso[cot.estado] || 'Pendiente';
         document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
         document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
         
-        // Cargar costo total calculado
         document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
-
-        // ✅ CARGAR EL VALOR DEL SERVICIO
         document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
-
         document.getElementById('clienteTipo').value = 'existente';
         toggleClienteInput();
         document.getElementById('clienteSelect').value = cot.dniCliente;
@@ -1635,19 +1641,17 @@ async function editCotizacion(id) {
         document.getElementById('descripcion').value = cot.descripcionProblema || '';
         document.getElementById('notas').value = cot.notasInternas || '';
 
-        // ✅ CARGAR PRODUCTOS SI EXISTEN - FILTRAR PRODUCTOS INVÁLIDOS
+        // Cargar productos
         if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
             detalleCotizacion = cot.detalleCotizacion
-                .filter(item => item.idProducto !== "PRODUCTO_ELIMINADO") // ← FILTRAR
-                .map(item => {
-                    return {
-                        idProducto: item.idProducto,
-                        nombreProducto: item.nombreProducto,
-                        cantidad: item.cantidad,
-                        precioUnitario: item.precioUnitario || 0,
-                        subtotal: (item.precioUnitario || 0) * item.cantidad
-                    };
-                });
+                .filter(item => item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO")
+                .map(item => ({
+                    idProducto: item.idProducto,
+                    nombreProducto: item.nombreProducto || 'Producto no disponible',
+                    cantidad: item.cantidad || 1,
+                    precioUnitario: item.precioUnitario || 0,
+                    subtotal: (item.precioUnitario || 0) * (item.cantidad || 1)
+                }));
         } else {
             detalleCotizacion = [];
         }
@@ -1678,80 +1682,124 @@ function verifyToken() {
 }
 
 // En todas las funciones que usan fetch, agrega:
-async function viewCotizacion(id) {
-    if (!verifyToken()) {
+// ✅ FUNCIÓN viewCotizacion CORREGIDA
+async function viewCotizacion(idCotizacion) {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
         alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
         window.location.href = 'index.html';
         return;
     }
     
-    const token = localStorage.getItem('jwtToken');
-    // Asegurar que el token tenga el formato correcto
-    const formattedToken = token.startsWith('Bearer ') ? token : 'Bearer ' + token;
-    const headers = { 'Authorization': formattedToken };
+    const headers = { 'Authorization': 'Bearer ' + token };
 
-    // ... resto del código
+    try {
+        console.log('🔍 Viendo cotización:', idCotizacion);
+        
+        const response = await fetch(`${API_COTIZACIONES_URL}/${idCotizacion}`, { headers });
+        if (!response.ok) throw new Error('Cotización no encontrada');
+        
+        const cotizacion = await response.json();
+        
+        // Mostrar detalles en un modal
+        mostrarDetallesCotizacion(cotizacion);
+        
+    } catch (error) {
+        console.error('Error al cargar cotización:', error);
+        alert('Error al cargar los detalles: ' + error.message);
+    }
 }
 
-    function updateStats(cotizaciones) {
-        const pendientes = cotizaciones.filter(c => c.estado === 'Pendiente').length;
-        const aprobadas = cotizaciones.filter(c => c.estado === 'Aprobada').length;
-        const finalizadas = cotizaciones.filter(c => c.estado === 'Finalizada').length;
-        const rechazadas = cotizaciones.filter(c => c.estado === 'Rechazada').length;
-        document.getElementById('statPendientes').textContent = pendientes;
-        document.getElementById('statAprobadas').textContent = aprobadas;
-        document.getElementById('statFinalizadas').textContent = finalizadas;
-        document.getElementById('statRechazadas').textContent = rechazadas;
-    }
+// ✅ FUNCIÓN PARA MOSTRAR DETALLES
+function mostrarDetallesCotizacion(cotizacion) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10000;
+    `;
+    
+    const productosHTML = cotizacion.detalleCotizacion && cotizacion.detalleCotizacion.length > 0 
+        ? cotizacion.detalleCotizacion.map((prod, index) => `
+            <div style="background: #f8f9fa; padding: 1rem; margin-bottom: 0.5rem; border-radius: 8px;">
+                <strong>${index + 1}. ${prod.nombreProducto || 'Producto'}</strong><br>
+                <span style="color: #666;">
+                    Cantidad: ${prod.cantidad} | 
+                    Precio: $${formatCurrency(prod.precioUnitario)} | 
+                    Subtotal: $${formatCurrency(prod.subtotal)}
+                </span>
+            </div>
+        `).join('')
+        : '<p style="text-align: center; color: #718096;">No hay productos</p>';
 
+    modal.innerHTML = `
+        <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3 style="color: #2c5f41; margin: 0;">📄 Detalles de Cotización</h3>
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                        style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666;">
+                    ×
+                </button>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <p><strong>ID:</strong> ${cotizacion.idCotizacion}</p>
+                <p><strong>Cliente:</strong> ${cotizacion.nombreCliente || 'N/A'}</p>
+                <p><strong>Estado:</strong> ${cotizacion.estado}</p>
+                <p><strong>Fecha Solicitud:</strong> ${formatDate(cotizacion.fechaSolicitud)}</p>
+                <p><strong>Fecha Preferida:</strong> ${formatDate(cotizacion.fechaPreferida)}</p>
+                <p><strong>Prioridad:</strong> ${cotizacion.prioridad || 'No especificada'}</p>
+                <p><strong>Descripción:</strong> ${cotizacion.descripcionProblema || 'N/A'}</p>
+                <p><strong>Notas:</strong> ${cotizacion.notasInternas || 'Ninguna'}</p>
+                <p><strong>Costo Total:</strong> ${formatCurrency(cotizacion.costoTotalCotizacion)}</p>
+            </div>
+            
+            <div>
+                <h4 style="color: #4a5568; margin-bottom: 1rem;">📦 Productos</h4>
+                ${productosHTML}
+            </div>
+            
+            <div style="text-align: center; margin-top: 1.5rem;">
+                <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                        style="background: #4a8b64; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer;">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    `;
 
-async function editCotizacion(id) {
-    const token = localStorage.getItem('jwtToken');
-    const cot = allCotizaciones.find(c => c.idCotizacion === id);
-    if (!cot) {
-        alert("Cotización no encontrada.");
-        return;
-    }
-    openAddQuoteModal();
-    document.getElementById('estadoGroup').style.display = 'block';
-    document.getElementById('estadoSelect').value = cot.estado || 'Pendiente';
-    document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
-    document.getElementById('submitBtn').textContent = '💾 Guardar Cambios';
-    // Cargar costo total calculado (esto asume que costoTotalCotizacion es el total final)
-    document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
+    document.body.appendChild(modal);
 
-    // ✅ CARGAR EL VALOR DEL SERVICIO (si el backend lo devuelve en el DTO)
-    // Asumiendo que el backend devuelve 'valorServicio' en el objeto cot
-    document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0; // Cargar el valor si existe
-
-    document.getElementById('clienteTipo').value = 'existente';
-    toggleClienteInput();
-    document.getElementById('clienteSelect').value = cot.dniCliente;
-    document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
-    document.getElementById('prioridad').value = cot.prioridad || 'Media';
-    document.getElementById('descripcion').value = cot.descripcionProblema || '';
-    document.getElementById('notas').value = cot.notasInternas || '';
-
-    // ✅ CARGAR PRODUCTOS SI EXISTEN
-    if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
-        // ✅ CAMBIAR: Mapear usando nombreProducto (esperando que el backend lo devuelva)
-        detalleCotizacion = cot.detalleCotizacion.map(item => {
-            // El backend ya debería devolver idProducto y nombreProducto si la relación es con Producto
-            return {
-                idProducto: item.idProducto, // <--- Esperar idProducto del backend
-                nombreProducto: item.nombreProducto, // <--- Esperar nombreProducto del backend
-                cantidad: item.cantidad,
-                precioUnitario: item.precioUnitario || 0, // <--- Esperar precioUnitario del backend
-                subtotal: (item.precioUnitario || 0) * item.cantidad
-            };
-        });
-    } else {
-        detalleCotizacion = [];
-    }
-    renderDetalleCotizacion();
-
-    currentEditId = id;
+    // Cerrar modal al hacer click fuera
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
 }
+
+// ✅ CORRECCIÓN EN updateStats
+function updateStats(cotizaciones) {
+    // Usar los valores del enum del backend
+    const pendientes = cotizaciones.filter(c => c.estado === 'PENDIENTE').length;
+    const aprobadas = cotizaciones.filter(c => c.estado === 'APROBADA').length;
+    const finalizadas = cotizaciones.filter(c => c.estado === 'FINALIZADA').length;
+    const rechazadas = cotizaciones.filter(c => c.estado === 'RECHAZADA').length;
+    
+    document.getElementById('statPendientes').textContent = pendientes;
+    document.getElementById('statAprobadas').textContent = aprobadas;
+    document.getElementById('statFinalizadas').textContent = finalizadas;
+    document.getElementById('statRechazadas').textContent = rechazadas;
+}
+
+
 
 async function deleteCotizacion(id) {
     if (isCotizacionVinculada(id)) {
