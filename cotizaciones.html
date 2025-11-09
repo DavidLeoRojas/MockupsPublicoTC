@@ -2156,12 +2156,18 @@ async function editCotizacion(id) {
 
 // ✅ REEMPLAZAR CON ESTA VERSIÓN SIMPLIFICADA:
 async function getAuthHeaders() {
-    const headers = await TokenManager.getAuthHeaders();
-    if (!headers.Authorization) {
-        console.error('❌ No se pudieron obtener headers de autenticación');
-        throw new Error('NO_AUTH_HEADERS');
+    try {
+        const headers = await TokenManager.getAuthHeaders();
+        if (!headers.Authorization) {
+            console.error('❌ No se pudieron obtener headers de autenticación');
+            // No usar return aquí, mejor lanzar error
+            throw new Error('NO_AUTH_HEADERS');
+        }
+        return headers;
+    } catch (error) {
+        console.error('❌ Error en getAuthHeaders:', error);
+        throw error; // Propagar el error
     }
-    return headers;
 }
 async function viewCotizacion(idCotizacion) {
     try {
