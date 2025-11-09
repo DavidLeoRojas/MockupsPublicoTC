@@ -1107,44 +1107,126 @@
         }
     }
 
-    async function loadProductosCot() {
-        try {
-            const headers = getAuthHeaders();
-            if (!headers.Authorization) return;
+// Reemplaza la función loadProductosCot con esta versión mejorada
+async function loadProductosCot() {
+    try {
+        const headers = getAuthHeaders();
+        if (!headers.Authorization) return;
+        
+        console.log('🔄 Cargando productos para cotización...');
+        const response = await fetch(API_PRODUCTOS_URL, { headers });
+        
+        if (response.status === 401) {
+            handleAuthError();
+            return;
+        }
+        
+        if (!response.ok) throw new Error('Error al cargar productos');
+        
+        productosDataCot = await response.json();
+        const select = document.getElementById('productoSelectCot');
+        
+        if (select) {
+            select.innerHTML = '<option value="">Seleccione un producto</option>';
+            productosDataCot.forEach(prod => {
+                // ✅ VERIFICAR QUE EL PRODUCTO TENGA STOCK
+                if (prod.stock > 0) {
+                    const option = document.createElement('option');
+                    option.value = prod.idProducto;
+                    option.textContent = `${prod.nombre} - Stock: ${prod.stock} - $${(prod.precioActual || 0).toLocaleString()}`;
+                    option.dataset.precio = prod.precioActual || 0;
+                    option.dataset.stock = prod.stock;
+                    option.dataset.nombre = prod.nombre;
+                    select.appendChild(option);
+                }
+            });
             
-            console.log('🔄 Cargando productos...');
-            const response = await fetch(API_PRODUCTOS_URL, { headers });
+            // Si no hay productos con stock
+            if (select.options.length === 1) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "No hay productos con stock disponible";
+                option.disabled = true;
+                select.appendChild(option);
+            }
+        }
+        console.log('✅ Productos cargados para cotización:', productosDataCot.length);
+    } catch (error) {
+        console.error("❌ Error al cargar productos:", error);
+        const select = document.getElementById('productoSelectCot');
+        if (select) {
+            select.innerHTML = '<option value="">Error al cargar productos</option>';
+        }
+    }
+}
+
+// Mejora la función para agregar productos
+document.getElementById('addProductBtnCot')?.addEventListener('click', function() {
+    const productoSelect = document.getElementById('productoSelectCot');
+    const productoId = productoSelect.value;
+    const cantidad = parseInt(document.getElementById('cantidadProductoCot').value) || 0;
+    
+    if (!productoId) {
+        alert('⚠️ Seleccione un producto válido.');
+        return;
+    }
+    
+    if (cantidad <= 0) {
+        alert('⚠️ La cantidad debe ser mayor a 0.');
+        return;
+    }
+    
+    const productoOption = productoSelect.options[productoSelect.selectedIndex];
+    const precioUnitario = parseFloat(productoOption.dataset.precio) || 0;
+    const stockDisponible = parseInt(productoOption.dataset.stock) || 0;
+    const nombreProducto = productoOption.dataset.nombre || 'Producto';
+    
+    // ✅ VERIFICAR STOCK
+    if (cantidad > stockDisponible) {
+        alert(`❌ Stock insuficiente. Disponible: ${stockDisponible}`);
+        return;
+    }
+    
+    // ✅ VERIFICAR SI EL PRODUCTO YA ESTÁ AGREGADO
+    const existingIndex = detalleCotizacion.findIndex(item => item.idProducto === productoId);
+    
+    if (existingIndex !== -1) {
+        // Si ya existe, preguntar si quiere actualizar la cantidad
+        if (confirm(`El producto "${nombreProducto}" ya está agregado. ¿Desea actualizar la cantidad?`)) {
+            const nuevaCantidadTotal = detalleCotizacion[existingIndex].cantidad + cantidad;
             
-            if (response.status === 401) {
-                handleAuthError();
+            if (nuevaCantidadTotal > stockDisponible) {
+                alert(`❌ Stock insuficiente. Disponible: ${stockDisponible}, Ya agregado: ${detalleCotizacion[existingIndex].cantidad}`);
                 return;
             }
             
-            if (!response.ok) throw new Error('Error al cargar productos');
-            
-            productosDataCot = await response.json();
-            const select = document.getElementById('productoSelectCot');
-            
-            if (select) {
-                select.innerHTML = '<option value="">Seleccione un producto</option>';
-                productosDataCot.forEach(prod => {
-                    const option = document.createElement('option');
-                    option.value = prod.idProducto;
-                    option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock}`;
-                    option.dataset.precio = prod.precioActual || 0;
-                    select.appendChild(option);
-                });
-            }
-            console.log('✅ Productos cargados:', productosDataCot.length);
-        } catch (error) {
-            console.error("Error al cargar productos:", error);
-            const select = document.getElementById('productoSelectCot');
-            if (select) {
-                select.innerHTML = '<option value="">Error al cargar productos</option>';
-            }
+            detalleCotizacion[existingIndex].cantidad = nuevaCantidadTotal;
+            detalleCotizacion[existingIndex].subtotal = precioUnitario * nuevaCantidadTotal;
+        } else {
+            return;
         }
+    } else {
+        // Agregar nuevo producto
+        const subtotal = precioUnitario * cantidad;
+        
+        detalleCotizacion.push({
+            idProducto: productoId,
+            nombreProducto: nombreProducto,
+            cantidad: cantidad,
+            precioUnitario: precioUnitario,
+            subtotal: subtotal
+        });
     }
-
+    
+    // Actualizar interfaz
+    renderDetalleCotizacion();
+    
+    // Limpiar selección
+    productoSelect.value = '';
+    document.getElementById('cantidadProductoCot').value = '1';
+    
+    console.log("✅ Producto agregado. Total productos:", detalleCotizacion.length);
+});
     async function loadServicios() {
         try {
             const headers = getAuthHeaders();
@@ -1249,7 +1331,7 @@
         document.getElementById('cantidadProductoCot').value = '1';
     });
 
- function renderDetalleCotizacion() {
+function renderDetalleCotizacion() {
     const container = document.getElementById('detalleCotizacionList');
     if (!container) {
         console.error('❌ No se encontró el contenedor de productos');
@@ -1259,7 +1341,13 @@
     console.log("🔄 Renderizando productos:", detalleCotizacion);
     
     if (detalleCotizacion.length === 0) {
-        container.innerHTML = '<p style="text-align: center; color: #718096; padding: 2rem;">No hay productos agregados.</p>';
+        container.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #718096; background: #f7fafc; border-radius: 8px;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                <p>No hay productos agregados</p>
+                <small>Use el formulario arriba para agregar productos</small>
+            </div>
+        `;
         calcularCostoTotal();
         return;
     }
@@ -1277,6 +1365,7 @@
             background: white;
             border: 1px solid #e2e8f0;
             border-radius: 8px;
+            transition: all 0.3s ease;
         `;
         
         div.innerHTML = `
@@ -1284,17 +1373,19 @@
                 <strong style="color: #2c5f41;">${item.nombreProducto}</strong><br>
                 <small style="color: #718096;">ID: ${item.idProducto}</small><br>
                 <span style="color: #4a5568; font-size: 0.9em;">
-                    Cantidad: ${item.cantidad} x $${item.precioUnitario?.toFixed(2) || '0.00'} = 
-                    <strong>$${item.subtotal?.toFixed(2) || '0.00'}</strong>
+                    ${item.cantidad} x $${(item.precioUnitario || 0).toLocaleString()} = 
+                    <strong>$${(item.subtotal || 0).toLocaleString()}</strong>
                 </span>
             </div>
             <div class="detalle-factura-controls" style="display: flex; gap: 0.5rem;">
                 <button class="btn-sm edit-btn" onclick="editDetalleCotItem(${index})" 
-                        style="background: #f6ad55; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                        style="background: #f6ad55; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;"
+                        title="Editar cantidad">
                     ✏️
                 </button>
                 <button class="btn-sm remove-btn" onclick="removeDetalleCotItem(${index})" 
-                        style="background: #f56565; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;">
+                        style="background: #f56565; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;"
+                        title="Eliminar producto">
                     🗑️
                 </button>
             </div>
@@ -1306,6 +1397,62 @@
     console.log("✅ Productos renderizados correctamente");
 }
 
+// Función de prueba para crear nueva cotización
+async function probarCrearCotizacion() {
+    console.log("🧪 Probando crear nueva cotización...");
+    
+    // Simular datos de prueba
+    const datosPrueba = {
+        idCotizacion: generarIdCotizacion(),
+        dniCliente: "123456789", // Usa un DNI que exista
+        fechaPreferida: "2024-01-15",
+        prioridad: "Media",
+        descripcionProblema: "Prueba de creación de cotización",
+        notasInternas: "Esta es una cotización de prueba",
+        estado: "PENDIENTE",
+        detalleCotizacion: [
+            {
+                idProducto: "PROD001", // Usa un ID de producto que exista
+                nombreProducto: "Producto de Prueba",
+                cantidad: 2,
+                precioUnitario: 50000,
+                subtotal: 100000
+            }
+        ],
+        costoTotalCotizacion: 100000,
+        valorServicio: 0
+    };
+    
+    console.log("📤 Enviando datos de prueba:", datosPrueba);
+    
+    try {
+        const headers = getAuthHeaders();
+        const response = await fetch(`${API_COTIZACIONES_URL}/con-productos`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(datosPrueba)
+        });
+        
+        console.log("📥 Respuesta:", response.status);
+        
+        if (response.ok) {
+            const result = await response.json();
+            console.log("✅ Cotización creada exitosamente:", result);
+            alert("✅ Cotización de prueba creada exitosamente");
+            await getAllCotizaciones();
+        } else {
+            const errorText = await response.text();
+            console.error("❌ Error:", errorText);
+            alert("❌ Error al crear cotización: " + errorText);
+        }
+    } catch (error) {
+        console.error("❌ Error en prueba:", error);
+        alert("❌ Error en prueba: " + error.message);
+    }
+}
+
+// Agrega un botón de prueba temporalmente en tu HTML o usa la consola
+// Para probar, ejecuta en la consola del navegador: probarCrearCotizacion()
     function editDetalleCotItem(index) {
         const item = detalleCotizacion[index];
         const nuevaCantidad = prompt(`Editar cantidad para "${item.nombreProducto}":`, item.cantidad);
@@ -2046,6 +2193,7 @@ async function mostrarProductosCotizacion(idCotizacion) {
     }
 }
 
+// Mejora la función editCotizacion para manejar mejor los productos
 async function editCotizacion(id) {
     try {
         const headers = getAuthHeaders();
@@ -2106,17 +2254,17 @@ async function editCotizacion(id) {
         document.getElementById('descripcion').value = cot.descripcionProblema || '';
         document.getElementById('notas').value = cot.notasInternas || '';
 
-        // ✅ CORRECCIÓN CRÍTICA: Cargar productos de la cotización
+        // ✅ CORRECCIÓN MEJORADA: Cargar productos de la cotización
         console.log("📦 Procesando productos de la cotización:", cot.detalleCotizacion);
         
         detalleCotizacion = []; // Limpiar array
         
         if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
             cot.detalleCotizacion.forEach((item, index) => {
-                // ✅ FILTRAR PRODUCTOS VÁLIDOS - El backend tiene productos null
-                if (item && item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO") {
+                // ✅ FILTRAR PRODUCTOS VÁLIDOS - Manejar diferentes estructuras
+                if (item && item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO" && item.idProducto !== "null") {
                     const productoValido = {
-                        idProducto: item.idProducto,
+                        idProducto: item.idProducto.toString(),
                         nombreProducto: item.nombreProducto || `Producto ${index + 1}`,
                         cantidad: parseInt(item.cantidad) || 1,
                         precioUnitario: parseFloat(item.precioUnitario) || 0,
@@ -2132,7 +2280,7 @@ async function editCotizacion(id) {
             
             console.log(`📊 Total de productos válidos cargados: ${detalleCotizacion.length}`);
         } else {
-            console.log("📭 No hay productos en esta cotización");
+            console.log("📭 No hay productos en esta cotización o la estructura es inválida");
             detalleCotizacion = [];
         }
         
