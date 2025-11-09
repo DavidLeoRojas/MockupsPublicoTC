@@ -1127,10 +1127,10 @@ async function handleAddPersonForm(event) {
         let dni, nit;
         if (tipoPersona === 'Juridica') {
             dni = document.getElementById('personNit').value.trim();
-            nit = dni; // Para jurídicas, NIT = DNI
+            nit = dni;
         } else {
             dni = document.getElementById('personDoc').value.trim();
-            nit = null; // Para naturales, NIT es null
+            nit = null;
         }
 
         // Validaciones básicas
@@ -1166,24 +1166,32 @@ async function handleAddPersonForm(event) {
             return;
         }
 
-        // 🔥 CORRECCIÓN: Estructura de datos corregida según lo que espera el backend
+        // 🔥 ESTRUCTURA CORREGIDA - Versión simplificada
         const datosPersona = {
             dni: dni,
             tipo_dni: tipoDni,
             nombre: nombre,
             telefono: telefono,
             correo: email,
-            // 🔥 AGREGAR CAMPOS FALTANTES QUE ESPERA EL BACKEND
-            password: "123456", // Contraseña por defecto (requerida)
-            rol: rol.charAt(0).toUpperCase() + rol.slice(1).toLowerCase(),
-            id_direccion: parseInt(ciudad) || 5413,
-            tipo_persona: tipoPersona.toUpperCase(),
-            cargo_especialidad: cargoEspecialidad || null,
-            direccion: direccion || null,
-            observaciones: observaciones || null
+            password: "123456", // Contraseña por defecto
+            rol: rol.toLowerCase(), // 🔥 IMPORTANTE: enviar en minúsculas
+            id_direccion: parseInt(ciudad)
         };
 
-        // 🔥 CORRECCIÓN: Manejar NIT y representante legal según el tipo
+        // 🔥 Campos adicionales solo si tienen valor
+        if (cargoEspecialidad) {
+            datosPersona.cargo_especialidad = cargoEspecialidad;
+        }
+        if (direccion) {
+            datosPersona.direccion = direccion;
+        }
+        if (observaciones) {
+            datosPersona.observaciones = observaciones;
+        }
+
+        // 🔥 Manejo específico para tipo de persona
+        datosPersona.tipo_persona = tipoPersona.toUpperCase();
+        
         if (tipoPersona === 'Juridica') {
             if (!representanteLegal) {
                 alert("❌ El representante legal es obligatorio para personas jurídicas.");
@@ -1193,12 +1201,12 @@ async function handleAddPersonForm(event) {
             datosPersona.nit = nit;
             datosPersona.representante_legal = representanteLegal;
         } else {
-            // Para naturales, NO enviar estos campos o enviar null
+            // Para naturales, no enviar estos campos o enviar null explícitamente
             datosPersona.nit = null;
             datosPersona.representante_legal = null;
         }
 
-        console.log('📤 Datos a enviar:', datosPersona);
+        console.log('📤 Datos COMPLETOS a enviar:', JSON.stringify(datosPersona, null, 2));
 
         // Configurar headers
         const headers = {
@@ -1227,14 +1235,16 @@ async function handleAddPersonForm(event) {
                 errorMessage = responseText;
             }
 
+            console.error('❌ Error completo del servidor:', errorMessage);
+            
             // Manejar errores específicos
             if (responseText.includes('Duplicate entry')) {
                 alert(`❌ El documento/NIT "${dni}" ya existe en la base de datos.`);
             } else if (responseText.includes('persona natural') || responseText.includes('NIT')) {
                 alert(`❌ Error de validación: ${errorMessage}`);
             } else if (response.status === 500) {
-                alert(`❌ Error interno del servidor (500). Verifica la consola para más detalles.`);
-                console.error('Error 500 detalles:', responseText);
+                alert(`❌ Error interno del servidor (500). Detalles en consola.`);
+                console.error('Error 500 completo:', responseText);
             } else {
                 alert(`❌ Error (${response.status}): ${errorMessage}`);
             }
@@ -1244,7 +1254,14 @@ async function handleAddPersonForm(event) {
         }
 
         // Éxito
-        alert("✅ Persona agregada exitosamente.");
+        let successData;
+        try {
+            successData = JSON.parse(responseText);
+        } catch (e) {
+            successData = { message: 'Persona agregada exitosamente' };
+        }
+        
+        alert("✅ " + (successData.message || 'Persona agregada exitosamente.'));
         closeModal('addPersonModal');
         await loadData();
 
