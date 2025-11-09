@@ -409,5 +409,45 @@ function setLoading(loading) {
     }
 }
     </script>
+    <script>
+const API_URL = "https://backendgeminiambienta-v4-0.onrender.com/api/auth/login";
+
+document.getElementById("loginForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById("email").value.trim();
+    const dni = document.getElementById("password").value.trim();
+    
+    setLoading(true);
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, dni })
+        });
+
+        if (!response.ok) throw new Error("Credenciales incorrectas");
+
+        const data = await response.json();
+
+        // Guarda token limpiecito 🔥
+        localStorage.setItem("jwtToken", data.token.trim());
+
+        console.log("✅ Login exitoso, token:", data.token);
+
+        // Redirigir a dashboard
+        window.location.href = "dashboard.html";
+    } catch (error) {
+        showError(error.message);
+        console.error("❌ Error login:", error);
+    } finally {
+        setLoading(false);
+    }
+});
+</script>
+
 </body>
 </html>
