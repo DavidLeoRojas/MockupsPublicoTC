@@ -1416,13 +1416,20 @@ function populateCotizacionSelect(cotizaciones) {
         }
 
         // ========== RENDER CALENDAR ==========
-        function renderCalendar(month, year) {
-            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-                               "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-            const monthYearElement = document.querySelector('.month-year');
-            if (monthYearElement) {
-                monthYearElement.textContent = `${monthNames[month]} ${year}`;
-            }
+function renderCalendar(month, year) {
+    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                       "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    
+    // ✅ ACTUALIZAR EL TÍTULO PRINCIPAL TAMBIÉN
+    const calendarTitle = document.querySelector('.calendar-title');
+    if (calendarTitle) {
+        calendarTitle.textContent = `${monthNames[month]} ${year}`;
+    }
+    
+    const monthYearElement = document.querySelector('.month-year');
+    if (monthYearElement) {
+        monthYearElement.textContent = `${monthNames[month]} ${year}`;
+    }
 
             const calendarGrid = document.getElementById('calendarGrid');
             if (!calendarGrid) return;
@@ -1978,65 +1985,65 @@ async function addService(event) {
     if (isSubmitting) return;
     isSubmitting = true;
 
-    console.log('🔄 Iniciando proceso de agregar servicio...');
-
-    // Verificar autenticación primero
-    if (!await verificarAutenticacion()) {
-        isSubmitting = false;
-        return;
-    }
-
-    const token = localStorage.getItem('jwtToken');
+    console.log('🔄 INICIANDO PROCESO DE AGREGAR SERVICIO...');
 
     try {
-        // Obtener valores del formulario
-        const dniCliente = document.getElementById('clienteId').value.trim();
-        const dniEmpleadoAsignado = document.getElementById('tecnicoId').value.trim();
-        const idTipoServicio = document.getElementById('tipoServicioId').value.trim();
-        const fecha = document.getElementById('fecha').value;
-        const hora = document.getElementById('hora').value;
-
-        console.log('📋 Datos del formulario:', {
-            dniCliente,
-            dniEmpleadoAsignado,
-            idTipoServicio,
-            fecha,
-            hora
-        });
-
-        // Validaciones
-        if (!dniCliente || !dniEmpleadoAsignado || !idTipoServicio || !fecha || !hora) {
-            showCustomAlert('Por favor complete todos los campos obligatorios.', 'Error', 'error');
-            isSubmitting = false;
-            return;
+        // Verificar autenticación
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            throw new Error('No hay token de autenticación. Por favor, inicie sesión nuevamente.');
         }
 
-        // Validar que la fecha no sea en el pasado
-        const fechaServicio = new Date(fecha + 'T' + hora);
-        const ahora = new Date();
-        if (fechaServicio < ahora) {
-            showCustomAlert('No puede programar un servicio en fecha u hora pasada.', 'Advertencia', 'warning');
-            isSubmitting = false;
-            return;
-        }
-
-        const observaciones = document.getElementById('observaciones').value.trim() || null;
-        const prioridad = document.getElementById('prioridad').value;
-
-        // Crear objeto de datos
-        const servicioData = {
-            dniCliente: dniCliente,
-            dniEmpleadoAsignado: dniEmpleadoAsignado,
-            idTipoServicio: idTipoServicio,
-            fecha: fecha,
-            hora: hora + ':00',
+        // Obtener datos del formulario
+        const formData = {
+            dniCliente: document.getElementById('clienteId').value.trim(),
+            dniEmpleadoAsignado: document.getElementById('tecnicoId').value.trim(),
+            idTipoServicio: document.getElementById('tipoServicioId').value.trim(),
+            fecha: document.getElementById('fecha').value,
+            hora: document.getElementById('hora').value,
+            observaciones: document.getElementById('observaciones').value.trim() || null,
+            prioridad: document.getElementById('prioridad').value,
             estado: 'Programado',
-            observaciones: observaciones,
-            prioridad: prioridad,
             servicioSinCotizacion: true
         };
 
-        console.log('🚀 Enviando datos al backend:', servicioData);
+        console.log('📋 DATOS DEL FORMULARIO:', formData);
+
+        // Validaciones
+        const camposRequeridos = [
+            { campo: 'Cliente', valor: formData.dniCliente },
+            { campo: 'Técnico', valor: formData.dniEmpleadoAsignado },
+            { campo: 'Tipo Servicio', valor: formData.idTipoServicio },
+            { campo: 'Fecha', valor: formData.fecha },
+            { campo: 'Hora', valor: formData.hora }
+        ];
+
+        const camposFaltantes = camposRequeridos.filter(c => !c.valor);
+        if (camposFaltantes.length > 0) {
+            throw new Error(`Campos obligatorios faltantes:\n${camposFaltantes.map(c => `• ${c.campo}`).join('\n')}`);
+        }
+
+        // Validar fecha futura
+        const fechaServicio = new Date(formData.fecha + 'T' + formData.hora);
+        const ahora = new Date();
+        if (fechaServicio < ahora) {
+            throw new Error('No puede programar un servicio en fecha u hora pasada.');
+        }
+
+        // Preparar datos para enviar (asegurar formato correcto)
+        const servicioData = {
+            dniCliente: formData.dniCliente,
+            dniEmpleadoAsignado: formData.dniEmpleadoAsignado,
+            idTipoServicio: formData.idTipoServicio,
+            fecha: formData.fecha,
+            hora: formData.hora + ':00', // Asegurar formato HH:MM:SS
+            estado: 'Programado',
+            observaciones: formData.observaciones,
+            prioridad: formData.prioridad,
+            servicioSinCotizacion: true
+        };
+
+        console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
 
         const headers = {
             'Authorization': 'Bearer ' + token,
@@ -2044,26 +2051,24 @@ async function addService(event) {
             'Accept': 'application/json'
         };
 
-        // Hacer la petición con timeout
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
-
+        // Hacer la petición
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(servicioData),
-            signal: controller.signal
+            body: JSON.stringify(servicioData)
         });
 
-        clearTimeout(timeoutId);
-
-        console.log('📨 Respuesta del servidor:', response.status, response.statusText);
+        console.log('📨 RESPUESTA DEL SERVIDOR:', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+        });
 
         if (!response.ok) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;
             try {
                 const errorData = await response.json();
-                console.error('❌ Error del servidor:', errorData);
+                console.error('❌ ERROR DEL SERVIDOR:', errorData);
                 errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
             } catch (e) {
                 const errorText = await response.text();
@@ -2073,34 +2078,20 @@ async function addService(event) {
         }
 
         const result = await response.json();
-        console.log('✅ Servicio creado exitosamente:', result);
+        console.log('✅ SERVICIO CREADO EXITOSAMENTE:', result);
 
-        showCustomAlert('Servicio programado exitosamente.', 'Éxito', 'success');
+        showCustomAlert('Servicio programado exitosamente', 'Éxito', 'success');
         closeModal('addServiceModal');
         
         // Recargar datos después de un breve delay
         setTimeout(async () => {
+            console.log('🔄 Recargando datos después de agregar servicio...');
             await loadAgendaData();
-        }, 1000);
+        }, 1500);
 
     } catch (error) {
-        console.error('❌ Error completo al crear servicio:', error);
-        
-        let mensajeError = 'Error al crear servicio: ';
-        
-        if (error.name === 'AbortError') {
-            mensajeError += 'Timeout - El servidor no respondió en 10 segundos.';
-        } else if (error.message.includes('Network Error')) {
-            mensajeError += 'Error de conexión. Verifique su internet.';
-        } else if (error.message.includes('401')) {
-            mensajeError += 'No autorizado. Sesión expirada.';
-        } else if (error.message.includes('500')) {
-            mensajeError += 'Error interno del servidor.';
-        } else {
-            mensajeError += error.message;
-        }
-        
-        showCustomAlert(mensajeError, 'Error', 'error');
+        console.error('❌ ERROR COMPLETO AL CREAR SERVICIO:', error);
+        showCustomAlert(`Error al crear servicio:\n\n${error.message}`, 'Error', 'error');
     } finally {
         isSubmitting = false;
     }
