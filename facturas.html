@@ -1450,6 +1450,47 @@ function renderDetalleFactura() {
     actualizarMontoTotal();
     console.log("✅ Productos renderizados:", detalleFactura.length, "Subtotal:", totalProductos);
 }
+// Función para verificar el token JWT
+function verificarToken() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        console.warn("❌ No se encontró token en localStorage");
+        return false;
+    }
+
+    try {
+        // Decodificar el token para verificar expiración (sin validar firma)
+        const partes = token.split('.');
+        if (partes.length !== 3) {
+            console.error("❌ Token con formato inválido");
+            localStorage.removeItem('jwtToken');
+            return false;
+        }
+
+        const payload = JSON.parse(atob(partes[1]));
+        const expiraEn = payload.exp * 1000; // Convertir a milisegundos
+        const ahora = Date.now();
+        
+        console.log("🔐 Token info:", {
+            expira: new Date(expiraEn).toLocaleString(),
+            ahora: new Date(ahora).toLocaleString(),
+            minutosRestantes: Math.round((expiraEn - ahora) / 1000 / 60)
+        });
+        
+        if (ahora >= expiraEn) {
+            console.warn("⚠️ Token expirado");
+            localStorage.removeItem('jwtToken');
+            return false;
+        }
+        
+        console.log("✅ Token válido");
+        return true;
+    } catch (error) {
+        console.error("❌ Error al verificar token:", error);
+        localStorage.removeItem('jwtToken');
+        return false;
+    }
+}
 // Función para limpiar productos eliminados del detalle
 function limpiarProductosEliminados() {
     detalleFactura = detalleFactura.filter(item => 
@@ -2182,28 +2223,40 @@ async function viewInvoice(id) {
             alert('✅ Factura enviada por correo electrónico.');
         }
 
- // Función corregida para eliminar facturas
+        // Función helper para hacer requests autenticados
+async function fetchAutenticado(url, options = {}) {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        throw new Error('No hay token de autenticación');
+    }
+
+    const config = {
+        ...options,
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    };
+
+    const response = await fetch(url, config);
+    
+    if (response.status === 401) {
+        localStorage.removeItem('jwtToken');
+        throw new Error('Sesión expirada');
+    }
+    
+    return response;
+}
+// Función corregida para eliminar facturas
 async function deleteInvoice(id) {
     if (!confirm('¿Está seguro de eliminar esta factura?')) return;
     
     try {
-        const token = localStorage.getItem('jwtToken');
-        if (!token) {
-            alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const headers = {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        };
-
         console.log(`🗑️ Intentando eliminar factura: ${id}`);
         
-        const response = await fetch(`${API_FACTURAS_URL}/${id}`, {
-            method: 'DELETE',
-            headers: headers
+        const response = await fetchAutenticado(`${API_FACTURAS_URL}/${id}`, {
+            method: 'DELETE'
         });
 
         console.log("📥 Respuesta de eliminación:", response.status, response.statusText);
@@ -2228,7 +2281,7 @@ async function deleteInvoice(id) {
         console.error("❌ Error al eliminar factura:", error);
         
         // Mostrar mensaje de error específico
-        if (error.message.includes('401') || error.message.includes('No autorizado')) {
+        if (error.message.includes('401') || error.message.includes('No autorizado') || error.message.includes('Sesión expirada')) {
             alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
             window.location.href = 'index.html';
         } else {
@@ -2236,10 +2289,43 @@ async function deleteInvoice(id) {
         }
     }
 }
+// Función de diagnóstico para tokens (ejecutar en consola)
+function diagnosticarToken() {
+    const token = localStorage.getItem('jwtToken');
+    console.log("🔍 Diagnóstico de Token:");
+    console.log("✅ Token presente:", !!token);
+    
+    if (token) {
+        try {
+            const partes = token.split('.');
+            console.log("✅ Token tiene 3 partes:", partes.length === 3);
+            
+            const payload = JSON.parse(atob(partes[1]));
+            const expira = new Date(payload.exp * 1000);
+            const ahora = new Date();
+            const minutosRestantes = Math.round((payload.exp * 1000 - ahora.getTime()) / 1000 / 60);
+            
+            console.log("📅 Token expira:", expira.toLocaleString());
+            console.log("⏰ Tiempo restante:", minutosRestantes, "minutos");
+            console.log("🔑 Payload:", payload);
+            
+            if (minutosRestantes < 5) {
+                console.warn("⚠️ Token pronto a expirar!");
+            }
+            
+        } catch (e) {
+            console.error("❌ Token inválido:", e);
+        }
+    }
+    
+    return !!token;
+}
 
-        // Inicialización
- // En la carga inicial, verificar autenticación
+// Ejecutar en consola: diagnosticarToken()
+// Inicialización corregida
 document.addEventListener('DOMContentLoaded', function() {
+    console.log("🚀 Iniciando aplicación de Facturas...");
+    
     // Verificar token al cargar la página
     if (!verificarToken()) {
         alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
@@ -2247,19 +2333,35 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
+    // Cargar datos iniciales
     loadInitialData();
 
-    // Asignar eventos
+    // Asignar el evento submit al formulario
     const invoiceForm = document.getElementById('invoiceForm');
     if (invoiceForm) {
         invoiceForm.addEventListener('submit', handleInvoiceFormSubmit);
+        console.log("✅ Evento submit asignado al formulario");
+    } else {
+        console.error("❌ No se encontró el formulario con ID 'invoiceForm'");
     }
 
-    document.getElementById('filterInvoicesButton').addEventListener('click', filterInvoices);
-    document.getElementById('filterForm').addEventListener('submit', (e) => { 
-        e.preventDefault(); 
-        filterInvoices(); 
-    });
+    // Event Listeners adicionales
+    const filterButton = document.getElementById('filterInvoicesButton');
+    if (filterButton) {
+        filterButton.addEventListener('click', filterInvoices);
+        console.log("✅ Evento click asignado al botón de filtro");
+    }
+
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', (e) => { 
+            e.preventDefault(); 
+            filterInvoices(); 
+        });
+        console.log("✅ Evento submit asignado al formulario de filtro");
+    }
+
+    console.log("✅ Aplicación de Facturas inicializada correctamente");
 });
     </script>
 </body>
