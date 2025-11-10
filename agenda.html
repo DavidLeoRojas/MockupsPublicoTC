@@ -1840,26 +1840,65 @@ function openAddServiceModal(date = null) {
         }
 
 // Función para agregar un nuevo servicio
+// ========== AGREGAR NUEVO SERVICIO ==========
 async function addService(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
 
+    console.log("🔄 Iniciando proceso de agregar servicio...");
+
     // ✅ Obtener el token JWT
     const token = localStorage.getItem('jwtToken');
     if (!token) {
         showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
+        isSubmitting = false;
         return;
     }
 
     try {
-        const formData = new FormData(event.target);
+        // Obtener valores directamente de los elementos
         const dniCliente = document.getElementById('clienteId').value.trim();
         const dniEmpleadoAsignado = document.getElementById('tecnicoId').value.trim();
         const idTipoServicio = document.getElementById('tipoServicioId').value.trim();
         const fecha = document.getElementById('fecha').value;
         const hora = document.getElementById('hora').value;
+        const observaciones = document.getElementById('observaciones').value.trim() || null;
+        const prioridad = document.getElementById('prioridad').value;
+        const estado = document.getElementById('estado').value;
 
+        // ✅ VALIDACIONES
+        if (!dniCliente) {
+            showCustomAlert("Debe seleccionar un cliente", "Error de validación", "error");
+            isSubmitting = false;
+            return;
+        }
+
+        if (!dniEmpleadoAsignado) {
+            showCustomAlert("Debe seleccionar un técnico", "Error de validación", "error");
+            isSubmitting = false;
+            return;
+        }
+
+        if (!idTipoServicio) {
+            showCustomAlert("Debe seleccionar un tipo de servicio", "Error de validación", "error");
+            isSubmitting = false;
+            return;
+        }
+
+        if (!fecha) {
+            showCustomAlert("Debe seleccionar una fecha", "Error de validación", "error");
+            isSubmitting = false;
+            return;
+        }
+
+        if (!hora) {
+            showCustomAlert("Debe seleccionar una hora", "Error de validación", "error");
+            isSubmitting = false;
+            return;
+        }
+
+        // ✅ VALIDAR QUE LA FECHA Y HORA NO SEAN PASADAS
         const ahora = new Date();
         const fechaSeleccionada = new Date(fecha + 'T' + hora + ':00');
         if (fechaSeleccionada < ahora) {
@@ -1868,17 +1907,15 @@ async function addService(event) {
             return;
         }
 
-        const observaciones = document.getElementById('observaciones').value.trim() || null;
-        const prioridad = document.getElementById('prioridad').value;
         const servicioData = {
-            dniCliente,
-            dniEmpleadoAsignado,
-            idTipoServicio,
-            fecha,
-            hora: hora + ':00',
-            estado: 'Programado',
-            observaciones,
-            prioridad
+            dniCliente: dniCliente,
+            dniEmpleadoAsignado: dniEmpleadoAsignado,
+            idTipoServicio: idTipoServicio,
+            fecha: fecha,
+            hora: hora + ':00', // Asegurar formato HH:MM:SS
+            estado: estado,
+            observaciones: observaciones,
+            prioridad: prioridad
         };
 
         console.log("🚀 Enviando datos de servicio:", servicioData);
@@ -1891,21 +1928,26 @@ async function addService(event) {
 
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
-            headers: headers, // <-- Usar los headers aquí
+            headers: headers,
             body: JSON.stringify(servicioData)
         });
 
         if (!response.ok) {
             const errorText = await response.text();
+            console.error("❌ Error del servidor:", errorText);
             throw new Error(errorText || `Error ${response.status}`);
         }
 
+        const result = await response.json();
+        console.log("✅ Servicio creado exitosamente:", result);
+
         showCustomAlert("Servicio programado exitosamente.", 'Éxito', 'success');
         closeModal('addServiceModal');
-        await loadAgendaData();
+        await loadAgendaData(); // Recargar la agenda
+
     } catch (error) {
-        console.error("Error:", error);
-        showCustomAlert(`Error: ${error.message}`, 'Error', 'error');
+        console.error("❌ Error al crear servicio:", error);
+        showCustomAlert(`Error al crear servicio: ${error.message}`, 'Error', 'error');
     } finally {
         isSubmitting = false;
     }
@@ -1997,7 +2039,9 @@ async function addService(event) {
             });
         }
 
-        document.getElementById('serviceForm').addEventListener('submit', addService);
+document.getElementById('serviceForm').addEventListener('submit', function(event) {
+    addService(event);
+});
         document.getElementById('editServiceForm').addEventListener('submit', updateService);
 
         document.addEventListener('DOMContentLoaded', function () {
