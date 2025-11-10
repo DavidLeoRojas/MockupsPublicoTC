@@ -2151,8 +2151,9 @@ async function handleInvoiceFormSubmit(event) {
         const clienteNombre = fact.cliente?.nombre || clientesData.find(c => c.dni === fact.dniCliente)?.nombre || fact.dniCliente || 'N/A';
         const servicioDescripcion = fact.tipoFactura === 'ConCotizacion' && fact.cotizacion ? `Cotización #${fact.cotizacion.idCotizacion}` : (fact.observaciones || 'Servicio general');
         
-        // ✅ CORRECCIÓN: Convertir valores con "K" antes de formatear
+        // ✅ CORRECCIÓN: Aplicar redondeo al monto antes de mostrar
         const montoConvertido = convertirValorK(fact.montoTotal);
+        const montoRedondeado = Math.round(montoConvertido / 1000) * 1000;
         
         const estadoDisplay = {
             'PENDIENTE': 'Pendiente',
@@ -2166,7 +2167,7 @@ async function handleInvoiceFormSubmit(event) {
             <td>${clienteNombre}</td>
             <td>${servicioDescripcion}</td>
             <td>${formatDate(fact.fechaEmision)}</td>
-            <td>${formatCurrency(montoConvertido)}</td>
+            <td>${formatCurrency(montoRedondeado)}</td>
             <td><span class="status-badge ${(fact.estado || 'PENDIENTE').toLowerCase()}">${estadoDisplay}</span></td>
             <td>
                 <div class="action-buttons">
@@ -2712,7 +2713,50 @@ function probarPDF() {
     
     return datosPrueba;
 }
+// ✅ AGREGAR ESTA FUNCIÓN FALTANTE - Colócala después de formatLargeNumber
+function convertirValorK(valor) {
+    if (typeof valor === 'string') {
+        // Caso 1: Valor con "K" (ej: "200,0 K", "219.999,98")
+        if (valor.includes('K')) {
+            const numero = parseFloat(valor.replace('K', '').replace(',', '.').replace(/\./g, '').trim());
+            return !isNaN(numero) ? numero * 1000 : 0;
+        }
+        // Caso 2: Valor con formato de moneda (ej: "$ 200,0 K")
+        if (valor.includes('$') && valor.includes('K')) {
+            const numero = parseFloat(valor.replace('$', '').replace('K', '').replace(',', '.').replace(/\./g, '').trim());
+            return !isNaN(numero) ? numero * 1000 : 0;
+        }
+        // Caso 3: Valor numérico como string con formato (ej: "219.999,98")
+        const numeroLimpio = valor.replace(/\./g, '').replace(',', '.');
+        return parseFloat(numeroLimpio) || 0;
+    }
+    return parseFloat(valor) || 0;
+}
 
+// ✅ AGREGAR TAMBIÉN formatCurrencyForPDF si no existe
+function formatCurrencyForPDF(amount) {
+    if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
+    
+    // ✅ CORRECCIÓN: Aplicar redondeo antes de formatear para PDF
+    let valorRedondeado = Math.round(amount / 1000) * 1000;
+    
+    return '$ ' + new Intl.NumberFormat('es-CO').format(valorRedondeado);
+}
+
+// ✅ AGREGAR formatDateForPDF si no existe
+function formatDateForPDF(dateString) {
+    if (!dateString) return 'N/A';
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-CO', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    } catch (e) {
+        return 'Fecha inválida';
+    }
+}
 // Ejecutar en consola: probarPDF()
         async function sendInvoice(id) {
             if (!confirm('¿Está seguro de enviar esta factura por correo electrónico?')) return;
