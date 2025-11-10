@@ -1775,7 +1775,7 @@ function openAddInvoiceModal() {
     
     console.log("✅ Modal de factura abierto y listo");
 }
-// CORREGIR LA FUNCIÓN editInvoice - Manejar valorServicio correctamente
+// Función editInvoice COMPLETAMENTE CORREGIDA
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
@@ -1845,14 +1845,11 @@ async function editInvoice(id) {
                 console.log("✅ Observaciones asignadas");
             }
 
-            // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
+            // Valor Servicio
             const valorServicioInput = document.getElementById('valorServicio');
             if (valorServicioInput) {
-                const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
-                    ? parseFloat(factura.valorServicio) 
-                    : 0;
-                valorServicioInput.value = valorServicio.toFixed(2);
-                console.log("✅ Valor servicio asignado:", valorServicio);
+                valorServicioInput.value = (factura.valorServicio || 0).toFixed(2);
+                console.log("✅ Valor servicio asignado:", factura.valorServicio);
             }
 
             // Monto Total
@@ -1878,7 +1875,7 @@ async function editInvoice(id) {
                 }
             }
 
-            // ✅ CARGAR DETALLES DE LA FACTURA
+            // ✅ CARGAR DETALLES DE LA FACTURA - VERSIÓN MEJORADA
             detalleFactura = []; // Limpiar array existente
             
             console.log("📦 Procesando productos de la factura:", factura.detalleFactura);
@@ -1916,10 +1913,17 @@ async function editInvoice(id) {
             // Renderizar productos
             renderDetalleFactura();
 
+            // Para facturas simples, recalcular monto total si es necesario
+            if (tipoFactura === 'Simple') {
+                setTimeout(() => {
+                    actualizarMontoTotal();
+                }, 300);
+            }
+
             currentEditId = id;
             console.log("✅ Modal de edición completamente configurado para:", id);
 
-        }, 100);
+        }, 100); // Pequeño delay para asegurar que el modal esté listo
 
     } catch (error) {
         console.error("❌ Error inesperado al editar:", error);
@@ -1927,7 +1931,7 @@ async function editInvoice(id) {
     }
 }
 
-// CORREGIR handleInvoiceFormSubmit - Manejar valorServicio correctamente
+// CORREGIR ESTA PARTE EN handleInvoiceFormSubmit
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1958,9 +1962,18 @@ async function handleInvoiceFormSubmit(event) {
         let montoTotal = parseFloat(montoTotalInput?.value) || 0;
         
         const valorServicioInput = document.getElementById('valorServicio');
-        // ✅ CORRECCIÓN: Manejar correctamente el valor del servicio
-        const valorServicio = valorServicioInput ? 
-            (parseFloat(valorServicioInput.value) || 0) : 0;
+        const valorServicio = valorServicioInput ? parseFloat(valorServicioInput.value) || 0 : 0;
+
+        // ✅ CORRECCIÓN: Si el monto total es 0 pero hay productos o valor de servicio, recalcular
+        if (montoTotal <= 0) {
+            const valorServicioRecalc = parseFloat(document.getElementById('valorServicio')?.value) || 0;
+            const subtotalProductos = detalleFactura.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+            montoTotal = valorServicioRecalc + subtotalProductos;
+            
+            if (montoTotal > 0) {
+                montoTotalInput.value = montoTotal.toFixed(2);
+            }
+        }
 
         let idCotizacion = null;
         if (tipoFactura === 'ConCotizacion') {
@@ -2009,7 +2022,7 @@ async function handleInvoiceFormSubmit(event) {
             estado: estado,
             observaciones: observaciones,
             tipoFactura: tipoFactura,
-            valorServicio: valorServicio, // ✅ Ahora siempre tendrá un valor numérico
+            valorServicio: valorServicio,
             detalleFactura: detalleFacturaData
         };
 
@@ -2477,24 +2490,15 @@ async function viewInvoice(id) {
         // ✅ ESPACIO DESPUÉS DE LOS PRODUCTOS
         currentY += 20;
 
-// EN LA FUNCIÓN viewInvoice, buscar esta parte y corregirla:
-// VALOR DEL SERVICIO
-let valorServicio = parseFloat(facturaCompleta.valorServicio) || 0;
-console.log("💰 Valor servicio en PDF:", valorServicio);
+        // ===== SECCIÓN DE TOTALES =====
+        let valorServicio = parseFloat(facturaCompleta.valorServicio) || 0;
+        let totalFinal = parseFloat(facturaCompleta.montoTotal) || (subtotalProductos + valorServicio);
 
-if (valorServicio > 0) {
-    // ✅ VERIFICAR SI HAY ESPACIO SUFICIENTE
-    if (currentY > 180) {
-        doc.addPage();
-        currentY = 30;
-    }
-    
-    doc.setFont(undefined, 'bold');
-    doc.text('VALOR DEL SERVICIO:', colPrecio, currentY);
-    doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
-    doc.setFont(undefined, 'normal');
-    currentY += 15;
-}
+        // ✅ VERIFICAR SI HAY ESPACIO SUFICIENTE PARA LOS TOTALES
+        if (currentY > 150) {
+            doc.addPage();
+            currentY = 30;
+        }
 
         // ✅ CALCULAR ALTURA NECESARIA PARA LOS TOTALES
         const lineasTotales = [];
@@ -2549,7 +2553,7 @@ if (valorServicio > 0) {
         doc.setFontSize(14);
         doc.setTextColor(44, 95, 65);
         doc.setFont(undefined, 'bold');
-        doc.text('TOTAL:', colPrecio, currentY);
+        doc.text('TOTAL :', colPrecio, currentY);
         doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
 
         // ===== PIE DE PÁGINA =====
