@@ -1110,13 +1110,7 @@ async function loadProductos() {
 function formatCurrency(value) {
     if (value === null || value === undefined || isNaN(value)) return '$ 0';
     
-    // ✅ CORRECCIÓN: Usar formato de pesos colombianos sin decimales para valores grandes
-    if (value >= 1000000) {
-        return '$ ' + (value / 1000000).toFixed(1).replace('.', ',') + ' M';
-    } else if (value >= 1000) {
-        return '$ ' + (value / 1000).toFixed(1).replace('.', ',') + ' K';
-    }
-    
+    // ✅ CORRECCIÓN: Mostrar valores completos en pesos colombianos
     return '$ ' + new Intl.NumberFormat('es-CO', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
@@ -2133,6 +2127,7 @@ async function handleInvoiceFormSubmit(event) {
 }
 
 // Obtener todas las facturas - VERSIÓN CON DEBUG
+// Obtener todas las facturas - VERSIÓN CON CONVERSIÓN AUTOMÁTICA
 async function getAllFacturas() {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -2149,18 +2144,43 @@ async function getAllFacturas() {
         allFacturas = await response.json();
         console.log("📋 Facturas cargadas:", allFacturas.length);
         
-        // Debug: mostrar estados de las facturas
-        console.log("🔍 Estados de facturas:", 
-            allFacturas.map(f => ({ id: f.idFactura, estado: f.estado, monto: f.montoTotal }))
-        );
+        // ✅ CORRECCIÓN: Aplicar conversión automática a todas las facturas
+        allFacturas.forEach(factura => {
+            if (typeof factura.montoTotal === 'string') {
+                factura.montoTotal = convertirValorK(factura.montoTotal);
+            }
+        });
         
         renderTable(allFacturas);
         updateStats();
+        
+        // Ejecutar diagnóstico
+        diagnosticarConversiones();
+        
     } catch (error) {
         console.error("❌ Error al obtener facturas:", error);
         alert("Error al cargar la lista de facturas. Revisa la consola.");
     }
 }
+// Función para diagnosticar la conversión de valores
+function diagnosticarConversiones() {
+    console.log("🔍 DIAGNÓSTICO DE CONVERSIÓN:");
+    
+    allFacturas.forEach((factura, index) => {
+        const original = factura.montoTotal;
+        const convertido = convertirValorK(original);
+        const formateado = formatCurrency(convertido);
+        
+        console.log(`Factura ${index + 1}:`, {
+            original: original,
+            convertido: convertido,
+            formateado: formateado,
+            tipo: typeof original
+        });
+    });
+}
+
+// Ejecutar en consola: diagnosticarConversiones()
 // Función para diagnosticar el problema del backend
 async function diagnosticarBackend() {
     try {
@@ -2556,25 +2576,28 @@ document.getElementById('valorServicio').addEventListener('input', forzarActuali
 function formatCurrencyForPDF(amount) {
     if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
     
-    // ✅ CORRECCIÓN: Para PDF, formato más legible
-    if (amount >= 1000000) {
-        return '$ ' + (amount / 1000000).toFixed(1).replace('.', ',') + ' M';
-    } else if (amount >= 1000) {
-        return '$ ' + (amount / 1000).toFixed(1).replace('.', ',') + ' K';
-    }
-    
+    // ✅ CORRECCIÓN: Para PDF, mostrar valores completos sin abreviaturas
     return '$ ' + new Intl.NumberFormat('es-CO', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
     }).format(amount);
 }
 // Función para convertir valores con "K" a pesos colombianos
+// Función para convertir valores con "K" a pesos colombianos
 function convertirValorK(valor) {
-    if (typeof valor === 'string' && valor.includes('K')) {
-        // Remover el símbolo "K" y espacios, luego convertir a número
-        const numero = parseFloat(valor.replace('K', '').replace(',', '.').trim());
-        // Multiplicar por 1000 para obtener el valor en pesos
-        return numero * 1000;
+    if (typeof valor === 'string') {
+        // Caso 1: Valor con "K" (ej: "200,0 K")
+        if (valor.includes('K')) {
+            const numero = parseFloat(valor.replace('K', '').replace(',', '.').trim());
+            return numero * 1000;
+        }
+        // Caso 2: Valor con formato de moneda (ej: "$ 200,0 K")
+        if (valor.includes('$') && valor.includes('K')) {
+            const numero = parseFloat(valor.replace('$', '').replace('K', '').replace(',', '.').trim());
+            return numero * 1000;
+        }
+        // Caso 3: Valor numérico como string (ej: "200000")
+        return parseFloat(valor) || 0;
     }
     return parseFloat(valor) || 0;
 }
