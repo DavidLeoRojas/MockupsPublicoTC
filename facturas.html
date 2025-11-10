@@ -1110,11 +1110,8 @@ async function loadProductos() {
 function formatCurrency(value) {
     if (value === null || value === undefined || isNaN(value)) return '$ 0';
     
-    // ✅ CORRECCIÓN: Mostrar valores completos en pesos colombianos
-    return '$ ' + new Intl.NumberFormat('es-CO', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value);
+    // ✅ CORRECCIÓN DEFINITIVA: Mostrar valores COMPLETOS sin abreviaturas
+    return '$ ' + new Intl.NumberFormat('es-CO').format(value);
 }
 
 function formatLargeNumber(value) {
@@ -2126,8 +2123,8 @@ async function handleInvoiceFormSubmit(event) {
     });
 }
 
-// Obtener todas las facturas - VERSIÓN CON DEBUG
-// Obtener todas las facturas - VERSIÓN CON CONVERSIÓN AUTOMÁTICA
+
+// Obtener todas las facturas - VERSIÓN CON CONVERSIÓN FORZADA
 async function getAllFacturas() {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -2144,24 +2141,62 @@ async function getAllFacturas() {
         allFacturas = await response.json();
         console.log("📋 Facturas cargadas:", allFacturas.length);
         
-        // ✅ CORRECCIÓN: Aplicar conversión automática a todas las facturas
+        // ✅ CORRECCIÓN CRÍTICA: Forzar conversión y limpiar formato
         allFacturas.forEach(factura => {
+            console.log(`🔄 Procesando factura ${factura.idFactura}:`, {
+                montoOriginal: factura.montoTotal,
+                tipoOriginal: typeof factura.montoTotal
+            });
+            
+            // Convertir si es string con K
             if (typeof factura.montoTotal === 'string') {
                 factura.montoTotal = convertirValorK(factura.montoTotal);
             }
+            
+            // Asegurar que sea número
+            factura.montoTotal = parseFloat(factura.montoTotal) || 0;
+            
+            console.log(`✅ Factura ${factura.idFactura} convertida:`, factura.montoTotal);
         });
         
         renderTable(allFacturas);
         updateStats();
-        
-        // Ejecutar diagnóstico
-        diagnosticarConversiones();
         
     } catch (error) {
         console.error("❌ Error al obtener facturas:", error);
         alert("Error al cargar la lista de facturas. Revisa la consola.");
     }
 }
+
+// FUNCIÓN DE EMERGENCIA - Resetear completamente el formato
+function resetearFormatoMoneda() {
+    console.log("🔄 RESETEANDO FORMATO DE MONEDA...");
+    
+    // 1. Redefinir formatCurrency
+    window.formatCurrency = function(value) {
+        if (value === null || value === undefined || isNaN(value)) return '$ 0';
+        return '$ ' + new Intl.NumberFormat('es-CO').format(value);
+    };
+    
+    // 2. Redefinir formatCurrencyForPDF  
+    window.formatCurrencyForPDF = function(amount) {
+        if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
+        return '$ ' + new Intl.NumberFormat('es-CO').format(amount);
+    };
+    
+    // 3. Forzar reconversión de todas las facturas
+    allFacturas.forEach(factura => {
+        factura.montoTotal = convertirValorK(factura.montoTotal);
+    });
+    
+    // 4. Rerenderizar todo
+    renderTable(allFacturas);
+    updateStats();
+    
+    console.log("✅ Formato de moneda reseteado completamente");
+}
+
+// Ejecutar en consola: resetearFormatoMoneda()
 // Función para diagnosticar la conversión de valores
 function diagnosticarConversiones() {
     console.log("🔍 DIAGNÓSTICO DE CONVERSIÓN:");
@@ -2576,13 +2611,29 @@ document.getElementById('valorServicio').addEventListener('input', forzarActuali
 function formatCurrencyForPDF(amount) {
     if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
     
-    // ✅ CORRECCIÓN: Para PDF, mostrar valores completos sin abreviaturas
-    return '$ ' + new Intl.NumberFormat('es-CO', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(amount);
+    // ✅ CORRECCIÓN DEFINITIVA: Para PDF, mostrar valores COMPLETOS
+    return '$ ' + new Intl.NumberFormat('es-CO').format(amount);
 }
-// Función para convertir valores con "K" a pesos colombianos
+
+
+// DIAGNÓSTICO URGENTE - ejecutar inmediatamente
+function diagnosticoUrgente() {
+    console.log("🚨 DIAGNÓSTICO URGENTE - FORMAT CURRENCY");
+    
+    // Probar la función formatCurrency con diferentes valores
+    const valoresPrueba = [150000, 200000, 80000, 680000, 50];
+    
+    valoresPrueba.forEach(valor => {
+        const formateado = formatCurrency(valor);
+        console.log(`💰 ${valor} → ${formateado}`);
+    });
+    
+    // Verificar qué función se está ejecutando realmente
+    console.log("🔍 Función formatCurrency actual:", formatCurrency.toString());
+}
+
+// Ejecutar inmediatamente después de cargar
+diagnosticoUrgente();
 // Función para convertir valores con "K" a pesos colombianos
 function convertirValorK(valor) {
     if (typeof valor === 'string') {
