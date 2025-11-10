@@ -1915,12 +1915,13 @@ async function addService(event) {
 
     console.log('🔄 Iniciando proceso de agregar servicio...');
 
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
+    // Verificar autenticación primero
+    if (!await verificarAutenticacion()) {
         isSubmitting = false;
         return;
     }
+
+    const token = localStorage.getItem('jwtToken');
 
     try {
         // Obtener valores del formulario
@@ -1938,29 +1939,18 @@ async function addService(event) {
             hora
         });
 
-        // Validaciones detalladas
-        if (!dniCliente) {
-            showCustomAlert('Por favor seleccione un cliente.', 'Error', 'error');
+        // Validaciones
+        if (!dniCliente || !dniEmpleadoAsignado || !idTipoServicio || !fecha || !hora) {
+            showCustomAlert('Por favor complete todos los campos obligatorios.', 'Error', 'error');
             isSubmitting = false;
             return;
         }
-        if (!dniEmpleadoAsignado) {
-            showCustomAlert('Por favor seleccione un técnico.', 'Error', 'error');
-            isSubmitting = false;
-            return;
-        }
-        if (!idTipoServicio) {
-            showCustomAlert('Por favor seleccione un tipo de servicio.', 'Error', 'error');
-            isSubmitting = false;
-            return;
-        }
-        if (!fecha) {
-            showCustomAlert('Por favor seleccione una fecha.', 'Error', 'error');
-            isSubmitting = false;
-            return;
-        }
-        if (!hora) {
-            showCustomAlert('Por favor seleccione una hora.', 'Error', 'error');
+
+        // Validar que la fecha no sea en el pasado
+        const fechaServicio = new Date(fecha + 'T' + hora);
+        const ahora = new Date();
+        if (fechaServicio < ahora) {
+            showCustomAlert('No puede programar un servicio en fecha u hora pasada.', 'Advertencia', 'warning');
             isSubmitting = false;
             return;
         }
@@ -1968,20 +1958,20 @@ async function addService(event) {
         const observaciones = document.getElementById('observaciones').value.trim() || null;
         const prioridad = document.getElementById('prioridad').value;
 
-        // Crear objeto de datos con formato específico
+        // Crear objeto de datos
         const servicioData = {
             dniCliente: dniCliente,
             dniEmpleadoAsignado: dniEmpleadoAsignado,
             idTipoServicio: idTipoServicio,
             fecha: fecha,
-            hora: hora + ':00', // Formato HH:MM:SS
+            hora: hora + ':00',
             estado: 'Programado',
             observaciones: observaciones,
             prioridad: prioridad,
-            servicioSinCotizacion: true // Agregar este campo si es necesario
+            servicioSinCotizacion: true
         };
 
-        console.log('🚀 Enviando datos de servicio al backend:', servicioData);
+        console.log('🚀 Enviando datos al backend:', servicioData);
 
         const headers = {
             'Authorization': 'Bearer ' + token,
@@ -1989,27 +1979,30 @@ async function addService(event) {
             'Accept': 'application/json'
         };
 
+        // Hacer la petición con timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
             headers: headers,
-            body: JSON.stringify(servicioData)
+            body: JSON.stringify(servicioData),
+            signal: controller.signal
         });
 
-        console.log('📨 Respuesta del servidor:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok
-        });
+        clearTimeout(timeoutId);
+
+        console.log('📨 Respuesta del servidor:', response.status, response.statusText);
 
         if (!response.ok) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;
             try {
                 const errorData = await response.json();
-                console.error('❌ Detalles del error del servidor:', errorData);
+                console.error('❌ Error del servidor:', errorData);
                 errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
             } catch (e) {
                 const errorText = await response.text();
-                errorMessage = errorText || `Error ${response.status}: ${response.statusText}`;
+                errorMessage = errorText || errorMessage;
             }
             throw new Error(errorMessage);
         }
@@ -2028,15 +2021,18 @@ async function addService(event) {
     } catch (error) {
         console.error('❌ Error completo al crear servicio:', error);
         
-        let mensajeError = `Error al crear servicio: ${error.message}`;
+        let mensajeError = 'Error al crear servicio: ';
         
-        // Mensajes más específicos según el tipo de error
-        if (error.message.includes('500')) {
-            mensajeError = 'Error interno del servidor. Por favor contacte al administrador.';
-        } else if (error.message.includes('400')) {
-            mensajeError = 'Datos inválidos. Por favor verifique la información ingresada.';
+        if (error.name === 'AbortError') {
+            mensajeError += 'Timeout - El servidor no respondió en 10 segundos.';
         } else if (error.message.includes('Network Error')) {
-            mensajeError = 'Error de conexión. Verifique su internet e intente nuevamente.';
+            mensajeError += 'Error de conexión. Verifique su internet.';
+        } else if (error.message.includes('401')) {
+            mensajeError += 'No autorizado. Sesión expirada.';
+        } else if (error.message.includes('500')) {
+            mensajeError += 'Error interno del servidor.';
+        } else {
+            mensajeError += error.message;
         }
         
         showCustomAlert(mensajeError, 'Error', 'error');
