@@ -776,10 +776,6 @@ input[type="date"] {
                 <p>Administración de facturas emitidas</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-secondary">📤 Exportar</button>
-                 <button class="btn btn-secondary">📤 Exportar</button>
-    <button class="btn btn-warning" onclick="diagnosticarYRepararStock()">🔧 Reparar Stock</button>
-    <button class="btn btn-info" onclick="usarSoloProductosConStock()">📦 Filtrar Disponibles</button>
                 <button class="btn btn-primary" onclick="openAddInvoiceModal()">➕ Agregar Factura</button>
             </div>
         </div>
@@ -3149,44 +3145,102 @@ async function fetchAutenticado(url, options = {}) {
     
     return response;
 }
-// Función corregida para eliminar facturas
+// Función corregida para eliminar facturas con diagnóstico completo
 async function deleteInvoice(id) {
-    if (!confirm('¿Está seguro de eliminar esta factura?')) return;
+    if (!confirm('¿Está seguro de eliminar esta factura? Esta acción no se puede deshacer.')) return;
     
     try {
         console.log(`🗑️ Intentando eliminar factura: ${id}`);
         
-        const response = await fetchAutenticado(`${API_FACTURAS_URL}/${id}`, {
-            method: 'DELETE'
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            throw new Error('No hay token de autenticación. Por favor, inicie sesión nuevamente.');
+        }
+
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
+        // Primero, intentar obtener la factura para diagnóstico
+        console.log(`🔍 Obteniendo detalles de la factura ${id}...`);
+        const getResponse = await fetch(`${API_FACTURAS_URL}/${id}`, { headers });
+        
+        if (!getResponse.ok) {
+            console.warn(`⚠️ No se pudo obtener detalles de la factura: ${getResponse.status}`);
+        } else {
+            const factura = await getResponse.json();
+            console.log("📋 Factura a eliminar:", factura);
+        }
+
+        // Intentar eliminación
+        console.log(`🗑️ Enviando solicitud DELETE para ${id}...`);
+        const deleteResponse = await fetch(`${API_FACTURAS_URL}/${id}`, {
+            method: 'DELETE',
+            headers: headers
         });
 
-        console.log("📥 Respuesta de eliminación:", response.status, response.statusText);
+        console.log("📥 Respuesta del servidor:", {
+            status: deleteResponse.status,
+            statusText: deleteResponse.statusText,
+            ok: deleteResponse.ok
+        });
 
-        if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('No autorizado. Token inválido o expirado.');
-            } else if (response.status === 404) {
-                throw new Error('Factura no encontrada.');
-            } else if (response.status === 403) {
-                throw new Error('No tiene permisos para eliminar esta factura.');
-            } else {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
+        if (!deleteResponse.ok) {
+            let errorMessage = '';
+            
+            // Intentar obtener más detalles del error
+            try {
+                const errorText = await deleteResponse.text();
+                console.error("❌ Detalles del error:", errorText);
+                
+                if (errorText) {
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorJson.error || errorText;
+                    } catch {
+                        errorMessage = errorText;
+                    }
+                }
+            } catch (e) {
+                errorMessage = 'No se pudo leer la respuesta del servidor';
+            }
+
+            // Mensajes específicos por código de error
+            switch (deleteResponse.status) {
+                case 500:
+                    throw new Error(`ERROR INTERNO DEL SERVIDOR (500)\n\nEl servidor encontró un error inesperado al eliminar la factura.\n\nPosibles causas:\n• La factura tiene relaciones con otros registros\n• Error en la base de datos\n• Problema con el backend\n\nDetalles: ${errorMessage}`);
+                
+                case 404:
+                    throw new Error(`Factura no encontrada (404)\n\nLa factura ${id} no existe en el sistema.`);
+                
+                case 403:
+                    throw new Error(`Sin permisos (403)\n\nNo tiene permisos para eliminar esta factura.`);
+                
+                case 401:
+                    throw new Error(`Sesión expirada (401)\n\nPor favor, inicie sesión nuevamente.`);
+                
+                default:
+                    throw new Error(`Error ${deleteResponse.status}: ${errorMessage}`);
             }
         }
 
-        // Si la respuesta es exitosa (204 No Content o 200 OK)
+        // Éxito - la factura fue eliminada
+        console.log("✅ Factura eliminada exitosamente");
         alert('✅ Factura eliminada exitosamente.');
-        await getAllFacturas(); // Recargar la lista
+        
+        // Recargar la lista
+        await getAllFacturas();
         
     } catch (error) {
-        console.error("❌ Error al eliminar factura:", error);
+        console.error("❌ Error completo al eliminar factura:", error);
         
         // Mostrar mensaje de error específico
-        if (error.message.includes('401') || error.message.includes('No autorizado') || error.message.includes('Sesión expirada')) {
+        if (error.message.includes('Sesión expirada') || error.message.includes('401')) {
             alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
             window.location.href = 'index.html';
         } else {
-            alert(`❌ Error al eliminar factura:\n\n${error.message}`);
+            alert(`❌ Error al eliminar factura:\n\n${error.message}\n\nPor favor, contacte al administrador si el problema persiste.`);
         }
     }
 }
