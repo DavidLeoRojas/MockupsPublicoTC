@@ -1206,7 +1206,7 @@ document.getElementById('addProductBtnCot')?.addEventListener('click', function(
             return;
         }
     } else {
-        // Agregar nuevo producto
+        // Agregar nuevo producto CON idTipoServicio
         const subtotal = precioUnitario * cantidad;
         
         detalleCotizacion.push({
@@ -1214,7 +1214,8 @@ document.getElementById('addProductBtnCot')?.addEventListener('click', function(
             nombreProducto: nombreProducto,
             cantidad: cantidad,
             precioUnitario: precioUnitario,
-            subtotal: subtotal
+            subtotal: subtotal,
+            idTipoServicio: "1" // ← AGREGAR ESTE CAMPO REQUERIDO
         });
     }
     
@@ -1371,7 +1372,7 @@ function renderDetalleCotizacion() {
         div.innerHTML = `
             <div style="flex: 1;">
                 <strong style="color: #2c5f41;">${item.nombreProducto}</strong><br>
-                <small style="color: #718096;">ID: ${item.idProducto}</small><br>
+                <small style="color: #718096;">ID: ${item.idProducto} | Tipo Servicio: ${item.idTipoServicio || '1'}</small><br>
                 <span style="color: #4a5568; font-size: 0.9em;">
                     ${item.cantidad} x $${(item.precioUnitario || 0).toLocaleString()} = 
                     <strong>$${(item.subtotal || 0).toLocaleString()}</strong>
@@ -1396,7 +1397,35 @@ function renderDetalleCotizacion() {
     calcularCostoTotal();
     console.log("✅ Productos renderizados correctamente");
 }
+let tiposServicio = [];
 
+// Función para cargar tipos de servicio disponibles
+async function loadTiposServicio() {
+    try {
+        const headers = getAuthHeaders();
+        const response = await fetch(`${API_BASE_URL}/tipos-servicio`, { headers });
+        
+        if (response.ok) {
+            tiposServicio = await response.json();
+            console.log("✅ Tipos de servicio cargados:", tiposServicio);
+            
+            // Si hay tipos de servicio, usar el primero como valor por defecto
+            if (tiposServicio.length > 0) {
+                console.log("📋 Tipos disponibles:", tiposServicio.map(t => ({id: t.idTipoServicio, nombre: t.nombreServicio})));
+            }
+        } else {
+            console.warn("⚠️ No se pudieron cargar tipos de servicio, usando valor por defecto");
+            tiposServicio = [{ idTipoServicio: "1", nombreServicio: "Servicio General" }];
+        }
+    } catch (error) {
+        console.error("❌ Error cargando tipos de servicio:", error);
+        // Usar valor por defecto
+        tiposServicio = [{ idTipoServicio: "1", nombreServicio: "Servicio General" }];
+    }
+}
+
+// Llamar esta función en la inicialización
+// loadTiposServicio();
 // Función de prueba para crear nueva cotización
 async function probarCrearCotizacion() {
     console.log("🧪 Probando crear nueva cotización...");
@@ -1651,16 +1680,17 @@ async function handleQuoteFormSubmit(event) {
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
 
         // Preparar detalle de productos
-        let detalleCotizacionData = [];
-        if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
-            detalleCotizacionData = detalleCotizacion.map(item => ({
-                idProducto: item.idProducto?.toString() || '',
-                nombreProducto: item.nombreProducto?.toString() || '',
-                cantidad: parseInt(item.cantidad) || 1,
-                precioUnitario: parseFloat(item.precioUnitario) || 0,
-                subtotal: parseFloat(item.subtotal) || 0
-            }));
-        }
+       let detalleCotizacionData = [];
+if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
+    detalleCotizacionData = detalleCotizacion.map(item => ({
+        idProducto: item.idProducto?.toString() || '',
+        nombreProducto: item.nombreProducto?.toString() || '',
+        cantidad: parseInt(item.cantidad) || 1,
+        precioUnitario: parseFloat(item.precioUnitario) || 0,
+        subtotal: parseFloat(item.subtotal) || 0,
+        idTipoServicio: item.idTipoServicio || "1" // ← ESTE ES EL CAMPO QUE FALTA
+    }));
+}   
 
         // ✅ GENERAR ID SIEMPRE PARA NUEVAS COTIZACIONES
         let idCotizacion;
@@ -1708,21 +1738,32 @@ async function handleQuoteFormSubmit(event) {
         console.log("📥 Respuesta del servidor:", response.status, response.statusText);
 
         // ✅ MEJOR MANEJO DE ERRORES
-        if (!response.ok) {
-            let errorMessage = `Error ${response.status}: ${response.statusText}`;
-            
+if (!response.ok) {
+    let errorMessage = `Error ${response.status}: ${response.statusText}`;
+    
+    try {
+        // Primero intenta leer como texto
+        const errorText = await response.text();
+        console.error("❌ Error texto del servidor:", errorText);
+        errorMessage = errorText || errorMessage;
+        
+        // Luego intenta parsear como JSON si es posible
+        if (errorText) {
             try {
-                const errorData = await response.json();
-                console.error("❌ Error detallado del servidor:", errorData);
-                errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
-            } catch (parseError) {
-                const errorText = await response.text();
-                console.error("❌ Error texto del servidor:", errorText);
-                errorMessage = errorText || errorMessage;
+                const errorJson = JSON.parse(errorText);
+                console.error("❌ Error JSON del servidor:", errorJson);
+                errorMessage = errorJson.message || errorJson.error || errorText;
+            } catch {
+                // Si no es JSON, usar el texto tal cual
+                errorMessage = errorText;
             }
-            
-            throw new Error(errorMessage);
         }
+    } catch (parseError) {
+        console.error("❌ Error leyendo respuesta:", parseError);
+    }
+    
+    throw new Error(errorMessage);
+}
 
         const responseData = await response.json();
         console.log("✅ Éxito:", responseData);
