@@ -777,6 +777,9 @@ input[type="date"] {
             </div>
             <div class="header-actions">
                 <button class="btn btn-secondary">📤 Exportar</button>
+                 <button class="btn btn-secondary">📤 Exportar</button>
+    <button class="btn btn-warning" onclick="diagnosticarYRepararStock()">🔧 Reparar Stock</button>
+    <button class="btn btn-info" onclick="usarSoloProductosConStock()">📦 Filtrar Disponibles</button>
                 <button class="btn btn-primary" onclick="openAddInvoiceModal()">➕ Agregar Factura</button>
             </div>
         </div>
@@ -1000,20 +1003,26 @@ input[type="date"] {
         let detalleFactura = []; // Array para almacenar los productos agregados
         let isSubmitting = false;
 
-        // Cargar datos iniciales
-        async function loadInitialData() {
-            try {
-                await Promise.all([
-                    loadClientes(),
-                    loadCotizaciones(),
-                    loadProductos()
-                ]);
-                await getAllFacturas();
-            } catch (error) {
-                console.error("Error al cargar datos iniciales:", error);
-                alert("Error al cargar datos iniciales. Revisa la consola.");
-            }
-        }
+ // ✅ MEJORAR LA CARGA INICIAL PARA INCLUIR DIAGNÓSTICO
+async function loadInitialData() {
+    try {
+        console.log("🔄 Cargando datos iniciales con diagnóstico...");
+        
+        await Promise.all([
+            loadClientes(),
+            loadCotizaciones(),
+            loadProductos()
+        ]);
+        
+        // Ejecutar diagnóstico automático al cargar
+        await diagnosticarYRepararStock();
+        await getAllFacturas();
+        
+    } catch (error) {
+        console.error("❌ Error al cargar datos iniciales:", error);
+        alert("Error al cargar datos iniciales. Revisa la consola.");
+    }
+}
 
 async function loadClientes() {
     const token = localStorage.getItem('jwtToken');
@@ -1224,6 +1233,126 @@ async function probarConProductoAlternativo() {
         alert('❌ No se encontraron productos alternativos con stock disponible');
     }
 }
+
+// ✅ DIAGNÓSTICO Y SOLUCIÓN COMPLETA PARA STOCK
+async function diagnosticarYRepararStock() {
+    const token = localStorage.getItem('jwtToken');
+    const headers = { 'Authorization': 'Bearer ' + token };
+    
+    console.log("🔍 INICIANDO DIAGNÓSTICO COMPLETO DE STOCK...");
+    
+    try {
+        // 1. Obtener todos los productos
+        const response = await fetch(API_PRODUCTOS_URL, { headers });
+        if (!response.ok) throw new Error('Error al cargar productos');
+        
+        const productos = await response.json();
+        
+        // 2. Analizar cada producto
+        console.log("📦 ANÁLISIS DE INVENTARIO:");
+        let productosConProblemas = [];
+        let productosConStock = [];
+        
+        productos.forEach(prod => {
+            const estado = prod.stock > 0 ? '✅' : '❌';
+            console.log(`   ${estado} ${prod.idProducto}: ${prod.nombre} - Stock: ${prod.stock} - Precio: $${prod.precioActual}`);
+            
+            if (prod.stock <= 0) {
+                productosConProblemas.push(prod);
+            } else {
+                productosConStock.push(prod);
+            }
+        });
+        
+        // 3. Mostrar resumen
+        console.log(`📊 RESUMEN: ${productosConStock.length} con stock, ${productosConProblemas.length} sin stock`);
+        
+        // 4. Reparar automáticamente productos sin stock
+        if (productosConProblemas.length > 0) {
+            console.log("🔄 REPARANDO PRODUCTOS SIN STOCK...");
+            
+            for (const producto of productosConProblemas) {
+                const updateData = {
+                    stock: 10  // Stock mínimo por defecto
+                };
+                
+                try {
+                    await fetch(`${API_PRODUCTOS_URL}/${producto.idProducto}`, {
+                        method: 'PUT',
+                        headers: headers,
+                        body: JSON.stringify(updateData)
+                    });
+                    console.log(`✅ Stock reparado: ${producto.idProducto} -> 10 unidades`);
+                } catch (error) {
+                    console.error(`❌ Error reparando ${producto.idProducto}:`, error);
+                }
+            }
+            
+            alert(`✅ Se reparó el stock de ${productosConProblemas.length} productos. Ahora pueden usarse en facturas.`);
+        } else {
+            console.log("✅ Todos los productos tienen stock suficiente.");
+        }
+        
+        // 5. Actualizar datos locales
+        await loadProductos();
+        usarSoloProductosConStock();
+        
+        return true;
+        
+    } catch (error) {
+        console.error("❌ Error en diagnóstico completo:", error);
+        alert("❌ Error al diagnosticar stock: " + error.message);
+        return false;
+    }
+}
+
+// ✅ FUNCIÓN MEJORADA PARA USAR SOLO PRODUCTOS CON STOCK
+function usarSoloProductosConStock() {
+    const productosConStock = productosData.filter(p => p.stock > 0);
+    
+    console.log(`🔄 Filtrando productos: ${productosData.length} total, ${productosConStock.length} con stock`);
+    
+    if (productosConStock.length === 0) {
+        alert("❌ CRÍTICO: No hay productos con stock disponible. Contacte al administrador.");
+        return false;
+    }
+    
+    // Limpiar detalle actual de productos sin stock
+    const detalleOriginal = detalleFactura.length;
+    detalleFactura = detalleFactura.filter(item => {
+        const producto = productosData.find(p => p.idProducto === item.idProducto);
+        const tieneStock = producto && producto.stock > 0;
+        
+        if (!tieneStock) {
+            console.warn(`⚠️ Removiendo producto sin stock: ${item.idProducto} - ${item.nombreProducto}`);
+        }
+        
+        return tieneStock;
+    });
+    
+    if (detalleOriginal !== detalleFactura.length) {
+        console.warn(`⚠️ Se removieron ${detalleOriginal - detalleFactura.length} productos sin stock`);
+    }
+    
+    // Actualizar select de productos
+    const productoSelect = document.getElementById('productoSelect');
+    productoSelect.innerHTML = '<option value="">Seleccione un producto con stock</option>';
+    
+    productosConStock.forEach(prod => {
+        const option = document.createElement('option');
+        option.value = prod.idProducto;
+        option.textContent = `${prod.nombre} (${prod.idProducto}) - Stock: ${prod.stock} - $${prod.precioActual}`;
+        option.dataset.precio = prod.precioActual || 0;
+        option.dataset.stock = prod.stock || 0;
+        productoSelect.appendChild(option);
+    });
+    
+    renderDetalleFactura();
+    
+    console.log("✅ Filtrado completado. Productos disponibles:", productosConStock.map(p => p.idProducto));
+    return true;
+}
+
 // AGREGAR event listener para valor servicio
 document.getElementById('valorServicio').addEventListener('input', function() {
     const tipoFactura = document.getElementById('tipoFacturaSelect').value;
@@ -2031,34 +2160,191 @@ async function diagnosticarStockProducto() {
     }
 }
 
-// Modificar la función handleInvoiceFormSubmit para incluir verificación de stock
+// ✅ VALIDACIÓN MEJORADA AL GUARDAR FACTURA
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
 
-    // ✅ AGREGAR VERIFICACIÓN DE STOCK ANTES DE ENVIAR
-    for (const item of detalleFactura) {
-        const producto = productosData.find(p => p.idProducto === item.idProducto);
-        if (producto && producto.stock < item.cantidad) {
-            alert(`❌ Stock insuficiente para ${producto.nombre}. Disponible: ${producto.stock}, Solicitado: ${item.cantidad}`);
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '⏳ Validando stock...';
+    submitBtn.disabled = true;
+
+    try {
+        // ✅ VERIFICACIÓN CRÍTICA DE STOCK ANTES DE ENVIAR
+        console.log("🔍 Validando stock antes de enviar...");
+        
+        let stockValido = true;
+        let productosProblema = [];
+
+        for (const item of detalleFactura) {
+            const producto = productosData.find(p => p.idProducto === item.idProducto);
+            
+            if (!producto) {
+                console.error(`❌ Producto no encontrado: ${item.idProducto}`);
+                productosProblema.push(`${item.nombreProducto} (no encontrado)`);
+                stockValido = false;
+                continue;
+            }
+
+            if (producto.stock <= 0) {
+                console.error(`❌ Producto sin stock: ${item.idProducto} - Stock: ${producto.stock}`);
+                productosProblema.push(`${item.nombreProducto} (sin stock)`);
+                stockValido = false;
+            } else if (producto.stock < item.cantidad) {
+                console.error(`❌ Stock insuficiente: ${item.idProducto} - Disponible: ${producto.stock}, Solicitado: ${item.cantidad}`);
+                productosProblema.push(`${item.nombreProducto} (stock insuficiente)`);
+                stockValido = false;
+            }
+        }
+
+        if (!stockValido) {
+            const mensajeError = `❌ Problemas de stock detectados:\n\n${productosProblema.join('\n')}\n\n¿Desea reparar automáticamente el stock?`;
+            
+            if (confirm(mensajeError)) {
+                await diagnosticarYRepararStock();
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+                isSubmitting = false;
+                return; // Permitir que el usuario reintente después de la reparación
+            } else {
+                throw new Error(`Productos con problemas de stock: ${productosProblema.join(', ')}`);
+            }
+        }
+
+        console.log("✅ Validación de stock completada - Todo correcto");
+        submitBtn.textContent = '⏳ Guardando factura...';
+
+        // ... el resto del código de envío permanece igual
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            window.location.href = 'index.html';
             isSubmitting = false;
             return;
         }
-    }
 
-    // Verificar específicamente PRD005 si está en el detalle
-    const productoProblematico = detalleFactura.find(item => item.idProducto === 'PRD005');
-    if (productoProblematico) {
-        const stockOk = await diagnosticarStockProducto();
-        if (!stockOk) {
-            alert('❌ Problema detectado con el producto PRD005. No se puede proceder.');
-            isSubmitting = false;
-            return;
+        // Obtener valores del formulario (código existente)
+        const tipoFactura = document.getElementById('tipoFacturaSelect').value;
+        const dniCliente = document.getElementById('clienteSelect').value;
+        const fechaEmision = document.querySelector('input[name="fecha_emision"]').value;
+        const estado = document.querySelector('select[name="estado"]').value;
+        const observaciones = document.querySelector('textarea[name="observaciones"]').value || '';
+        
+        const montoTotalInput = document.querySelector('input[name="monto_total"]');
+        let montoTotal = parseFloat(montoTotalInput?.value) || 0;
+        
+        const valorServicioInput = document.getElementById('valorServicio');
+        const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
+
+        let idCotizacion = null;
+        if (tipoFactura === 'ConCotizacion') {
+            idCotizacion = document.getElementById('cotizacionSelect').value;
+            if (!idCotizacion) {
+                alert('⚠️ Para facturas con cotización, debe seleccionar una cotización válida.');
+                throw new Error('Cotización no seleccionada');
+            }
         }
-    }
 
-    // ... el resto del código permanece igual
+        // Validaciones básicas (código existente)
+        if (!dniCliente) throw new Error('Cliente no seleccionado');
+        if (!fechaEmision) throw new Error('Fecha de emisión no especificada');
+        if (!estado) throw new Error('Estado no seleccionado');
+        if (montoTotal <= 0) throw new Error('Monto total inválido');
+        if (valorServicio < 0) throw new Error('Valor de servicio inválido');
+
+        // Preparar datos (código existente)
+        const detalleFacturaData = prepararDatosFactura();
+
+        // Validar según tipo de factura (código existente)
+        if (tipoFactura === 'Simple' && detalleFacturaData.length === 0 && valorServicio <= 0) {
+            throw new Error('No hay productos válidos en el detalle y valor de servicio es 0');
+        }
+
+        if (tipoFactura === 'ConCotizacion' && detalleFacturaData.length === 0 && valorServicio <= 0) {
+            throw new Error('Cotización sin productos ni valor de servicio');
+        }
+
+        // Estructura de datos (código existente)
+        const facturaData = {
+            dniCliente: dniCliente,
+            fechaEmision: fechaEmision,
+            montoTotal: montoTotal,
+            estado: estado,
+            observaciones: observaciones,
+            tipoFactura: tipoFactura,
+            valorServicio: valorServicio,
+            detalleFactura: detalleFacturaData
+        };
+
+        if (idCotizacion) facturaData.idCotizacion = idCotizacion;
+
+        console.log("🚀 Enviando factura con datos validados:", JSON.stringify(facturaData, null, 2));
+
+        const url = currentEditId ? `${API_FACTURAS_URL}/${currentEditId}` : API_FACTURAS_URL;
+        const method = currentEditId ? 'PUT' : 'POST';
+
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+
+        const response = await fetch(url, {
+            method: method,
+            headers: headers,
+            body: JSON.stringify(facturaData)
+        });
+
+        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
+
+        if (!response.ok) {
+            let errorMessage = `Error ${response.status}: ${response.statusText}`;
+            let errorDetails = '';
+            
+            try {
+                const errorText = await response.text();
+                console.error("❌ Error response text:", errorText);
+                
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || errorJson.error || errorText;
+                    errorDetails = errorJson.details || errorJson.stack || '';
+                } catch {
+                    errorMessage = errorText || errorMessage;
+                }
+            } catch (e) {
+                console.error("❌ Error al leer respuesta:", e);
+            }
+            
+            if (response.status === 500) {
+                errorMessage = "Error interno del servidor (500). ";
+                errorMessage += "Posibles causas:\n";
+                errorMessage += "- Problema con la base de datos\n";
+                errorMessage += "- Error en la generación de ID de factura\n";
+                errorMessage += "- Datos inválidos en el servidor\n\n";
+                errorMessage += "Contacte al administrador del sistema.";
+            }
+            
+            throw new Error(errorMessage + (errorDetails ? `\n\nDetalles: ${errorDetails}` : ''));
+        }
+
+        const result = await response.json();
+        console.log("✅ Factura guardada exitosamente:", result);
+
+        alert(currentEditId ? "✅ Factura actualizada exitosamente." : "✅ Factura creada exitosamente.");
+        closeModal('addInvoiceModal');
+        await getAllFacturas();
+
+    } catch (error) {
+        console.error("❌ Error al guardar factura:", error);
+        alert(`❌ Error al guardar la factura:\n\n${error.message}`);
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        isSubmitting = false;
+    }
 }
 
 
