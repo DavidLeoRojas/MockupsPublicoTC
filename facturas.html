@@ -1131,7 +1131,7 @@ function formatLargeNumber(value) {
     return value.toString();
 }
 // FUNCIÓN actualizarMontoTotal CORREGIDA
-// MEJORAR la función actualizarMontoTotal:
+// ✅ FUNCIÓN CORREGIDA - Redondeo adecuado a miles
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
@@ -1154,26 +1154,47 @@ function actualizarMontoTotal() {
         return sum + (parseFloat(item.subtotal) || 0);
     }, 0);
     
-    // ✅ CALCULAR MONTO TOTAL
+    // ✅ CORRECCIÓN: REDONDEO CORRECTO A MILES
     let montoTotal = subtotalProductos + valorServicio;
-
-    // Validar que no sea NaN
-    if (isNaN(montoTotal)) {
-        console.error("❌ Error: montoTotal es NaN");
-        montoTotalInput.value = '0';
-        return;
-    }
-
-    // ✅ APLICAR REDONDEO
+    
+    // Aplicar redondeo comercial (redondeo matemático)
     montoTotal = Math.round(montoTotal / 1000) * 1000;
     
-    montoTotalInput.value = montoTotal.toFixed(2);
+    // Formatear sin decimales para evitar problemas
+    montoTotalInput.value = montoTotal.toFixed(0);
     
-    console.log("💰 Cálculo monto total:", {
+    console.log("💰 Cálculo monto total CORREGIDO:", {
         valorServicio: valorServicio,
         subtotalProductos: subtotalProductos,
-        montoTotal: montoTotal
+        montoTotal: montoTotal,
+        redondeado: Math.round(montoTotal / 1000) * 1000
     });
+}
+
+// ✅ FUNCIÓN AUXILIAR PARA FORMATEAR NÚMEROS SIN DECIMALES
+function formatCurrency(value) {
+    if (value === null || value === undefined || isNaN(value)) return '$ 0';
+    
+    // Redondear a miles antes de formatear
+    const valorRedondeado = Math.round(value / 1000) * 1000;
+    
+    return '$ ' + new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(valorRedondeado);
+}
+
+// ✅ ACTUALIZAR TAMBIÉN LA FUNCIÓN PARA PDF
+function formatCurrencyForPDF(amount) {
+    if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
+    
+    // Redondear a miles
+    let valorRedondeado = Math.round(amount / 1000) * 1000;
+    
+    return '$ ' + new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(valorRedondeado);
 }
 
 // AGREGAR event listener para valor servicio
@@ -1952,6 +1973,67 @@ async function editInvoice(id) {
         alert("❌ Error al cargar la factura para editar: " + error.message);
     }
 }
+
+
+// Función de emergencia para diagnosticar el problema de stock
+async function diagnosticarStockProducto() {
+    const token = localStorage.getItem('jwtToken');
+    const headers = { 'Authorization': 'Bearer ' + token };
+    
+    try {
+        // Verificar el producto problemático
+        const response = await fetch(`${API_PRODUCTOS_URL}/PRD005`, { headers });
+        console.log("🔍 Estado del producto PRD005:", response.status);
+        
+        if (response.ok) {
+            const producto = await response.json();
+            console.log("📦 Producto PRD005:", producto);
+            
+            if (producto.stock === 0 || producto.stock < 0) {
+                alert(`⚠️ Producto PRD005 tiene stock insuficiente: ${producto.stock}`);
+                return false;
+            }
+        } else {
+            console.error("❌ No se pudo obtener información del producto PRD005");
+        }
+        
+        return true;
+    } catch (error) {
+        console.error("❌ Error al diagnosticar stock:", error);
+        return false;
+    }
+}
+
+// Modificar la función handleInvoiceFormSubmit para incluir verificación de stock
+async function handleInvoiceFormSubmit(event) {
+    event.preventDefault();
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    // ✅ AGREGAR VERIFICACIÓN DE STOCK ANTES DE ENVIAR
+    for (const item of detalleFactura) {
+        const producto = productosData.find(p => p.idProducto === item.idProducto);
+        if (producto && producto.stock < item.cantidad) {
+            alert(`❌ Stock insuficiente para ${producto.nombre}. Disponible: ${producto.stock}, Solicitado: ${item.cantidad}`);
+            isSubmitting = false;
+            return;
+        }
+    }
+
+    // Verificar específicamente PRD005 si está en el detalle
+    const productoProblematico = detalleFactura.find(item => item.idProducto === 'PRD005');
+    if (productoProblematico) {
+        const stockOk = await diagnosticarStockProducto();
+        if (!stockOk) {
+            alert('❌ Problema detectado con el producto PRD005. No se puede proceder.');
+            isSubmitting = false;
+            return;
+        }
+    }
+
+    // ... el resto del código permanece igual
+}
+
 
 // CORREGIR COMPLETAMENTE handleInvoiceFormSubmit - VERSIÓN MEJORADA
 async function handleInvoiceFormSubmit(event) {

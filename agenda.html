@@ -1296,8 +1296,23 @@ async function loadAgendaData() {
         ]);
 
         // Filtrar solo servicios que tienen una fecha válida
-        servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => s.fecha) : [];
-        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => {
+    // Intentar obtener la fecha usando las posibles variantes de nombre
+    const fecha = s.fecha || s.fecha_servicio || s.date || s.fechaCreacion || s.fecha_registro; // Añade más variantes si es necesario
+    return fecha !== undefined && fecha !== null && fecha !== '';
+}).map(s => {
+    // Mapear posibles variantes de nombre a los nombres estándar que espera el resto del código
+    // Asegura que el campo se llame exactamente 'fecha'
+    return {
+        ...s,
+        fecha: s.fecha || s.fecha_servicio || s.date || s.fechaCreacion || s.fecha_registro,
+        // Mapear también otros campos si es necesario, ej:
+        // estado: s.estado || s.estado_servicio || s.state,
+        // dniCliente: s.dniCliente || s.dni_cliente || s.clientDni,
+        // dniEmpleadoAsignado: s.dniEmpleadoAsignado || s.dni_empleado_asignado || s.employeeDni,
+        // idTipoServicio: s.idTipoServicio || s.id_tipo_servicio || s.tipoServicioId,
+    };
+}) : [];        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
         // ✅ Filtrar solo tipos de servicio ACTIVOS (en mayúsculas)
         todosLosTiposServicio = Array.isArray(tiposServRes) ? 
             tiposServRes.filter(t => t.estado && t.estado.toUpperCase() === 'ACTIVO') : [];
