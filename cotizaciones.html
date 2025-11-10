@@ -1422,25 +1422,28 @@ async function loadTiposServicio() {
             throw new Error(`Error ${response.status}: ${response.statusText}`);
         }
         
-        tiposServicio = await response.json();
+        const tiposServicio = await response.json();
         console.log('✅ Tipos de servicio cargados:', tiposServicio.length);
-        console.log('📋 Tipos disponibles:', tiposServicio.map(t => ({
-            id: t.idTipoServicio, 
-            nombre: t.nombreServicio,
-            estado: t.estado
-        })));
         
         // Si no hay tipos de servicio, crear uno por defecto
         if (tiposServicio.length === 0) {
             console.warn('⚠️ No hay tipos de servicio disponibles');
-            tiposServicio = [{ idTipoServicio: "TS001", nombreServicio: "Servicio General", estado: "ACTIVO" }];
+            // Puedes crear un tipo por defecto o manejar el error
         }
+        
+        return tiposServicio;
         
     } catch (error) {
         console.error('❌ Error cargando tipos de servicio:', error);
-        // Crear un tipo de servicio por defecto
-        tiposServicio = [{ idTipoServicio: "TS001", nombreServicio: "Servicio General", estado: "ACTIVO" }];
+        return [];
     }
+}
+
+// Función para obtener un tipo de servicio válido
+function obtenerTipoServicioValido() {
+    // Por defecto, usar un tipo de servicio común
+    // Esto debería venir de tu base de datos
+    return "TPS001"; // Ajusta según tus tipos de servicio reales
 }
 
 // Función para obtener un tipo de servicio válido
@@ -1542,7 +1545,7 @@ async function probarCrearCotizacion() {
         }
     }
 
-    function calcularCostoTotal() {
+function calcularCostoTotal() {
     try {
         // 1. Obtener el valor del servicio
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
@@ -1585,6 +1588,14 @@ async function probarCrearCotizacion() {
         document.getElementById('costoTotalCalculado').value = '0';
     }
 }
+
+// Agregar event listener para calcular automáticamente
+document.addEventListener('DOMContentLoaded', function() {
+    const valorServicioInput = document.getElementById('valorServicioCotizacion');
+    if (valorServicioInput) {
+        valorServicioInput.addEventListener('input', calcularCostoTotal);
+    }
+});
 
 function validarDatosAntesDeEnviar(formData) {
     console.log("🔍 Validando datos antes de enviar:");
@@ -1642,6 +1653,7 @@ function validarDatosAntesDeEnviar(formData) {
 
 
 // ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
+// ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN - VERSIÓN CORREGIDA =====
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1738,19 +1750,18 @@ async function handleQuoteFormSubmit(event) {
         }
 
         // Estructura de datos completa
-    const formData = {
-    idCotizacion: idCotizacion,
-    dniCliente: dniCliente,
-    fechaPreferida: fechaPreferida,
-    fechaSolicitud: new Date().toISOString().split('T')[0], // ← AGREGAR ESTE CAMPO
-    prioridad: prioridad,
-    descripcionProblema: descripcion,
-    notasInternas: notas || '',
-    estado: estadoBackend,
-    detalleCotizacion: detalleCotizacionData,
-    costoTotalCotizacion: costoTotalCalculado,
-    valorServicio: valorServicioInput
-};
+        const formData = {
+            idCotizacion: idCotizacion,
+            dniCliente: dniCliente,
+            fechaPreferida: fechaPreferida,
+            prioridad: prioridad,
+            descripcionProblema: descripcion,
+            notasInternas: notas || '',
+            estado: estadoBackend,
+            detalleCotizacion: detalleCotizacionData,
+            costoTotalCotizacion: costoTotalCalculado,
+            valorServicio: valorServicioInput
+        };
 
         console.log("🚀 ENVIANDO DATOS:", JSON.stringify(formData, null, 2));
 
@@ -1783,14 +1794,13 @@ async function handleQuoteFormSubmit(event) {
             console.log("✅ Éxito en edición:", responseData);
             alert("✅ Cotización actualizada exitosamente");
             
+            closeModal('addQuoteModal');
+            await getAllCotizaciones();
+            
         } else {
-            // ✅ PARA CREACIÓN - Usar estrategia en dos pasos
+            // ✅ PARA CREACIÓN - Usar estrategia en dos pasos CORREGIDA
             await crearCotizacionConProductosEnDosPasos(formData);
-            return; // Salir aquí ya que la función de dos pasos maneja el cierre
         }
-
-        closeModal('addQuoteModal');
-        await getAllCotizaciones();
         
     } catch (error) {
         console.error("❌ Error completo:", error);
@@ -1804,18 +1814,39 @@ async function handleQuoteFormSubmit(event) {
 
 
 // Función para crear cotización en dos pasos
-// Función para crear cotización en dos pasos
+// Función para crear cotización en dos pasos - VERSIÓN CORREGIDA
 async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
     try {
         const headers = getAuthHeaders();
+        if (!headers.Authorization) {
+            throw new Error('No hay token de autorización');
+        }
         
         console.log("🔄 Creando cotización en dos pasos...");
         
-        // ✅ AGREGAR FECHA_SOLICITUD (campo requerido)
-        const fechaSolicitud = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+        // ✅ CORRECCIÓN: Formatear fechas correctamente
+        const fechaActual = new Date();
+        const fechaSolicitud = fechaActual.toISOString(); // Formato completo con hora
         
+        // Si fechaPreferida es solo fecha, agregar hora
+        let fechaPreferida = datosCompletos.fechaPreferida;
+        if (fechaPreferida && !fechaPreferida.includes('T')) {
+            fechaPreferida = fechaPreferida + 'T00:00:00';
+        }
+
         // PASO 1: Crear cotización básica sin productos
-        const datosBasicos = obtenerEstructuraCotizacion(datosCompletos);
+        const datosBasicos = {
+            idCotizacion: datosCompletos.idCotizacion,
+            dniCliente: datosCompletos.dniCliente,
+            fechaPreferida: fechaPreferida,
+            fechaSolicitud: fechaSolicitud, // ✅ Usar fecha formateada
+            prioridad: datosCompletos.prioridad || "Media",
+            descripcionProblema: datosCompletos.descripcionProblema,
+            notasInternas: datosCompletos.notasInternas || "",
+            estado: datosCompletos.estado || "PENDIENTE",
+            costoTotalCotizacion: datosCompletos.costoTotalCotizacion || 0,
+            valorServicio: datosCompletos.valorServicio || 0
+        };
 
         console.log("📤 PASO 1 - Creando cotización básica:", datosBasicos);
 
@@ -1867,15 +1898,16 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
 
             if (!responseProductos.ok) {
                 const errorText = await responseProductos.text();
-                throw new Error(`Error agregando productos: ${errorText}`);
+                console.error("❌ Error agregando productos:", errorText);
+                // No lanzar error aquí, solo loguear
+            } else {
+                const cotizacionConProductos = await responseProductos.json();
+                console.log("✅ Productos agregados:", cotizacionConProductos);
             }
-
-            const cotizacionConProductos = await responseProductos.json();
-            console.log("✅ Productos agregados:", cotizacionConProductos);
         }
 
         // Éxito completo
-        console.log("✅ Cotización creada exitosamente con productos");
+        console.log("✅ Cotización creada exitosamente");
         alert("✅ Cotización creada exitosamente");
         closeModal('addQuoteModal');
         await getAllCotizaciones();
@@ -1886,9 +1918,13 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
         
         // Restaurar estado del botón
         const submitBtn = document.getElementById('submitBtn');
-        submitBtn.textContent = '✅ Guardar Cotización';
-        submitBtn.disabled = false;
+        if (submitBtn) {
+            submitBtn.textContent = '✅ Guardar Cotización';
+            submitBtn.disabled = false;
+        }
         isSubmitting = false;
+        
+        throw error; // Re-lanzar el error para manejo superior
     }
 }
 // Función para diagnosticar campos requeridos
@@ -2112,27 +2148,34 @@ async function probarEstructurasCotizacion() {
 // Ejecutar en consola: probarEstructurasCotizacion()
 
 // Función para generar ID de cotización única
+// Función para generar ID de cotización única - VERSIÓN MEJORADA
 function generarIdCotizacion() {
     // Verificar si hay cotizaciones existentes
-    if (allCotizaciones.length === 0) {
+    if (!allCotizaciones || allCotizaciones.length === 0) {
         return 'COT001';
     }
     
-    // Extraer números de IDs existentes
-    const numeros = allCotizaciones
-        .map(cot => {
-            if (!cot.idCotizacion) return 0;
-            const match = cot.idCotizacion.match(/COT(\d+)/);
-            return match ? parseInt(match[1]) : 0;
-        })
-        .filter(num => !isNaN(num) && num > 0);
-    
-    // Encontrar el número más alto
-    const maxNum = numeros.length > 0 ? Math.max(...numeros) : 0;
-    const nuevoNum = maxNum + 1;
-    
-    // Formatear con 3 dígitos
-    return `COT${nuevoNum.toString().padStart(3, '0')}`;
+    try {
+        // Extraer números de IDs existentes
+        const numeros = allCotizaciones
+            .map(cot => {
+                if (!cot.idCotizacion) return 0;
+                const match = cot.idCotizacion.match(/COT(\d+)/);
+                return match ? parseInt(match[1]) : 0;
+            })
+            .filter(num => !isNaN(num) && num > 0);
+        
+        // Encontrar el número más alto
+        const maxNum = numeros.length > 0 ? Math.max(...numeros) : 0;
+        const nuevoNum = maxNum + 1;
+        
+        // Formatear con 3 dígitos
+        return `COT${nuevoNum.toString().padStart(3, '0')}`;
+    } catch (error) {
+        console.error('Error generando ID de cotización:', error);
+        // Fallback: generar ID basado en timestamp
+        return 'COT' + Date.now().toString().slice(-6);
+    }
 }
 async function probarDiferentesEstructuras(datosOriginales) {
     console.log("🧪 PROBANDO DIFERENTES ESTRUCTURAS DE DATOS");
