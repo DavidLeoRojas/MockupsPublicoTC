@@ -803,7 +803,7 @@
         <div class="calendar-layout">
             <div class="calendar-section">
                 <div class="calendar-header">
-                <h2 class="calendar-title" id="dynamicCalendarTitle"></h2>      
+                    <h2 class="calendar-title">Enero 2025</h2>
                     <div class="calendar-nav">
                         <button class="nav-btn" onclick="previousMonth()">‹</button>
                         <div class="month-year">Enero 2025</div>
@@ -1060,13 +1060,9 @@
 
     <script>
         const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
-        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-                   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-
         let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear(); // ✅ Esto asegura que sea 2024, no 2025
+        let currentYear = new Date().getFullYear();
         let servicios = [];
-
         let todasLasPersonas = [];
         let todosLosTiposServicio = [];
         let cotizaciones = [];
@@ -1190,61 +1186,22 @@
             return '⚠️ Servicio Desconocido';
         }
 
-// ✅ AGREGAR ESTA FUNCIÓN COMPLETA
-function debugServicios() {
-    console.log('🐛 DEBUG - TODOS LOS SERVICIOS:');
-    if (servicios.length === 0) {
-        console.log('❌ No hay servicios cargados');
-        return;
-    }
-    
-    servicios.forEach((serv, index) => {
-        console.log(`📋 Servicio ${index + 1}:`, {
-            id: serv.idServicio,
-            fecha: serv.fecha,
-            hora: serv.hora,
-            cliente: obtenerNombreCliente(serv),
-            tecnico: obtenerNombreTecnico(serv),
-            tipo: obtenerNombreServicio(serv),
-            estado: serv.estado
-        });
-        
-        // Debug de fecha
-        if (serv.fecha) {
-            const fechaServ = new Date(serv.fecha);
-            console.log(`   📅 Fecha parseada: ${fechaServ.toLocaleDateString()}`);
-            console.log(`   📅 Año: ${fechaServ.getFullYear()}, Mes: ${fechaServ.getMonth() + 1}, Día: ${fechaServ.getDate()}`);
-        }
-    });
-    
-    console.log(`📊 Resumen: ${servicios.length} servicios totales`);
-    console.log(`📅 Calendario actual: ${currentMonth + 1}/${currentYear}`);
-}
 
-// ✅ Y esta función para forzar mostrar servicios
-function mostrarServiciosEnCalendario() {
-    console.log('🔄 Forzando mostrar servicios en calendario...');
-    servicios.forEach(servicio => {
-        if (servicio.fecha) {
-            const fecha = new Date(servicio.fecha);
-            console.log(`📍 Servicio en fecha: ${fecha.toLocaleDateString()} - ${obtenerNombreCliente(servicio)}`);
-        }
-    });
-    renderCalendar(currentMonth, currentYear);
-}
-// ========== CARGA DE DATOS ========== 
+// ========== CARGA DE DATOS ==========
 async function loadAgendaData() {
     console.log("🔄 Iniciando carga de datos de la agenda...");
     
+    // ✅ 1. Obtener el token JWT del almacenamiento local
     const token = localStorage.getItem('jwtToken');
     if (!token) {
         showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
         setTimeout(() => {
-            window.location.href = 'index.html';
+            window.location.href = 'index.html'; // Redirige a la página de login
         }, 2000);
         return;
     }
 
+    // ✅ 2. Configurar los encabezados con el token de autenticación
     const headers = {
         'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json'
@@ -1252,42 +1209,49 @@ async function loadAgendaData() {
 
     try {
         const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/servicios`, { headers }),
-            fetch(`${API_BASE_URL}/personas`, { headers }),
-            fetch(`${API_BASE_URL}/tipos-servicio`, { headers }),
-            fetch(`${API_BASE_URL}/cotizaciones`, { headers })
+            fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar servicios');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/personas`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar personas');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/tipos-servicio`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar tipos de servicio');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/cotizaciones`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar cotizaciones');
+                return r.json();
+            })
         ]);
 
-        // Verificar respuestas
-        if (!serviciosRes.ok) throw new Error(`Servicios: ${serviciosRes.status}`);
-        if (!personasRes.ok) throw new Error(`Personas: ${personasRes.status}`);
-        if (!tiposServRes.ok) throw new Error(`Tipos servicio: ${tiposServRes.status}`);
-        if (!cotizacionesRes.ok) throw new Error(`Cotizaciones: ${cotizacionesRes.status}`);
+        // Filtrar solo servicios que tienen una fecha válida
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => s.fecha) : [];
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+        // ✅ Filtrar solo tipos de servicio ACTIVOS (en mayúsculas)
+        todosLosTiposServicio = Array.isArray(tiposServRes) ? 
+            tiposServRes.filter(t => t.estado && t.estado.toUpperCase() === 'ACTIVO') : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
 
-        // Parsear datos
-        servicios = await serviciosRes.json();
-        todasLasPersonas = await personasRes.json();
-        todosLosTiposServicio = await tiposServRes.json();
-        cotizaciones = await cotizacionesRes.json();
+        console.log(`✅ Datos cargados exitosamente:`);
+        console.log(`   📋 ${servicios.length} servicios`);
+        console.log(`   👥 ${todasLasPersonas.length} personas`);
+        console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio ACTIVOS`);
+        console.log(`   💰 ${cotizaciones.length} cotizaciones`);
 
-        console.log(`✅ Datos cargados: ${servicios.length} servicios`);
-
-        // Poblar selects
         populateClienteSelect(todasLasPersonas);
         populateTecnicoSelect(todasLasPersonas);
         populateTipoServicioSelect(todosLosTiposServicio);
         populateCotizacionSelect(cotizaciones);
         populateFilterTecnico(todasLasPersonas);
 
-        // Renderizar
         renderCalendar(currentMonth, currentYear);
         renderTodaySchedule(new Date());
-        
-        // Debug
-        setTimeout(debugServicios, 1000);
-        
+        console.log('✅ Inicialización completada');
     } catch (error) {
-        console.error('❌ Error al cargar datos:', error);
+        console.error('❌ Error al cargar datos de agenda:', error);
         showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
     }
 }
@@ -1383,234 +1347,86 @@ function populateCotizacionSelect(cotizaciones) {
             });
         }
 
-function renderCalendar(month, year) {
-    console.log(`📅 Renderizando calendario: ${month + 1}/${year}`);
-    console.log(`📊 Total de servicios: ${servicios.length}`);
-    
-    // ✅ USAR monthNames global que ya definimos
-    const monthYearElement = document.querySelector('.month-year');
-    const calendarTitle = document.querySelector('.calendar-title');
-    if (monthYearElement) monthYearElement.textContent = `${monthNames[month]} ${year}`;
-    if (calendarTitle) calendarTitle.textContent = `${monthNames[month]} ${year}`;
-
-    const calendarGrid = document.getElementById('calendarGrid');
-    if (!calendarGrid) {
-        console.error('❌ No se encontró el elemento calendarGrid');
-        return;
-    }
-
-    // Limpiar grid (mantener solo headers)
-    const headers = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    calendarGrid.innerHTML = '';
-    
-    // Recrear headers
-    headers.forEach(header => {
-        const headerElement = document.createElement('div');
-        headerElement.className = 'calendar-day-header';
-        headerElement.textContent = header;
-        calendarGrid.appendChild(headerElement);
-    });
-
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDay = firstDay.getDay(); // 0 = Domingo, 1 = Lunes, etc.
-    const totalDays = lastDay.getDate();
-
-    console.log(`📆 Primer día: ${startDay}, total días: ${totalDays}, mes actual: ${month + 1}`);
-
-    // ... el resto de la función se mantiene igual
-    // Días del mes anterior
-    const prevLastDay = new Date(year, month, 0).getDate();
-    for (let i = startDay - 1; i >= 0; i--) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div><div class="day-events"></div>`;
-        calendarGrid.appendChild(dayElement);
-    }
-
-    // Días del mes actual
-    const today = new Date();
-    for (let day = 1; day <= totalDays; day++) {
-        const date = new Date(year, month, day);
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        
-        // Verificar si es hoy
-        if (date.getDate() === today.getDate() && 
-            date.getMonth() === today.getMonth() && 
-            date.getFullYear() === today.getFullYear()) {
-            dayElement.classList.add('today');
-        }
-        
-        dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
-
-        // Buscar servicios para este día
-        const serviciosDelDia = servicios.filter(servicio => {
-            if (!servicio.fecha) {
-                console.log('❌ Servicio sin fecha:', servicio);
-                return false;
+        // ========== RENDER CALENDAR ==========
+        function renderCalendar(month, year) {
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                               "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const monthYearElement = document.querySelector('.month-year');
+            if (monthYearElement) {
+                monthYearElement.textContent = `${monthNames[month]} ${year}`;
             }
-            
-            try {
-                const fechaServicio = new Date(servicio.fecha);
-                console.log(`🔍 Comparando: Servicio ${servicio.idServicio} - ${fechaServicio.toLocaleDateString()} vs ${date.toLocaleDateString()}`);
-                
-                const coincide = fechaServicio.getDate() === day &&
-                               fechaServicio.getMonth() === month &&
-                               fechaServicio.getFullYear() === year;
-                
-                if (coincide) {
-                    console.log(`✅ ENCONTRADO: Servicio ${servicio.idServicio} en día ${day}`);
+
+            const calendarGrid = document.getElementById('calendarGrid');
+            if (!calendarGrid) return;
+
+            const headers = calendarGrid.querySelectorAll('.calendar-day-header');
+            calendarGrid.innerHTML = '';
+            headers.forEach(header => calendarGrid.appendChild(header));
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+            const prevLastDay = new Date(year, month, 0).getDate();
+
+            for (let i = startDay - 1; i >= 0; i--) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div>`;
+                calendarGrid.appendChild(dayElement);
+            }
+
+            const today = new Date();
+            for (let day = 1; day <= totalDays; day++) {
+                const date = new Date(year, month, day);
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                if (date.getDate() === today.getDate() && 
+                    date.getMonth() === today.getMonth() && 
+                    date.getFullYear() === today.getFullYear()) {
+                    dayElement.classList.add('today');
                 }
-                
-                return coincide;
-            } catch (error) {
-                console.error('❌ Error procesando fecha:', servicio.fecha, error);
-                return false;
-            }
-        });
+                dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
-        console.log(`📅 Día ${day}: ${serviciosDelDia.length} servicios`);
-
-        // Agregar eventos al día
-        const eventsContainer = dayElement.querySelector('.day-events');
-        serviciosDelDia.forEach(servicio => {
-            try {
-                const eventElement = document.createElement('div');
-                eventElement.className = `event-item ${getEventTypeClass(servicio)} ${getEstadoClass(servicio.estado)}`;
-                
-                const nombreCliente = obtenerNombreCliente(servicio);
-                const primerNombre = nombreCliente.split(' ')[0];
-                const hora = servicio.hora ? servicio.hora.substring(0, 5) : '';
-                
-                eventElement.textContent = `${hora} ${primerNombre}`;
-                eventElement.title = `${obtenerNombreServicio(servicio)}\nCliente: ${nombreCliente}\nHora: ${hora || 'No definida'}`;
-                
-                eventElement.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditServiceModal(servicio.idServicio);
+                const serviciosDelDia = servicios.filter(s => {
+                    if (!s.fecha) return false;
+                    const fechaServicio = new Date(s.fecha + 'T00:00:00');
+                    return fechaServicio.getDate() === day && 
+                           fechaServicio.getMonth() === month && 
+                           fechaServicio.getFullYear() === year;
                 });
-                
-                eventsContainer.appendChild(eventElement);
-                console.log(`✅ Evento agregado: ${nombreCliente} en día ${day}`);
-            } catch (error) {
-                console.error('❌ Error creando evento:', error);
-            }
-        });
 
-        // Agregar click handler para mostrar servicios del día
-        dayElement.addEventListener('click', () => {
-            showDayServices(date);
-        });
-
-        calendarGrid.appendChild(dayElement);
-    }
-
-    // Días del próximo mes
-    const totalCells = 42; // 6 filas x 7 columnas
-    const remaining = totalCells - (startDay + totalDays);
-    for (let day = 1; day <= remaining; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
-        calendarGrid.appendChild(dayElement);
-    }
-
-    console.log('✅ Calendario renderizado');
-}
-
-function createDayElement(dayNumber, isOtherMonth, isToday, date = null) {
-    const dayElement = document.createElement('div');
-    dayElement.className = 'calendar-day';
-    
-    if (isOtherMonth) dayElement.classList.add('other-month');
-    if (isToday) dayElement.classList.add('today');
-    
-    dayElement.innerHTML = `<div class="day-number">${dayNumber}</div><div class="day-events"></div>`;
-
-    // Agregar eventos si es del mes actual y hay fecha
-    if (!isOtherMonth && date) {
-        const serviciosDelDia = servicios.filter(s => {
-            if (!s.fecha) {
-                console.log('❌ Servicio sin fecha:', s);
-                return false;
-            }
-            
-            try {
-                const fechaServicio = new Date(s.fecha);
-                // Ajustar para timezone
-                const fechaServicioAjustada = new Date(fechaServicio.getTime() + fechaServicio.getTimezoneOffset() * 60000);
-                
-                console.log(`🔍 Comparando fecha servicio: ${fechaServicioAjustada.toISOString().split('T')[0]} vs día: ${date.toISOString().split('T')[0]}`);
-                
-                return fechaServicioAjustada.getDate() === date.getDate() && 
-                       fechaServicioAjustada.getMonth() === date.getMonth() && 
-                       fechaServicioAjustada.getFullYear() === date.getFullYear();
-            } catch (error) {
-                console.error('❌ Error procesando fecha:', s.fecha, error);
-                return false;
-            }
-        });
-
-        console.log(`📅 Día ${dayNumber}: ${serviciosDelDia.length} servicios`);
-
-        const eventsContainer = dayElement.querySelector('.day-events');
-        serviciosDelDia.forEach(serv => {
-            try {
-                const eventElement = document.createElement('div');
-                eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
-                
-                const nombreCliente = obtenerNombreCliente(serv);
-                const primerNombre = nombreCliente.split(' ')[0];
-                eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
-                eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
-                
-                eventElement.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditServiceModal(serv.idServicio);
+                const eventsContainer = dayElement.querySelector('.day-events');
+                serviciosDelDia.forEach(serv => {
+                    const eventElement = document.createElement('div');
+                    // --- MODIFICACIÓN AQUÍ ---
+                    // Se añade la clase del estado del servicio a la clase del tipo
+                    eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+                    // --- FIN MODIFICACIÓN ---
+                    const nombreCliente = obtenerNombreCliente(serv);
+                    const primerNombre = nombreCliente.split(' ')[0];
+                    eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
+                    eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
+                    eventElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openEditServiceModal(serv); // Asegúrate de que esta función exista y funcione como esperas
+                    });
+                    eventsContainer.appendChild(eventElement);
                 });
-                
-                eventsContainer.appendChild(eventElement);
-            } catch (error) {
-                console.error('❌ Error creando evento:', error);
+
+                dayElement.addEventListener('click', () => showDayServices(date));
+                calendarGrid.appendChild(dayElement);
             }
-        });
-    }
 
-    if (date) {
-        dayElement.addEventListener('click', () => showDayServices(date));
-    }
-
-    return dayElement;
-}
-
-function initializeApp() {
-    console.log('🚀 Inicializando aplicación de Agenda...');
-    console.log('🔗 API Base URL:', API_BASE_URL);
-    
-    // Verificar elementos del DOM
-    const requiredElements = [
-        'calendarGrid', 
-        'todaySchedule', 
-        'dayServicesModal',
-        'addServiceModal',
-        'editServiceModal'
-    ];
-    
-    requiredElements.forEach(id => {
-        const element = document.getElementById(id);
-        console.log(`✅ Elemento ${id}:`, element ? 'Encontrado' : 'NO ENCONTRADO');
-    });
-    
-    // Verificar datos de localStorage
-    console.log('🔐 Token en localStorage:', localStorage.getItem('jwtToken') ? 'Presente' : 'Ausente');
-    
-    // Cargar datos
-    loadAgendaData();
-}
-
-// Reemplazar el event listener existente
-document.addEventListener('DOMContentLoaded', initializeApp);
+            const totalCells = 42;
+            const remaining = totalCells - (startDay + totalDays);
+            for (let day = 1; day <= remaining; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+                calendarGrid.appendChild(dayElement);
+            }
+        }
         // ========== FUNCIONES DE ESTADO ==========
         function getEstadoClass(estado) {
             // Normalizar el estado: convertir a string, trim, reemplazar espacios por _, y a minúsculas
@@ -1958,25 +1774,23 @@ async function updateService(event) {
         }
 
         // ========== NAVIGATION ==========
-function previousMonth() {
-    currentMonth--;
-    if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-    }
-    console.log(`⬅️ Mes anterior: ${currentMonth + 1}/${currentYear}`);
-    renderCalendar(currentMonth, currentYear);
-}
+        function previousMonth() {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar(currentMonth, currentYear);
+        }
 
-function nextMonth() {
-    currentMonth++;
-    if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-    }
-    console.log(`➡️ Mes siguiente: ${currentMonth + 1}/${currentYear}`);
-    renderCalendar(currentMonth, currentYear);
-}
+        function nextMonth() {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar(currentMonth, currentYear);
+        }
 
         function showView(view) {
             document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -2254,11 +2068,7 @@ async function addService(event) {
                 closeCustomAlert();
             }
         });
-// Al inicio de renderCalendar, actualiza el título dinámicamente
-const dynamicTitle = document.getElementById('dynamicCalendarTitle');
-if (dynamicTitle) {
-    dynamicTitle.textContent = `${monthNames[month]} ${year}`;
-}
+
     </script>
 </body>
 </html>
