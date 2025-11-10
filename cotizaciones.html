@@ -1642,6 +1642,7 @@ function validarDatosAntesDeEnviar(formData) {
 
 
 // ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
+// ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1715,25 +1716,19 @@ async function handleQuoteFormSubmit(event) {
         const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
 
- // ✅ CORRECCIÓN: Preparar detalle de productos CON tipo de servicio válido
-let detalleCotizacionData = [];
-if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
-    detalleCotizacionData = detalleCotizacion.map(item => ({
-        idProducto: item.idProducto?.toString() || '',
-        nombreProducto: item.nombreProducto?.toString() || '',
-        cantidad: parseInt(item.cantidad) || 1,
-        precioUnitario: parseFloat(item.precioUnitario) || 0,
-        subtotal: parseFloat(item.subtotal) || 0,
-        idTipoServicio: item.idTipoServicio || obtenerTipoServicioValido() // ← USAR TIPO VÁLIDO
-    }));
-    
-    console.log("📦 Productos preparados con tipos de servicio:", 
-        detalleCotizacionData.map(p => ({ 
-            producto: p.idProducto, 
-            tipoServicio: p.idTipoServicio 
-        }))
-    );
-}
+        // ✅ CORRECCIÓN: Preparar detalle de productos
+        let detalleCotizacionData = [];
+        if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
+            detalleCotizacionData = detalleCotizacion.map(item => ({
+                idProducto: item.idProducto?.toString() || '',
+                nombreProducto: item.nombreProducto?.toString() || '',
+                cantidad: parseInt(item.cantidad) || 1,
+                precioUnitario: parseFloat(item.precioUnitario) || 0,
+                subtotal: parseFloat(item.subtotal) || 0,
+                idTipoServicio: item.idTipoServicio || obtenerTipoServicioValido()
+            }));
+        }
+
         // ✅ GENERAR ID SIEMPRE PARA NUEVAS COTIZACIONES
         let idCotizacion;
         if (currentEditId) {
@@ -1743,19 +1738,41 @@ if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.l
             console.log("🆕 ID generado para nueva cotización:", idCotizacion);
         }
 
-        // Estructura de datos
-        const formData = {
-            idCotizacion: idCotizacion,
-            dniCliente: dniCliente,
-            fechaPreferida: fechaPreferida,
-            prioridad: prioridad,
-            descripcionProblema: descripcion,
-            notasInternas: notas || '',
-            estado: estadoBackend,
-            detalleCotizacion: detalleCotizacionData,
-            costoTotalCotizacion: costoTotalCalculado,
-            valorServicio: valorServicioInput
-        };
+        // ✅ ESTRUCTURA PARA CREACIÓN - Probemos diferentes formatos
+        let formData;
+        
+        if (currentEditId) {
+            // Para edición - usar estructura completa
+            formData = {
+                idCotizacion: idCotizacion,
+                dniCliente: dniCliente,
+                fechaPreferida: fechaPreferida,
+                prioridad: prioridad,
+                descripcionProblema: descripcion,
+                notasInternas: notas || '',
+                estado: estadoBackend,
+                detalleCotizacion: detalleCotizacionData,
+                costoTotalCotizacion: costoTotalCalculado,
+                valorServicio: valorServicioInput
+            };
+        } else {
+            // ✅ PARA CREACIÓN - Probar estructura simplificada primero
+            formData = {
+                idCotizacion: idCotizacion,
+                dniCliente: dniCliente,
+                fechaPreferida: fechaPreferida,
+                descripcionProblema: descripcion,
+                estado: estadoBackend,
+                // Campos opcionales para creación
+                ...(prioridad && { prioridad: prioridad }),
+                ...(notas && { notasInternas: notas }),
+                ...(detalleCotizacionData.length > 0 && { detalleCotizacion: detalleCotizacionData }),
+                ...(costoTotalCalculado > 0 && { costoTotalCotizacion: costoTotalCalculado }),
+                ...(valorServicioInput > 0 && { valorServicio: valorServicioInput })
+            };
+            
+            console.log("🆕 Estructura para creación:", formData);
+        }
 
         console.log("🚀 ENVIANDO DATOS:", JSON.stringify(formData, null, 2));
 
@@ -1780,32 +1797,28 @@ if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.l
         console.log("📥 Respuesta del servidor:", response.status, response.statusText);
 
         // ✅ MEJOR MANEJO DE ERRORES
-if (!response.ok) {
-    let errorMessage = `Error ${response.status}: ${response.statusText}`;
-    
-    try {
-        // Primero intenta leer como texto
-        const errorText = await response.text();
-        console.error("❌ Error texto del servidor:", errorText);
-        errorMessage = errorText || errorMessage;
-        
-        // Luego intenta parsear como JSON si es posible
-        if (errorText) {
+        if (!response.ok) {
+            let errorMessage = `Error ${response.status}: ${response.statusText}`;
+            
             try {
-                const errorJson = JSON.parse(errorText);
-                console.error("❌ Error JSON del servidor:", errorJson);
-                errorMessage = errorJson.message || errorJson.error || errorText;
-            } catch {
-                // Si no es JSON, usar el texto tal cual
-                errorMessage = errorText;
+                const errorText = await response.text();
+                console.error("❌ Error texto del servidor:", errorText);
+                errorMessage = errorText || errorMessage;
+                
+                // Intentar parsear como JSON
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    console.error("❌ Error JSON del servidor:", errorJson);
+                    errorMessage = errorJson.message || errorJson.error || errorText;
+                } catch {
+                    // Mantener el texto original si no es JSON
+                }
+            } catch (parseError) {
+                console.error("❌ Error leyendo respuesta:", parseError);
             }
+            
+            throw new Error(errorMessage);
         }
-    } catch (parseError) {
-        console.error("❌ Error leyendo respuesta:", parseError);
-    }
-    
-    throw new Error(errorMessage);
-}
 
         const responseData = await response.json();
         console.log("✅ Éxito:", responseData);
