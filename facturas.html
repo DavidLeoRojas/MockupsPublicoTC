@@ -1927,7 +1927,7 @@ async function editInvoice(id) {
     }
 }
 
-// CORREGIR handleInvoiceFormSubmit - Manejar valorServicio correctamente
+// CORREGIR handleInvoiceFormSubmit - Mejorar manejo de errores
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1958,9 +1958,7 @@ async function handleInvoiceFormSubmit(event) {
         let montoTotal = parseFloat(montoTotalInput?.value) || 0;
         
         const valorServicioInput = document.getElementById('valorServicio');
-        // ✅ CORRECCIÓN: Manejar correctamente el valor del servicio
-        const valorServicio = valorServicioInput ? 
-            (parseFloat(valorServicioInput.value) || 0) : 0;
+        const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
 
         let idCotizacion = null;
         if (tipoFactura === 'ConCotizacion') {
@@ -2009,7 +2007,7 @@ async function handleInvoiceFormSubmit(event) {
             estado: estado,
             observaciones: observaciones,
             tipoFactura: tipoFactura,
-            valorServicio: valorServicio, // ✅ Ahora siempre tendrá un valor numérico
+            valorServicio: valorServicio,
             detalleFactura: detalleFacturaData
         };
 
@@ -2029,6 +2027,8 @@ async function handleInvoiceFormSubmit(event) {
             'Accept': 'application/json'
         };
 
+        console.log("📤 Enviando request:", { url, method, headers });
+
         const response = await fetch(url, {
             method: method,
             headers: headers,
@@ -2039,20 +2039,36 @@ async function handleInvoiceFormSubmit(event) {
 
         if (!response.ok) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;
+            let errorDetails = '';
+            
             try {
                 const errorText = await response.text();
+                console.error("❌ Error response text:", errorText);
+                
                 // Intentar parsear como JSON
                 try {
                     const errorJson = JSON.parse(errorText);
                     errorMessage = errorJson.message || errorJson.error || errorText;
+                    errorDetails = errorJson.details || errorJson.stack || '';
                 } catch {
                     // Si no es JSON, usar el texto original
                     errorMessage = errorText || errorMessage;
                 }
-            } catch {
-                // Si hay error al leer la respuesta
+            } catch (e) {
+                console.error("❌ Error al leer respuesta:", e);
             }
-            throw new Error(errorMessage);
+            
+            // ✅ DIAGNÓSTICO MEJORADO PARA ERROR 500
+            if (response.status === 500) {
+                errorMessage = "Error interno del servidor (500). ";
+                errorMessage += "Posibles causas:\n";
+                errorMessage += "- Problema con la base de datos\n";
+                errorMessage += "- Error en la generación de ID de factura\n";
+                errorMessage += "- Datos inválidos en el servidor\n\n";
+                errorMessage += "Contacte al administrador del sistema.";
+            }
+            
+            throw new Error(errorMessage + (errorDetails ? `\n\nDetalles: ${errorDetails}` : ''));
         }
 
         const result = await response.json();
@@ -2295,7 +2311,7 @@ function updateStats() {
 }
 
 // REEMPLAZAR COMPLETAMENTE la función viewInvoice con esta versión corregida
-// FUNCIÓN COMPLETAMENTE REESCRITA PARA EL PDF - SIN SUPERPOSICIONES
+// CORREGIR LA FUNCIÓN viewInvoice - Error totalFinal is not defined
 async function viewInvoice(id) {
     try {
         console.log("📄 Generando PDF para factura:", id);
@@ -2433,7 +2449,6 @@ async function viewInvoice(id) {
             tieneItems = true;
             
             for (const item of detalleParaMostrar) {
-                // ✅ VERIFICAR SI NECESITAMOS NUEVA PÁGINA
                 if (currentY > 180) {
                     doc.addPage();
                     currentY = 30;
@@ -2477,24 +2492,26 @@ async function viewInvoice(id) {
         // ✅ ESPACIO DESPUÉS DE LOS PRODUCTOS
         currentY += 20;
 
-// EN LA FUNCIÓN viewInvoice, buscar esta parte y corregirla:
-// VALOR DEL SERVICIO
-let valorServicio = parseFloat(facturaCompleta.valorServicio) || 0;
-console.log("💰 Valor servicio en PDF:", valorServicio);
+        // VALOR DEL SERVICIO
+        let valorServicio = parseFloat(facturaCompleta.valorServicio) || 0;
+        console.log("💰 Valor servicio en PDF:", valorServicio);
 
-if (valorServicio > 0) {
-    // ✅ VERIFICAR SI HAY ESPACIO SUFICIENTE
-    if (currentY > 180) {
-        doc.addPage();
-        currentY = 30;
-    }
-    
-    doc.setFont(undefined, 'bold');
-    doc.text('VALOR DEL SERVICIO:', colPrecio, currentY);
-    doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
-    doc.setFont(undefined, 'normal');
-    currentY += 15;
-}   
+        if (valorServicio > 0) {
+            if (currentY > 180) {
+                doc.addPage();
+                currentY = 30;
+            }
+            
+            doc.setFont(undefined, 'bold');
+            doc.text('VALOR DEL SERVICIO:', colPrecio, currentY);
+            doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
+            doc.setFont(undefined, 'normal');
+            currentY += 15;
+        }
+
+        // ✅ CORRECCIÓN CRÍTICA: CALCULAR TOTAL FINAL ANTES DE USARLO
+        let totalFinal = parseFloat(facturaCompleta.montoTotal) || (subtotalProductos + valorServicio);
+        console.log("💰 Total final calculado:", totalFinal);
 
         // ✅ CALCULAR ALTURA NECESARIA PARA LOS TOTALES
         const lineasTotales = [];
@@ -2505,9 +2522,9 @@ if (valorServicio > 0) {
         if (valorServicio > 0) {
             lineasTotales.push('VALOR SERVICIO');
         }
-        lineasTotales.push('TOTAL'); // Línea final
+        lineasTotales.push('TOTAL');
         
-        const alturaNecesaria = (lineasTotales.length * 12) + 30; // 12px por línea + espacio extra
+        const alturaNecesaria = (lineasTotales.length * 12) + 30;
         
         // ✅ SI NO HAY ESPACIO SUFICIENTE, NUEVA PÁGINA
         if (currentY + alturaNecesaria > 250) {
@@ -2523,7 +2540,7 @@ if (valorServicio > 0) {
         if (tieneItems && subtotalProductos > 0) {
             doc.setFont(undefined, 'bold');
             doc.setFontSize(11);
-            doc.text('SUBTOTAL:', colPrecio, currentY);
+            doc.text('SUBTOTAL PRODUCTOS:', colPrecio, currentY);
             doc.text(formatCurrencyForPDF(subtotalProductos), colTotal, currentY);
             currentY += 12;
         }
@@ -2545,11 +2562,11 @@ if (valorServicio > 0) {
         doc.line(colPrecio, currentY, pageWidth - margin, currentY);
         currentY += 12;
 
-        // ✅ TOTAL FACTURA
+        // ✅ TOTAL FACTURA - USANDO totalFinal QUE YA ESTÁ DEFINIDO
         doc.setFontSize(14);
         doc.setTextColor(44, 95, 65);
         doc.setFont(undefined, 'bold');
-        doc.text('TOTAL:', colPrecio, currentY);
+        doc.text('TOTAL FACTURA:', colPrecio, currentY);
         doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
 
         // ===== PIE DE PÁGINA =====
