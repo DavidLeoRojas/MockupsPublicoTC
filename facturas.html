@@ -1369,7 +1369,7 @@ function prepararDatosFactura() {
 
     return detalleFacturaData;
 }
-// Función mejorada para renderizar productos
+// Renderizar lista de productos agregados - VERSIÓN MEJORADA
 function renderDetalleFactura() {
     const container = document.getElementById('detalleFacturaList');
     if (!container) {
@@ -1384,10 +1384,14 @@ function renderDetalleFactura() {
     }
 
     container.innerHTML = '';
+    
+    let totalProductos = 0;
+    
     detalleFactura.forEach((item, index) => {
-        // ✅ CORRECCIÓN: Asegurar que el subtotal se calcule correctamente
+        // ✅ Asegurar que los cálculos sean correctos
         const subtotal = (item.precioUnitario || 0) * (item.cantidad || 0);
-        item.subtotal = subtotal; // Actualizar el valor en el array
+        item.subtotal = subtotal; // Actualizar en el array
+        totalProductos += subtotal;
 
         const div = document.createElement('div');
         div.className = 'detalle-factura-item';
@@ -1413,12 +1417,12 @@ function renderDetalleFactura() {
                 </span>
             </div>
             <div class="detalle-factura-controls" style="display: flex; gap: 0.5rem;">
-                <button class="btn-sm edit-btn" onclick="editDetalleItem(${index})" 
+                <button type="button" class="btn-sm edit-btn" onclick="editDetalleItem(${index})" 
                         style="background: #f6ad55; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;"
                         title="Editar cantidad">
                     ✏️
                 </button>
-                <button class="btn-sm remove-btn" onclick="removeDetalleItem(${index})" 
+                <button type="button" class="btn-sm remove-btn" onclick="removeDetalleItem(${index})" 
                         style="background: #f56565; color: white; border: none; padding: 0.5rem; border-radius: 4px; cursor: pointer;"
                         title="Eliminar producto">
                     🗑️
@@ -1428,8 +1432,23 @@ function renderDetalleFactura() {
         container.appendChild(div);
     });
     
+    // Mostrar resumen
+    const resumenDiv = document.createElement('div');
+    resumenDiv.style.cssText = `
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #f7fafc;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        text-align: right;
+    `;
+    resumenDiv.innerHTML = `
+        <strong>Subtotal Productos: $${totalProductos.toLocaleString()}</strong>
+    `;
+    container.appendChild(resumenDiv);
+    
     actualizarMontoTotal();
-    console.log("✅ Productos renderizados:", detalleFactura.length);
+    console.log("✅ Productos renderizados:", detalleFactura.length, "Subtotal:", totalProductos);
 }
 // Función para limpiar productos eliminados del detalle
 function limpiarProductosEliminados() {
@@ -1587,7 +1606,7 @@ async function diagnosticarFacturas() {
         }
 
         // Abrir modal para agregar factura
-// Abrir modal para agregar factura - VERSIÓN MEJORADA
+// Abrir modal para agregar/editar factura - VERSIÓN MEJORADA
 function openAddInvoiceModal() {
     const modal = document.getElementById('addInvoiceModal');
     const form = document.getElementById('invoiceForm');
@@ -1600,7 +1619,7 @@ function openAddInvoiceModal() {
     document.getElementById('submitBtn').textContent = 'Guardar Factura';
     document.getElementById('invoiceIdInput').value = '';
     
-    // Mostrar/ocultar secciones
+    // Mostrar/ocultar secciones según tipo de factura
     document.getElementById('productosSection').style.display = 'block';
     document.getElementById('cotizacionField').style.display = 'none';
     document.getElementById('clienteSelect').disabled = false;
@@ -1624,6 +1643,12 @@ function openAddInvoiceModal() {
     const today = new Date().toISOString().split('T')[0];
     document.querySelector('input[name="fecha_emision"]').value = today;
     
+    // Establecer estado por defecto
+    document.querySelector('select[name="estado"]').value = 'PENDIENTE';
+    
+    // Limpiar cotización
+    document.getElementById('cotizacionSelect').value = '';
+    
     currentEditId = null;
     
     // Mostrar modal
@@ -1632,91 +1657,146 @@ function openAddInvoiceModal() {
     console.log("✅ Modal de factura abierto correctamente");
 }
 
- // Abrir modal para editar factura
+// Función completa para editar factura - VERSIÓN CORREGIDA
 async function editInvoice(id) {
-    const fact = allFacturas.find(f => f.idFactura === id);
-    if (!fact) {
-        alert("Factura no encontrada.");
-        return;
-    }
+    try {
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
+            window.location.href = 'index.html';
+            return;
+        }
 
-    openAddInvoiceModal();
-    document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
-    document.getElementById('submitBtn').textContent = 'Guardar Cambios';
-    document.getElementById('invoiceIdInput').value = id;
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
 
-    const tipoFactura = fact.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
-    document.getElementById('tipoFacturaSelect').value = tipoFactura;
+        console.log(`✏️ Cargando factura para editar: ${id}`);
 
-    // Disparar el evento de cambio para actualizar campos visibles
-    document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
-
-    const dniCliente = fact.cliente?.dni || fact.dniCliente;
-    document.getElementById('clienteSelect').value = dniCliente;
-
-    const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : '';
-    document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
-
-    // ✅ CORRECCIÓN: Usar el estado exacto que viene del backend
-    document.querySelector('select[name="estado"]').value = fact.estado || 'PENDIENTE';
-
-    document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
-
-    // ✅ CARGAR VALOR SERVICIO desde la factura existente
-    const valorServicioInput = document.getElementById('valorServicio');
-    if (valorServicioInput) {
-        valorServicioInput.value = (fact.valorServicio || 0).toFixed(2);
-        // El estado de deshabilitado se manejará en el change de tipoFactura o cotizacionSelect
-        // Si la factura tiene cotización, el change de tipoFactura ya deshabilitó valorServicio
-        // Si no tiene cotización, quedará habilitado.
-    }
-
-    // ✅ CARGAR MONTO TOTAL desde la factura existente
-    const montoTotalInput = document.querySelector('input[name="monto_total"]');
-    if (montoTotalInput) {
-        montoTotalInput.value = (fact.montoTotal || 0).toFixed(2);
-        // El estado de deshabilitado se manejará en el change de tipoFactura o cotizacionSelect
-        // Si la factura tiene cotización, el change de tipoFactura ya deshabilitó montoTotal
-        // Si no tiene cotización, quedará habilitado (aunque se recalculará al cargar productos).
-    }
-
-    if (tipoFactura === 'ConCotizacion') {
-        const idCotizacion = fact.cotizacion?.idCotizacion || '';
-        document.getElementById('cotizacionSelect').value = idCotizacion;
-        // Disparar el evento change de cotizacionSelect para cargar y deshabilitar campos
-        document.getElementById('cotizacionSelect').dispatchEvent(new Event('change'));
-        // Esto sobrescribirá los valores cargados arriba con los de la cotización, lo cual es correcto.
-    } else {
-        // Para facturas simples, solo cargamos los valores guardados.
-        // El montoTotal se recalculará si se llama a renderDetalleFactura o actualizarMontoTotal
-        // a menos que se deshabilite el campo aquí o se modifique la lógica de cálculo.
-        // Si el campo montoTotalInput se dejó habilitado en el change de tipoFactura,
-        // el usuario podrá ver y posiblemente editar el valor guardado.
-    }
-
-    // ✅ CARGAR DETALLES DE LA FACTURA
-    if (fact.detalleFactura && Array.isArray(fact.detalleFactura)) {
-        detalleFactura = fact.detalleFactura.map(df => {
-            const producto = productosData.find(p => p.idProducto === df.idProducto);
-            const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
-
-            return {
-                idProducto: df.idProducto,
-                nombreProducto: nombreProducto,
-                cantidad: df.cantidad,
-                precioUnitario: df.precioUnitario,
-                subtotal: df.subtotal
-            };
+        // Cargar los datos de la factura específica
+        const response = await fetch(`${API_FACTURAS_URL}/${id}`, { 
+            headers: headers 
         });
-        renderDetalleFactura(); // Mostrar productos en la UI y recalcular monto total si es simple
-        // Si es con cotización, renderDetalleFactura no debería recalcular montoTotal porque está deshabilitado
-        // y actualizarMontoTotal debería retornar al inicio si hay cotización seleccionada.
-    } else {
-        detalleFactura = [];
-        renderDetalleFactura(); // Esto llamará a actualizarMontoTotal si no hay cotización
-    }
 
-    currentEditId = id;
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('No autorizado. Token inválido o expirado.');
+            } else if (response.status === 404) {
+                throw new Error('Factura no encontrada.');
+            }
+            throw new Error(`Error ${response.status} al cargar factura`);
+        }
+
+        const fact = await response.json();
+        console.log("📋 Factura cargada para editar:", fact);
+
+        if (!fact) {
+            alert("❌ Factura no encontrada.");
+            return;
+        }
+
+        // Abrir modal de edición
+        openAddInvoiceModal();
+        document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
+        document.getElementById('submitBtn').textContent = 'Guardar Cambios';
+        document.getElementById('invoiceIdInput').value = id;
+
+        // Establecer tipo de factura
+        const tipoFactura = fact.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
+        document.getElementById('tipoFacturaSelect').value = tipoFactura;
+
+        // Disparar evento change para actualizar campos visibles
+        document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
+
+        // Rellenar datos del formulario
+        const dniCliente = fact.cliente?.dni || fact.dniCliente;
+        document.getElementById('clienteSelect').value = dniCliente;
+
+        const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : '';
+        document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
+
+        // ✅ CORRECCIÓN: Usar el estado exacto que viene del backend
+        document.querySelector('select[name="estado"]').value = fact.estado || 'PENDIENTE';
+
+        document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
+
+        // ✅ CARGAR VALOR SERVICIO desde la factura existente
+        const valorServicioInput = document.getElementById('valorServicio');
+        if (valorServicioInput) {
+            valorServicioInput.value = (fact.valorServicio || 0).toFixed(2);
+        }
+
+        // ✅ CARGAR MONTO TOTAL desde la factura existente
+        const montoTotalInput = document.querySelector('input[name="monto_total"]');
+        if (montoTotalInput) {
+            montoTotalInput.value = (fact.montoTotal || 0).toFixed(2);
+        }
+
+        // Manejar facturas con cotización
+        if (tipoFactura === 'ConCotizacion') {
+            const idCotizacion = fact.cotizacion?.idCotizacion || fact.idCotizacion || '';
+            document.getElementById('cotizacionSelect').value = idCotizacion;
+            
+            // Disparar el evento change para cargar datos de la cotización
+            if (idCotizacion) {
+                setTimeout(() => {
+                    document.getElementById('cotizacionSelect').dispatchEvent(new Event('change'));
+                }, 100);
+            }
+        }
+
+        // ✅ CARGAR DETALLES DE LA FACTURA
+        detalleFactura = []; // Limpiar array existente
+        
+        if (fact.detalleFactura && Array.isArray(fact.detalleFactura)) {
+            fact.detalleFactura.forEach(df => {
+                // Buscar el producto en productosData para obtener nombre actualizado
+                const producto = productosData.find(p => p.idProducto === df.idProducto);
+                const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
+                const precioUnitario = parseFloat(df.precioUnitario) || 0;
+                const cantidad = parseInt(df.cantidad) || 0;
+                const subtotal = parseFloat(df.subtotal) || (precioUnitario * cantidad);
+
+                detalleFactura.push({
+                    idProducto: df.idProducto,
+                    nombreProducto: nombreProducto,
+                    cantidad: cantidad,
+                    precioUnitario: precioUnitario,
+                    subtotal: subtotal
+                });
+            });
+            console.log(`✅ ${detalleFactura.length} productos cargados para edición`);
+        } else {
+            console.log("ℹ️ No hay productos en esta factura");
+        }
+
+        // Renderizar productos y actualizar cálculos
+        renderDetalleFactura();
+
+        // Para facturas simples, recalcular monto total si es necesario
+        if (tipoFactura === 'Simple') {
+            setTimeout(() => {
+                actualizarMontoTotal();
+            }, 200);
+        }
+
+        currentEditId = id;
+        console.log("✅ Modal de edición configurado correctamente");
+
+    } catch (error) {
+        console.error("❌ Error al cargar factura para editar:", error);
+        
+        if (error.message.includes('401') || error.message.includes('No autorizado')) {
+            alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
+            window.location.href = 'index.html';
+        } else if (error.message.includes('404') || error.message.includes('no encontrada')) {
+            alert('❌ Factura no encontrada. Puede haber sido eliminada.');
+            await getAllFacturas(); // Recargar lista
+        } else {
+            alert(`❌ Error al cargar factura para editar:\n\n${error.message}`);
+        }
+    }
 }
 
 async function handleInvoiceFormSubmit(event) {
@@ -2102,35 +2182,85 @@ async function viewInvoice(id) {
             alert('✅ Factura enviada por correo electrónico.');
         }
 
-        async function deleteInvoice(id) {
-            if (!confirm('¿Está seguro de eliminar esta factura?')) return;
-            try {
-                const response = await fetch(`${API_FACTURAS_URL}/${id}`, { method: 'DELETE' });
-                if (!response.ok) throw new Error('Error al eliminar');
-                await getAllFacturas();
-                alert('✅ Factura eliminada exitosamente.');
-            } catch (error) {
-                console.error("Error al eliminar factura:", error);
-                alert(`❌ Error al eliminar factura: ${error.message}`);
+ // Función corregida para eliminar facturas
+async function deleteInvoice(id) {
+    if (!confirm('¿Está seguro de eliminar esta factura?')) return;
+    
+    try {
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
+        console.log(`🗑️ Intentando eliminar factura: ${id}`);
+        
+        const response = await fetch(`${API_FACTURAS_URL}/${id}`, {
+            method: 'DELETE',
+            headers: headers
+        });
+
+        console.log("📥 Respuesta de eliminación:", response.status, response.statusText);
+
+        if (!response.ok) {
+            if (response.status === 401) {
+                throw new Error('No autorizado. Token inválido o expirado.');
+            } else if (response.status === 404) {
+                throw new Error('Factura no encontrada.');
+            } else if (response.status === 403) {
+                throw new Error('No tiene permisos para eliminar esta factura.');
+            } else {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
             }
         }
 
+        // Si la respuesta es exitosa (204 No Content o 200 OK)
+        alert('✅ Factura eliminada exitosamente.');
+        await getAllFacturas(); // Recargar la lista
+        
+    } catch (error) {
+        console.error("❌ Error al eliminar factura:", error);
+        
+        // Mostrar mensaje de error específico
+        if (error.message.includes('401') || error.message.includes('No autorizado')) {
+            alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
+            window.location.href = 'index.html';
+        } else {
+            alert(`❌ Error al eliminar factura:\n\n${error.message}`);
+        }
+    }
+}
+
         // Inicialización
-        document.addEventListener('DOMContentLoaded', function() {
-            loadInitialData();
+ // En la carga inicial, verificar autenticación
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar token al cargar la página
+    if (!verificarToken()) {
+        alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
+        window.location.href = 'index.html';
+        return;
+    }
 
-            // Asignar el evento submit al formulario
-            const invoiceForm = document.getElementById('invoiceForm');
-            if (invoiceForm) {
-                invoiceForm.addEventListener('submit', handleInvoiceFormSubmit);
-            } else {
-                console.error("❌ No se encontró el formulario con ID 'invoiceForm'");
-            }
+    loadInitialData();
 
-            // Event Listeners adicionales
-            document.getElementById('filterInvoicesButton').addEventListener('click', filterInvoices);
-            document.getElementById('filterForm').addEventListener('submit', (e) => { e.preventDefault(); filterInvoices(); });
-        });
+    // Asignar eventos
+    const invoiceForm = document.getElementById('invoiceForm');
+    if (invoiceForm) {
+        invoiceForm.addEventListener('submit', handleInvoiceFormSubmit);
+    }
+
+    document.getElementById('filterInvoicesButton').addEventListener('click', filterInvoices);
+    document.getElementById('filterForm').addEventListener('submit', (e) => { 
+        e.preventDefault(); 
+        filterInvoices(); 
+    });
+});
     </script>
 </body>
 </html>
