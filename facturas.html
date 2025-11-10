@@ -1504,7 +1504,7 @@ function renderDetalleFactura() {
         text-align: right;
     `;
     resumenDiv.innerHTML = `
-        <strong>Subtotal: $${totalProductos.toLocaleString()}</strong>
+        <strong>Subtotal Productos: \n $${totalProductos.toLocaleString()}</strong>
     `;
     container.appendChild(resumenDiv);
     
@@ -2527,7 +2527,7 @@ async function viewInvoice(id) {
         // ✅ TOTAL FACTURA - TEXTO MÁS GRANDE Y ESPACIADO
         doc.setFontSize(14);
         doc.setTextColor(44, 95, 65);
-        doc.text('TOTAL:', colPrecio, currentY);
+        doc.text('TOTAL FACTURA:', colPrecio, currentY);
         doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
 
         // PIE DE PÁGINA
