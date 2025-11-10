@@ -1698,7 +1698,7 @@ function openAddInvoiceModal() {
     console.log("✅ Modal de factura abierto correctamente");
 }
 
-// Función completa para editar factura - VERSIÓN CORREGIDA
+// Función editInvoice mejorada con mejor diagnóstico
 async function editInvoice(id) {
     try {
         const token = localStorage.getItem('jwtToken');
@@ -1720,13 +1720,18 @@ async function editInvoice(id) {
             headers: headers 
         });
 
+        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
+
         if (!response.ok) {
-            if (response.status === 401) {
-                throw new Error('No autorizado. Token inválido o expirado.');
-            } else if (response.status === 404) {
-                throw new Error('Factura no encontrada.');
+            let errorMessage = `Error ${response.status}`;
+            try {
+                const errorText = await response.text();
+                console.error("❌ Error detallado:", errorText);
+                errorMessage += `: ${errorText}`;
+            } catch {
+                errorMessage += `: ${response.statusText}`;
             }
-            throw new Error(`Error ${response.status} al cargar factura`);
+            throw new Error(errorMessage);
         }
 
         const fact = await response.json();
@@ -1752,23 +1757,26 @@ async function editInvoice(id) {
 
         // Rellenar datos del formulario
         const dniCliente = fact.cliente?.dni || fact.dniCliente;
-        document.getElementById('clienteSelect').value = dniCliente;
+        if (dniCliente) {
+            document.getElementById('clienteSelect').value = dniCliente;
+        }
 
-        const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : '';
+        const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : new Date().toISOString().split('T')[0];
         document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
 
-        // ✅ CORRECCIÓN: Usar el estado exacto que viene del backend
-        document.querySelector('select[name="estado"]').value = fact.estado || 'PENDIENTE';
+        // Usar el estado exacto que viene del backend
+        const estado = fact.estado || 'PENDIENTE';
+        document.querySelector('select[name="estado"]').value = estado;
 
         document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
 
-        // ✅ CARGAR VALOR SERVICIO desde la factura existente
+        // CARGAR VALOR SERVICIO
         const valorServicioInput = document.getElementById('valorServicio');
         if (valorServicioInput) {
             valorServicioInput.value = (fact.valorServicio || 0).toFixed(2);
         }
 
-        // ✅ CARGAR MONTO TOTAL desde la factura existente
+        // CARGAR MONTO TOTAL
         const montoTotalInput = document.querySelector('input[name="monto_total"]');
         if (montoTotalInput) {
             montoTotalInput.value = (fact.montoTotal || 0).toFixed(2);
@@ -1777,21 +1785,25 @@ async function editInvoice(id) {
         // Manejar facturas con cotización
         if (tipoFactura === 'ConCotizacion') {
             const idCotizacion = fact.cotizacion?.idCotizacion || fact.idCotizacion || '';
-            document.getElementById('cotizacionSelect').value = idCotizacion;
-            
-            // Disparar el evento change para cargar datos de la cotización
             if (idCotizacion) {
+                document.getElementById('cotizacionSelect').value = idCotizacion;
+                // Esperar un poco para que se cargue el select
                 setTimeout(() => {
                     document.getElementById('cotizacionSelect').dispatchEvent(new Event('change'));
-                }, 100);
+                }, 300);
             }
         }
 
-        // ✅ CARGAR DETALLES DE LA FACTURA
+        // CARGAR DETALLES DE LA FACTURA
         detalleFactura = []; // Limpiar array existente
         
         if (fact.detalleFactura && Array.isArray(fact.detalleFactura)) {
             fact.detalleFactura.forEach(df => {
+                if (!df.idProducto || df.idProducto === "PRODUCTO_ELIMINADO") {
+                    console.warn("⚠️ Producto eliminado, omitiendo:", df);
+                    return;
+                }
+
                 // Buscar el producto en productosData para obtener nombre actualizado
                 const producto = productosData.find(p => p.idProducto === df.idProducto);
                 const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
@@ -1812,18 +1824,11 @@ async function editInvoice(id) {
             console.log("ℹ️ No hay productos en esta factura");
         }
 
-        // Renderizar productos y actualizar cálculos
+        // Renderizar productos
         renderDetalleFactura();
 
-        // Para facturas simples, recalcular monto total si es necesario
-        if (tipoFactura === 'Simple') {
-            setTimeout(() => {
-                actualizarMontoTotal();
-            }, 200);
-        }
-
         currentEditId = id;
-        console.log("✅ Modal de edición configurado correctamente");
+        console.log("✅ Modal de edición configurado correctamente para:", id);
 
     } catch (error) {
         console.error("❌ Error al cargar factura para editar:", error);
@@ -1833,9 +1838,9 @@ async function editInvoice(id) {
             window.location.href = 'index.html';
         } else if (error.message.includes('404') || error.message.includes('no encontrada')) {
             alert('❌ Factura no encontrada. Puede haber sido eliminada.');
-            await getAllFacturas(); // Recargar lista
+            await getAllFacturas();
         } else {
-            alert(`❌ Error al cargar factura para editar:\n\n${error.message}`);
+            alert(`❌ Error al cargar factura para editar:\n\n${error.message}\n\nPosible problema en el backend.`);
         }
     }
 }
@@ -2037,11 +2042,11 @@ async function handleInvoiceFormSubmit(event) {
     });
 }
 
-        // Obtener todas las facturas
- async function getAllFacturas() {
+// Obtener todas las facturas - VERSIÓN CON DEBUG
+async function getAllFacturas() {
     const token = localStorage.getItem('jwtToken');
     if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+        alert('Sesión expirada. Por favor, inicie sesión nuevamente.');
         window.location.href = 'index.html';
         return;
     }
@@ -2050,53 +2055,96 @@ async function handleInvoiceFormSubmit(event) {
     try {
         const response = await fetch(API_FACTURAS_URL, { headers });
         if (!response.ok) throw new Error('Error al obtener facturas');
+        
         allFacturas = await response.json();
-        console.log("Facturas cargadas:", allFacturas.length);
+        console.log("📋 Facturas cargadas:", allFacturas.length);
+        
+        // Debug: mostrar estados de las facturas
+        console.log("🔍 Estados de facturas:", 
+            allFacturas.map(f => ({ id: f.idFactura, estado: f.estado, monto: f.montoTotal }))
+        );
+        
         renderTable(allFacturas);
         updateStats();
     } catch (error) {
-        console.error("Error al obtener facturas:", error);
+        console.error("❌ Error al obtener facturas:", error);
         alert("Error al cargar la lista de facturas. Revisa la consola.");
     }
 }
-
-        // Actualizar estadísticas
-        function updateStats() {
-            const total = allFacturas.length;
-            const pendientes = allFacturas.filter(f => f.estado === 'Pendiente').length;
-            const pagadas = allFacturas.filter(f => f.estado === 'Pagada').length;
-            const ingresos = allFacturas.filter(f => f.estado === 'Pagada').reduce((sum, f) => sum + (f.montoTotal || 0), 0);
-
-            document.getElementById('statFacturasTotal').textContent = total;
-            document.getElementById('statFacturasPendientes').textContent = pendientes;
-            document.getElementById('statFacturasPagadas').textContent = pagadas;
-            document.getElementById('statIngresosTotal').textContent = formatCurrency(ingresos);
+// Función para diagnosticar el problema del backend
+async function diagnosticarBackend() {
+    try {
+        const token = localStorage.getItem('jwtToken');
+        const headers = { 'Authorization': 'Bearer ' + token };
+        
+        console.log("🔍 Diagnosticando backend...");
+        
+        // Probar endpoint de facturas
+        const response = await fetch(API_FACTURAS_URL, { headers });
+        console.log("✅ GET /facturas:", response.status);
+        
+        if (response.ok) {
+            const facturas = await response.json();
+            console.log(`✅ ${facturas.length} facturas obtenidas`);
+            
+            // Probar cada factura individualmente
+            for (let factura of facturas.slice(0, 3)) { // Probar solo las primeras 3
+                console.log(`🔍 Probando factura ${factura.idFactura}...`);
+                const individualResponse = await fetch(`${API_FACTURAS_URL}/${factura.idFactura}`, { headers });
+                console.log(`   ${factura.idFactura}:`, individualResponse.status);
+                
+                if (!individualResponse.ok) {
+                    const errorText = await individualResponse.text();
+                    console.error(`   ❌ Error:`, errorText);
+                }
+            }
         }
+        
+    } catch (error) {
+        console.error("❌ Error en diagnóstico:", error);
+    }
+}
 
-        // Filtrar facturas
-        function filterInvoices() {
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            const estadoFilter = document.getElementById('statusFilter').value;
-            const dateFrom = document.getElementById('dateFromFilter').value;
-            const dateTo = document.getElementById('dateToFilter').value;
+// Ejecutar en consola: diagnosticarBackend()
+// Función corregida para actualizar estadísticas
+function updateStats() {
+    try {
+        const total = allFacturas.length;
+        
+        // ✅ CORRECCIÓN: Usar los estados en mayúsculas como vienen del backend
+        const pendientes = allFacturas.filter(f => 
+            f.estado === 'PENDIENTE' || f.estado === 'Pendiente'
+        ).length;
+        
+        const pagadas = allFacturas.filter(f => 
+            f.estado === 'PAGADA' || f.estado === 'Pagada'
+        ).length;
+        
+        // ✅ CORRECCIÓN: Sumar correctamente los montos de facturas pagadas
+        const ingresos = allFacturas
+            .filter(f => f.estado === 'PAGADA' || f.estado === 'Pagada')
+            .reduce((sum, f) => {
+                const monto = parseFloat(f.montoTotal) || 0;
+                return sum + monto;
+            }, 0);
 
-            let filtered = allFacturas;
+        console.log("📊 Estadísticas calculadas:", {
+            total,
+            pendientes,
+            pagadas,
+            ingresos
+        });
 
-            if (searchTerm) {
-                filtered = filtered.filter(f => f.idFactura.toLowerCase().includes(searchTerm) || f.dniCliente.toLowerCase().includes(searchTerm));
-            }
-            if (estadoFilter) {
-                filtered = filtered.filter(f => f.estado === estadoFilter);
-            }
-            if (dateFrom) {
-                filtered = filtered.filter(f => new Date(f.fechaEmision) >= new Date(dateFrom));
-            }
-            if (dateTo) {
-                filtered = filtered.filter(f => new Date(f.fechaEmision) <= new Date(dateTo));
-            }
+        // Actualizar DOM
+        document.getElementById('statFacturasTotal').textContent = total;
+        document.getElementById('statFacturasPendientes').textContent = pendientes;
+        document.getElementById('statFacturasPagadas').textContent = pagadas;
+        document.getElementById('statIngresosTotal').textContent = formatCurrency(ingresos);
 
-            renderTable(filtered);
-        }
+    } catch (error) {
+        console.error("❌ Error al actualizar estadísticas:", error);
+    }
+}
 
         // Funciones de acciones (simuladas)
 async function viewInvoice(id) {
