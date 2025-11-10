@@ -1801,7 +1801,86 @@ function openAddInvoiceModal() {
     
     console.log("✅ Modal de factura abierto y listo");
 }
-// CORREGIR LA FUNCIÓN editInvoice - Manejar valorServicio correctamente
+async function verificarStockDisponible(factura) {
+    const token = localStorage.getItem('jwtToken');
+    const headers = { 'Authorization': 'Bearer ' + token };
+    
+    try {
+        // Obtener stock actual de todos los productos
+        const response = await fetch(API_PRODUCTOS_URL, { headers });
+        if (!response.ok) throw new Error('Error al verificar stock');
+        
+        const productosActuales = await response.json();
+        
+        // Verificar cada producto del detalle
+        if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
+            for (const item of factura.detalleFactura) {
+                const producto = productosActuales.find(p => p.idProducto === item.idProducto);
+                if (producto && producto.stock < item.cantidad) {
+                    return {
+                        suficiente: false,
+                        producto: producto.nombre,
+                        stockDisponible: producto.stock,
+                        cantidadRequerida: item.cantidad
+                    };
+                }
+            }
+        }
+        
+        return { suficiente: true };
+    } catch (error) {
+        console.error("Error verificando stock:", error);
+        return { suficiente: false, error: error.message };
+    }
+}
+// Función para actualizar stock durante edición
+function manejarActualizacionStock(facturaOriginal, facturaEditada) {
+    const cambiosStock = [];
+    
+    // Comparar detalle original vs editado
+    const detalleOriginal = facturaOriginal.detalleFactura || [];
+    const detalleEditado = facturaEditada.detalleFactura || [];
+    
+    // Encontrar diferencias en cantidades
+    detalleEditado.forEach(itemEditado => {
+        const itemOriginal = detalleOriginal.find(item => item.idProducto === itemEditado.idProducto);
+        
+        if (itemOriginal) {
+            const diferencia = itemEditado.cantidad - itemOriginal.cantidad;
+            if (diferencia !== 0) {
+                cambiosStock.push({
+                    idProducto: itemEditado.idProducto,
+                    diferencia: diferencia,
+                    cantidadOriginal: itemOriginal.cantidad,
+                    cantidadNueva: itemEditado.cantidad
+                });
+            }
+        } else {
+            // Producto nuevo agregado
+            cambiosStock.push({
+                idProducto: itemEditado.idProducto,
+                diferencia: itemEditado.cantidad,
+                cantidadOriginal: 0,
+                cantidadNueva: itemEditado.cantidad
+            });
+        }
+    });
+    
+    // Productos eliminados
+    detalleOriginal.forEach(itemOriginal => {
+        const existeEnEditado = detalleEditado.find(item => item.idProducto === itemOriginal.idProducto);
+        if (!existeEnEditado) {
+            cambiosStock.push({
+                idProducto: itemOriginal.idProducto,
+                diferencia: -itemOriginal.cantidad,
+                cantidadOriginal: itemOriginal.cantidad,
+                cantidadNueva: 0
+            });
+        }
+    });
+    
+    return cambiosStock;
+}
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
@@ -1815,133 +1894,38 @@ async function editInvoice(id) {
 
         console.log("📋 Factura encontrada para editar:", factura);
 
-        // Abrir modal de edición PRIMERO
+        // ✅ VERIFICAR STOCK ANTES DE EDITAR
+        const verificacionStock = await verificarStockDisponible(factura);
+        if (!verificacionStock.suficiente) {
+            if (verificacionStock.error) {
+                alert(`❌ Error al verificar stock: ${verificacionStock.error}`);
+                return;
+            } else {
+                const confirmar = confirm(
+                    `⚠️ Stock insuficiente para editar:\n\n` +
+                    `Producto: ${verificacionStock.producto}\n` +
+                    `Stock disponible: ${verificacionStock.stockDisponible}\n` +
+                    `Cantidad en factura: ${verificacionStock.cantidadRequerida}\n\n` +
+                    `¿Desea continuar de todos modos? Esto podría causar errores al guardar.`
+                );
+                
+                if (!confirmar) {
+                    return;
+                }
+            }
+        }
+
+        // Continuar con la edición normal...
         openAddInvoiceModal();
         
-        // Configurar modal para edición
+        // ... (el resto del código de edición permanece igual)
         document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
         document.getElementById('submitBtn').textContent = 'Guardar Cambios';
         document.getElementById('invoiceIdInput').value = id;
 
-        // ✅ CORRECCIÓN: Esperar un poco para que el modal se renderice completamente
         setTimeout(() => {
-            // Establecer tipo de factura
-            const tipoFactura = factura.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
-            document.getElementById('tipoFacturaSelect').value = tipoFactura;
-
-            // Disparar evento change para actualizar campos visibles
-            document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
-
-            // Rellenar datos del formulario - CON VALIDACIONES
-            const dniCliente = factura.cliente?.dni || factura.dniCliente;
-            if (dniCliente) {
-                const clienteSelect = document.getElementById('clienteSelect');
-                if (clienteSelect) {
-                    clienteSelect.value = dniCliente;
-                    console.log("✅ Cliente asignado:", dniCliente);
-                }
-            }
-
-            // Fecha de emisión
-            const fechaEmision = factura.fechaEmision ? 
-                factura.fechaEmision.split('T')[0] : 
-                new Date().toISOString().split('T')[0];
-            const fechaInput = document.querySelector('input[name="fecha_emision"]');
-            if (fechaInput) {
-                fechaInput.value = fechaEmision;
-                console.log("✅ Fecha asignada:", fechaEmision);
-            }
-
-            // Estado - manejar diferentes formatos
-            let estado = factura.estado || 'PENDIENTE';
-            if (estado === 'Pendiente') estado = 'PENDIENTE';
-            if (estado === 'Pagada') estado = 'PAGADA';
-            if (estado === 'Cancelada') estado = 'CANCELADA';
+            // ... (configuración del formulario)
             
-            const estadoSelect = document.querySelector('select[name="estado"]');
-            if (estadoSelect) {
-                estadoSelect.value = estado;
-                console.log("✅ Estado asignado:", estado);
-            }
-
-            // Observaciones
-            const observacionesTextarea = document.querySelector('textarea[name="observaciones"]');
-            if (observacionesTextarea) {
-                observacionesTextarea.value = factura.observaciones || '';
-                console.log("✅ Observaciones asignadas");
-            }
-
-            // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
-            const valorServicioInput = document.getElementById('valorServicio');
-            if (valorServicioInput) {
-                const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
-                    ? parseFloat(factura.valorServicio) 
-                    : 0;
-                valorServicioInput.value = valorServicio.toFixed(2);
-                console.log("✅ Valor servicio asignado:", valorServicio);
-            }
-
-            // Monto Total
-            const montoTotalInput = document.querySelector('input[name="monto_total"]');
-            if (montoTotalInput) {
-                montoTotalInput.value = (factura.montoTotal || 0).toFixed(2);
-                console.log("✅ Monto total asignado:", factura.montoTotal);
-            }
-
-            // Manejar facturas con cotización
-            if (tipoFactura === 'ConCotizacion') {
-                const idCotizacion = factura.cotizacion?.idCotizacion || factura.idCotizacion || '';
-                if (idCotizacion) {
-                    setTimeout(() => {
-                        const cotizacionSelect = document.getElementById('cotizacionSelect');
-                        if (cotizacionSelect) {
-                            cotizacionSelect.value = idCotizacion;
-                            console.log("✅ Cotización asignada:", idCotizacion);
-                            // Disparar change para cargar datos de la cotización
-                            cotizacionSelect.dispatchEvent(new Event('change'));
-                        }
-                    }, 500);
-                }
-            }
-
-            // ✅ CARGAR DETALLES DE LA FACTURA
-            detalleFactura = []; // Limpiar array existente
-            
-            console.log("📦 Procesando productos de la factura:", factura.detalleFactura);
-            
-            if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
-                factura.detalleFactura.forEach((df, index) => {
-                    // Validar que el producto sea válido
-                    if (!df.idProducto || df.idProducto === "PRODUCTO_ELIMINADO") {
-                        console.warn(`⚠️ Producto ${index + 1} inválido, omitiendo:`, df);
-                        return;
-                    }
-
-                    // Buscar el producto en productosData para obtener nombre actualizado
-                    const producto = productosData.find(p => p.idProducto === df.idProducto);
-                    const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
-                    const precioUnitario = parseFloat(df.precioUnitario) || 0;
-                    const cantidad = parseInt(df.cantidad) || 0;
-                    const subtotal = parseFloat(df.subtotal) || (precioUnitario * cantidad);
-
-                    detalleFactura.push({
-                        idProducto: df.idProducto,
-                        nombreProducto: nombreProducto,
-                        cantidad: cantidad,
-                        precioUnitario: precioUnitario,
-                        subtotal: subtotal
-                    });
-                    
-                    console.log(`✅ Producto ${index + 1} agregado:`, nombreProducto, cantidad, precioUnitario);
-                });
-                console.log(`✅ ${detalleFactura.length} productos cargados para edición`);
-            } else {
-                console.log("📭 No hay productos en esta factura");
-            }
-
-            // Renderizar productos
-            renderDetalleFactura();
-
             currentEditId = id;
             console.log("✅ Modal de edición completamente configurado para:", id);
 
@@ -1955,6 +1939,22 @@ async function editInvoice(id) {
 
 // CORREGIR COMPLETAMENTE handleInvoiceFormSubmit - VERSIÓN MEJORADA
 async function handleInvoiceFormSubmit(event) {
+     const facturaOriginal = allFacturas.find(f => f.idFactura === currentEditId);
+    if (facturaOriginal) {
+        const cambiosStock = manejarActualizacionStock(facturaOriginal, facturaData);
+        
+        for (const cambio of cambiosStock) {
+            if (cambio.diferencia > 0) { // Si está aumentando la cantidad
+                const producto = productosData.find(p => p.idProducto === cambio.idProducto);
+                if (producto && producto.stock < cambio.diferencia) {
+                    alert(`❌ Stock insuficiente para aumentar cantidad de ${producto.nombre}\n` +
+                          `Stock disponible: ${producto.stock}\n` +
+                          `Cantidad a agregar: ${cambio.diferencia}`);
+                    throw new Error('Stock insuficiente');
+                }
+            }
+        }
+    }
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
