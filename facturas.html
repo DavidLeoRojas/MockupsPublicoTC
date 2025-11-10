@@ -2202,7 +2202,7 @@ function updateStats() {
     }
 }
 
-// REEMPLAZAR COMPLETAMENTE la función viewInvoice
+// REEMPLAZAR COMPLETAMENTE la función viewInvoice con esta versión corregida
 async function viewInvoice(id) {
     try {
         console.log("📄 Generando PDF para factura:", id);
@@ -2213,14 +2213,12 @@ async function viewInvoice(id) {
             return;
         }
 
-        // ✅ CARGAR DATOS COMPLETOS DE LA FACTURA
+        // Cargar datos completos
         const token = localStorage.getItem('jwtToken');
         const headers = { 'Authorization': 'Bearer ' + token };
         
         const response = await fetch(`${API_FACTURAS_URL}/${id}`, { headers });
-        if (!response.ok) {
-            throw new Error('No se pudo cargar los detalles completos de la factura');
-        }
+        if (!response.ok) throw new Error('No se pudo cargar los detalles completos');
         
         const facturaCompleta = await response.json();
         console.log("📋 Datos completos de factura:", facturaCompleta);
@@ -2231,64 +2229,95 @@ async function viewInvoice(id) {
         // Crear PDF
         const jsPDF = window.jspdf.jsPDF;
         const doc = new jsPDF('p', 'mm', 'a4');
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 20;
+        const contentWidth = pageWidth - (margin * 2);
+
+        // ===== CONFIGURACIÓN INICIAL =====
+        doc.setFont('helvetica');
 
         // ===== ENCABEZADO =====
+        // Logo o título
         doc.setFontSize(20);
-        doc.setTextColor(44, 95, 65); // Verde oscuro
-        doc.text('FACTURA DE VENTA', 105, 20, null, null, 'center');
+        doc.setTextColor(44, 95, 65);
+        doc.text('FACTURA DE VENTA', pageWidth / 2, 25, { align: 'center' });
         
+        // Información empresa
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
-        doc.text('Gemini Ambiental SAS', 105, 27, null, null, 'center');
-        doc.text('NIT: 901.234.567-8', 105, 32, null, null, 'center');
-        doc.text('Carrera 45 # 12-34, Medellín, Colombia', 105, 37, null, null, 'center');
+        doc.text('Gemini Ambiental SAS', pageWidth / 2, 32, { align: 'center' });
+        doc.text('NIT: 901.234.567-8', pageWidth / 2, 37, { align: 'center' });
+        doc.text('Carrera 45 # 12-34, Medellín, Colombia', pageWidth / 2, 42, { align: 'center' });
 
         // Línea divisoria
         doc.setDrawColor(44, 95, 65);
-        doc.line(20, 42, 190, 42);
+        doc.line(margin, 47, pageWidth - margin, 47);
 
-        // ===== INFORMACIÓN DE LA FACTURA =====
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
+        // ===== INFORMACIÓN DE FACTURA Y CLIENTE =====
+        let yPos = 57;
         
         // Columna izquierda - Datos factura
-        doc.text(`N° FACTURA: ${facturaCompleta.idFactura || 'N/A'}`, 20, 52);
-        doc.text(`FECHA EMISIÓN: ${formatDateForPDF(facturaCompleta.fechaEmision)}`, 20, 58);
-        doc.text(`ESTADO: ${facturaCompleta.estado || 'N/A'}`, 20, 64);
-        doc.text(`TIPO: ${facturaCompleta.tipoFactura || 'Simple'}`, 20, 70);
+        doc.setFontSize(11);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont(undefined, 'bold');
+        doc.text('INFORMACIÓN DE LA FACTURA', margin, yPos);
+        doc.setFont(undefined, 'normal');
+        
+        yPos += 8;
+        doc.text(`N° Factura: ${facturaCompleta.idFactura || 'N/A'}`, margin, yPos);
+        yPos += 6;
+        doc.text(`Fecha Emisión: ${formatDateForPDF(facturaCompleta.fechaEmision)}`, margin, yPos);
+        yPos += 6;
+        doc.text(`Estado: ${facturaCompleta.estado || 'N/A'}`, margin, yPos);
+        yPos += 6;
+        doc.text(`Tipo: ${facturaCompleta.tipoFactura || 'Simple'}`, margin, yPos);
         
         if (facturaCompleta.idCotizacion) {
-            doc.text(`COTIZACIÓN: ${facturaCompleta.idCotizacion}`, 20, 76);
+            yPos += 6;
+            doc.text(`Cotización: ${facturaCompleta.idCotizacion}`, margin, yPos);
         }
 
         // Columna derecha - Datos cliente
-        const clienteX = 110;
-        doc.text(`CLIENTE: ${cliente.nombre || facturaCompleta.nombreCliente || 'N/A'}`, clienteX, 52);
-        doc.text(`DOCUMENTO: ${cliente.dni || facturaCompleta.dniCliente || 'N/A'}`, clienteX, 58);
-        doc.text(`TELÉFONO: ${cliente.telefono || facturaCompleta.telefonoCliente || 'N/A'}`, clienteX, 64);
-        doc.text(`CORREO: ${cliente.correo || facturaCompleta.correoCliente || 'N/A'}`, clienteX, 70);
+        const clienteX = pageWidth / 2 + 10;
+        let yPosCliente = 57;
         
-        if (cliente.tipoDni) {
-            doc.text(`TIPO DOC: ${cliente.tipoDni}`, clienteX, 76);
-        }
-
-        // Línea divisoria
-        doc.line(20, 82, 190, 82);
-
-        // ===== DETALLES DE LA FACTURA =====
-        let yPos = 92;
+        doc.setFont(undefined, 'bold');
+        doc.text('INFORMACIÓN DEL CLIENTE', clienteX, yPosCliente);
+        doc.setFont(undefined, 'normal');
         
-        // Títulos de columnas
+        yPosCliente += 8;
+        doc.text(`Cliente: ${cliente.nombre || facturaCompleta.nombreCliente || 'N/A'}`, clienteX, yPosCliente);
+        yPosCliente += 6;
+        doc.text(`Documento: ${cliente.dni || facturaCompleta.dniCliente || 'N/A'}`, clienteX, yPosCliente);
+        yPosCliente += 6;
+        doc.text(`Teléfono: ${cliente.telefono || facturaCompleta.telefonoCliente || 'N/A'}`, clienteX, yPosCliente);
+        yPosCliente += 6;
+        doc.text(`Correo: ${cliente.correo || facturaCompleta.correoCliente || 'N/A'}`, clienteX, yPosCliente);
+
+        // Línea divisoria después de información
+        const infoBottom = Math.max(yPos, yPosCliente) + 10;
+        doc.line(margin, infoBottom, pageWidth - margin, infoBottom);
+
+        // ===== DETALLES DE PRODUCTOS/SERVICIOS =====
+        let currentY = infoBottom + 15;
+
+        // Títulos de columnas - DEFINIR POSICIONES EXACTAS
+        const colDescripcion = margin;
+        const colCantidad = margin + 90;   // 90mm desde el margen
+        const colPrecio = margin + 110;    // 110mm desde el margen  
+        const colTotal = margin + 150;     // 150mm desde el margen
+
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
-        doc.text('DESCRIPCIÓN', 20, yPos);
-        doc.text('CANT.', 120, yPos);
-        doc.text('PRECIO UNITARIO', 140, yPos);
-        doc.text('VALOR TOTAL', 170, yPos);
+        doc.text('DESCRIPCIÓN', colDescripcion, currentY);
+        doc.text('CANT.', colCantidad, currentY);
+        doc.text('PRECIO UNIT.', colPrecio, currentY);
+        doc.text('VALOR TOTAL', colTotal, currentY);
         
-        // Línea divisoria
-        doc.line(20, yPos + 2, 190, yPos + 2);
-        yPos += 10;
+        // Línea bajo títulos
+        currentY += 4;
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+        currentY += 8;
 
         doc.setFont(undefined, 'normal');
         
@@ -2300,161 +2329,192 @@ async function viewInvoice(id) {
             tieneProductos = true;
             
             for (const item of facturaCompleta.detalleFactura) {
-                if (yPos > 250) {
+                // Verificar si necesita nueva página
+                if (currentY > 250) {
                     doc.addPage();
-                    yPos = 20;
+                    currentY = 30;
+                    
+                    // Redibujar títulos en nueva página
+                    doc.setFont(undefined, 'bold');
+                    doc.text('DESCRIPCIÓN', colDescripcion, currentY);
+                    doc.text('CANT.', colCantidad, currentY);
+                    doc.text('PRECIO UNIT.', colPrecio, currentY);
+                    doc.text('VALOR TOTAL', colTotal, currentY);
+                    
+                    currentY += 8;
+                    doc.line(margin, currentY, pageWidth - margin, currentY);
+                    currentY += 8;
+                    doc.setFont(undefined, 'normal');
                 }
                 
                 // Buscar nombre del producto
                 const producto = productosData.find(p => p.idProducto === item.idProducto);
                 const nombreProducto = producto?.nombre || item.nombreProducto || 'Producto';
                 
-                // Formatear texto (puede necesitar múltiples líneas)
-                const lines = doc.splitTextToSize(nombreProducto, 80);
+                // Dividir descripción larga en múltiples líneas
+                const descripcionLines = doc.splitTextToSize(nombreProducto, 80); // 80mm de ancho
                 
-                if (lines.length > 1) {
-                    doc.text(lines, 20, yPos);
-                    doc.text(item.cantidad?.toString() || '0', 120, yPos);
-                    doc.text(formatCurrencyForPDF(item.precioUnitario), 140, yPos);
-                    doc.text(formatCurrencyForPDF(item.subtotal), 170, yPos);
-                    yPos += (lines.length * 5) + 2;
-                } else {
-                    doc.text(nombreProducto, 20, yPos);
-                    doc.text(item.cantidad?.toString() || '0', 120, yPos);
-                    doc.text(formatCurrencyForPDF(item.precioUnitario), 140, yPos);
-                    doc.text(formatCurrencyForPDF(item.subtotal), 170, yPos);
-                    yPos += 8;
-                }
+                // Calcular altura necesaria
+                const lineHeight = 5;
+                const descripcionHeight = descripcionLines.length * lineHeight;
+                
+                // Escribir descripción (puede ser multilínea)
+                doc.text(descripcionLines, colDescripcion, currentY);
+                
+                // Escribir datos numéricos (una sola línea)
+                doc.text((item.cantidad || 0).toString(), colCantidad, currentY);
+                doc.text(formatCurrencyForPDF(item.precioUnitario || 0), colPrecio, currentY);
+                doc.text(formatCurrencyForPDF(item.subtotal || 0), colTotal, currentY);
+                
+                // Avanzar posición Y considerando la descripción más larga
+                currentY += Math.max(descripcionHeight, lineHeight) + 2;
                 
                 subtotalProductos += item.subtotal || 0;
             }
         } else {
-            doc.text('No hay productos en esta factura', 20, yPos);
-            yPos += 8;
+            // No hay productos
+            doc.text('No hay productos en esta factura', colDescripcion, currentY);
+            currentY += 8;
         }
 
-        yPos += 5;
+        currentY += 10;
 
         // ✅ VALOR DEL SERVICIO
         let valorServicio = parseFloat(facturaCompleta.valorServicio) || 0;
         if (valorServicio > 0) {
-            if (yPos > 250) {
+            if (currentY > 250) {
                 doc.addPage();
-                yPos = 20;
+                currentY = 30;
             }
             
             doc.setFont(undefined, 'bold');
-            doc.text('VALOR DEL SERVICIO:', 120, yPos);
-            doc.text(formatCurrencyForPDF(valorServicio), 170, yPos);
+            doc.text('VALOR DEL SERVICIO:', colPrecio, currentY);
+            doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
             doc.setFont(undefined, 'normal');
-            yPos += 8;
+            currentY += 8;
         }
 
         // Línea divisoria antes del total
-        if (yPos > 250) {
+        if (currentY > 250) {
             doc.addPage();
-            yPos = 20;
+            currentY = 30;
         }
         
-        doc.line(120, yPos, 190, yPos);
-        yPos += 10;
+        doc.line(colPrecio, currentY, pageWidth - margin, currentY);
+        currentY += 10;
 
-        // ✅ TOTALES
+        // ✅ TOTALES - USANDO LAS MISMAS COLUMNAS
         const totalFinal = subtotalProductos + valorServicio;
         
         doc.setFont(undefined, 'bold');
-        doc.setFontSize(12);
+        doc.setFontSize(11);
         
         if (tieneProductos) {
-            doc.text('SUBTOTAL PRODUCTOS:', 120, yPos);
-            doc.text(formatCurrencyForPDF(subtotalProductos), 170, yPos);
-            yPos += 8;
+            doc.text('SUBTOTAL PRODUCTOS:', colPrecio, currentY);
+            doc.text(formatCurrencyForPDF(subtotalProductos), colTotal, currentY);
+            currentY += 8;
         }
         
         if (valorServicio > 0) {
-            doc.text('VALOR SERVICIO:', 120, yPos);
-            doc.text(formatCurrencyForPDF(valorServicio), 170, yPos);
-            yPos += 8;
+            doc.text('VALOR SERVICIO:', colPrecio, currentY);
+            doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
+            currentY += 8;
         }
         
+        // Línea doble para total final
+        doc.setDrawColor(44, 95, 65);
+        doc.line(colPrecio, currentY, pageWidth - margin, currentY);
+        currentY += 2;
+        doc.line(colPrecio, currentY, pageWidth - margin, currentY);
+        currentY += 8;
+        
         doc.setFontSize(14);
-        doc.text('TOTAL FACTURA:', 120, yPos);
-        doc.text(formatCurrencyForPDF(totalFinal), 170, yPos);
-        yPos += 12;
+        doc.setTextColor(44, 95, 65);
+        doc.text('TOTAL FACTURA:', colPrecio, currentY);
+        doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
+        
+        doc.setTextColor(0, 0, 0);
+        currentY += 15;
 
         // ✅ OBSERVACIONES
         if (facturaCompleta.observaciones) {
-            if (yPos > 220) {
+            if (currentY > 220) {
                 doc.addPage();
-                yPos = 20;
+                currentY = 30;
             }
             
             doc.setFontSize(10);
             doc.setFont(undefined, 'bold');
-            doc.text('OBSERVACIONES:', 20, yPos);
-            yPos += 6;
+            doc.text('OBSERVACIONES:', margin, currentY);
+            currentY += 6;
             
             doc.setFont(undefined, 'normal');
-            const observacionesLines = doc.splitTextToSize(facturaCompleta.observaciones, 160);
-            doc.text(observacionesLines, 20, yPos);
-            yPos += (observacionesLines.length * 5) + 5;
+            const observacionesLines = doc.splitTextToSize(facturaCompleta.observaciones, contentWidth);
+            doc.text(observacionesLines, margin, currentY);
+            currentY += (observacionesLines.length * 5) + 10;
         }
 
-        // ✅ INFORMACIÓN ADICIONAL PARA COTIZACIONES
-        if (facturaCompleta.tipoFactura === 'ConCotizacion' && facturaCompleta.idCotizacion) {
-            if (yPos > 220) {
-                doc.addPage();
-                yPos = 20;
-            }
-            
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'bold');
-            doc.text('INFORMACIÓN ADICIONAL:', 20, yPos);
-            yPos += 6;
-            
-            doc.setFont(undefined, 'normal');
-            doc.text(`• Esta factura está asociada a la cotización ${facturaCompleta.idCotizacion}`, 20, yPos);
-            yPos += 5;
-            doc.text('• Los servicios fueron previamente cotizados y aprobados por el cliente', 20, yPos);
-            yPos += 5;
+        // ✅ INFORMACIÓN ADICIONAL
+        if (currentY > 220) {
+            doc.addPage();
+            currentY = 30;
         }
+        
+        doc.setFontSize(9);
+        doc.setTextColor(100, 100, 100);
+        doc.setFont(undefined, 'bold');
+        doc.text('INFORMACIÓN ADICIONAL:', margin, currentY);
+        currentY += 5;
+        
+        doc.setFont(undefined, 'normal');
+        
+        if (facturaCompleta.tipoFactura === 'ConCotizacion' && facturaCompleta.idCotizacion) {
+            doc.text(`• Factura asociada a la cotización ${facturaCompleta.idCotizacion}`, margin, currentY);
+            currentY += 4;
+        }
+        
+        doc.text('• Documento generado electrónicamente', margin, currentY);
+        currentY += 4;
+        doc.text('• Válido como comprobante de pago', margin, currentY);
 
         // ===== PIE DE PÁGINA =====
         const footerY = 280;
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
         
-        doc.line(20, footerY, 190, footerY);
-        doc.text('Documento generado electrónicamente por Gemini Ambiental SAS', 20, footerY + 5);
-        doc.text('Este documento es una representación impresa de un CFDI', 20, footerY + 10);
-        doc.text(`Generado el: ${new Date().toLocaleDateString('es-CO')} ${new Date().toLocaleTimeString('es-CO')}`, 20, footerY + 15);
+        // Línea de separación
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin, footerY, pageWidth - margin, footerY);
         
-        doc.text('NIT: 901.234.567-8 • Tel: +57 (4) 444 5555 • www.geminiambiental.com', 105, footerY + 15, null, null, 'center');
+        // Texto del pie
+        doc.text('Gemini Ambiental SAS - NIT: 901.234.567-8', margin, footerY + 5);
+        doc.text('Tel: +57 (4) 444 5555 - www.geminiambiental.com', margin, footerY + 10);
+        doc.text(`Documento generado el: ${new Date().toLocaleDateString('es-CO')} ${new Date().toLocaleTimeString('es-CO')}`, pageWidth - margin, footerY + 10, { align: 'right' });
 
         // ===== MOSTRAR/DESCARGAR PDF =====
-        const nombreArchivo = `Factura_${facturaCompleta.idFactura}_${new Date().toISOString().split('T')[0]}.pdf`;
+        const nombreArchivo = `Factura_${facturaCompleta.idFactura}.pdf`;
         
-        const confirmacion = confirm(
+        // Mostrar opciones al usuario
+        const userChoice = confirm(
             '¿Desea descargar la factura como PDF?\n\n' +
-            '✅ Información completa incluida:\n' +
-            '• Datos de la empresa\n' + 
-            '• Información del cliente\n' +
-            '• Productos y servicios\n' +
-            '• Desglose de valores\n' +
-            '• Observaciones\n' +
-            '• Pie de página legal'
+            'Cancelar = Vista previa\nAceptar = Descargar'
         );
         
-        if (confirmacion) {
+        if (userChoice) {
             doc.save(nombreArchivo);
+            console.log("✅ PDF descargado:", nombreArchivo);
         } else {
-            // Abrir en nueva pestaña para vista previa
+            // Vista previa en nueva pestaña
             const pdfBlob = doc.output('blob');
             const pdfUrl = URL.createObjectURL(pdfBlob);
-            window.open(pdfUrl, '_blank');
             
-            // Limpiar URL después de 30 segundos
-            setTimeout(() => URL.revokeObjectURL(pdfUrl), 30000);
+            const previewWindow = window.open(pdfUrl, '_blank');
+            if (!previewWindow) {
+                alert('Por favor, permite ventanas emergentes para ver la vista previa');
+            }
+            
+            // Limpiar URL después de un tiempo
+            setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
         }
 
     } catch (error) {
@@ -2462,46 +2522,80 @@ async function viewInvoice(id) {
         alert("❌ Error al generar el PDF: " + error.message);
     }
 }
+
+// ✅ FUNCIONES AUXILIARES MEJORADAS
 function formatDateForPDF(dateString) {
     if (!dateString) return 'N/A';
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-CO', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-    });
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('es-CO', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        });
+    } catch (e) {
+        return 'Fecha inválida';
+    }
 }
 
 function formatCurrencyForPDF(amount) {
     if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
     
-    // Para PDF, usar formato simple sin símbolo para ahorrar espacio
-    return new Intl.NumberFormat('es-CO', {
+    // Para PDF, usar formato compacto pero legible
+    if (amount >= 1000000) {
+        return '$' + (amount / 1000000).toFixed(1).replace('.', ',') + 'M';
+    }
+    
+    return '$ ' + new Intl.NumberFormat('es-CO', {
         minimumFractionDigits: 0,
         maximumFractionDigits: 0
     }).format(amount);
 }
 
-// ✅ MEJORAR LA FUNCIÓN DE FORMATEO EN TABLAS TAMBIÉN
-function formatCurrencyForTable(value) {
-    if (value === null || value === undefined || isNaN(value)) return '$0';
+// ✅ FUNCIÓN DE PRUEBA PARA VERIFICAR EL PDF
+function probarPDF() {
+    console.log("🧪 Probando generación de PDF...");
     
-    if (value >= 1000000) {
-        // Para valores grandes, mostrar formato abreviado en tabla
-        if (value >= 1000000000) {
-            return '$' + (value / 1000000000).toFixed(1) + 'B';
-        } else {
-            return '$' + (value / 1000000).toFixed(1) + 'M';
-        }
-    }
+    // Crear datos de prueba
+    const datosPrueba = {
+        idFactura: "FAC_TEST",
+        fechaEmision: new Date().toISOString(),
+        estado: "PAGADA",
+        tipoFactura: "Simple",
+        dniCliente: "123456789",
+        nombreCliente: "Cliente de Prueba",
+        telefonoCliente: "3001234567",
+        correoCliente: "cliente@test.com",
+        detalleFactura: [
+            {
+                idProducto: "PROD001",
+                nombreProducto: "Producto de Prueba Largo Nombre Para Ver Como Se Comporta",
+                cantidad: 2,
+                precioUnitario: 50000,
+                subtotal: 100000
+            },
+            {
+                idProducto: "PROD002", 
+                nombreProducto: "Otro Producto",
+                cantidad: 1,
+                precioUnitario: 75000,
+                subtotal: 75000
+            }
+        ],
+        valorServicio: 50000,
+        observaciones: "Esta es una factura de prueba para verificar el formato del PDF y asegurar que todas las columnas se alineen correctamente sin solapamientos."
+    };
     
-    return new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        currency: 'COP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(value);
+    console.log("📋 Datos de prueba:", datosPrueba);
+    alert("Se han cargado datos de prueba. Ahora genera el PDF para ver el resultado.");
+    
+    // Simular que existe en allFacturas para la función viewInvoice
+    allFacturas.push(datosPrueba);
+    
+    return datosPrueba;
 }
+
+// Ejecutar en consola: probarPDF()
         async function sendInvoice(id) {
             if (!confirm('¿Está seguro de enviar esta factura por correo electrónico?')) return;
             alert('✅ Factura enviada por correo electrónico.');
