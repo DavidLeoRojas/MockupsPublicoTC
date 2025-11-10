@@ -1800,6 +1800,71 @@ async function updateService(event) {
 
         const cancelarServicio = cancelService;
 
+
+        // ========== FUNCIONES AUXILIARES FALTANTES ==========
+
+function obtenerDNICliente(servicio) {
+    // Intentar todas las variantes posibles
+    if (servicio.cliente?.dni) return servicio.cliente.dni;
+    if (servicio.dniCliente) return servicio.dniCliente;
+    if (servicio.dni_cliente) return servicio.dni_cliente;
+    if (servicio.DNI_cliente) return servicio.DNI_cliente;
+    return null;
+}
+
+function obtenerDNITecnico(servicio) {
+    if (servicio.empleadoAsignado?.dni) return servicio.empleadoAsignado.dni;
+    if (servicio.dniEmpleadoAsignado) return servicio.dniEmpleadoAsignado;
+    if (servicio.dni_empleado_asignado) return servicio.dni_empleado_asignado;
+    if (servicio.DNI_empleado_asignado) return servicio.DNI_empleado_asignado;
+    return null;
+}
+
+// ✅ AGREGAR ESTAS FUNCIONES FALTANTES AQUÍ
+function obtenerIDTipoServicio(servicio) {
+    console.log('🔍 Buscando ID tipo servicio para:', servicio);
+    
+    if (servicio.tipoServicio?.idTipoServicio) {
+        console.log('✅ ID encontrado en objeto:', servicio.tipoServicio.idTipoServicio);
+        return servicio.tipoServicio.idTipoServicio;
+    }
+    if (servicio.idTipoServicio) return servicio.idTipoServicio;
+    if (servicio.id_tipo_servicio) return servicio.id_tipo_servicio;
+    if (servicio.ID_tipo_servicio) return servicio.ID_tipo_servicio;
+    if (servicio.tipoServicioId) return servicio.tipoServicioId;
+    
+    console.error('❌ No se pudo obtener ID del tipo de servicio');
+    return null;
+}
+
+async function verificarAutenticacion() {
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        console.error('❌ No hay token JWT');
+        showCustomAlert('Sesión expirada. Por favor, inicie sesión nuevamente.', 'Error', 'error');
+        return false;
+    }
+    
+    try {
+        const response = await fetch(`${API_BASE_URL}/personas`, {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Token inválido');
+        
+        console.log('✅ Token válido');
+        return true;
+    } catch (error) {
+        console.error('❌ Token inválido:', error);
+        showCustomAlert('Sesión expirada. Por favor, inicie sesión nuevamente.', 'Error', 'error');
+        localStorage.removeItem('jwtToken');
+        setTimeout(() => window.location.href = 'index.html', 2000);
+        return false;
+    }
+}
         // ========== RENDER TODAY SCHEDULE ==========
         function renderTodaySchedule(date) {
             const scheduleContainer = document.getElementById('todaySchedule');
