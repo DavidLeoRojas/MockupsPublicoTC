@@ -1170,7 +1170,7 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
     const cotizacionId = this.value;
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
     const clienteSelect = document.getElementById('clienteSelect');
-    const valorServicioInput = document.getElementById('valorServicio'); // ✅ Obtener el campo de Valor del Servicio
+    const valorServicioInput = document.getElementById('valorServicio');
 
     if (!montoTotalInput) {
         console.error("❌ No se encontró el campo 'monto_total'");
@@ -1187,33 +1187,42 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
 
         if (cotizacion) {
             let costoTotal = parseFloat(cotizacion.costoTotalCotizacion) || 0;
-            // ✅ Obtener el valor del servicio de la cotización
             let valorServicioCotizacion = parseFloat(cotizacion.valorServicio) || 0;
 
             if (isNaN(costoTotal) || costoTotal <= 0) {
                 alert(`⚠️ La cotización seleccionada no tiene un costo total válido. Por favor, verifique los datos.`);
-                // Limpiar y habilitar campos si la cotización no es válida
                 valorServicioInput.value = '0';
                 valorServicioInput.disabled = false;
                 montoTotalInput.value = '0';
-                // ✅ NO deshabilitar montoTotalInput aquí si no es válida, para evitar confusión
-                // montoTotalInput.disabled = false; // Opcional: mantener deshabilitado si no es válida
+                montoTotalInput.disabled = false;
                 clienteSelect.disabled = false;
                 detalleFactura = [];
                 renderDetalleFactura();
                 return;
             }
 
-            // ✅ Cargar productos de la cotización
+            // ✅ CORRECCIÓN: Cargar productos de la cotización FILTRANDO productos eliminados
             detalleFactura = [];
             if (cotizacion.detalleCotizacion && Array.isArray(cotizacion.detalleCotizacion)) {
                 cotizacion.detalleCotizacion.forEach(item => {
+                    // ✅ FILTRAR: No incluir productos eliminados o inválidos
+                    if (!item.idProducto || item.idProducto === "PRODUCTO_ELIMINADO") {
+                        console.warn("⚠️ Producto eliminado encontrado en cotización, omitiendo:", item);
+                        return;
+                    }
+
                     const producto = productosData.find(p => p.idProducto === item.idProducto);
-                    const precioUnitario = producto ? parseFloat(producto.precioActual) : 0;
+                    if (!producto) {
+                        console.warn("⚠️ Producto no encontrado en inventario:", item.idProducto);
+                        return;
+                    }
+
+                    const precioUnitario = parseFloat(producto.precioActual) || 0;
                     const subtotal = precioUnitario * item.cantidad;
+                    
                     detalleFactura.push({
                         idProducto: item.idProducto,
-                        nombreProducto: item.nombreProducto || producto?.nombre || 'Producto desconocido',
+                        nombreProducto: item.nombreProducto || producto.nombre || 'Producto desconocido',
                         cantidad: item.cantidad,
                         precioUnitario: precioUnitario,
                         subtotal: subtotal
@@ -1221,18 +1230,15 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
                 });
             }
 
-            renderDetalleFactura(); // <-- Esto llama a actualizarMontoTotal, pero no hará nada porque hay cotización
+            renderDetalleFactura();
 
             // ✅ CARGAR EL VALOR DEL SERVICIO DESDE LA COTIZACIÓN
             valorServicioInput.value = valorServicioCotizacion.toFixed(2);
-            // ✅ DESHABILITAR EL VALOR DEL SERVICIO
-            valorServicioInput.disabled = true; // <-- Deshabilitar
+            valorServicioInput.disabled = true;
 
             // ✅ CARGAR EL MONTO TOTAL CON EL VALOR DE LA COTIZACIÓN
             montoTotalInput.value = costoTotal.toFixed(2);
-            // ✅ DESHABILITAR EL MONTO TOTAL (opcional, para que el usuario vea que es fijo)
-            // Si lo deshabilitas, asegúrate de que handleInvoiceFormSubmit lo lea correctamente del DOM.
-            montoTotalInput.disabled = true; // <-- Deshabilitar
+            montoTotalInput.disabled = true;
 
             if (cotizacion.cliente?.dni) {
                 clienteSelect.value = cotizacion.cliente.dni;
@@ -1242,11 +1248,10 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
 
         } else {
             alert(`⚠️ Cotización no encontrada.`);
-            // Limpiar y habilitar campos si la cotización no se encuentra
             valorServicioInput.value = '0';
             valorServicioInput.disabled = false;
             montoTotalInput.value = '0';
-            montoTotalInput.disabled = false; // Habilitar
+            montoTotalInput.disabled = false;
             clienteSelect.disabled = false;
             detalleFactura = [];
             renderDetalleFactura();
@@ -1255,16 +1260,15 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
         // Si no hay cotización seleccionada, limpiar y habilitar campos
         valorServicioInput.value = '';
         valorServicioInput.disabled = false;
-        montoTotalInput.value = ''; // Se calculará en renderDetalleFactura o actualizarMontoTotal
-        montoTotalInput.disabled = false; // Habilitar
+        montoTotalInput.value = '';
+        montoTotalInput.disabled = false;
         clienteSelect.disabled = false;
         detalleFactura = [];
-        renderDetalleFactura(); // <-- Esto llamará a actualizarMontoTotal
+        renderDetalleFactura();
     }
 });
 
-        // Agregar producto al detalle
-// Agregar producto al detalle - VERSIÓN MEJORADA
+// Agregar producto al detalle - VERSIÓN CORREGIDA
 document.getElementById('addProductBtn').addEventListener('click', function() {
     const productoId = document.getElementById('productoSelect').value;
     const cantidad = parseInt(document.getElementById('cantidadProducto').value) || 0;
@@ -1282,6 +1286,12 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
     const producto = productosData.find(p => p.idProducto === productoId);
     if (!producto) {
         alert('❌ Producto no encontrado.');
+        return;
+    }
+
+    // ✅ CORRECCIÓN: Validar que el producto no sea "PRODUCTO_ELIMINADO"
+    if (productoId === "PRODUCTO_ELIMINADO") {
+        alert('❌ No se puede agregar un producto eliminado.');
         return;
     }
 
@@ -1392,24 +1402,39 @@ function renderDetalleFactura() {
 }
 
 
-// Función para diagnosticar problemas con facturas
+// Función para diagnosticar problemas con facturas - VERSIÓN MEJORADA
 async function diagnosticarFacturas() {
     console.log("🔍 DIAGNOSTICANDO FACTURAS...");
     
+    // Primero, limpiar cualquier producto eliminado
+    limpiarProductosEliminados();
+    
+    // Crear datos de prueba con productos válidos
+    const productoValido = productosData.find(p => 
+        p.idProducto && 
+        p.idProducto !== "PRODUCTO_ELIMINADO" && 
+        p.stock > 0
+    );
+    
+    if (!productoValido) {
+        alert("❌ No hay productos válidos para probar. Agrega productos al inventario primero.");
+        return null;
+    }
+
     const datosPrueba = {
         dniCliente: "111111111", // Usa un DNI que exista
         fechaEmision: new Date().toISOString().split('T')[0],
         montoTotal: 100000,
         estado: "Pendiente",
-        observaciones: "Factura de prueba",
+        observaciones: "Factura de prueba - diagnóstico",
         tipoFactura: "Simple",
         valorServicio: 50000,
         detalleFactura: [
             {
-                idProducto: "PRD001", // Usa un ID de producto que exista
-                cantidad: 2,
-                precioUnitario: 25000,
-                subtotal: 50000
+                idProducto: productoValido.idProducto,
+                cantidad: 1,
+                precioUnitario: productoValido.precioActual || 50000,
+                subtotal: productoValido.precioActual || 50000
             }
         ]
     };
@@ -1418,6 +1443,11 @@ async function diagnosticarFacturas() {
     
     try {
         const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert("❌ No hay token de autenticación");
+            return null;
+        }
+        
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json'
@@ -1435,11 +1465,19 @@ async function diagnosticarFacturas() {
             const result = await response.json();
             console.log("✅ ÉXITO:", result);
             alert("✅ Factura de prueba creada exitosamente");
+            await getAllFacturas();
             return result;
         } else {
             const errorText = await response.text();
             console.error("❌ Error:", errorText);
-            alert("❌ Error en prueba: " + errorText);
+            
+            // Intentar parsear el error para mejor mensaje
+            try {
+                const errorJson = JSON.parse(errorText);
+                alert("❌ Error en prueba: " + (errorJson.message || errorJson.error || errorText));
+            } catch {
+                alert("❌ Error en prueba: " + errorText);
+            }
             return null;
         }
     } catch (error) {
@@ -1448,6 +1486,8 @@ async function diagnosticarFacturas() {
         return null;
     }
 }
+
+// Ejecutar en consola: diagnosticarFacturas()
 
 // Ejecutar en consola: diagnosticarFacturas()
         // Editar un item del detalle
@@ -1634,11 +1674,9 @@ async function handleInvoiceFormSubmit(event) {
         const estado = document.querySelector('select[name="estado"]').value;
         const observaciones = document.querySelector('textarea[name="observaciones"]').value || '';
         
-        // ✅ CORRECCIÓN: Obtener montoTotal correctamente
         const montoTotalInput = document.querySelector('input[name="monto_total"]');
         let montoTotal = parseFloat(montoTotalInput?.value) || 0;
         
-        // ✅ CORRECCIÓN: Obtener valorServicio correctamente
         const valorServicioInput = document.getElementById('valorServicio');
         const valorServicio = valorServicioInput ? parseFloat(valorServicioInput.value) || 0 : 0;
 
@@ -1672,8 +1710,21 @@ async function handleInvoiceFormSubmit(event) {
             throw new Error('Monto total inválido');
         }
 
+        // ✅ CORRECCIÓN: Filtrar productos eliminados antes de enviar
+        const detalleFacturaFiltrado = detalleFactura.filter(item => 
+            item.idProducto && 
+            item.idProducto !== "PRODUCTO_ELIMINADO" && 
+            item.idProducto !== "null" &&
+            item.cantidad > 0
+        );
+
+        if (detalleFacturaFiltrado.length === 0 && tipoFactura === 'Simple') {
+            alert('⚠️ Debe agregar al menos un producto válido a la factura.');
+            throw new Error('No hay productos válidos en el detalle');
+        }
+
         // ✅ CORRECCIÓN: Preparar detalle de factura correctamente
-        const detalleFacturaData = detalleFactura.map(item => ({
+        const detalleFacturaData = detalleFacturaFiltrado.map(item => ({
             idProducto: item.idProducto,
             cantidad: item.cantidad,
             precioUnitario: item.precioUnitario,
@@ -1720,10 +1771,16 @@ async function handleInvoiceFormSubmit(event) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;
             try {
                 const errorText = await response.text();
-                const errorJson = JSON.parse(errorText);
-                errorMessage = errorJson.message || errorJson.error || errorText;
+                // Intentar parsear como JSON
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorMessage = errorJson.message || errorJson.error || errorText;
+                } catch {
+                    // Si no es JSON, usar el texto original
+                    errorMessage = errorText || errorMessage;
+                }
             } catch {
-                // Si no se puede parsear como JSON, usar el texto original
+                // Si hay error al leer la respuesta
             }
             throw new Error(errorMessage);
         }
