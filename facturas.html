@@ -2290,7 +2290,7 @@ function updateStats() {
 }
 
 // REEMPLAZAR COMPLETAMENTE la función viewInvoice con esta versión corregida
-// FUNCIÓN CORREGIDA PARA EVITAR SUPERPOSICIÓN
+// FUNCIÓN COMPLETAMENTE CORREGIDA PARA EL PDF
 async function viewInvoice(id) {
     try {
         console.log("📄 Generando PDF para factura:", id);
@@ -2305,12 +2305,12 @@ async function viewInvoice(id) {
         const facturaCompleta = await response.json();
         console.log("📋 Factura completa:", facturaCompleta);
 
-        // ✅ CORRECCIÓN: Convertir valores con "K" antes de procesar
+        // Convertir valores con "K"
         if (typeof facturaCompleta.montoTotal === 'string' && facturaCompleta.montoTotal.includes('K')) {
             facturaCompleta.montoTotal = convertirValorK(facturaCompleta.montoTotal);
         }
 
-        // ✅ OBTENER CLIENTE DE CUALQUIER FORMA POSIBLE
+        // Obtener cliente
         let cliente = {};
         if (facturaCompleta.cliente) {
             cliente = facturaCompleta.cliente;
@@ -2412,7 +2412,7 @@ async function viewInvoice(id) {
         let subtotalProductos = 0;
         let tieneItems = false;
 
-        // ✅ OBTENER DETALLES DE CUALQUIER ESTRUCTURA
+        // Obtener detalles
         let detalleParaMostrar = [];
 
         if (facturaCompleta.detalleFactura && facturaCompleta.detalleFactura.length > 0) {
@@ -2428,8 +2428,7 @@ async function viewInvoice(id) {
             tieneItems = true;
             
             for (const item of detalleParaMostrar) {
-                // ✅ CORRECCIÓN: Verificar si necesitamos nueva página
-                if (currentY > 230) {
+                if (currentY > 200) { // ✅ Umbral más bajo para nueva página
                     doc.addPage();
                     currentY = 30;
                     doc.setFont(undefined, 'bold');
@@ -2469,14 +2468,14 @@ async function viewInvoice(id) {
             currentY += 8;
         }
 
-        currentY += 10;
+        currentY += 15; // ✅ ESPACIO ADICIONAL después de los productos
 
         // VALOR DEL SERVICIO
         let valorServicio = parseFloat(facturaCompleta.valorServicio) || 0;
 
         if (valorServicio > 0) {
-            // ✅ CORRECCIÓN: Verificar espacio antes de agregar valor servicio
-            if (currentY > 240) {
+            // ✅ VERIFICAR SI HAY ESPACIO SUFICIENTE
+            if (currentY > 180) { // Umbral más conservador
                 doc.addPage();
                 currentY = 30;
             }
@@ -2485,49 +2484,50 @@ async function viewInvoice(id) {
             doc.text('VALOR DEL SERVICIO:', colPrecio, currentY);
             doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
             doc.setFont(undefined, 'normal');
-            currentY += 8;
+            currentY += 15; // ✅ ESPACIO ADICIONAL después del valor servicio
         }
 
         // CALCULAR TOTAL
         let totalFinal = parseFloat(facturaCompleta.montoTotal) || (subtotalProductos + valorServicio);
         
-        // ✅ CORRECCIÓN CRÍTICA: Verificar espacio suficiente para totales
-        if (currentY > 240) {
+        // ✅ VERIFICACIÓN CRÍTICA: Asegurar espacio para los totales
+        if (currentY > 160) { // Umbral muy conservador para totales
             doc.addPage();
             currentY = 30;
         }
         
+        // Línea separadora antes de los totales
         doc.line(colPrecio, currentY, pageWidth - margin, currentY);
-        currentY += 10;
+        currentY += 12; // ✅ ESPACIO después de la línea
 
-        // ✅ CORRECCIÓN: Asegurar suficiente espacio entre elementos
-        // MOSTRAR TOTALES CON ESPACIADO ADECUADO
+        // ✅ SECCIÓN DE TOTALES CON ESPACIADO AMPLIO
         doc.setFont(undefined, 'bold');
         doc.setFontSize(11);
         
         if (tieneItems && subtotalProductos > 0) {
             doc.text('SUBTOTAL PRODUCTOS:', colPrecio, currentY);
             doc.text(formatCurrencyForPDF(subtotalProductos), colTotal, currentY);
-            currentY += 12; // ✅ Aumentado de 8 a 12 para más espacio
+            currentY += 15; // ✅ ESPACIO AMPLIO después del subtotal
         }
         
         if (valorServicio > 0) {
             doc.text('VALOR SERVICIO:', colPrecio, currentY);
             doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
-            currentY += 12; // ✅ Aumentado de 8 a 12 para más espacio
+            currentY += 15; // ✅ ESPACIO AMPLIO después del valor servicio
         }
         
-        // ✅ CORRECCIÓN: Asegurar espacio antes del TOTAL
-        currentY += 5;
+        // ✅ LÍNEAS DOBLES PARA EL TOTAL FINAL
+        currentY += 5; // Espacio adicional antes de las líneas
         doc.setDrawColor(44, 95, 65);
         doc.line(colPrecio, currentY, pageWidth - margin, currentY);
-        currentY += 2;
+        currentY += 3;
         doc.line(colPrecio, currentY, pageWidth - margin, currentY);
-        currentY += 10; // ✅ Aumentado de 8 a 10 para más espacio
+        currentY += 12; // ✅ ESPACIO AMPLIO después de las líneas
         
+        // ✅ TOTAL FACTURA - TEXTO MÁS GRANDE Y ESPACIADO
         doc.setFontSize(14);
         doc.setTextColor(44, 95, 65);
-        doc.text('TOTAL FACTURA: \n', colPrecio, currentY);
+        doc.text('TOTAL FACTURA:', colPrecio, currentY);
         doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
 
         // PIE DE PÁGINA
