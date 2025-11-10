@@ -16,7 +16,37 @@ body {
     background: #f5f7fa;
     color: #2d3748;
 }
+/* Añadir a elementos de texto para prevenir superposición */
+.header-title h1,
+.header-title p,
+.modal-title,
+.invoices-title,
+.stat-number,
+.stat-label,
+.nav-tab,
+.btn,
+.btn-sm,
+.status-badge,
+.detalle-factura-container h4 {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
 
+/* Para elementos que deben mantener una línea */
+.nav-tab,
+.btn,
+.btn-sm,
+.status-badge {
+    white-space: nowrap;
+}
+
+/* Para tablas */
+.invoices-table th,
+.invoices-table td {
+    word-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
  .sidebar {
             position: fixed;
             left: 0;
@@ -1078,24 +1108,19 @@ async function loadProductos() {
 }
 
 function formatCurrency(value) {
-    if (value === null || value === undefined || isNaN(value)) return '$ 0.00';
+    if (value === null || value === undefined || isNaN(value)) return '$ 0';
     
-    // ✅ SOPORTE PARA VALORES GRANDES
+    // ✅ CORRECCIÓN: Usar formato de pesos colombianos sin decimales para valores grandes
     if (value >= 1000000) {
-        return new Intl.NumberFormat('es-CO', { 
-            style: 'currency', 
-            currency: 'COP', 
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value);
-    } else {
-        return new Intl.NumberFormat('es-CO', { 
-            style: 'currency', 
-            currency: 'COP', 
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(value);
+        return '$ ' + (value / 1000000).toFixed(1).replace('.', ',') + ' M';
+    } else if (value >= 1000) {
+        return '$ ' + (value / 1000).toFixed(1).replace('.', ',') + ' K';
     }
+    
+    return '$ ' + new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(value);
 }
 
 function formatLargeNumber(value) {
@@ -2063,7 +2088,6 @@ async function handleInvoiceFormSubmit(event) {
             }
         }
 
-        // Renderizar tabla de facturas
  function renderTable(data) {
     const tbody = document.getElementById('invoicesTableBody');
     if (!tbody) return;
@@ -2078,7 +2102,9 @@ async function handleInvoiceFormSubmit(event) {
         const clienteNombre = fact.cliente?.nombre || clientesData.find(c => c.dni === fact.dniCliente)?.nombre || fact.dniCliente || 'N/A';
         const servicioDescripcion = fact.tipoFactura === 'ConCotizacion' && fact.cotizacion ? `Cotización #${fact.cotizacion.idCotizacion}` : (fact.observaciones || 'Servicio general');
         
-        // ✅ CORRECCIÓN: Mapear estados para mostrar en la tabla
+        // ✅ CORRECCIÓN: Convertir valores con "K" antes de formatear
+        const montoConvertido = convertirValorK(fact.montoTotal);
+        
         const estadoDisplay = {
             'PENDIENTE': 'Pendiente',
             'PAGADA': 'Pagada', 
@@ -2091,7 +2117,7 @@ async function handleInvoiceFormSubmit(event) {
             <td>${clienteNombre}</td>
             <td>${servicioDescripcion}</td>
             <td>${formatDate(fact.fechaEmision)}</td>
-            <td>${formatCurrency(fact.montoTotal)}</td>
+            <td>${formatCurrency(montoConvertido)}</td>
             <td><span class="status-badge ${(fact.estado || 'PENDIENTE').toLowerCase()}">${estadoDisplay}</span></td>
             <td>
                 <div class="action-buttons">
@@ -2170,12 +2196,10 @@ async function diagnosticarBackend() {
 }
 
 // Ejecutar en consola: diagnosticarBackend()
-// Función corregida para actualizar estadísticas
 function updateStats() {
     try {
         const total = allFacturas.length;
         
-        // ✅ CORRECCIÓN: Usar los estados en mayúsculas como vienen del backend
         const pendientes = allFacturas.filter(f => 
             f.estado === 'PENDIENTE' || f.estado === 'Pendiente'
         ).length;
@@ -2184,11 +2208,11 @@ function updateStats() {
             f.estado === 'PAGADA' || f.estado === 'Pagada'
         ).length;
         
-        // ✅ CORRECCIÓN: Sumar correctamente los montos de facturas pagadas
+        // ✅ CORRECCIÓN: Convertir valores con "K" antes de sumar
         const ingresos = allFacturas
             .filter(f => f.estado === 'PAGADA' || f.estado === 'Pagada')
             .reduce((sum, f) => {
-                const monto = parseFloat(f.montoTotal) || 0;
+                const monto = convertirValorK(f.montoTotal) || 0;
                 return sum + monto;
             }, 0);
 
@@ -2224,6 +2248,11 @@ async function viewInvoice(id) {
         
         const facturaCompleta = await response.json();
         console.log("📋 Factura completa:", facturaCompleta);
+
+        // ✅ CORRECCIÓN: Convertir valores con "K" antes de procesar
+        if (typeof facturaCompleta.montoTotal === 'string' && facturaCompleta.montoTotal.includes('K')) {
+            facturaCompleta.montoTotal = convertirValorK(facturaCompleta.montoTotal);
+        }
 
         // ✅ DIAGNÓSTICO MEJORADO
         console.log("🔍 DIAGNÓSTICO ESTRUCTURA:", {
@@ -2524,11 +2553,10 @@ function forzarActualizacionMontos() {
 
 // Llamar esta función cuando sea necesario
 document.getElementById('valorServicio').addEventListener('input', forzarActualizacionMontos);
-
 function formatCurrencyForPDF(amount) {
     if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
     
-    // Para PDF, formato más legible
+    // ✅ CORRECCIÓN: Para PDF, formato más legible
     if (amount >= 1000000) {
         return '$ ' + (amount / 1000000).toFixed(1).replace('.', ',') + ' M';
     } else if (amount >= 1000) {
@@ -2540,7 +2568,16 @@ function formatCurrencyForPDF(amount) {
         maximumFractionDigits: 0
     }).format(amount);
 }
-
+// Función para convertir valores con "K" a pesos colombianos
+function convertirValorK(valor) {
+    if (typeof valor === 'string' && valor.includes('K')) {
+        // Remover el símbolo "K" y espacios, luego convertir a número
+        const numero = parseFloat(valor.replace('K', '').replace(',', '.').trim());
+        // Multiplicar por 1000 para obtener el valor en pesos
+        return numero * 1000;
+    }
+    return parseFloat(valor) || 0;
+}
 function formatDateForPDF(dateString) {
     if (!dateString) return 'N/A';
     try {
