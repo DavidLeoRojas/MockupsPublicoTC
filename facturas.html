@@ -1109,17 +1109,24 @@ function formatLargeNumber(value) {
 }
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
-    const montoTotalInput = document.querySelector('input[name="monto_total"]');
+// En la función handleInvoiceFormSubmit, agregar esta validación:
+const montoTotalInput = document.querySelector('input[name="monto_total"]');
+let montoTotal = parseFloat(montoTotalInput?.value) || 0;
 
-    if (!montoTotalInput) {
-        console.error("❌ No se encontró el campo monto_total");
-        return;
+// Si el monto total es 0 pero hay productos o valor de servicio, recalcular
+if (montoTotal <= 0) {
+    const valorServicio = parseFloat(document.getElementById('valorServicio')?.value) || 0;
+    const subtotalProductos = detalleFactura.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    montoTotal = valorServicio + subtotalProductos;
+    
+    if (montoTotal > 0) {
+        montoTotalInput.value = montoTotal.toFixed(2);
     }
+}
 
-    // Solo calcular si NO hay cotización seleccionada
+    // Si hay cotización seleccionada, no calcular automáticamente
     const tieneCotizacion = document.getElementById('cotizacionSelect').value;
     if (tieneCotizacion) {
-        // Si hay cotización, el monto total ya está fijo con el valor de la cotización
         return;
     }
 
@@ -2301,11 +2308,11 @@ async function viewInvoice(id) {
         // ===== DETALLES DE PRODUCTOS/SERVICIOS =====
         let currentY = infoBottom + 15;
 
-        // Títulos de columnas - DEFINIR POSICIONES EXACTAS
-        const colDescripcion = margin;
-        const colCantidad = margin + 90;   // 90mm desde el margen
-        const colPrecio = margin + 110;    // 110mm desde el margen  
-        const colTotal = margin + 150;     // 150mm desde el margen
+// DEFINIR POSICIONES EXACTAS DE COLUMNAS
+const colDescripcion = margin;
+const colCantidad = margin + 90;   // 90mm desde el margen
+const colPrecio = margin + 110;    // 110mm desde el margen  
+const colTotal = margin + 150;     // 150mm desde el margen
 
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
@@ -2403,35 +2410,35 @@ async function viewInvoice(id) {
         doc.line(colPrecio, currentY, pageWidth - margin, currentY);
         currentY += 10;
 
-        // ✅ TOTALES - USANDO LAS MISMAS COLUMNAS
-        const totalFinal = subtotalProductos + valorServicio;
-        
-        doc.setFont(undefined, 'bold');
-        doc.setFontSize(11);
-        
-        if (tieneProductos) {
-            doc.text('SUBTOTAL PRODUCTOS:', colPrecio, currentY);
-            doc.text(formatCurrencyForPDF(subtotalProductos), colTotal, currentY);
-            currentY += 8;
-        }
-        
-        if (valorServicio > 0) {
-            doc.text('VALOR SERVICIO:', colPrecio, currentY);
-            doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
-            currentY += 8;
-        }
-        
-        // Línea doble para total final
-        doc.setDrawColor(44, 95, 65);
-        doc.line(colPrecio, currentY, pageWidth - margin, currentY);
-        currentY += 2;
-        doc.line(colPrecio, currentY, pageWidth - margin, currentY);
-        currentY += 8;
-        
-        doc.setFontSize(14);
-        doc.setTextColor(44, 95, 65);
-        doc.text('TOTAL FACTURA:', colPrecio, currentY);
-        doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
+// ✅ TOTALES - USANDO LAS MISMAS COLUMNAS
+const totalFinal = subtotalProductos + valorServicio;
+
+doc.setFont(undefined, 'bold');
+doc.setFontSize(11);
+
+if (tieneProductos) {
+    doc.text('SUBTOTAL PRODUCTOS:', colPrecio, currentY);
+    doc.text(formatCurrencyForPDF(subtotalProductos), colTotal, currentY);
+    currentY += 8;
+}
+
+if (valorServicio > 0) {
+    doc.text('VALOR SERVICIO:', colPrecio, currentY);
+    doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
+    currentY += 8;
+}
+
+// Línea doble para total final
+doc.setDrawColor(44, 95, 65);
+doc.line(colPrecio, currentY, pageWidth - margin, currentY);
+currentY += 2;
+doc.line(colPrecio, currentY, pageWidth - margin, currentY);
+currentY += 8;
+
+doc.setFontSize(14);
+doc.setTextColor(44, 95, 65);
+doc.text('TOTAL FACTURA:', colPrecio, currentY);
+doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
         
         doc.setTextColor(0, 0, 0);
         currentY += 15;
@@ -2522,7 +2529,22 @@ async function viewInvoice(id) {
         alert("❌ Error al generar el PDF: " + error.message);
     }
 }
+// Función para forzar recálculo de montos
+function forzarActualizacionMontos() {
+    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
+    
+    if (tipoFactura === 'ConCotizacion') {
+        const cotizacionSelect = document.getElementById('cotizacionSelect');
+        if (cotizacionSelect.value) {
+            cotizacionSelect.dispatchEvent(new Event('change'));
+        }
+    } else {
+        actualizarMontoTotal();
+    }
+}
 
+// Llamar esta función cuando sea necesario
+document.getElementById('valorServicio').addEventListener('input', forzarActualizacionMontos);
 // ✅ FUNCIONES AUXILIARES MEJORADAS
 function formatDateForPDF(dateString) {
     if (!dateString) return 'N/A';
@@ -2541,9 +2563,11 @@ function formatDateForPDF(dateString) {
 function formatCurrencyForPDF(amount) {
     if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
     
-    // Para PDF, usar formato compacto pero legible
+    // Para PDF, usar formato más legible
     if (amount >= 1000000) {
-        return '$' + (amount / 1000000).toFixed(1).replace('.', ',') + 'M';
+        return '$ ' + (amount / 1000000).toFixed(1).replace('.', ',') + ' M';
+    } else if (amount >= 1000) {
+        return '$ ' + (amount / 1000).toFixed(1).replace('.', ',') + ' K';
     }
     
     return '$ ' + new Intl.NumberFormat('es-CO', {
