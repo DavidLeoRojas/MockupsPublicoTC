@@ -1196,7 +1196,34 @@ function formatCurrencyForPDF(amount) {
         maximumFractionDigits: 0
     }).format(valorRedondeado);
 }
-
+// Función de prueba con producto alternativo
+async function probarConProductoAlternativo() {
+    // Limpiar detalle actual
+    detalleFactura = [];
+    
+    // Buscar un producto que no sea PRD005 y tenga stock
+    const productoAlternativo = productosData.find(p => 
+        p.idProducto !== 'PRD005' && 
+        p.stock > 0 &&
+        p.idProducto !== "PRODUCTO_ELIMINADO"
+    );
+    
+    if (productoAlternativo) {
+        detalleFactura.push({
+            idProducto: productoAlternativo.idProducto,
+            nombreProducto: productoAlternativo.nombre,
+            cantidad: 1,
+            precioUnitario: productoAlternativo.precioActual,
+            subtotal: productoAlternativo.precioActual
+        });
+        
+        renderDetalleFactura();
+        
+        alert(`✅ Usando producto alternativo: ${productoAlternativo.nombre} (Stock: ${productoAlternativo.stock})`);
+    } else {
+        alert('❌ No se encontraron productos alternativos con stock disponible');
+    }
+}
 // AGREGAR event listener para valor servicio
 document.getElementById('valorServicio').addEventListener('input', function() {
     const tipoFactura = document.getElementById('tipoFacturaSelect').value;
