@@ -1124,15 +1124,22 @@ function formatLargeNumber(value) {
     }
     return value.toString();
 }
-// FUNCIÓN actualizarMontoTotal CORREGIDA
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
-    const montoTotalInput = document.querySelector('input[name="monto_total"]');
+// En la función handleInvoiceFormSubmit, agregar esta validación:
+const montoTotalInput = document.querySelector('input[name="monto_total"]');
+
+
+// Si el monto total es 0 pero hay productos o valor de servicio, recalcular
+if (montoTotal <= 0) {
+    const valorServicio = parseFloat(document.getElementById('valorServicio')?.value) || 0;
+    const subtotalProductos = detalleFactura.reduce((sum, item) => sum + (item.subtotal || 0), 0);
+    montoTotal = valorServicio + subtotalProductos;
     
-    if (!montoTotalInput) {
-        console.error("❌ No se encontró el campo monto_total");
-        return;
+    if (montoTotal > 0) {
+        montoTotalInput.value = montoTotal.toFixed(2);
     }
+}
 
     // Si hay cotización seleccionada, no calcular automáticamente
     const tieneCotizacion = document.getElementById('cotizacionSelect').value;
@@ -1146,7 +1153,6 @@ function actualizarMontoTotal() {
         return sum + subtotal;
     }, 0);
     
-    // ✅ CORRECCIÓN: Declarar e inicializar montoTotal correctamente
     const montoTotal = subtotalProductos + valorServicio;
 
     // Validar que no sea NaN
@@ -1163,8 +1169,6 @@ function actualizarMontoTotal() {
         montoTotal: montoTotal
     });
 }
-
-
 
         // Formatear fecha
         function formatDate(dateString) {
@@ -1729,25 +1733,15 @@ function openAddInvoiceModal() {
     const valorServicioInput = document.getElementById('valorServicio');
     
     if (clienteSelect) clienteSelect.disabled = false;
-    if (montoTotalInput) {
-        montoTotalInput.disabled = false;
-        montoTotalInput.value = '0'; // ✅ Inicializar con valor por defecto
-    }
-    if (valorServicioInput) {
-        valorServicioInput.disabled = false;
-        valorServicioInput.value = '0'; // ✅ Inicializar con valor por defecto
-    }
+    if (montoTotalInput) montoTotalInput.disabled = false;
+    if (valorServicioInput) valorServicioInput.disabled = false;
     
     // Resetear tipo de factura
     document.getElementById('tipoFacturaSelect').value = 'Simple';
     
     // Limpiar y resetear detalle
     detalleFactura = [];
-    
-    // ✅ CORRECCIÓN: Llamar a renderDetalleFactura después de inicializar todo
-    setTimeout(() => {
-        renderDetalleFactura();
-    }, 100);
+    renderDetalleFactura();
     
     // Establecer fecha por defecto (hoy)
     const today = new Date().toISOString().split('T')[0];
@@ -1931,7 +1925,6 @@ async function editInvoice(id) {
     }
 }
 
-// CORREGIR ESTA PARTE EN handleInvoiceFormSubmit
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1963,17 +1956,6 @@ async function handleInvoiceFormSubmit(event) {
         
         const valorServicioInput = document.getElementById('valorServicio');
         const valorServicio = valorServicioInput ? parseFloat(valorServicioInput.value) || 0 : 0;
-
-        // ✅ CORRECCIÓN: Si el monto total es 0 pero hay productos o valor de servicio, recalcular
-        if (montoTotal <= 0) {
-            const valorServicioRecalc = parseFloat(document.getElementById('valorServicio')?.value) || 0;
-            const subtotalProductos = detalleFactura.reduce((sum, item) => sum + (item.subtotal || 0), 0);
-            montoTotal = valorServicioRecalc + subtotalProductos;
-            
-            if (montoTotal > 0) {
-                montoTotalInput.value = montoTotal.toFixed(2);
-            }
-        }
 
         let idCotizacion = null;
         if (tipoFactura === 'ConCotizacion') {
@@ -2527,7 +2509,7 @@ async function viewInvoice(id) {
         if (tieneItems && subtotalProductos > 0) {
             doc.setFont(undefined, 'bold');
             doc.setFontSize(11);
-            doc.text('SUBTOTAL:', colPrecio, currentY);
+            doc.text('SUBTOTAL PRODUCTOS:', colPrecio, currentY);
             doc.text(formatCurrencyForPDF(subtotalProductos), colTotal, currentY);
             currentY += 12;
         }
@@ -2553,7 +2535,7 @@ async function viewInvoice(id) {
         doc.setFontSize(14);
         doc.setTextColor(44, 95, 65);
         doc.setFont(undefined, 'bold');
-        doc.text('TOTAL :', colPrecio, currentY);
+        doc.text('TOTAL FACTURA:', colPrecio, currentY);
         doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
 
         // ===== PIE DE PÁGINA =====
