@@ -1094,7 +1094,7 @@ function actualizarMontoTotal() {
     
     const montoTotal = subtotalProductos + valorServicio;
 
-    // ✅ CORRECCIÓN: Validar que no sea NaN
+    // Validar que no sea NaN
     if (isNaN(montoTotal)) {
         console.error("❌ Error: montoTotal es NaN");
         montoTotalInput.value = '0';
@@ -1400,9 +1400,72 @@ function renderDetalleFactura() {
     actualizarMontoTotal();
     console.log("✅ Productos renderizados:", detalleFactura.length);
 }
+// Función para limpiar productos eliminados del detalle
+function limpiarProductosEliminados() {
+    detalleFactura = detalleFactura.filter(item => 
+        item.idProducto && 
+        item.idProducto !== "PRODUCTO_ELIMINADO" && 
+        item.idProducto !== "null" &&
+        item.idProducto.trim() !== ""
+    );
+    renderDetalleFactura();
+}
 
+// Llamar esta función antes de enviar el formulario
+function validarDetalleFactura() {
+    limpiarProductosEliminados();
+    return detalleFactura.length > 0;
+}
+// Función mejorada de validación
+function validarFacturaAntesDeEnviar(tipoFactura) {
+    // Validar cliente
+    const dniCliente = document.getElementById('clienteSelect').value;
+    if (!dniCliente) {
+        throw new Error('Debe seleccionar un cliente');
+    }
 
+    // Validar fecha
+    const fechaEmision = document.querySelector('input[name="fecha_emision"]').value;
+    if (!fechaEmision) {
+        throw new Error('La fecha de emisión es obligatoria');
+    }
+
+    // Validar estado
+    const estado = document.querySelector('select[name="estado"]').value;
+    if (!estado) {
+        throw new Error('Debe seleccionar un estado');
+    }
+
+    // Validar monto total
+    const montoTotalInput = document.querySelector('input[name="monto_total"]');
+    const montoTotal = parseFloat(montoTotalInput?.value) || 0;
+    if (montoTotal <= 0) {
+        throw new Error('El monto total debe ser mayor a 0');
+    }
+
+    // Validar productos según tipo de factura
+    if (tipoFactura === 'ConCotizacion') {
+        const idCotizacion = document.getElementById('cotizacionSelect').value;
+        if (!idCotizacion) {
+            throw new Error('Para facturas con cotización, debe seleccionar una cotización válida');
+        }
+        
+        // Para facturas con cotización, permitir sin productos
+        if (detalleFactura.length === 0) {
+            console.warn("⚠️ Factura con cotización sin productos - permitido");
+        }
+    } else {
+        // Para facturas simples, permitir sin productos pero con valor de servicio
+        const valorServicio = parseFloat(document.getElementById('valorServicio')?.value) || 0;
+        if (detalleFactura.length === 0 && valorServicio <= 0) {
+            throw new Error('Para facturas simples, debe agregar productos o especificar un valor de servicio');
+        }
+    }
+
+    return true;
+}
 // Función para diagnosticar problemas con facturas - VERSIÓN MEJORADA
+// Función para diagnosticar problemas con facturas
 async function diagnosticarFacturas() {
     console.log("🔍 DIAGNOSTICANDO FACTURAS...");
     
@@ -1719,9 +1782,10 @@ async function handleInvoiceFormSubmit(event) {
             item.cantidad > 0
         );
 
-        if (detalleFacturaFiltrado.length === 0 && tipoFactura === 'Simple') {
-            alert('⚠️ Debe agregar al menos un producto válido a la factura.');
-            throw new Error('No hay productos válidos en el detalle');
+        // ✅ CORRECCIÓN: Permitir facturas sin productos si tienen valor de servicio
+        if (detalleFacturaFiltrado.length === 0 && valorServicio <= 0 && tipoFactura === 'Simple') {
+            alert('⚠️ Debe agregar al menos un producto válido o especificar un valor de servicio.');
+            throw new Error('No hay productos válidos en el detalle y valor de servicio es 0');
         }
 
         // ✅ CORRECCIÓN: Preparar detalle de factura correctamente
