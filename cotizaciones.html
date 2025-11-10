@@ -1117,46 +1117,51 @@ function diagnosticarCampoCliente() {
     console.log("   - Grupo existente:", existenteGroup.style.display);
     console.log("   - Grupo nuevo:", nuevoFields.style.display);
 }
-// Solución agresiva - forzar habilitación en cada apertura
-function openAddQuoteModalForzado() {
-    console.log("🔄 Abriendo modal (modo forzado)...");
+function openAddQuoteModal() {
+    console.log("🔄 Abriendo modal para nueva cotización...");
     
-    // Resetear todo
+    // Mostrar modal PRIMERO
+    document.getElementById('addQuoteModal').classList.add('show');
+    
+    // Resetear formulario
     const form = document.getElementById('quoteForm');
     form.reset();
     
-    // ✅ FORZAR: Habilitar explícitamente el campo cliente
-    const clienteSelect = document.getElementById('clienteSelect');
-    if (clienteSelect) {
-        clienteSelect.disabled = false;
-        clienteSelect.style.opacity = "1";
-        clienteSelect.style.pointerEvents = "auto";
-        console.log("✅ Campo cliente forzado a habilitado");
-    }
-    
-    // Configurar tipo de cliente
-    document.getElementById('clienteTipo').value = 'existente';
-    
-    // Llamar a toggle después de un pequeño delay para asegurar
-    setTimeout(() => {
-        toggleClienteInput();
-    }, 100);
-    
-    // Resto de la configuración...
-    document.getElementById('addQuoteModal').classList.add('show');
+    // Configurar título y botón
     document.getElementById('quoteModalTitle').textContent = '➕ Nueva Cotización';
     document.getElementById('submitBtn').textContent = '✅ Guardar Cotización';
+    
+    // ✅ CORRECCIÓN: Configurar tipo de cliente después de reset
+    setTimeout(() => {
+        document.getElementById('clienteTipo').value = 'existente';
+        toggleClienteInput(); // Esto debe habilitar el select de cliente
+        
+        // ✅ VERIFICACIÓN EXTRA: Forzar habilitación del select
+        const clienteSelect = document.getElementById('clienteSelect');
+        if (clienteSelect) {
+            clienteSelect.disabled = false;
+            clienteSelect.style.opacity = "1";
+            console.log("✅ Campo cliente habilitado correctamente");
+        }
+    }, 50);
+    
+    // Ocultar grupo de estado (solo para edición)
     document.getElementById('estadoGroup').style.display = 'none';
+    
+    // Resetear ID de edición
     currentEditId = null;
+    
+    // Limpiar y resetear detalle de productos
     detalleCotizacion = [];
     renderDetalleCotizacion();
     calcularCostoTotal();
     
+    // Establecer fecha por defecto (mañana)
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     document.getElementById('fechaPreferida').value = tomorrow.toISOString().split('T')[0];
     
-    console.log("✅ Modal abierto en modo forzado");
+    console.log("✅ Modal de nueva cotización abierto correctamente");
 }
 // Ejecutar en consola: diagnosticarCampoCliente()
     async function loadClientes() {
