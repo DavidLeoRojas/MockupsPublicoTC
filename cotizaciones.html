@@ -2781,7 +2781,6 @@ async function mostrarProductosCotizacion(idCotizacion) {
     }
 }
 
-// Mejora la función editCotizacion para manejar mejor los productos
 async function editCotizacion(id) {
     try {
         const headers = getAuthHeaders();
@@ -2816,75 +2815,96 @@ async function editCotizacion(id) {
             'FINALIZADA': 'Finalizada'
         };
         
-        // Llenar formulario con datos existentes
-        document.getElementById('estadoSelect').value = estadoMapInverso[cot.estado] || 'Pendiente';
-        document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
-        document.getElementById('submitBtn').textContent = '💾 Actualizar Cotización';
-        
-        // Información básica
-        document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
-        document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
-        
-        // Configurar cliente
-        document.getElementById('clienteTipo').value = 'existente';
-        toggleClienteInput();
-        
-        // Esperar a que se carguen los clientes antes de seleccionar
+        // ✅ CORRECCIÓN CRÍTICA: Esperar a que el modal esté completamente cargado
         setTimeout(() => {
-            const clienteSelect = document.getElementById('clienteSelect');
-            if (clienteSelect) {
-                clienteSelect.value = cot.dniCliente;
-            }
-        }, 500);
-        
-        document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
-        document.getElementById('prioridad').value = cot.prioridad || 'Media';
-        document.getElementById('descripcion').value = cot.descripcionProblema || '';
-        document.getElementById('notas').value = cot.notasInternas || '';
-
-        // ✅ CORRECCIÓN MEJORADA: Cargar productos de la cotización
-        console.log("📦 Procesando productos de la cotización:", cot.detalleCotizacion);
-        
-        detalleCotizacion = []; // Limpiar array
-        
-        // ✅ CORRECCIÓN: Manejar diferentes casos de estructura de productos
-        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion) && cot.detalleCotizacion.length > 0) {
-            cot.detalleCotizacion.forEach((item, index) => {
-                // ✅ VERIFICAR QUE EL PRODUCTO SEA VÁLIDO
-                if (item && item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO") {
-                    const productoValido = {
-                        idProducto: item.idProducto.toString(),
-                        nombreProducto: item.nombreProducto || `Producto ${index + 1}`,
-                        cantidad: parseInt(item.cantidad) || 1,
-                        precioUnitario: parseFloat(item.precioUnitario) || 0,
-                        subtotal: parseFloat(item.subtotal) || 0,
-                        idTipoServicio: item.idTipoServicio || "TS001"
-                    };
-                    
-                    console.log(`✅ Agregando producto ${index + 1}:`, productoValido);
-                    detalleCotizacion.push(productoValido);
-                } else {
-                    console.warn(`⚠️ Producto ${index + 1} inválido o eliminado:`, item);
-                }
-            });
+            // Llenar formulario con datos existentes
+            document.getElementById('estadoSelect').value = estadoMapInverso[cot.estado] || 'Pendiente';
+            document.getElementById('quoteModalTitle').textContent = '✏️ Editar Cotización';
+            document.getElementById('submitBtn').textContent = '💾 Actualizar Cotización';
             
-            console.log(`📊 Total de productos válidos cargados: ${detalleCotizacion.length}`);
-        } else if (cot.detalleCotizacion === null) {
-            console.log("📭 La cotización no tiene productos (detalleCotizacion es null)");
-            detalleCotizacion = [];
-        } else {
-            console.log("📭 No hay productos en esta cotización");
-            detalleCotizacion = [];
-        }
-        
-        // Renderizar productos
-        renderDetalleCotizacion();
-        calcularCostoTotal();
+            // Información básica
+            document.getElementById('costoTotalCalculado').value = cot.costoTotalCotizacion || 0;
+            document.getElementById('valorServicioCotizacion').value = cot.valorServicio || 0;
+            
+            // ✅ CORRECCIÓN: Configurar cliente - ESTO ES LO MÁS IMPORTANTE
+            document.getElementById('clienteTipo').value = 'existente';
+            toggleClienteInput();
+            
+            // ✅ CORRECCIÓN: Asignar el cliente DESPUÉS de que el select esté listo
+            setTimeout(() => {
+                const clienteSelect = document.getElementById('clienteSelect');
+                if (clienteSelect && cot.dniCliente) {
+                    // Buscar si el cliente existe en las opciones
+                    const clienteExiste = Array.from(clienteSelect.options).some(option => 
+                        option.value === cot.dniCliente
+                    );
+                    
+                    if (clienteExiste) {
+                        clienteSelect.value = cot.dniCliente;
+                        console.log("✅ Cliente asignado correctamente:", cot.dniCliente);
+                    } else {
+                        console.warn("⚠️ Cliente no encontrado en opciones:", cot.dniCliente);
+                        // Mostrar los clientes disponibles para debug
+                        console.log("📋 Clientes disponibles:", 
+                            Array.from(clienteSelect.options).map(opt => ({value: opt.value, text: opt.text}))
+                        );
+                    }
+                } else {
+                    console.error("❌ No se pudo asignar cliente:", {
+                        clienteSelect: !!clienteSelect,
+                        dniCliente: cot.dniCliente
+                    });
+                }
+            }, 200);
+            
+            document.getElementById('fechaPreferida').value = cot.fechaPreferida ? cot.fechaPreferida.split('T')[0] : '';
+            document.getElementById('prioridad').value = cot.prioridad || 'Media';
+            document.getElementById('descripcion').value = cot.descripcionProblema || '';
+            document.getElementById('notas').value = cot.notasInternas || '';
 
-        // Guardar ID para la actualización
-        currentEditId = id;
-        
-        console.log("✅ Formulario de edición listo para cotización:", id, "con", detalleCotizacion.length, "productos");
+            // ✅ CORRECCIÓN MEJORADA: Cargar productos de la cotización
+            console.log("📦 Procesando productos de la cotización:", cot.detalleCotizacion);
+            
+            detalleCotizacion = []; // Limpiar array
+            
+            if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion) && cot.detalleCotizacion.length > 0) {
+                cot.detalleCotizacion.forEach((item, index) => {
+                    if (item && item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO") {
+                        const productoValido = {
+                            idProducto: item.idProducto.toString(),
+                            nombreProducto: item.nombreProducto || `Producto ${index + 1}`,
+                            cantidad: parseInt(item.cantidad) || 1,
+                            precioUnitario: parseFloat(item.precioUnitario) || 0,
+                            subtotal: parseFloat(item.subtotal) || 0,
+                            idTipoServicio: item.idTipoServicio || obtenerTipoServicioValido()
+                        };
+                        
+                        console.log(`✅ Agregando producto ${index + 1}:`, productoValido);
+                        detalleCotizacion.push(productoValido);
+                    } else {
+                        console.warn(`⚠️ Producto ${index + 1} inválido o eliminado:`, item);
+                    }
+                });
+                
+                console.log(`📊 Total de productos válidos cargados: ${detalleCotizacion.length}`);
+            } else if (cot.detalleCotizacion === null) {
+                console.log("📭 La cotización no tiene productos (detalleCotizacion es null)");
+                detalleCotizacion = [];
+            } else {
+                console.log("📭 No hay productos en esta cotización");
+                detalleCotizacion = [];
+            }
+            
+            // Renderizar productos
+            renderDetalleCotizacion();
+            calcularCostoTotal();
+
+            // Guardar ID para la actualización
+            currentEditId = id;
+            
+            console.log("✅ Formulario de edición listo para cotización:", id, "con", detalleCotizacion.length, "productos");
+
+        }, 100); // Pequeño delay para asegurar que el modal esté listo
 
     } catch (error) {
         console.error('❌ Error al cargar cotización para editar:', error);

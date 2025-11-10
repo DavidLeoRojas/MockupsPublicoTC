@@ -1652,7 +1652,9 @@ function openAddInvoiceModal() {
     const modal = document.getElementById('addInvoiceModal');
     const form = document.getElementById('invoiceForm');
     
-    // Resetear formulario
+    console.log("🔄 Abriendo modal de factura...");
+    
+    // Resetear formulario COMPLETAMENTE
     form.reset();
     
     // Configurar valores por defecto
@@ -1663,13 +1665,13 @@ function openAddInvoiceModal() {
     // Mostrar/ocultar secciones según tipo de factura
     document.getElementById('productosSection').style.display = 'block';
     document.getElementById('cotizacionField').style.display = 'none';
-    document.getElementById('clienteSelect').disabled = false;
-    document.getElementById('montoTotalField').style.display = 'block';
     
-    // ✅ CORRECCIÓN: Habilitar campos que podrían estar deshabilitados
+    // ✅ CORRECCIÓN CRÍTICA: Asegurar que los campos estén habilitados
+    const clienteSelect = document.getElementById('clienteSelect');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
     const valorServicioInput = document.getElementById('valorServicio');
     
+    if (clienteSelect) clienteSelect.disabled = false;
     if (montoTotalInput) montoTotalInput.disabled = false;
     if (valorServicioInput) valorServicioInput.disabled = false;
     
@@ -1682,130 +1684,183 @@ function openAddInvoiceModal() {
     
     // Establecer fecha por defecto (hoy)
     const today = new Date().toISOString().split('T')[0];
-    document.querySelector('input[name="fecha_emision"]').value = today;
+    const fechaInput = document.querySelector('input[name="fecha_emision"]');
+    if (fechaInput) {
+        fechaInput.value = today;
+    }
     
     // Establecer estado por defecto
-    document.querySelector('select[name="estado"]').value = 'PENDIENTE';
+    const estadoSelect = document.querySelector('select[name="estado"]');
+    if (estadoSelect) {
+        estadoSelect.value = 'PENDIENTE';
+    }
     
     // Limpiar cotización
-    document.getElementById('cotizacionSelect').value = '';
+    const cotizacionSelect = document.getElementById('cotizacionSelect');
+    if (cotizacionSelect) {
+        cotizacionSelect.value = '';
+    }
     
     currentEditId = null;
     
     // Mostrar modal
     modal.classList.add('show');
     
-    console.log("✅ Modal de factura abierto correctamente");
+    console.log("✅ Modal de factura abierto y listo");
 }
-
-// Función editInvoice CORREGIDA - usa solo datos locales
+// Función editInvoice COMPLETAMENTE CORREGIDA
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
         
-        // Buscar la factura en la lista local (que ya tenemos cargada)
+        // Buscar la factura en la lista local
         const factura = allFacturas.find(f => f.idFactura === id);
         if (!factura) {
             alert("❌ Factura no encontrada.");
             return;
         }
 
-        console.log("📋 Factura encontrada:", factura);
+        console.log("📋 Factura encontrada para editar:", factura);
 
-        // Abrir modal de edición
+        // Abrir modal de edición PRIMERO
         openAddInvoiceModal();
+        
+        // Configurar modal para edición
         document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
         document.getElementById('submitBtn').textContent = 'Guardar Cambios';
         document.getElementById('invoiceIdInput').value = id;
 
-        // Establecer tipo de factura
-        const tipoFactura = factura.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
-        document.getElementById('tipoFacturaSelect').value = tipoFactura;
-
-        // Disparar evento change para actualizar campos
+        // ✅ CORRECCIÓN: Esperar un poco para que el modal se renderice completamente
         setTimeout(() => {
+            // Establecer tipo de factura
+            const tipoFactura = factura.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
+            document.getElementById('tipoFacturaSelect').value = tipoFactura;
+
+            // Disparar evento change para actualizar campos visibles
             document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
-        }, 100);
 
-        // Rellenar datos del formulario
-        const dniCliente = factura.cliente?.dni || factura.dniCliente;
-        if (dniCliente) {
-            document.getElementById('clienteSelect').value = dniCliente;
-        }
+            // Rellenar datos del formulario - CON VALIDACIONES
+            const dniCliente = factura.cliente?.dni || factura.dniCliente;
+            if (dniCliente) {
+                const clienteSelect = document.getElementById('clienteSelect');
+                if (clienteSelect) {
+                    clienteSelect.value = dniCliente;
+                    console.log("✅ Cliente asignado:", dniCliente);
+                }
+            }
 
-        const fechaEmision = factura.fechaEmision ? 
-            factura.fechaEmision.split('T')[0] : 
-            new Date().toISOString().split('T')[0];
-        document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
+            // Fecha de emisión
+            const fechaEmision = factura.fechaEmision ? 
+                factura.fechaEmision.split('T')[0] : 
+                new Date().toISOString().split('T')[0];
+            const fechaInput = document.querySelector('input[name="fecha_emision"]');
+            if (fechaInput) {
+                fechaInput.value = fechaEmision;
+                console.log("✅ Fecha asignada:", fechaEmision);
+            }
 
-        // Estado - manejar diferentes formatos
-        let estado = factura.estado || 'PENDIENTE';
-        if (estado === 'Pendiente') estado = 'PENDIENTE';
-        if (estado === 'Pagada') estado = 'PAGADA';
-        document.querySelector('select[name="estado"]').value = estado;
+            // Estado - manejar diferentes formatos
+            let estado = factura.estado || 'PENDIENTE';
+            if (estado === 'Pendiente') estado = 'PENDIENTE';
+            if (estado === 'Pagada') estado = 'PAGADA';
+            if (estado === 'Cancelada') estado = 'CANCELADA';
+            
+            const estadoSelect = document.querySelector('select[name="estado"]');
+            if (estadoSelect) {
+                estadoSelect.value = estado;
+                console.log("✅ Estado asignado:", estado);
+            }
 
-        document.querySelector('textarea[name="observaciones"]').value = factura.observaciones || '';
+            // Observaciones
+            const observacionesTextarea = document.querySelector('textarea[name="observaciones"]');
+            if (observacionesTextarea) {
+                observacionesTextarea.value = factura.observaciones || '';
+                console.log("✅ Observaciones asignadas");
+            }
 
-        // Valor Servicio
-        const valorServicioInput = document.getElementById('valorServicio');
-        if (valorServicioInput) {
-            valorServicioInput.value = (factura.valorServicio || 0).toFixed(2);
-        }
+            // Valor Servicio
+            const valorServicioInput = document.getElementById('valorServicio');
+            if (valorServicioInput) {
+                valorServicioInput.value = (factura.valorServicio || 0).toFixed(2);
+                console.log("✅ Valor servicio asignado:", factura.valorServicio);
+            }
 
-        // Monto Total
-        const montoTotalInput = document.querySelector('input[name="monto_total"]');
-        if (montoTotalInput) {
-            montoTotalInput.value = (factura.montoTotal || 0).toFixed(2);
-        }
+            // Monto Total
+            const montoTotalInput = document.querySelector('input[name="monto_total"]');
+            if (montoTotalInput) {
+                montoTotalInput.value = (factura.montoTotal || 0).toFixed(2);
+                console.log("✅ Monto total asignado:", factura.montoTotal);
+            }
 
-        // Manejar facturas con cotización
-        if (tipoFactura === 'ConCotizacion') {
-            const idCotizacion = factura.cotizacion?.idCotizacion || factura.idCotizacion || '';
-            if (idCotizacion) {
+            // Manejar facturas con cotización
+            if (tipoFactura === 'ConCotizacion') {
+                const idCotizacion = factura.cotizacion?.idCotizacion || factura.idCotizacion || '';
+                if (idCotizacion) {
+                    setTimeout(() => {
+                        const cotizacionSelect = document.getElementById('cotizacionSelect');
+                        if (cotizacionSelect) {
+                            cotizacionSelect.value = idCotizacion;
+                            console.log("✅ Cotización asignada:", idCotizacion);
+                            // Disparar change para cargar datos de la cotización
+                            cotizacionSelect.dispatchEvent(new Event('change'));
+                        }
+                    }, 500);
+                }
+            }
+
+            // ✅ CARGAR DETALLES DE LA FACTURA - VERSIÓN MEJORADA
+            detalleFactura = []; // Limpiar array existente
+            
+            console.log("📦 Procesando productos de la factura:", factura.detalleFactura);
+            
+            if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
+                factura.detalleFactura.forEach((df, index) => {
+                    // Validar que el producto sea válido
+                    if (!df.idProducto || df.idProducto === "PRODUCTO_ELIMINADO") {
+                        console.warn(`⚠️ Producto ${index + 1} inválido, omitiendo:`, df);
+                        return;
+                    }
+
+                    // Buscar el producto en productosData para obtener nombre actualizado
+                    const producto = productosData.find(p => p.idProducto === df.idProducto);
+                    const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
+                    const precioUnitario = parseFloat(df.precioUnitario) || 0;
+                    const cantidad = parseInt(df.cantidad) || 0;
+                    const subtotal = parseFloat(df.subtotal) || (precioUnitario * cantidad);
+
+                    detalleFactura.push({
+                        idProducto: df.idProducto,
+                        nombreProducto: nombreProducto,
+                        cantidad: cantidad,
+                        precioUnitario: precioUnitario,
+                        subtotal: subtotal
+                    });
+                    
+                    console.log(`✅ Producto ${index + 1} agregado:`, nombreProducto, cantidad, precioUnitario);
+                });
+                console.log(`✅ ${detalleFactura.length} productos cargados para edición`);
+            } else {
+                console.log("📭 No hay productos en esta factura");
+            }
+
+            // Renderizar productos
+            renderDetalleFactura();
+
+            // Para facturas simples, recalcular monto total si es necesario
+            if (tipoFactura === 'Simple') {
                 setTimeout(() => {
-                    document.getElementById('cotizacionSelect').value = idCotizacion;
-                    document.getElementById('cotizacionSelect').dispatchEvent(new Event('change'));
+                    actualizarMontoTotal();
                 }, 300);
             }
-        }
 
-        // CARGAR DETALLES DE PRODUCTOS (si existen en los datos locales)
-        detalleFactura = [];
-        
-        if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
-            factura.detalleFactura.forEach(df => {
-                if (!df.idProducto || df.idProducto === "PRODUCTO_ELIMINADO") {
-                    return;
-                }
+            currentEditId = id;
+            console.log("✅ Modal de edición completamente configurado para:", id);
 
-                const producto = productosData.find(p => p.idProducto === df.idProducto);
-                const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto';
-                const precioUnitario = parseFloat(df.precioUnitario) || 0;
-                const cantidad = parseInt(df.cantidad) || 0;
-                const subtotal = parseFloat(df.subtotal) || (precioUnitario * cantidad);
-
-                detalleFactura.push({
-                    idProducto: df.idProducto,
-                    nombreProducto: nombreProducto,
-                    cantidad: cantidad,
-                    precioUnitario: precioUnitario,
-                    subtotal: subtotal
-                });
-            });
-            console.log(`✅ ${detalleFactura.length} productos cargados`);
-        } else {
-            console.log("ℹ️ No hay productos en los datos locales");
-        }
-
-        // Renderizar productos
-        renderDetalleFactura();
-
-        currentEditId = id;
-        console.log("✅ Modal de edición listo para:", id);
+        }, 100); // Pequeño delay para asegurar que el modal esté listo
 
     } catch (error) {
         console.error("❌ Error inesperado al editar:", error);
-        alert("❌ Error al cargar la factura para editar.");
+        alert("❌ Error al cargar la factura para editar: " + error.message);
     }
 }
 
