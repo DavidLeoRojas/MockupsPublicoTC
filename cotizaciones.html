@@ -1447,22 +1447,36 @@ function obtenerTipoServicioValido() {
 }
 
 // Función para obtener un tipo de servicio válido
+// Función para obtener un tipo de servicio válido - VERSIÓN MEJORADA
 function obtenerTipoServicioValido() {
-    if (tiposServicio.length === 0) {
-        console.warn('⚠️ No hay tipos de servicio disponibles, usando valor por defecto');
-        return "TS001";
+    // Verificar si hay tipos de servicio cargados
+    if (window.tiposServicio && window.tiposServicio.length > 0) {
+        // Buscar el primer tipo de servicio activo
+        const tipoActivo = window.tiposServicio.find(t => t.estado === "ACTIVO");
+        if (tipoActivo) {
+            console.log("✅ Usando tipo de servicio activo:", tipoActivo.idTipoServicio);
+            return tipoActivo.idTipoServicio;
+        }
+        
+        // Si no hay activos, usar el primero
+        const primerTipo = window.tiposServicio[0];
+        console.log("✅ Usando primer tipo de servicio:", primerTipo.idTipoServicio);
+        return primerTipo.idTipoServicio;
     }
     
-    // Buscar el primer tipo de servicio activo
-    const tipoActivo = tiposServicio.find(t => t.estado === "ACTIVO");
-    if (tipoActivo) {
-        return tipoActivo.idTipoServicio;
+    console.warn('⚠️ No hay tipos de servicio disponibles, usando valor por defecto');
+    
+    // Valores por defecto comunes
+    const tiposPorDefecto = ["TPS001", "TS001", "SERV001", "DEFAULT"];
+    
+    for (let tipo of tiposPorDefecto) {
+        console.log("🔍 Probando tipo por defecto:", tipo);
+        return tipo; // Devolver el primero
     }
     
-    // Si no hay activos, usar el primero
-    return tiposServicio[0].idTipoServicio;
+    // Último recurso
+    return "TS001";
 }
-
 // Llamar esta función en la inicialización
 // loadTiposServicio();
 // Función de prueba para crear nueva cotización
@@ -1839,7 +1853,7 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
             idCotizacion: datosCompletos.idCotizacion,
             dniCliente: datosCompletos.dniCliente,
             fechaPreferida: fechaPreferida,
-            fechaSolicitud: fechaSolicitud, // ✅ Usar fecha formateada
+            fechaSolicitud: fechaSolicitud,
             prioridad: datosCompletos.prioridad || "Media",
             descripcionProblema: datosCompletos.descripcionProblema,
             notasInternas: datosCompletos.notasInternas || "",
@@ -1861,15 +1875,6 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
         if (!responseBasica.ok) {
             let errorText = await responseBasica.text();
             console.error("❌ Error creación básica:", errorText);
-            
-            // Intentar parsear el error para mejor mensaje
-            try {
-                const errorJson = JSON.parse(errorText);
-                errorText = errorJson.message || errorJson.error || errorText;
-            } catch {
-                // Mantener texto original si no es JSON
-            }
-            
             throw new Error(`Error creando cotización básica: ${errorText}`);
         }
 
@@ -1880,18 +1885,27 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
         if (datosCompletos.detalleCotizacion && datosCompletos.detalleCotizacion.length > 0) {
             console.log("📦 PASO 2 - Agregando productos...");
             
+            // ✅ CORRECCIÓN: Estructura correcta para el endpoint de productos
             const datosProductos = {
-                detalleCotizacion: datosCompletos.detalleCotizacion,
+                idCotizacion: datosCompletos.idCotizacion,
+                detalleCotizacion: datosCompletos.detalleCotizacion.map(producto => ({
+                    idProducto: producto.idProducto,
+                    cantidad: producto.cantidad,
+                    precioUnitario: producto.precioUnitario,
+                    subtotal: producto.subtotal,
+                    idTipoServicio: producto.idTipoServicio || "TS001" // Asegurar tipo de servicio
+                })),
                 costoTotalCotizacion: datosCompletos.costoTotalCotizacion,
                 valorServicio: datosCompletos.valorServicio
             };
 
             console.log("📤 Agregando productos:", datosProductos);
 
-            const responseProductos = await fetch(`${API_COTIZACIONES_URL}/${datosCompletos.idCotizacion}/con-productos`, {
-                method: 'PUT',
+            // ✅ CORRECCIÓN: Usar el endpoint correcto para agregar productos
+            const responseProductos = await fetch(`${API_COTIZACIONES_URL}/${datosCompletos.idCotizacion}/productos`, {
+                method: 'POST',
                 headers: headers,
-                body: JSON.stringify(datosProductos)
+                body: JSON.stringify(datosProductos.detalleCotizacion) // ✅ Enviar solo el array de productos
             });
 
             console.log("📥 Respuesta agregando productos:", responseProductos.status);
@@ -1899,10 +1913,13 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
             if (!responseProductos.ok) {
                 const errorText = await responseProductos.text();
                 console.error("❌ Error agregando productos:", errorText);
-                // No lanzar error aquí, solo loguear
+                
+                // Intentar con endpoint alternativo
+                console.log("🔄 Intentando endpoint alternativo...");
+                await intentarEndpointAlternativo(datosCompletos);
             } else {
-                const cotizacionConProductos = await responseProductos.json();
-                console.log("✅ Productos agregados:", cotizacionConProductos);
+                const resultadoProductos = await responseProductos.json();
+                console.log("✅ Productos agregados:", resultadoProductos);
             }
         }
 
@@ -1923,8 +1940,37 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
             submitBtn.disabled = false;
         }
         isSubmitting = false;
+    }
+}
+
+// Función para intentar endpoint alternativo
+async function intentarEndpointAlternativo(datosCompletos) {
+    try {
+        const headers = getAuthHeaders();
         
-        throw error; // Re-lanzar el error para manejo superior
+        // Intentar con el endpoint original pero con estructura diferente
+        const datosAlternativos = {
+            detalleCotizacion: datosCompletos.detalleCotizacion,
+            costoTotalCotizacion: datosCompletos.costoTotalCotizacion,
+            valorServicio: datosCompletos.valorServicio
+        };
+
+        console.log("🔄 Intentando endpoint /con-productos:", datosAlternativos);
+
+        const response = await fetch(`${API_COTIZACIONES_URL}/${datosCompletos.idCotizacion}/con-productos`, {
+            method: 'PUT',
+            headers: headers,
+            body: JSON.stringify(datosAlternativos)
+        });
+
+        if (response.ok) {
+            console.log("✅ Productos agregados con endpoint alternativo");
+        } else {
+            const errorText = await response.text();
+            console.warn("⚠️ Endpoint alternativo también falló:", errorText);
+        }
+    } catch (error) {
+        console.warn("⚠️ Error en endpoint alternativo:", error.message);
     }
 }
 // Función para diagnosticar campos requeridos
@@ -2383,7 +2429,7 @@ async function probarDiferentesEstructuras(datosOriginales) {
         modal.classList.remove('show');
     }
 
-  // ===== INICIALIZACIÓN =====
+// ===== INICIALIZACIÓN =====
 document.addEventListener('DOMContentLoaded', async function() {
     console.log("🔄 Inicializando aplicación...");
     
@@ -2398,7 +2444,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         await loadClientes();
         await loadServicios();
         await loadProductosCot();
-        await loadTiposServicio(); // ← AGREGAR ESTA LÍNEA
+        
+        // ✅ CORRECCIÓN: Cargar tipos de servicio y asignar a variable global
+        window.tiposServicio = await loadTiposServicio();
+        console.log("📋 Tipos de servicio disponibles:", window.tiposServicio);
+        
         await getAllCotizaciones();
         
         console.log("✅ Aplicación inicializada correctamente");
@@ -2685,16 +2735,18 @@ async function editCotizacion(id) {
         
         detalleCotizacion = []; // Limpiar array
         
-        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion)) {
+        // ✅ CORRECCIÓN: Manejar diferentes casos de estructura de productos
+        if (cot.detalleCotizacion && Array.isArray(cot.detalleCotizacion) && cot.detalleCotizacion.length > 0) {
             cot.detalleCotizacion.forEach((item, index) => {
-                // ✅ FILTRAR PRODUCTOS VÁLIDOS - Manejar diferentes estructuras
-                if (item && item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO" && item.idProducto !== "null") {
+                // ✅ VERIFICAR QUE EL PRODUCTO SEA VÁLIDO
+                if (item && item.idProducto && item.idProducto !== "PRODUCTO_ELIMINADO") {
                     const productoValido = {
                         idProducto: item.idProducto.toString(),
                         nombreProducto: item.nombreProducto || `Producto ${index + 1}`,
                         cantidad: parseInt(item.cantidad) || 1,
                         precioUnitario: parseFloat(item.precioUnitario) || 0,
-                        subtotal: parseFloat(item.subtotal) || 0
+                        subtotal: parseFloat(item.subtotal) || 0,
+                        idTipoServicio: item.idTipoServicio || "TS001"
                     };
                     
                     console.log(`✅ Agregando producto ${index + 1}:`, productoValido);
@@ -2705,8 +2757,11 @@ async function editCotizacion(id) {
             });
             
             console.log(`📊 Total de productos válidos cargados: ${detalleCotizacion.length}`);
+        } else if (cot.detalleCotizacion === null) {
+            console.log("📭 La cotización no tiene productos (detalleCotizacion es null)");
+            detalleCotizacion = [];
         } else {
-            console.log("📭 No hay productos en esta cotización o la estructura es inválida");
+            console.log("📭 No hay productos en esta cotización");
             detalleCotizacion = [];
         }
         
