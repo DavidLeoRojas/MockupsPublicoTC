@@ -1698,49 +1698,19 @@ function openAddInvoiceModal() {
     console.log("✅ Modal de factura abierto correctamente");
 }
 
-// Función editInvoice mejorada con mejor diagnóstico
+// Función editInvoice CORREGIDA - usa solo datos locales
 async function editInvoice(id) {
     try {
-        const token = localStorage.getItem('jwtToken');
-        if (!token) {
-            alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
-            window.location.href = 'index.html';
-            return;
-        }
-
-        const headers = {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        };
-
-        console.log(`✏️ Cargando factura para editar: ${id}`);
-
-        // Cargar los datos de la factura específica
-        const response = await fetch(`${API_FACTURAS_URL}/${id}`, { 
-            headers: headers 
-        });
-
-        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
-
-        if (!response.ok) {
-            let errorMessage = `Error ${response.status}`;
-            try {
-                const errorText = await response.text();
-                console.error("❌ Error detallado:", errorText);
-                errorMessage += `: ${errorText}`;
-            } catch {
-                errorMessage += `: ${response.statusText}`;
-            }
-            throw new Error(errorMessage);
-        }
-
-        const fact = await response.json();
-        console.log("📋 Factura cargada para editar:", fact);
-
-        if (!fact) {
+        console.log(`✏️ Editando factura: ${id}`);
+        
+        // Buscar la factura en la lista local (que ya tenemos cargada)
+        const factura = allFacturas.find(f => f.idFactura === id);
+        if (!factura) {
             alert("❌ Factura no encontrada.");
             return;
         }
+
+        console.log("📋 Factura encontrada:", factura);
 
         // Abrir modal de edición
         openAddInvoiceModal();
@@ -1749,64 +1719,67 @@ async function editInvoice(id) {
         document.getElementById('invoiceIdInput').value = id;
 
         // Establecer tipo de factura
-        const tipoFactura = fact.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
+        const tipoFactura = factura.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
         document.getElementById('tipoFacturaSelect').value = tipoFactura;
 
-        // Disparar evento change para actualizar campos visibles
-        document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
+        // Disparar evento change para actualizar campos
+        setTimeout(() => {
+            document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
+        }, 100);
 
         // Rellenar datos del formulario
-        const dniCliente = fact.cliente?.dni || fact.dniCliente;
+        const dniCliente = factura.cliente?.dni || factura.dniCliente;
         if (dniCliente) {
             document.getElementById('clienteSelect').value = dniCliente;
         }
 
-        const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : new Date().toISOString().split('T')[0];
+        const fechaEmision = factura.fechaEmision ? 
+            factura.fechaEmision.split('T')[0] : 
+            new Date().toISOString().split('T')[0];
         document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
 
-        // Usar el estado exacto que viene del backend
-        const estado = fact.estado || 'PENDIENTE';
+        // Estado - manejar diferentes formatos
+        let estado = factura.estado || 'PENDIENTE';
+        if (estado === 'Pendiente') estado = 'PENDIENTE';
+        if (estado === 'Pagada') estado = 'PAGADA';
         document.querySelector('select[name="estado"]').value = estado;
 
-        document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
+        document.querySelector('textarea[name="observaciones"]').value = factura.observaciones || '';
 
-        // CARGAR VALOR SERVICIO
+        // Valor Servicio
         const valorServicioInput = document.getElementById('valorServicio');
         if (valorServicioInput) {
-            valorServicioInput.value = (fact.valorServicio || 0).toFixed(2);
+            valorServicioInput.value = (factura.valorServicio || 0).toFixed(2);
         }
 
-        // CARGAR MONTO TOTAL
+        // Monto Total
         const montoTotalInput = document.querySelector('input[name="monto_total"]');
         if (montoTotalInput) {
-            montoTotalInput.value = (fact.montoTotal || 0).toFixed(2);
+            montoTotalInput.value = (factura.montoTotal || 0).toFixed(2);
         }
 
         // Manejar facturas con cotización
         if (tipoFactura === 'ConCotizacion') {
-            const idCotizacion = fact.cotizacion?.idCotizacion || fact.idCotizacion || '';
+            const idCotizacion = factura.cotizacion?.idCotizacion || factura.idCotizacion || '';
             if (idCotizacion) {
-                document.getElementById('cotizacionSelect').value = idCotizacion;
-                // Esperar un poco para que se cargue el select
                 setTimeout(() => {
+                    document.getElementById('cotizacionSelect').value = idCotizacion;
                     document.getElementById('cotizacionSelect').dispatchEvent(new Event('change'));
                 }, 300);
             }
         }
 
-        // CARGAR DETALLES DE LA FACTURA
-        detalleFactura = []; // Limpiar array existente
+        // CARGAR DETALLES DE PRODUCTOS (si existen en los datos locales)
+        detalleFactura = [];
         
-        if (fact.detalleFactura && Array.isArray(fact.detalleFactura)) {
-            fact.detalleFactura.forEach(df => {
+        if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
+            factura.detalleFactura.forEach(df => {
                 if (!df.idProducto || df.idProducto === "PRODUCTO_ELIMINADO") {
-                    console.warn("⚠️ Producto eliminado, omitiendo:", df);
                     return;
                 }
 
-                // Buscar el producto en productosData para obtener nombre actualizado
                 const producto = productosData.find(p => p.idProducto === df.idProducto);
-                const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
+                const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto';
                 const precioUnitario = parseFloat(df.precioUnitario) || 0;
                 const cantidad = parseInt(df.cantidad) || 0;
                 const subtotal = parseFloat(df.subtotal) || (precioUnitario * cantidad);
@@ -1819,29 +1792,20 @@ async function editInvoice(id) {
                     subtotal: subtotal
                 });
             });
-            console.log(`✅ ${detalleFactura.length} productos cargados para edición`);
+            console.log(`✅ ${detalleFactura.length} productos cargados`);
         } else {
-            console.log("ℹ️ No hay productos en esta factura");
+            console.log("ℹ️ No hay productos en los datos locales");
         }
 
         // Renderizar productos
         renderDetalleFactura();
 
         currentEditId = id;
-        console.log("✅ Modal de edición configurado correctamente para:", id);
+        console.log("✅ Modal de edición listo para:", id);
 
     } catch (error) {
-        console.error("❌ Error al cargar factura para editar:", error);
-        
-        if (error.message.includes('401') || error.message.includes('No autorizado')) {
-            alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
-            window.location.href = 'index.html';
-        } else if (error.message.includes('404') || error.message.includes('no encontrada')) {
-            alert('❌ Factura no encontrada. Puede haber sido eliminada.');
-            await getAllFacturas();
-        } else {
-            alert(`❌ Error al cargar factura para editar:\n\n${error.message}\n\nPosible problema en el backend.`);
-        }
+        console.error("❌ Error inesperado al editar:", error);
+        alert("❌ Error al cargar la factura para editar.");
     }
 }
 
@@ -2368,7 +2332,48 @@ function diagnosticarToken() {
     
     return !!token;
 }
+// Función para filtrar facturas - COLOCAR ANTES DE DOMContentLoaded
+function filterInvoices() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const estadoFilter = document.getElementById('statusFilter').value;
+    const dateFrom = document.getElementById('dateFromFilter').value;
+    const dateTo = document.getElementById('dateToFilter').value;
 
+    let filtered = allFacturas;
+
+    if (searchTerm) {
+        filtered = filtered.filter(f => 
+            f.idFactura?.toLowerCase().includes(searchTerm) || 
+            f.dniCliente?.toLowerCase().includes(searchTerm) ||
+            f.cliente?.nombre?.toLowerCase().includes(searchTerm) ||
+            f.montoTotal?.toString().includes(searchTerm)
+        );
+    }
+    
+    if (estadoFilter) {
+        filtered = filtered.filter(f => {
+            const estadoFactura = f.estado || '';
+            return estadoFactura.toUpperCase() === estadoFilter.toUpperCase();
+        });
+    }
+    
+    if (dateFrom) {
+        filtered = filtered.filter(f => {
+            const fechaFactura = new Date(f.fechaEmision);
+            return fechaFactura >= new Date(dateFrom);
+        });
+    }
+    
+    if (dateTo) {
+        filtered = filtered.filter(f => {
+            const fechaFactura = new Date(f.fechaEmision);
+            return fechaFactura <= new Date(dateTo);
+        });
+    }
+
+    console.log(`🔍 Filtradas ${filtered.length} de ${allFacturas.length} facturas`);
+    renderTable(filtered);
+}
 // Ejecutar en consola: diagnosticarToken()
 // Inicialización corregida
 document.addEventListener('DOMContentLoaded', function() {
