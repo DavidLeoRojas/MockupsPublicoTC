@@ -1060,9 +1060,13 @@
 
     <script>
         const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
         let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
+        let currentYear = new Date().getFullYear(); // ✅ Esto asegura que sea 2024, no 2025
         let servicios = [];
+
         let todasLasPersonas = [];
         let todosLosTiposServicio = [];
         let cotizaciones = [];
@@ -1186,7 +1190,48 @@
             return '⚠️ Servicio Desconocido';
         }
 
+// ✅ AGREGAR ESTA FUNCIÓN COMPLETA
+function debugServicios() {
+    console.log('🐛 DEBUG - TODOS LOS SERVICIOS:');
+    if (servicios.length === 0) {
+        console.log('❌ No hay servicios cargados');
+        return;
+    }
+    
+    servicios.forEach((serv, index) => {
+        console.log(`📋 Servicio ${index + 1}:`, {
+            id: serv.idServicio,
+            fecha: serv.fecha,
+            hora: serv.hora,
+            cliente: obtenerNombreCliente(serv),
+            tecnico: obtenerNombreTecnico(serv),
+            tipo: obtenerNombreServicio(serv),
+            estado: serv.estado
+        });
+        
+        // Debug de fecha
+        if (serv.fecha) {
+            const fechaServ = new Date(serv.fecha);
+            console.log(`   📅 Fecha parseada: ${fechaServ.toLocaleDateString()}`);
+            console.log(`   📅 Año: ${fechaServ.getFullYear()}, Mes: ${fechaServ.getMonth() + 1}, Día: ${fechaServ.getDate()}`);
+        }
+    });
+    
+    console.log(`📊 Resumen: ${servicios.length} servicios totales`);
+    console.log(`📅 Calendario actual: ${currentMonth + 1}/${currentYear}`);
+}
 
+// ✅ Y esta función para forzar mostrar servicios
+function mostrarServiciosEnCalendario() {
+    console.log('🔄 Forzando mostrar servicios en calendario...');
+    servicios.forEach(servicio => {
+        if (servicio.fecha) {
+            const fecha = new Date(servicio.fecha);
+            console.log(`📍 Servicio en fecha: ${fecha.toLocaleDateString()} - ${obtenerNombreCliente(servicio)}`);
+        }
+    });
+    renderCalendar(currentMonth, currentYear);
+}
 // ========== CARGA DE DATOS ========== 
 async function loadAgendaData() {
     console.log("🔄 Iniciando carga de datos de la agenda...");
@@ -1338,15 +1383,11 @@ function populateCotizacionSelect(cotizaciones) {
             });
         }
 
-        // ========== RENDER CALENDAR ==========
 function renderCalendar(month, year) {
     console.log(`📅 Renderizando calendario: ${month + 1}/${year}`);
     console.log(`📊 Total de servicios: ${servicios.length}`);
     
-    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-                       "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    
-    // Actualizar título
+    // ✅ USAR monthNames global que ya definimos
     const monthYearElement = document.querySelector('.month-year');
     const calendarTitle = document.querySelector('.calendar-title');
     if (monthYearElement) monthYearElement.textContent = `${monthNames[month]} ${year}`;
@@ -1375,8 +1416,9 @@ function renderCalendar(month, year) {
     const startDay = firstDay.getDay(); // 0 = Domingo, 1 = Lunes, etc.
     const totalDays = lastDay.getDate();
 
-    console.log(`📆 Primer día: ${startDay}, total días: ${totalDays}`);
+    console.log(`📆 Primer día: ${startDay}, total días: ${totalDays}, mes actual: ${month + 1}`);
 
+    // ... el resto de la función se mantiene igual
     // Días del mes anterior
     const prevLastDay = new Date(year, month, 0).getDate();
     for (let i = startDay - 1; i >= 0; i--) {
@@ -1404,18 +1446,31 @@ function renderCalendar(month, year) {
 
         // Buscar servicios para este día
         const serviciosDelDia = servicios.filter(servicio => {
-            if (!servicio.fecha) return false;
+            if (!servicio.fecha) {
+                console.log('❌ Servicio sin fecha:', servicio);
+                return false;
+            }
             
             try {
                 const fechaServicio = new Date(servicio.fecha);
-                return fechaServicio.getDate() === day &&
-                       fechaServicio.getMonth() === month &&
-                       fechaServicio.getFullYear() === year;
+                console.log(`🔍 Comparando: Servicio ${servicio.idServicio} - ${fechaServicio.toLocaleDateString()} vs ${date.toLocaleDateString()}`);
+                
+                const coincide = fechaServicio.getDate() === day &&
+                               fechaServicio.getMonth() === month &&
+                               fechaServicio.getFullYear() === year;
+                
+                if (coincide) {
+                    console.log(`✅ ENCONTRADO: Servicio ${servicio.idServicio} en día ${day}`);
+                }
+                
+                return coincide;
             } catch (error) {
-                console.error('Error procesando fecha:', servicio.fecha);
+                console.error('❌ Error procesando fecha:', servicio.fecha, error);
                 return false;
             }
         });
+
+        console.log(`📅 Día ${day}: ${serviciosDelDia.length} servicios`);
 
         // Agregar eventos al día
         const eventsContainer = dayElement.querySelector('.day-events');
@@ -1437,8 +1492,9 @@ function renderCalendar(month, year) {
                 });
                 
                 eventsContainer.appendChild(eventElement);
+                console.log(`✅ Evento agregado: ${nombreCliente} en día ${day}`);
             } catch (error) {
-                console.error('Error creando evento:', error);
+                console.error('❌ Error creando evento:', error);
             }
         });
 
