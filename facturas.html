@@ -1268,7 +1268,7 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
     }
 });
 
-// Agregar producto al detalle - VERSIÓN CORREGIDA
+// Agregar producto al detalle - VERSIÓN MEJORADA
 document.getElementById('addProductBtn').addEventListener('click', function() {
     const productoId = document.getElementById('productoSelect').value;
     const cantidad = parseInt(document.getElementById('cantidadProducto').value) || 0;
@@ -1329,7 +1329,7 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
             nombreProducto: producto.nombre,
             cantidad: cantidad,
             precioUnitario: precioUnitario,
-            subtotal: subtotal
+            subtotal: subtotal // ✅ Asegurar que subtotal se calcule
         });
     }
 
@@ -1341,8 +1341,35 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
     
     console.log("✅ Producto agregado. Total productos:", detalleFactura.length);
 });
+// Función para validar y preparar datos antes del envío
+function prepararDatosFactura() {
+    // ✅ CORRECCIÓN: Asegurar que todos los subtotales estén calculados
+    detalleFactura.forEach(item => {
+        if (!item.subtotal || isNaN(item.subtotal)) {
+            item.subtotal = (item.precioUnitario || 0) * (item.cantidad || 0);
+        }
+    });
 
-        // Renderizar lista de productos agregados
+    // Filtrar productos válidos
+    const detalleFacturaFiltrado = detalleFactura.filter(item => 
+        item.idProducto && 
+        item.idProducto !== "PRODUCTO_ELIMINADO" && 
+        item.idProducto !== "null" &&
+        item.cantidad > 0 &&
+        !isNaN(item.subtotal)
+    );
+
+    // Preparar detalle para enviar
+    const detalleFacturaData = detalleFacturaFiltrado.map(item => ({
+        idProducto: item.idProducto,
+        cantidad: item.cantidad,
+        precioUnitario: item.precioUnitario,
+        subtotal: item.subtotal
+    }));
+
+    return detalleFacturaData;
+}
+// Función mejorada para renderizar productos
 function renderDetalleFactura() {
     const container = document.getElementById('detalleFacturaList');
     if (!container) {
@@ -1358,6 +1385,10 @@ function renderDetalleFactura() {
 
     container.innerHTML = '';
     detalleFactura.forEach((item, index) => {
+        // ✅ CORRECCIÓN: Asegurar que el subtotal se calcule correctamente
+        const subtotal = (item.precioUnitario || 0) * (item.cantidad || 0);
+        item.subtotal = subtotal; // Actualizar el valor en el array
+
         const div = document.createElement('div');
         div.className = 'detalle-factura-item';
         div.style.cssText = `
@@ -1378,7 +1409,7 @@ function renderDetalleFactura() {
                 <small style="color: #718096;">ID: ${item.idProducto}</small><br>
                 <span style="color: #4a5568; font-size: 0.9em;">
                     ${item.cantidad} x $${(item.precioUnitario || 0).toLocaleString()} = 
-                    <strong>$${(item.subtotal || 0).toLocaleString()}</strong>
+                    <strong>$${(subtotal || 0).toLocaleString()}</strong>
                 </span>
             </div>
             <div class="detalle-factura-controls" style="display: flex; gap: 0.5rem;">
@@ -1469,37 +1500,16 @@ function validarFacturaAntesDeEnviar(tipoFactura) {
 async function diagnosticarFacturas() {
     console.log("🔍 DIAGNOSTICANDO FACTURAS...");
     
-    // Primero, limpiar cualquier producto eliminado
-    limpiarProductosEliminados();
-    
-    // Crear datos de prueba con productos válidos
-    const productoValido = productosData.find(p => 
-        p.idProducto && 
-        p.idProducto !== "PRODUCTO_ELIMINADO" && 
-        p.stock > 0
-    );
-    
-    if (!productoValido) {
-        alert("❌ No hay productos válidos para probar. Agrega productos al inventario primero.");
-        return null;
-    }
-
+    // Preparar datos de prueba
     const datosPrueba = {
-        dniCliente: "111111111", // Usa un DNI que exista
+        dniCliente: "444555666", // Usa un DNI que exista
         fechaEmision: new Date().toISOString().split('T')[0],
         montoTotal: 100000,
-        estado: "Pendiente",
+        estado: "PENDIENTE", // ✅ Usar mayúsculas como espera el backend
         observaciones: "Factura de prueba - diagnóstico",
         tipoFactura: "Simple",
         valorServicio: 50000,
-        detalleFactura: [
-            {
-                idProducto: productoValido.idProducto,
-                cantidad: 1,
-                precioUnitario: productoValido.precioActual || 50000,
-                subtotal: productoValido.precioActual || 50000
-            }
-        ]
+        detalleFactura: [] // ✅ Probar sin productos primero
     };
 
     console.log("🧪 Probando con datos:", JSON.stringify(datosPrueba, null, 2));
@@ -1534,11 +1544,10 @@ async function diagnosticarFacturas() {
             const errorText = await response.text();
             console.error("❌ Error:", errorText);
             
-            // Intentar parsear el error para mejor mensaje
-            try {
-                const errorJson = JSON.parse(errorText);
-                alert("❌ Error en prueba: " + (errorJson.message || errorJson.error || errorText));
-            } catch {
+            // Esto indica que el problema es del backend (generación de IDs)
+            if (errorText.includes("IdentifierGenerationException")) {
+                alert("❌ Error del backend: Problema con la generación de IDs de factura. Contacte al administrador.");
+            } else {
                 alert("❌ Error en prueba: " + errorText);
             }
             return null;
@@ -1711,7 +1720,6 @@ async function editInvoice(id) {
     currentEditId = id;
 }
 
-// Manejar envío del formulario - VERSIÓN CORREGIDA
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1774,27 +1782,14 @@ async function handleInvoiceFormSubmit(event) {
             throw new Error('Monto total inválido');
         }
 
-        // ✅ CORRECCIÓN: Filtrar productos eliminados antes de enviar
-        const detalleFacturaFiltrado = detalleFactura.filter(item => 
-            item.idProducto && 
-            item.idProducto !== "PRODUCTO_ELIMINADO" && 
-            item.idProducto !== "null" &&
-            item.cantidad > 0
-        );
+        // ✅ CORRECCIÓN: Usar función mejorada para preparar datos
+        const detalleFacturaData = prepararDatosFactura();
 
-        // ✅ CORRECCIÓN: Permitir facturas sin productos si tienen valor de servicio
-        if (detalleFacturaFiltrado.length === 0 && valorServicio <= 0 && tipoFactura === 'Simple') {
-            alert('⚠️ Debe agregar al menos un producto válido o especificar un valor de servicio.');
+        // Validar según tipo de factura
+        if (tipoFactura === 'Simple' && detalleFacturaData.length === 0 && valorServicio <= 0) {
+            alert('⚠️ Para facturas simples, debe agregar al menos un producto o especificar un valor de servicio.');
             throw new Error('No hay productos válidos en el detalle y valor de servicio es 0');
         }
-
-        // ✅ CORRECCIÓN: Preparar detalle de factura correctamente
-        const detalleFacturaData = detalleFacturaFiltrado.map(item => ({
-            idProducto: item.idProducto,
-            cantidad: item.cantidad,
-            precioUnitario: item.precioUnitario,
-            subtotal: item.subtotal
-        }));
 
         // ✅ CORRECCIÓN: Estructura de datos completa y validada
         const facturaData = {
@@ -1866,7 +1861,6 @@ async function handleInvoiceFormSubmit(event) {
         isSubmitting = false;
     }
 }
-
         // Cerrar modal
         function closeModal(modalId) {
             document.getElementById(modalId).classList.remove('show');
