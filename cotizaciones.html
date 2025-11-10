@@ -1738,18 +1738,19 @@ async function handleQuoteFormSubmit(event) {
         }
 
         // Estructura de datos completa
-        const formData = {
-            idCotizacion: idCotizacion,
-            dniCliente: dniCliente,
-            fechaPreferida: fechaPreferida,
-            prioridad: prioridad,
-            descripcionProblema: descripcion,
-            notasInternas: notas || '',
-            estado: estadoBackend,
-            detalleCotizacion: detalleCotizacionData,
-            costoTotalCotizacion: costoTotalCalculado,
-            valorServicio: valorServicioInput
-        };
+    const formData = {
+    idCotizacion: idCotizacion,
+    dniCliente: dniCliente,
+    fechaPreferida: fechaPreferida,
+    fechaSolicitud: new Date().toISOString().split('T')[0], // ← AGREGAR ESTE CAMPO
+    prioridad: prioridad,
+    descripcionProblema: descripcion,
+    notasInternas: notas || '',
+    estado: estadoBackend,
+    detalleCotizacion: detalleCotizacionData,
+    costoTotalCotizacion: costoTotalCalculado,
+    valorServicio: valorServicioInput
+};
 
         console.log("🚀 ENVIANDO DATOS:", JSON.stringify(formData, null, 2));
 
@@ -1803,24 +1804,18 @@ async function handleQuoteFormSubmit(event) {
 
 
 // Función para crear cotización en dos pasos
+// Función para crear cotización en dos pasos
 async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
     try {
         const headers = getAuthHeaders();
         
         console.log("🔄 Creando cotización en dos pasos...");
         
+        // ✅ AGREGAR FECHA_SOLICITUD (campo requerido)
+        const fechaSolicitud = new Date().toISOString().split('T')[0]; // Fecha actual en formato YYYY-MM-DD
+        
         // PASO 1: Crear cotización básica sin productos
-        const datosBasicos = {
-            idCotizacion: datosCompletos.idCotizacion,
-            dniCliente: datosCompletos.dniCliente,
-            fechaPreferida: datosCompletos.fechaPreferida,
-            descripcionProblema: datosCompletos.descripcionProblema,
-            estado: datosCompletos.estado,
-            prioridad: datosCompletos.prioridad || "Media",
-            notasInternas: datosCompletos.notasInternas || "",
-            costoTotalCotizacion: datosCompletos.costoTotalCotizacion || 0,
-            valorServicio: datosCompletos.valorServicio || 0
-        };
+        const datosBasicos = obtenerEstructuraCotizacion(datosCompletos);
 
         console.log("📤 PASO 1 - Creando cotización básica:", datosBasicos);
 
@@ -1833,7 +1828,17 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
         console.log("📥 Respuesta creación básica:", responseBasica.status);
 
         if (!responseBasica.ok) {
-            const errorText = await responseBasica.text();
+            let errorText = await responseBasica.text();
+            console.error("❌ Error creación básica:", errorText);
+            
+            // Intentar parsear el error para mejor mensaje
+            try {
+                const errorJson = JSON.parse(errorText);
+                errorText = errorJson.message || errorJson.error || errorText;
+            } catch {
+                // Mantener texto original si no es JSON
+            }
+            
             throw new Error(`Error creando cotización básica: ${errorText}`);
         }
 
@@ -1886,7 +1891,93 @@ async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
         isSubmitting = false;
     }
 }
+// Función para diagnosticar campos requeridos
+async function diagnosticarCamposRequeridos() {
+    console.log("🔍 DIAGNOSTICANDO CAMPOS REQUERIDOS...");
+    
+    const pruebas = [
+        {
+            nombre: "Estructura mínima con fecha_solicitud",
+            datos: {
+                idCotizacion: "COT_TEST_" + Date.now(),
+                dniCliente: "111111111",
+                fechaPreferida: "2024-01-15",
+                fechaSolicitud: "2024-01-10", // ← CAMPO REQUERIDO
+                descripcionProblema: "Prueba con fecha_solicitud",
+                estado: "PENDIENTE"
+            }
+        },
+        {
+            nombre: "Estructura completa",
+            datos: {
+                idCotizacion: "COT_TEST_" + (Date.now() + 1),
+                dniCliente: "111111111",
+                fechaPreferida: "2024-01-15",
+                fechaSolicitud: "2024-01-10",
+                descripcionProblema: "Prueba completa",
+                estado: "PENDIENTE",
+                prioridad: "Media",
+                notasInternas: "Prueba",
+                costoTotalCotizacion: 100000,
+                valorServicio: 50000
+            }
+        }
+    ];
+
+    for (let prueba of pruebas) {
+        console.log(`\n🧪 Probando: ${prueba.nombre}`);
+        console.log("📤 Datos:", JSON.stringify(prueba.datos, null, 2));
+        
+        try {
+            const headers = getAuthHeaders();
+            const response = await fetch(API_COTIZACIONES_URL, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(prueba.datos)
+            });
+
+            console.log(`📥 Respuesta: ${response.status} ${response.statusText}`);
+            
+            if (response.ok) {
+                const result = await response.json();
+                console.log("✅ ÉXITO:", result);
+                return prueba.datos;
+            } else {
+                const errorText = await response.text();
+                console.log("❌ Error:", errorText);
+            }
+        } catch (error) {
+            console.log("❌ Error de red:", error.message);
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    console.log("❌ Ninguna prueba funcionó");
+    return null;
+}
+
+// Ejecutar en consola: diagnosticarCamposRequeridos()
+
+// Función para obtener estructura correcta de cotización
+function obtenerEstructuraCotizacion(datos) {
+    const fechaActual = new Date().toISOString().split('T')[0];
+    
+    return {
+        idCotizacion: datos.idCotizacion,
+        dniCliente: datos.dniCliente,
+        fechaPreferida: datos.fechaPreferida,
+        fechaSolicitud: fechaActual, // ← CAMPO REQUERIDO
+        descripcionProblema: datos.descripcionProblema,
+        estado: datos.estado,
+        prioridad: datos.prioridad || "Media",
+        notasInternas: datos.notasInternas || "",
+        costoTotalCotizacion: datos.costoTotalCotizacion || 0,
+        valorServicio: datos.valorServicio || 0
+    };
+}
 // Función para diagnosticar tipos de servicio
+
 async function diagnosticarTiposServicio() {
     console.log("🔍 DIAGNOSTICANDO TIPOS DE SERVICIO...");
     
