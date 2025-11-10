@@ -1576,6 +1576,7 @@ function validarDatosAntesDeEnviar(formData) {
 }
 
     // ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
+// ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1670,7 +1671,7 @@ async function handleQuoteFormSubmit(event) {
             console.log("🆕 ID generado para nueva cotización:", idCotizacion);
         }
 
-        // ✅ ESTRUCTURA CORREGIDA - Probemos diferentes formatos
+        // ✅ ESTRUCTURA CORREGIDA
         const formData = {
             idCotizacion: idCotizacion,
             dniCliente: dniCliente,
@@ -1739,155 +1740,155 @@ async function handleQuoteFormSubmit(event) {
         isSubmitting = false;
     }
 }
-    event.preventDefault();
-    if (isSubmitting) return;
-    isSubmitting = true;
+        event.preventDefault();
+        if (isSubmitting) return;
+        isSubmitting = true;
 
-    const submitBtn = document.getElementById('submitBtn');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = '⏳ Guardando...';
-    submitBtn.disabled = true;
+        const submitBtn = document.getElementById('submitBtn');
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = '⏳ Guardando...';
+        submitBtn.disabled = true;
 
-    try {
-        const headers = getAuthHeaders();
-        if (!headers.Authorization) {
-            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-            window.location.href = 'index.html';
-            isSubmitting = false;
-            return;
-        }
-
-        // Calcular totales antes de enviar
-        calcularCostoTotal();
-        
-        const tipoCliente = document.getElementById('clienteTipo').value;
-        const fechaPreferida = document.getElementById('fechaPreferida').value;
-        const prioridad = document.getElementById('prioridad').value;
-        const descripcion = document.getElementById('descripcion').value.trim();
-        const notas = document.getElementById('notas').value.trim();
-        const estado = document.getElementById('estadoSelect').value;
-
-        // Validaciones básicas
-        if (!fechaPreferida) {
-            alert("La fecha preferida es obligatoria.");
-            isSubmitting = false;
-            return;
-        }
-
-        if (!descripcion) {
-            alert("La descripción del problema es obligatoria.");
-            isSubmitting = false;
-            return;
-        }
-
-        let dniCliente = '';
-        if (tipoCliente === 'existente') {
-            dniCliente = document.getElementById('clienteSelect').value.trim();
-            if (!dniCliente) {
-                alert("Seleccione un cliente válido.");
+        try {
+            const headers = getAuthHeaders();
+            if (!headers.Authorization) {
+                alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+                window.location.href = 'index.html';
                 isSubmitting = false;
                 return;
             }
-        } else {
-            dniCliente = document.getElementById('dniNuevo').value.trim();
-            if (!dniCliente) {
-                alert("Ingrese el DNI del cliente nuevo.");
+
+            // Calcular totales antes de enviar
+            calcularCostoTotal();
+            
+            const tipoCliente = document.getElementById('clienteTipo').value;
+            const fechaPreferida = document.getElementById('fechaPreferida').value;
+            const prioridad = document.getElementById('prioridad').value;
+            const descripcion = document.getElementById('descripcion').value.trim();
+            const notas = document.getElementById('notas').value.trim();
+            const estado = document.getElementById('estadoSelect').value;
+
+            // Validaciones básicas
+            if (!fechaPreferida) {
+                alert("La fecha preferida es obligatoria.");
                 isSubmitting = false;
                 return;
             }
+
+            if (!descripcion) {
+                alert("La descripción del problema es obligatoria.");
+                isSubmitting = false;
+                return;
+            }
+
+            let dniCliente = '';
+            if (tipoCliente === 'existente') {
+                dniCliente = document.getElementById('clienteSelect').value.trim();
+                if (!dniCliente) {
+                    alert("Seleccione un cliente válido.");
+                    isSubmitting = false;
+                    return;
+                }
+            } else {
+                dniCliente = document.getElementById('dniNuevo').value.trim();
+                if (!dniCliente) {
+                    alert("Ingrese el DNI del cliente nuevo.");
+                    isSubmitting = false;
+                    return;
+                }
+            }
+
+            // Mapeo de estados
+            const estadoMap = {
+                'Pendiente': 'PENDIENTE',
+                'Aprobada': 'APROBADA', 
+                'Rechazada': 'RECHAZADA',
+                'Finalizada': 'FINALIZADA'
+            };
+
+            const estadoBackend = estadoMap[estado] || 'PENDIENTE';
+
+            // Obtener valores numéricos
+            const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
+            const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
+
+            // Preparar detalle de productos
+            let detalleCotizacionData = [];
+            if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
+                detalleCotizacionData = detalleCotizacion.map(item => ({
+                    idProducto: item.idProducto?.toString() || '',
+                    nombreProducto: item.nombreProducto?.toString() || '',
+                    cantidad: parseInt(item.cantidad) || 1,
+                    precioUnitario: parseFloat(item.precioUnitario) || 0,
+                    subtotal: parseFloat(item.subtotal) || 0
+                }));
+            }
+
+            // ✅ GENERAR ID SIEMPRE PARA NUEVAS COTIZACIONES
+            let idCotizacion;
+            if (currentEditId) {
+                idCotizacion = currentEditId;
+            } else {
+                idCotizacion = generarIdCotizacion();
+                console.log("🆕 ID generado para nueva cotización:", idCotizacion);
+            }
+
+            // Estructura de datos
+            const formData = {
+                idCotizacion: idCotizacion, // ← SIEMPRE incluir el ID
+                dniCliente: dniCliente,
+                fechaPreferida: fechaPreferida,
+                prioridad: prioridad,
+                descripcionProblema: descripcion,
+                notasInternas: notas || '',
+                estado: estadoBackend,
+                detalleCotizacion: detalleCotizacionData,
+                costoTotalCotizacion: costoTotalCalculado,
+                valorServicio: valorServicioInput
+            };
+
+            console.log("🚀 ENVIANDO DATOS:", JSON.stringify(formData, null, 2));
+
+            // Determinar URL y método
+            let url, method;
+            if (currentEditId) {
+                url = `${API_COTIZACIONES_URL}/${currentEditId}/con-productos`;
+                method = 'PUT';
+            } else {
+                url = `${API_COTIZACIONES_URL}/con-productos`;
+                method = 'POST';
+            }
+
+            console.log("📤 Realizando petición:", { url, method });
+
+            const response = await fetch(url, {
+                method: method,
+                headers: headers,
+                body: JSON.stringify(formData)
+            });
+
+            console.log("📥 Respuesta del servidor:", response.status);
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText || `Error ${response.status}: ${response.statusText}`);
+            }
+
+            const responseData = await response.json();
+            console.log("✅ Éxito:", responseData);
+            
+            alert(currentEditId ? "✅ Cotización actualizada" : "✅ Cotización creada");
+            closeModal('addQuoteModal');
+            await getAllCotizaciones();
+            
+        } catch (error) {
+            console.error("❌ Error:", error);
+            alert(`❌ Error al guardar:\n\n${error.message}`);
+        } finally {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            isSubmitting = false;
         }
-
-        // Mapeo de estados
-        const estadoMap = {
-            'Pendiente': 'PENDIENTE',
-            'Aprobada': 'APROBADA', 
-            'Rechazada': 'RECHAZADA',
-            'Finalizada': 'FINALIZADA'
-        };
-
-        const estadoBackend = estadoMap[estado] || 'PENDIENTE';
-
-        // Obtener valores numéricos
-        const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
-        const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
-
-        // Preparar detalle de productos
-        let detalleCotizacionData = [];
-        if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
-            detalleCotizacionData = detalleCotizacion.map(item => ({
-                idProducto: item.idProducto?.toString() || '',
-                nombreProducto: item.nombreProducto?.toString() || '',
-                cantidad: parseInt(item.cantidad) || 1,
-                precioUnitario: parseFloat(item.precioUnitario) || 0,
-                subtotal: parseFloat(item.subtotal) || 0
-            }));
-        }
-
-        // ✅ GENERAR ID SIEMPRE PARA NUEVAS COTIZACIONES
-        let idCotizacion;
-        if (currentEditId) {
-            idCotizacion = currentEditId;
-        } else {
-            idCotizacion = generarIdCotizacion();
-            console.log("🆕 ID generado para nueva cotización:", idCotizacion);
-        }
-
-        // Estructura de datos
-        const formData = {
-            idCotizacion: idCotizacion, // ← SIEMPRE incluir el ID
-            dniCliente: dniCliente,
-            fechaPreferida: fechaPreferida,
-            prioridad: prioridad,
-            descripcionProblema: descripcion,
-            notasInternas: notas || '',
-            estado: estadoBackend,
-            detalleCotizacion: detalleCotizacionData,
-            costoTotalCotizacion: costoTotalCalculado,
-            valorServicio: valorServicioInput
-        };
-
-        console.log("🚀 ENVIANDO DATOS:", JSON.stringify(formData, null, 2));
-
-        // Determinar URL y método
-        let url, method;
-        if (currentEditId) {
-            url = `${API_COTIZACIONES_URL}/${currentEditId}/con-productos`;
-            method = 'PUT';
-        } else {
-            url = `${API_COTIZACIONES_URL}/con-productos`;
-            method = 'POST';
-        }
-
-        console.log("📤 Realizando petición:", { url, method });
-
-        const response = await fetch(url, {
-            method: method,
-            headers: headers,
-            body: JSON.stringify(formData)
-        });
-
-        console.log("📥 Respuesta del servidor:", response.status);
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Error ${response.status}: ${response.statusText}`);
-        }
-
-        const responseData = await response.json();
-        console.log("✅ Éxito:", responseData);
-        
-        alert(currentEditId ? "✅ Cotización actualizada" : "✅ Cotización creada");
-        closeModal('addQuoteModal');
-        await getAllCotizaciones();
-        
-    } catch (error) {
-        console.error("❌ Error:", error);
-        alert(`❌ Error al guardar:\n\n${error.message}`);
-    } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
-        isSubmitting = false;
-    }
 
 // Función para probar diferentes estructuras y encontrar la correcta
 async function probarEstructurasCotizacion() {
