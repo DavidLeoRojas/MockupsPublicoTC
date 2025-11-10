@@ -1642,7 +1642,6 @@ function validarDatosAntesDeEnviar(formData) {
 
 
 // ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
-// ===== FUNCIÓN PRINCIPAL PARA GUARDAR COTIZACIÓN =====
 async function handleQuoteFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1716,7 +1715,7 @@ async function handleQuoteFormSubmit(event) {
         const costoTotalCalculado = parseFloat(document.getElementById('costoTotalCalculado').value) || 0;
         const valorServicioInput = parseFloat(document.getElementById('valorServicioCotizacion')?.value) || 0;
 
-        // ✅ CORRECCIÓN: Preparar detalle de productos
+        // Preparar detalle de productos
         let detalleCotizacionData = [];
         if (detalleCotizacion && Array.isArray(detalleCotizacion) && detalleCotizacion.length > 0) {
             detalleCotizacionData = detalleCotizacion.map(item => ({
@@ -1738,92 +1737,57 @@ async function handleQuoteFormSubmit(event) {
             console.log("🆕 ID generado para nueva cotización:", idCotizacion);
         }
 
-        // ✅ ESTRUCTURA PARA CREACIÓN - Probemos diferentes formatos
-        let formData;
-        
-        if (currentEditId) {
-            // Para edición - usar estructura completa
-            formData = {
-                idCotizacion: idCotizacion,
-                dniCliente: dniCliente,
-                fechaPreferida: fechaPreferida,
-                prioridad: prioridad,
-                descripcionProblema: descripcion,
-                notasInternas: notas || '',
-                estado: estadoBackend,
-                detalleCotizacion: detalleCotizacionData,
-                costoTotalCotizacion: costoTotalCalculado,
-                valorServicio: valorServicioInput
-            };
-        } else {
-            // ✅ PARA CREACIÓN - Probar estructura simplificada primero
-            formData = {
-                idCotizacion: idCotizacion,
-                dniCliente: dniCliente,
-                fechaPreferida: fechaPreferida,
-                descripcionProblema: descripcion,
-                estado: estadoBackend,
-                // Campos opcionales para creación
-                ...(prioridad && { prioridad: prioridad }),
-                ...(notas && { notasInternas: notas }),
-                ...(detalleCotizacionData.length > 0 && { detalleCotizacion: detalleCotizacionData }),
-                ...(costoTotalCalculado > 0 && { costoTotalCotizacion: costoTotalCalculado }),
-                ...(valorServicioInput > 0 && { valorServicio: valorServicioInput })
-            };
-            
-            console.log("🆕 Estructura para creación:", formData);
-        }
+        // Estructura de datos completa
+        const formData = {
+            idCotizacion: idCotizacion,
+            dniCliente: dniCliente,
+            fechaPreferida: fechaPreferida,
+            prioridad: prioridad,
+            descripcionProblema: descripcion,
+            notasInternas: notas || '',
+            estado: estadoBackend,
+            detalleCotizacion: detalleCotizacionData,
+            costoTotalCotizacion: costoTotalCalculado,
+            valorServicio: valorServicioInput
+        };
 
         console.log("🚀 ENVIANDO DATOS:", JSON.stringify(formData, null, 2));
 
-        // Determinar URL y método
-        let url, method;
+        // ✅ ESTRATEGIA DIFERENTE PARA CREACIÓN VS EDICIÓN
         if (currentEditId) {
-            url = `${API_COTIZACIONES_URL}/${currentEditId}/con-productos`;
-            method = 'PUT';
-        } else {
-            url = `${API_COTIZACIONES_URL}/con-productos`;
-            method = 'POST';
-        }
+            // PARA EDICIÓN - Usar endpoint con productos
+            const url = `${API_COTIZACIONES_URL}/${currentEditId}/con-productos`;
+            console.log("📤 Realizando petición de edición:", { url, method: 'PUT' });
 
-        console.log("📤 Realizando petición:", { url, method });
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(formData)
+            });
 
-        const response = await fetch(url, {
-            method: method,
-            headers: headers,
-            body: JSON.stringify(formData)
-        });
+            console.log("📥 Respuesta del servidor:", response.status, response.statusText);
 
-        console.log("📥 Respuesta del servidor:", response.status, response.statusText);
-
-        // ✅ MEJOR MANEJO DE ERRORES
-        if (!response.ok) {
-            let errorMessage = `Error ${response.status}: ${response.statusText}`;
-            
-            try {
-                const errorText = await response.text();
-                console.error("❌ Error texto del servidor:", errorText);
-                errorMessage = errorText || errorMessage;
-                
-                // Intentar parsear como JSON
+            if (!response.ok) {
+                let errorMessage = `Error ${response.status}: ${response.statusText}`;
                 try {
-                    const errorJson = JSON.parse(errorText);
-                    console.error("❌ Error JSON del servidor:", errorJson);
-                    errorMessage = errorJson.message || errorJson.error || errorText;
-                } catch {
-                    // Mantener el texto original si no es JSON
+                    const errorText = await response.text();
+                    errorMessage = errorText || errorMessage;
+                } catch (parseError) {
+                    console.error("❌ Error leyendo respuesta:", parseError);
                 }
-            } catch (parseError) {
-                console.error("❌ Error leyendo respuesta:", parseError);
+                throw new Error(errorMessage);
             }
+
+            const responseData = await response.json();
+            console.log("✅ Éxito en edición:", responseData);
+            alert("✅ Cotización actualizada exitosamente");
             
-            throw new Error(errorMessage);
+        } else {
+            // ✅ PARA CREACIÓN - Usar estrategia en dos pasos
+            await crearCotizacionConProductosEnDosPasos(formData);
+            return; // Salir aquí ya que la función de dos pasos maneja el cierre
         }
 
-        const responseData = await response.json();
-        console.log("✅ Éxito:", responseData);
-        
-        alert(currentEditId ? "✅ Cotización actualizada exitosamente" : "✅ Cotización creada exitosamente");
         closeModal('addQuoteModal');
         await getAllCotizaciones();
         
@@ -1832,6 +1796,92 @@ async function handleQuoteFormSubmit(event) {
         alert(`❌ Error al guardar la cotización:\n\n${error.message}`);
     } finally {
         submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        isSubmitting = false;
+    }
+}
+
+
+// Función para crear cotización en dos pasos
+async function crearCotizacionConProductosEnDosPasos(datosCompletos) {
+    try {
+        const headers = getAuthHeaders();
+        
+        console.log("🔄 Creando cotización en dos pasos...");
+        
+        // PASO 1: Crear cotización básica sin productos
+        const datosBasicos = {
+            idCotizacion: datosCompletos.idCotizacion,
+            dniCliente: datosCompletos.dniCliente,
+            fechaPreferida: datosCompletos.fechaPreferida,
+            descripcionProblema: datosCompletos.descripcionProblema,
+            estado: datosCompletos.estado,
+            prioridad: datosCompletos.prioridad || "Media",
+            notasInternas: datosCompletos.notasInternas || "",
+            costoTotalCotizacion: datosCompletos.costoTotalCotizacion || 0,
+            valorServicio: datosCompletos.valorServicio || 0
+        };
+
+        console.log("📤 PASO 1 - Creando cotización básica:", datosBasicos);
+
+        const responseBasica = await fetch(API_COTIZACIONES_URL, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(datosBasicos)
+        });
+
+        console.log("📥 Respuesta creación básica:", responseBasica.status);
+
+        if (!responseBasica.ok) {
+            const errorText = await responseBasica.text();
+            throw new Error(`Error creando cotización básica: ${errorText}`);
+        }
+
+        const cotizacionCreada = await responseBasica.json();
+        console.log("✅ Cotización básica creada:", cotizacionCreada);
+
+        // PASO 2: Si hay productos, agregarlos
+        if (datosCompletos.detalleCotizacion && datosCompletos.detalleCotizacion.length > 0) {
+            console.log("📦 PASO 2 - Agregando productos...");
+            
+            const datosProductos = {
+                detalleCotizacion: datosCompletos.detalleCotizacion,
+                costoTotalCotizacion: datosCompletos.costoTotalCotizacion,
+                valorServicio: datosCompletos.valorServicio
+            };
+
+            console.log("📤 Agregando productos:", datosProductos);
+
+            const responseProductos = await fetch(`${API_COTIZACIONES_URL}/${datosCompletos.idCotizacion}/con-productos`, {
+                method: 'PUT',
+                headers: headers,
+                body: JSON.stringify(datosProductos)
+            });
+
+            console.log("📥 Respuesta agregando productos:", responseProductos.status);
+
+            if (!responseProductos.ok) {
+                const errorText = await responseProductos.text();
+                throw new Error(`Error agregando productos: ${errorText}`);
+            }
+
+            const cotizacionConProductos = await responseProductos.json();
+            console.log("✅ Productos agregados:", cotizacionConProductos);
+        }
+
+        // Éxito completo
+        console.log("✅ Cotización creada exitosamente con productos");
+        alert("✅ Cotización creada exitosamente");
+        closeModal('addQuoteModal');
+        await getAllCotizaciones();
+        
+    } catch (error) {
+        console.error("❌ Error en creación en dos pasos:", error);
+        alert(`❌ Error al crear la cotización:\n\n${error.message}`);
+        
+        // Restaurar estado del botón
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.textContent = '✅ Guardar Cotización';
         submitBtn.disabled = false;
         isSubmitting = false;
     }
