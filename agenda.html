@@ -1060,8 +1060,15 @@
 
     <script>
         const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
-        let currentMonth = new Date().getMonth();
-        let currentYear = new Date().getFullYear();
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear(); // Esto debería ser 2024
+
+console.log('📅 Fecha actual:', new Date());
+console.log('📅 Calendario configurado:', currentMonth + 1, currentYear);
+
+// ✅ AGREGAR monthNames global
+const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+                   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         let servicios = [];
         let todasLasPersonas = [];
         let todosLosTiposServicio = [];
@@ -1089,6 +1096,64 @@
             return null;
         }
 
+        function debugServiciosCompleto() {
+    console.log('🐛 DEBUG COMPLETO DE SERVICIOS:');
+    console.log('📅 Fecha actual:', new Date().toLocaleDateString());
+    console.log('📅 Calendario mostrando:', currentMonth + 1, currentYear);
+    console.log('📊 Total servicios:', servicios.length);
+    
+    if (servicios.length === 0) {
+        console.log('❌ No hay servicios cargados');
+        return;
+    }
+    
+    servicios.forEach((serv, index) => {
+        console.log(`\n📋 Servicio ${index + 1}:`);
+        console.log('   ID:', serv.idServicio);
+        console.log('   Fecha:', serv.fecha);
+        console.log('   Hora:', serv.hora);
+        console.log('   Estado:', serv.estado);
+        
+        if (serv.fecha) {
+            const fechaServ = new Date(serv.fecha);
+            console.log('   📅 Fecha parseada:', fechaServ.toLocaleDateString());
+            console.log('   📅 Año:', fechaServ.getFullYear(), 'Mes:', fechaServ.getMonth() + 1, 'Día:', fechaServ.getDate());
+            
+            // Verificar si coincide con el calendario actual
+            const coincide = fechaServ.getMonth() === currentMonth && fechaServ.getFullYear() === currentYear;
+            console.log('   📍 Coincide con calendario actual:', coincide ? '✅ SÍ' : '❌ NO');
+        }
+        
+        console.log('   Cliente:', obtenerNombreCliente(serv));
+        console.log('   Técnico:', obtenerNombreTecnico(serv));
+        console.log('   Servicio:', obtenerNombreServicio(serv));
+    });
+}
+function navegarAlMesDeServicios() {
+    if (servicios.length === 0) return;
+    
+    // Encontrar el primer servicio con fecha válida
+    const servicioConFecha = servicios.find(s => s.fecha);
+    if (!servicioConFecha) return;
+    
+    const fechaServicio = new Date(servicioConFecha.fecha);
+    const añoServicio = fechaServicio.getFullYear();
+    const mesServicio = fechaServicio.getMonth();
+    
+    console.log(`📍 Navegando al mes del servicio: ${mesServicio + 1}/${añoServicio}`);
+    
+    // Solo navegar si es diferente al mes actual
+    if (mesServicio !== currentMonth || añoServicio !== currentYear) {
+        currentMonth = mesServicio;
+        currentYear = añoServicio;
+        renderCalendar(currentMonth, currentYear);
+    }
+}
+
+// Llamar después de cargar datos
+setTimeout(navegarAlMesDeServicios, 1500);
+// Ejecutar después de cargar los datos
+setTimeout(debugServiciosCompleto, 2000);
         function obtenerIDTipoServicio(servicio) {
             if (servicio.tipoServicio?.idTipoServicio) return servicio.tipoServicio.idTipoServicio;
             if (servicio.idTipoServicio) return servicio.idTipoServicio;
@@ -1840,15 +1905,13 @@ function openAddServiceModal(date = null) {
         }
 
 // Función para agregar un nuevo servicio
-// ========== AGREGAR NUEVO SERVICIO ==========
 async function addService(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
 
-    console.log("🔄 Iniciando proceso de agregar servicio...");
+    console.log('🔄 Iniciando proceso de agregar servicio...');
 
-    // ✅ Obtener el token JWT
     const token = localStorage.getItem('jwtToken');
     if (!token) {
         showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
@@ -1857,70 +1920,35 @@ async function addService(event) {
     }
 
     try {
-        // Obtener valores directamente de los elementos
         const dniCliente = document.getElementById('clienteId').value.trim();
         const dniEmpleadoAsignado = document.getElementById('tecnicoId').value.trim();
         const idTipoServicio = document.getElementById('tipoServicioId').value.trim();
         const fecha = document.getElementById('fecha').value;
         const hora = document.getElementById('hora').value;
+
+        // Validaciones básicas
+        if (!dniCliente || !dniEmpleadoAsignado || !idTipoServicio || !fecha || !hora) {
+            showCustomAlert('Por favor complete todos los campos obligatorios.', 'Error', 'error');
+            isSubmitting = false;
+            return;
+        }
+
         const observaciones = document.getElementById('observaciones').value.trim() || null;
         const prioridad = document.getElementById('prioridad').value;
-        const estado = document.getElementById('estado').value;
-
-        // ✅ VALIDACIONES
-        if (!dniCliente) {
-            showCustomAlert("Debe seleccionar un cliente", "Error de validación", "error");
-            isSubmitting = false;
-            return;
-        }
-
-        if (!dniEmpleadoAsignado) {
-            showCustomAlert("Debe seleccionar un técnico", "Error de validación", "error");
-            isSubmitting = false;
-            return;
-        }
-
-        if (!idTipoServicio) {
-            showCustomAlert("Debe seleccionar un tipo de servicio", "Error de validación", "error");
-            isSubmitting = false;
-            return;
-        }
-
-        if (!fecha) {
-            showCustomAlert("Debe seleccionar una fecha", "Error de validación", "error");
-            isSubmitting = false;
-            return;
-        }
-
-        if (!hora) {
-            showCustomAlert("Debe seleccionar una hora", "Error de validación", "error");
-            isSubmitting = false;
-            return;
-        }
-
-        // ✅ VALIDAR QUE LA FECHA Y HORA NO SEAN PASADAS
-        const ahora = new Date();
-        const fechaSeleccionada = new Date(fecha + 'T' + hora + ':00');
-        if (fechaSeleccionada < ahora) {
-            showCustomAlert("No se puede programar un servicio en una fecha u hora pasada.", 'Advertencia', 'warning');
-            isSubmitting = false;
-            return;
-        }
 
         const servicioData = {
             dniCliente: dniCliente,
             dniEmpleadoAsignado: dniEmpleadoAsignado,
             idTipoServicio: idTipoServicio,
             fecha: fecha,
-            hora: hora + ':00', // Asegurar formato HH:MM:SS
-            estado: estado,
+            hora: hora + ':00', // Formato HH:MM:SS
+            estado: 'Programado',
             observaciones: observaciones,
             prioridad: prioridad
         };
 
-        console.log("🚀 Enviando datos de servicio:", servicioData);
+        console.log('🚀 Enviando datos de servicio:', servicioData);
 
-        // ✅ Configurar los headers con el token
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json'
@@ -1932,22 +1960,32 @@ async function addService(event) {
             body: JSON.stringify(servicioData)
         });
 
+        console.log('📨 Respuesta del servidor:', response.status, response.statusText);
+
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("❌ Error del servidor:", errorText);
-            throw new Error(errorText || `Error ${response.status}`);
+            let errorMessage = `Error ${response.status}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.message || JSON.stringify(errorData);
+            } catch (e) {
+                const errorText = await response.text();
+                errorMessage = errorText || `Error ${response.status}`;
+            }
+            throw new Error(errorMessage);
         }
 
         const result = await response.json();
-        console.log("✅ Servicio creado exitosamente:", result);
+        console.log('✅ Servicio creado exitosamente:', result);
 
-        showCustomAlert("Servicio programado exitosamente.", 'Éxito', 'success');
+        showCustomAlert('Servicio programado exitosamente.', 'Éxito', 'success');
         closeModal('addServiceModal');
-        await loadAgendaData(); // Recargar la agenda
+        
+        // Recargar datos
+        await loadAgendaData();
 
     } catch (error) {
-        console.error("❌ Error al crear servicio:", error);
-        showCustomAlert(`Error al crear servicio: ${error.message}`, 'Error', 'error');
+        console.error('❌ Error al crear servicio:', error);
+        showCustomAlert(`Error al crear servicio: ${error.message}\n\nPor favor verifique los datos e intente nuevamente.`, 'Error', 'error');
     } finally {
         isSubmitting = false;
     }
