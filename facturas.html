@@ -880,9 +880,9 @@ input[type="date"] {
                         <label>Estado *</label>
                         <select name="estado" class="form-control" required>
                             <option value="">Seleccione estado</option>
-                            <option value="Pendiente">Pendiente</option>
-                            <option value="Pagada">Pagada</option>
-                            <option value="Cancelada">Cancelada</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="PAGADA">Pagada</option>
+                            <option value="CANCELADA">Cancelada</option>
                         </select>
                     </div>
                                     <!-- Campo Valor Servicio -->
@@ -1577,7 +1577,7 @@ async function editInvoice(id) {
     const tipoFactura = fact.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
     document.getElementById('tipoFacturaSelect').value = tipoFactura;
 
-    // Disparar el evento de cambio para actualizar campos visibles (esto habilita/deshabilita campos)
+    // Disparar el evento de cambio para actualizar campos visibles
     document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
 
     const dniCliente = fact.cliente?.dni || fact.dniCliente;
@@ -1586,7 +1586,8 @@ async function editInvoice(id) {
     const fechaEmision = fact.fechaEmision ? fact.fechaEmision.split('T')[0] : '';
     document.querySelector('input[name="fecha_emision"]').value = fechaEmision;
 
-    document.querySelector('select[name="estado"]').value = fact.estado || '';
+    // ✅ CORRECCIÓN: Usar el estado exacto que viene del backend
+    document.querySelector('select[name="estado"]').value = fact.estado || 'PENDIENTE';
 
     document.querySelector('textarea[name="observaciones"]').value = fact.observaciones || '';
 
@@ -1816,39 +1817,47 @@ async function handleInvoiceFormSubmit(event) {
         }
 
         // Renderizar tabla de facturas
-        function renderTable(data) {
-            const tbody = document.getElementById('invoicesTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+ function renderTable(data) {
+    const tbody = document.getElementById('invoicesTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-            if (data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #718096;">No hay facturas.</td></tr>';
-                return;
-            }
+    if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #718096;">No hay facturas.</td></tr>';
+        return;
+    }
 
-            data.forEach(fact => {
-                const clienteNombre = fact.cliente?.nombre || clientesData.find(c => c.dni === fact.dniCliente)?.nombre || fact.dniCliente || 'N/A';
-                const servicioDescripcion = fact.tipoFactura === 'ConCotizacion' && fact.cotizacion ? `Cotización #${fact.cotizacion.idCotizacion}` : (fact.observaciones || 'Servicio general');
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${fact.idFactura || 'N/A'}</td>
-                    <td>${clienteNombre}</td>
-                    <td>${servicioDescripcion}</td>
-                    <td>${formatDate(fact.fechaEmision)}</td>
-                    <td>${formatCurrency(fact.montoTotal)}</td>
-                    <td><span class="status-badge ${(fact.estado || 'Pendiente').toLowerCase()}">${fact.estado || 'Pendiente'}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-sm btn-details" onclick="viewInvoice('${fact.idFactura}')">🔍 Detalles</button>
-                            <button class="btn-sm btn-edit" onclick="editInvoice('${fact.idFactura}')">✏️ Editar</button>
-                            <button class="btn-sm btn-send" onclick="sendInvoice('${fact.idFactura}')">📧 Enviar</button>
-                            <button class="btn-sm btn-delete" onclick="deleteInvoice('${fact.idFactura}')">🗑️ Eliminar</button>
-                        </div>
-                    </td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
+    data.forEach(fact => {
+        const clienteNombre = fact.cliente?.nombre || clientesData.find(c => c.dni === fact.dniCliente)?.nombre || fact.dniCliente || 'N/A';
+        const servicioDescripcion = fact.tipoFactura === 'ConCotizacion' && fact.cotizacion ? `Cotización #${fact.cotizacion.idCotizacion}` : (fact.observaciones || 'Servicio general');
+        
+        // ✅ CORRECCIÓN: Mapear estados para mostrar en la tabla
+        const estadoDisplay = {
+            'PENDIENTE': 'Pendiente',
+            'PAGADA': 'Pagada', 
+            'CANCELADA': 'Cancelada'
+        }[fact.estado] || fact.estado;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${fact.idFactura || 'N/A'}</td>
+            <td>${clienteNombre}</td>
+            <td>${servicioDescripcion}</td>
+            <td>${formatDate(fact.fechaEmision)}</td>
+            <td>${formatCurrency(fact.montoTotal)}</td>
+            <td><span class="status-badge ${(fact.estado || 'PENDIENTE').toLowerCase()}">${estadoDisplay}</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-sm btn-details" onclick="viewInvoice('${fact.idFactura}')">🔍 Detalles</button>
+                    <button class="btn-sm btn-edit" onclick="editInvoice('${fact.idFactura}')">✏️ Editar</button>
+                    <button class="btn-sm btn-send" onclick="sendInvoice('${fact.idFactura}')">📧 Enviar</button>
+                    <button class="btn-sm btn-delete" onclick="deleteInvoice('${fact.idFactura}')">🗑️ Eliminar</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
 
         // Obtener todas las facturas
  async function getAllFacturas() {
