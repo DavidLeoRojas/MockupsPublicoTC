@@ -915,28 +915,34 @@ input[type="date"] {
                             <option value="CANCELADA">Cancelada</option>
                         </select>
                     </div>
-                                    <!-- Campo Valor Servicio -->
-                <div class="form-group">
-                    <label>Valor Servicio</label>
-<input type="number" 
-       id="valorServicio" 
-       class="form-control" 
-       step="0.01"
-       min="0" 
-       max="9999999999.99"
-       placeholder="Ej: 500000000">
-                </div>
-                    <!-- Campo Monto Total - Se oculta si es con cotización -->
-                    <div class="form-group" id="montoTotalField">
-                        <label>Monto Total *</label>
-                       <input type="number" 
-       name="monto_total" 
-       class="form-control" 
-       step="0.01"
-       min="0"
-       max="9999999999.99"  // ✅ Hasta 10 mil millones
-       required>
-                    </div>
+                                    <!-- Campo Valor Servicio -->   
+<div class="form-grid form-grid-2">
+    <div class="form-group">
+        <label>Valor Servicio *</label>
+        <input type="number" 
+               name="valor_servicio"
+               id="valorServicio" 
+               class="form-control" 
+               step="0.01"
+               min="0" 
+               max="9999999999.99"
+               placeholder="Ej: 500000"
+               required
+               value="0">
+    </div>
+    <div class="form-group" id="montoTotalField">
+        <label>Monto Total *</label>
+        <input type="number" 
+               name="monto_total" 
+               class="form-control" 
+               step="0.01"
+               min="0"
+               max="9999999999.99"
+               required
+               readonly
+               style="background-color: #f8f9fa; font-weight: bold;">
+    </div>
+</div>
                 </div>  
                 <div class="form-group">
                     <label>Observaciones</label>
@@ -1125,29 +1131,31 @@ function formatLargeNumber(value) {
     return value.toString();
 }
 // FUNCIÓN actualizarMontoTotal CORREGIDA
+// MEJORAR la función actualizarMontoTotal:
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
     
-    if (!montoTotalInput) {
-        console.error("❌ No se encontró el campo monto_total");
+    if (!montoTotalInput || !valorServicioInput) {
+        console.error("❌ Campos no encontrados");
         return;
     }
 
-    // Si hay cotización seleccionada, no calcular automáticamente
+    // Si es factura con cotización, no calcular automáticamente
+    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
     const tieneCotizacion = document.getElementById('cotizacionSelect').value;
-    if (tieneCotizacion) {
+    
+    if (tipoFactura === 'ConCotizacion' && tieneCotizacion) {
         return;
     }
 
-    const valorServicio = parseFloat(valorServicioInput?.value) || 0;
+    const valorServicio = parseFloat(valorServicioInput.value) || 0;
     const subtotalProductos = detalleFactura.reduce((sum, item) => {
-        const subtotal = parseFloat(item.subtotal) || 0;
-        return sum + subtotal;
+        return sum + (parseFloat(item.subtotal) || 0);
     }, 0);
     
-    // ✅ CORRECCIÓN: Declarar e inicializar montoTotal correctamente
-    const montoTotal = subtotalProductos + valorServicio;
+    // ✅ CALCULAR MONTO TOTAL
+    let montoTotal = subtotalProductos + valorServicio;
 
     // Validar que no sea NaN
     if (isNaN(montoTotal)) {
@@ -1156,13 +1164,27 @@ function actualizarMontoTotal() {
         return;
     }
 
+    // ✅ APLICAR REDONDEO
+    montoTotal = Math.round(montoTotal / 1000) * 1000;
+    
     montoTotalInput.value = montoTotal.toFixed(2);
+    
     console.log("💰 Cálculo monto total:", {
         valorServicio: valorServicio,
         subtotalProductos: subtotalProductos,
         montoTotal: montoTotal
     });
 }
+
+// AGREGAR event listener para valor servicio
+document.getElementById('valorServicio').addEventListener('input', function() {
+    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
+    
+    // Solo actualizar automáticamente para facturas simples
+    if (tipoFactura === 'Simple') {
+        actualizarMontoTotal();
+    }
+});
 
 
 
@@ -1175,7 +1197,7 @@ function actualizarMontoTotal() {
 
         document.getElementById('valorServicio').addEventListener('input', actualizarMontoTotal);
 
-// Manejar cambio de tipo de factura
+// REEMPLAZAR completamente el event listener del tipo de factura:
 document.getElementById('tipoFacturaSelect').addEventListener('change', function() {
     const tipoFactura = this.value;
     const cotizacionField = document.getElementById('cotizacionField');
@@ -1183,63 +1205,65 @@ document.getElementById('tipoFacturaSelect').addEventListener('change', function
     const montoTotalField = document.getElementById('montoTotalField');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
     const clienteSelect = document.getElementById('clienteSelect');
+    const valorServicioInput = document.getElementById('valorServicio');
     const submitBtn = document.getElementById('submitBtn');
-    const valorServicioInput = document.getElementById('valorServicio'); // ✅ Obtener el campo de Valor del Servicio
 
     if (tipoFactura === 'ConCotizacion') {
         cotizacionField.style.display = 'block';
         productosSection.style.display = 'block';
         montoTotalField.style.display = 'block';
         clienteSelect.disabled = true;
+        
+        // Para facturas con cotización, el valor servicio viene de la cotización
+        valorServicioInput.disabled = true;
+        valorServicioInput.style.backgroundColor = '#f8f9fa';
+        montoTotalInput.readOnly = true;
+        montoTotalInput.style.backgroundColor = '#f8f9fa';
+        
         submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Factura';
 
         const cotizacionSelect = document.getElementById('cotizacionSelect');
         if (cotizacionSelect.value) {
-            cotizacionSelect.dispatchEvent(new Event('change')); // <-- Esto manejará valorServicio y montoTotal
+            cotizacionSelect.dispatchEvent(new Event('change'));
         }
-        // Si no hay cotización seleccionada aún, los campos se habilitarán/deshabilitarán en el change de cotizacionSelect
-    } else { // 'Simple'
+    } else { 
+        // Factura Simple
         cotizacionField.style.display = 'none';
         productosSection.style.display = 'block';
         montoTotalField.style.display = 'block';
         clienteSelect.disabled = false;
+        
+        // Para facturas simples, permitir editar valor servicio
+        valorServicioInput.disabled = false;
+        valorServicioInput.style.backgroundColor = 'white';
+        valorServicioInput.value = '0'; // Resetear a 0
+        montoTotalInput.readOnly = true; // Se calcula automáticamente
+        montoTotalInput.style.backgroundColor = '#f8f9fa';
+        
         submitBtn.textContent = currentEditId ? '💾 Guardar Cambios' : '✅ Guardar Factura';
-        // ✅ HABILITAR CAMPOS PARA FACTURAS SIMPLES
-        if (valorServicioInput) {
-            valorServicioInput.disabled = false;
-        }
-        if (montoTotalInput) {
-            montoTotalInput.disabled = false; // Se puede dejar editable o calcularse automáticamente
-            // Si se deja calcularse, actualizarMontoTotal se encargará de ello
-            // Si se deja editable, se debe eliminar o modificar la lógica de renderDetalleFactura/actualizarMontoTotal
-            // Para que no sobrescriba un valor ingresado manualmente.
-            // Por ahora, asumiremos que se calcula automáticamente.
-        }
     }
+    
     // Resetear campos dependientes
     document.getElementById('cotizacionSelect').value = '';
     detalleFactura = [];
-    renderDetalleFactura(); // <-- Esto llamará a actualizarMontoTotal si no hay cotización
+    renderDetalleFactura();
 });
 
 
+// REEMPLAZAR el event listener de cambio de cotización:
 document.getElementById('cotizacionSelect').addEventListener('change', function() {
     const cotizacionId = this.value;
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
     const clienteSelect = document.getElementById('clienteSelect');
     const valorServicioInput = document.getElementById('valorServicio');
+    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
 
-    if (!montoTotalInput) {
-        console.error("❌ No se encontró el campo 'monto_total'");
+    if (!montoTotalInput || !valorServicioInput) {
+        console.error("❌ Campos no encontrados");
         return;
     }
 
-    if (!valorServicioInput) {
-         console.error("❌ No se encontró el campo 'valorServicio'");
-         return;
-    }
-
-    if (cotizacionId) {
+    if (cotizacionId && tipoFactura === 'ConCotizacion') {
         const cotizacion = cotizacionesData.find(c => c.idCotizacion === cotizacionId);
 
         if (cotizacion) {
@@ -1247,30 +1271,23 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
             let valorServicioCotizacion = parseFloat(cotizacion.valorServicio) || 0;
 
             if (isNaN(costoTotal) || costoTotal <= 0) {
-                alert(`⚠️ La cotización seleccionada no tiene un costo total válido. Por favor, verifique los datos.`);
-                valorServicioInput.value = '0';
-                valorServicioInput.disabled = false;
-                montoTotalInput.value = '0';
-                montoTotalInput.disabled = false;
-                clienteSelect.disabled = false;
-                detalleFactura = [];
-                renderDetalleFactura();
+                alert(`⚠️ La cotización seleccionada no tiene un costo total válido.`);
+                resetearCamposCotizacion();
                 return;
             }
 
-            // ✅ CORRECCIÓN: Cargar productos de la cotización FILTRANDO productos eliminados
+            // ✅ CARGAR PRODUCTOS DE LA COTIZACIÓN
             detalleFactura = [];
             if (cotizacion.detalleCotizacion && Array.isArray(cotizacion.detalleCotizacion)) {
                 cotizacion.detalleCotizacion.forEach(item => {
-                    // ✅ FILTRAR: No incluir productos eliminados o inválidos
                     if (!item.idProducto || item.idProducto === "PRODUCTO_ELIMINADO") {
-                        console.warn("⚠️ Producto eliminado encontrado en cotización, omitiendo:", item);
+                        console.warn("⚠️ Producto eliminado encontrado, omitiendo:", item);
                         return;
                     }
 
                     const producto = productosData.find(p => p.idProducto === item.idProducto);
                     if (!producto) {
-                        console.warn("⚠️ Producto no encontrado en inventario:", item.idProducto);
+                        console.warn("⚠️ Producto no encontrado:", item.idProducto);
                         return;
                     }
 
@@ -1289,41 +1306,50 @@ document.getElementById('cotizacionSelect').addEventListener('change', function(
 
             renderDetalleFactura();
 
-            // ✅ CARGAR EL VALOR DEL SERVICIO DESDE LA COTIZACIÓN
+            // ✅ CARGAR VALOR DEL SERVICIO DESDE COTIZACIÓN
             valorServicioInput.value = valorServicioCotizacion.toFixed(2);
-            valorServicioInput.disabled = true;
+            
+            // ✅ CALCULAR Y ASIGNAR MONTO TOTAL
+            const subtotalProductos = detalleFactura.reduce((sum, item) => sum + (parseFloat(item.subtotal) || 0), 0);
+            const montoTotalCalculado = subtotalProductos + valorServicioCotizacion;
+            
+            montoTotalInput.value = montoTotalCalculado.toFixed(2);
 
-            // ✅ CARGAR EL MONTO TOTAL CON EL VALOR DE LA COTIZACIÓN
-            montoTotalInput.value = costoTotal.toFixed(2);
-            montoTotalInput.disabled = true;
-
+            // ✅ ASIGNAR CLIENTE
             if (cotizacion.cliente?.dni) {
                 clienteSelect.value = cotizacion.cliente.dni;
             } else if (cotizacion.dniCliente) {
                 clienteSelect.value = cotizacion.dniCliente;
             }
 
+            console.log("✅ Cotización cargada:", {
+                valorServicio: valorServicioCotizacion,
+                subtotalProductos: subtotalProductos,
+                montoTotal: montoTotalCalculado
+            });
+
         } else {
             alert(`⚠️ Cotización no encontrada.`);
-            valorServicioInput.value = '0';
-            valorServicioInput.disabled = false;
-            montoTotalInput.value = '0';
-            montoTotalInput.disabled = false;
-            clienteSelect.disabled = false;
-            detalleFactura = [];
-            renderDetalleFactura();
+            resetearCamposCotizacion();
         }
     } else {
-        // Si no hay cotización seleccionada, limpiar y habilitar campos
-        valorServicioInput.value = '';
-        valorServicioInput.disabled = false;
-        montoTotalInput.value = '';
-        montoTotalInput.disabled = false;
-        clienteSelect.disabled = false;
-        detalleFactura = [];
-        renderDetalleFactura();
+        resetearCamposCotizacion();
     }
 });
+
+// FUNCIÓN AUXILIAR para resetear campos
+function resetearCamposCotizacion() {
+    const valorServicioInput = document.getElementById('valorServicio');
+    const montoTotalInput = document.querySelector('input[name="monto_total"]');
+    const clienteSelect = document.getElementById('clienteSelect');
+    
+    if (valorServicioInput) valorServicioInput.value = '0';
+    if (montoTotalInput) montoTotalInput.value = '0';
+    if (clienteSelect) clienteSelect.disabled = false;
+    
+    detalleFactura = [];
+    renderDetalleFactura();
+}
 
 // Agregar producto al detalle - VERSIÓN MEJORADA
 document.getElementById('addProductBtn').addEventListener('click', function() {
@@ -1927,7 +1953,7 @@ async function editInvoice(id) {
     }
 }
 
-// CORREGIR handleInvoiceFormSubmit - Mejorar manejo de errores
+// CORREGIR COMPLETAMENTE handleInvoiceFormSubmit - VERSIÓN MEJORADA
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -1990,6 +2016,12 @@ async function handleInvoiceFormSubmit(event) {
             throw new Error('Monto total inválido');
         }
 
+        // ✅ CORRECCIÓN: Validar valor del servicio
+        if (valorServicio < 0) {
+            alert('⚠️ El valor del servicio no puede ser negativo.');
+            throw new Error('Valor de servicio inválido');
+        }
+
         // ✅ CORRECCIÓN: Usar función mejorada para preparar datos
         const detalleFacturaData = prepararDatosFactura();
 
@@ -1997,6 +2029,11 @@ async function handleInvoiceFormSubmit(event) {
         if (tipoFactura === 'Simple' && detalleFacturaData.length === 0 && valorServicio <= 0) {
             alert('⚠️ Para facturas simples, debe agregar al menos un producto o especificar un valor de servicio.');
             throw new Error('No hay productos válidos en el detalle y valor de servicio es 0');
+        }
+
+        if (tipoFactura === 'ConCotizacion' && detalleFacturaData.length === 0 && valorServicio <= 0) {
+            alert('⚠️ Para facturas con cotización, debe haber productos o un valor de servicio.');
+            throw new Error('Cotización sin productos ni valor de servicio');
         }
 
         // ✅ CORRECCIÓN: Estructura de datos completa y validada
@@ -2007,7 +2044,7 @@ async function handleInvoiceFormSubmit(event) {
             estado: estado,
             observaciones: observaciones,
             tipoFactura: tipoFactura,
-            valorServicio: valorServicio,
+            valorServicio: valorServicio, // ✅ INCLUIR VALOR SERVICIO
             detalleFactura: detalleFacturaData
         };
 
@@ -2311,7 +2348,7 @@ function updateStats() {
 }
 
 // REEMPLAZAR COMPLETAMENTE la función viewInvoice con esta versión corregida
-// CORREGIR LA FUNCIÓN viewInvoice - Error totalFinal is not defined
+// CORREGIR COMPLETAMENTE viewInvoice - VERSIÓN MEJORADA
 async function viewInvoice(id) {
     try {
         console.log("📄 Generando PDF para factura:", id);
@@ -2319,7 +2356,7 @@ async function viewInvoice(id) {
         const token = localStorage.getItem('jwtToken');
         const headers = { 'Authorization': 'Bearer ' + token };
         
-        // Cargar datos
+        // Cargar datos de la factura
         const response = await fetch(`${API_FACTURAS_URL}/${id}`, { headers });
         if (!response.ok) throw new Error('Error al cargar factura');
         
@@ -2492,26 +2529,38 @@ async function viewInvoice(id) {
         // ✅ ESPACIO DESPUÉS DE LOS PRODUCTOS
         currentY += 20;
 
-        // VALOR DEL SERVICIO
+        // ===== VALOR DEL SERVICIO =====
         let valorServicio = parseFloat(facturaCompleta.valorServicio) || 0;
         console.log("💰 Valor servicio en PDF:", valorServicio);
 
+        // ✅ MOSTRAR VALOR DEL SERVICIO SIEMPRE QUE SEA MAYOR A 0
         if (valorServicio > 0) {
             if (currentY > 180) {
                 doc.addPage();
                 currentY = 30;
             }
             
+            // Título para valor del servicio
             doc.setFont(undefined, 'bold');
-            doc.text('VALOR DEL SERVICIO:', colPrecio, currentY);
+            doc.setFontSize(11);
+            doc.text('VALOR DEL SERVICIO:', margin, currentY);
             doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
             doc.setFont(undefined, 'normal');
             currentY += 15;
+            
+            // Línea separadora
+            doc.line(margin, currentY, pageWidth - margin, currentY);
+            currentY += 10;
         }
 
-        // ✅ CORRECCIÓN CRÍTICA: CALCULAR TOTAL FINAL ANTES DE USARLO
+        // ✅ CALCULAR TOTAL FINAL
         let totalFinal = parseFloat(facturaCompleta.montoTotal) || (subtotalProductos + valorServicio);
-        console.log("💰 Total final calculado:", totalFinal);
+        
+        console.log("💰 Totales calculados:", {
+            subtotalProductos: subtotalProductos,
+            valorServicio: valorServicio,
+            totalFinal: totalFinal
+        });
 
         // ✅ CALCULAR ALTURA NECESARIA PARA LOS TOTALES
         const lineasTotales = [];
@@ -2545,14 +2594,12 @@ async function viewInvoice(id) {
             currentY += 12;
         }
 
-        // ✅ VALOR SERVICIO
-        if (valorServicio > 0) {
-            doc.setFont(undefined, 'bold');
-            doc.setFontSize(11);
-            doc.text('VALOR SERVICIO:', colPrecio, currentY);
-            doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
-            currentY += 12;
-        }
+        // ✅ VALOR SERVICIO (mostrar incluso si es 0 para claridad)
+        doc.setFont(undefined, 'bold');
+        doc.setFontSize(11);
+        doc.text('VALOR SERVICIO:', colPrecio, currentY);
+        doc.text(formatCurrencyForPDF(valorServicio), colTotal, currentY);
+        currentY += 12;
 
         // ✅ LÍNEAS DOBLES PARA SEPARAR EL TOTAL FINAL
         currentY += 8;
@@ -2562,12 +2609,31 @@ async function viewInvoice(id) {
         doc.line(colPrecio, currentY, pageWidth - margin, currentY);
         currentY += 12;
 
-        // ✅ TOTAL FACTURA - USANDO totalFinal QUE YA ESTÁ DEFINIDO
+        // ✅ TOTAL FACTURA
         doc.setFontSize(14);
         doc.setTextColor(44, 95, 65);
         doc.setFont(undefined, 'bold');
         doc.text('TOTAL FACTURA:', colPrecio, currentY);
         doc.text(formatCurrencyForPDF(totalFinal), colTotal, currentY);
+
+        // ===== OBSERVACIONES =====
+        if (facturaCompleta.observaciones) {
+            currentY += 25;
+            if (currentY > 250) {
+                doc.addPage();
+                currentY = 30;
+            }
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont(undefined, 'bold');
+            doc.text('OBSERVACIONES:', margin, currentY);
+            doc.setFont(undefined, 'normal');
+            currentY += 6;
+            
+            const observacionesLines = doc.splitTextToSize(facturaCompleta.observaciones, pageWidth - (2 * margin));
+            doc.text(observacionesLines, margin, currentY);
+        }
 
         // ===== PIE DE PÁGINA =====
         const footerY = 280;
@@ -2601,79 +2667,6 @@ async function viewInvoice(id) {
     } catch (error) {
         console.error("❌ Error generando PDF:", error);
         alert("❌ Error al generar el PDF: " + error.message);
-    }
-}
-// Función para forzar recálculo de montos
-function forzarActualizacionMontos() {
-    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
-    
-    if (tipoFactura === 'ConCotizacion') {
-        const cotizacionSelect = document.getElementById('cotizacionSelect');
-        if (cotizacionSelect.value) {
-            cotizacionSelect.dispatchEvent(new Event('change'));
-        }
-    } else {
-        actualizarMontoTotal();
-    }
-}
-
-// Llamar esta función cuando sea necesario
-document.getElementById('valorServicio').addEventListener('input', forzarActualizacionMontos);
-function formatCurrencyForPDF(amount) {
-    if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
-    
-    // ✅ CORRECCIÓN DEFINITIVA: Para PDF, mostrar valores COMPLETOS
-    return '$ ' + new Intl.NumberFormat('es-CO').format(amount);
-}
-
-
-// DIAGNÓSTICO URGENTE - ejecutar inmediatamente
-function diagnosticoUrgente() {
-    console.log("🚨 DIAGNÓSTICO URGENTE - FORMAT CURRENCY");
-    
-    // Probar la función formatCurrency con diferentes valores
-    const valoresPrueba = [150000, 200000, 80000, 680000, 50];
-    
-    valoresPrueba.forEach(valor => {
-        const formateado = formatCurrency(valor);
-        console.log(`💰 ${valor} → ${formateado}`);
-    });
-    
-    // Verificar qué función se está ejecutando realmente
-    console.log("🔍 Función formatCurrency actual:", formatCurrency.toString());
-}
-
-// Ejecutar inmediatamente después de cargar
-diagnosticoUrgente();
-// Función para convertir valores con "K" a pesos colombianos
-function convertirValorK(valor) {
-    if (typeof valor === 'string') {
-        // Caso 1: Valor con "K" (ej: "200,0 K")
-        if (valor.includes('K')) {
-            const numero = parseFloat(valor.replace('K', '').replace(',', '.').trim());
-            return numero * 1000;
-        }
-        // Caso 2: Valor con formato de moneda (ej: "$ 200,0 K")
-        if (valor.includes('$') && valor.includes('K')) {
-            const numero = parseFloat(valor.replace('$', '').replace('K', '').replace(',', '.').trim());
-            return numero * 1000;
-        }
-        // Caso 3: Valor numérico como string (ej: "200000")
-        return parseFloat(valor) || 0;
-    }
-    return parseFloat(valor) || 0;
-}
-function formatDateForPDF(dateString) {
-    if (!dateString) return 'N/A';
-    try {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('es-CO', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        });
-    } catch (e) {
-        return 'Fecha inválida';
     }
 }
 
