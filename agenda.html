@@ -1258,7 +1258,6 @@ function navegarAlMesDeServicios() {
 // ========== CARGA DE DATOS ==========
 async function loadAgendaData() {
     console.log("🔄 Iniciando carga de datos de la agenda...");
-    
     // ✅ 1. Obtener el token JWT del almacenamiento local
     const token = localStorage.getItem('jwtToken');
     if (!token) {
@@ -1268,13 +1267,11 @@ async function loadAgendaData() {
         }, 2000);
         return;
     }
-
     // ✅ 2. Configurar los encabezados con el token de autenticación
     const headers = {
         'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json'
     };
-
     try {
         const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
             fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => {
@@ -1295,26 +1292,46 @@ async function loadAgendaData() {
             })
         ]);
 
-        // Filtrar solo servicios que tienen una fecha válida
-        servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => s.fecha) : [];
+        // Filtrar y mapear servicios para manejar posibles variantes de nombre de campos
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => {
+            // Intentar obtener la fecha usando las posibles variantes de nombre
+            const fecha = s.fecha || s.fecha_servicio || s.date || s.fechaCreacion || s.fecha_registro;
+            return fecha !== undefined && fecha !== null && fecha !== '';
+        }).map(s => {
+            // Mapear posibles variantes de nombre a los nombres estándar que espera el resto del código
+            return {
+                ...s,
+                fecha: s.fecha || s.fecha_servicio || s.date || s.fechaCreacion || s.fecha_registro,
+                estado: s.estado || s.estado_servicio || s.state,
+                dniCliente: s.dniCliente || s.dni_cliente || s.clientDni,
+                dniEmpleadoAsignado: s.dniEmpleadoAsignado || s.dni_empleado_asignado || s.employeeDni,
+                idTipoServicio: s.idTipoServicio || s.id_tipo_servicio || s.tipoServicioId,
+                hora: s.hora || s.hora_servicio || s.time,
+                observaciones: s.observaciones || s.observaciones_servicio || s.notes,
+                prioridad: s.prioridad || s.prioridad_servicio || s.priority,
+                duracionEstimada: s.duracionEstimada || s.duracion_estimada || s.duration,
+                activo: s.activo !== undefined ? s.activo : s.active, // Manejar booleanos si es necesario
+                servicioSinCotizacion: s.servicioSinCotizacion !== undefined ? s.servicioSinCotizacion : s.standalone,
+                idCotizacion: s.idCotizacion || s.cotizacionId // Asegurar consistencia en ID de cotización también si se usa
+            };
+        }) : [];
+
+
         todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
         // ✅ Filtrar solo tipos de servicio ACTIVOS (en mayúsculas)
-        todosLosTiposServicio = Array.isArray(tiposServRes) ? 
+        todosLosTiposServicio = Array.isArray(tiposServRes) ?
             tiposServRes.filter(t => t.estado && t.estado.toUpperCase() === 'ACTIVO') : [];
         cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
-
         console.log(`✅ Datos cargados exitosamente:`);
         console.log(`   📋 ${servicios.length} servicios`);
         console.log(`   👥 ${todasLasPersonas.length} personas`);
         console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio ACTIVOS`);
         console.log(`   💰 ${cotizaciones.length} cotizaciones`);
-
         populateClienteSelect(todasLasPersonas);
         populateTecnicoSelect(todasLasPersonas);
         populateTipoServicioSelect(todosLosTiposServicio);
         populateCotizacionSelect(cotizaciones);
         populateFilterTecnico(todasLasPersonas);
-
         renderCalendar(currentMonth, currentYear);
         renderTodaySchedule(new Date());
         console.log('✅ Inicialización completada');
