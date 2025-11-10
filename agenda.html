@@ -1060,9 +1060,9 @@
 
     <script>
         const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear(); // Esto debería ser 2024
 
+let currentMonth = 10; // Noviembre (0-based: 0=Enero, 10=Noviembre)
+let currentYear = 2025;
 console.log('📅 Fecha actual:', new Date());
 console.log('📅 Calendario configurado:', currentMonth + 1, currentYear);
 
@@ -1130,37 +1130,40 @@ const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     });
 }
 function navegarAlMesDeServicios() {
-    if (servicios.length === 0) return;
+    console.log('📍 Navegando al mes con servicios...');
     
-    // Encontrar el primer servicio con fecha válida
-    const servicioConFecha = servicios.find(s => s.fecha);
-    if (!servicioConFecha) return;
-    
-    const fechaServicio = new Date(servicioConFecha.fecha);
-    const añoServicio = fechaServicio.getFullYear();
-    const mesServicio = fechaServicio.getMonth();
-    
-    console.log(`📍 Navegando al mes del servicio: ${mesServicio + 1}/${añoServicio}`);
-    
-    // Solo navegar si es diferente al mes actual
-    if (mesServicio !== currentMonth || añoServicio !== currentYear) {
-        currentMonth = mesServicio;
-        currentYear = añoServicio;
-        renderCalendar(currentMonth, currentYear);
+    if (servicios.length === 0) {
+        console.log('📅 No hay servicios cargados, usando mes actual');
+        return;
     }
+    
+    // Encontrar todos los meses que tienen servicios
+    const mesesConServicios = servicios
+        .filter(s => s.fecha)
+        .map(s => {
+            const fecha = new Date(s.fecha);
+            return {
+                mes: fecha.getMonth(),
+                año: fecha.getFullYear()
+            };
+        });
+    
+    if (mesesConServicios.length === 0) {
+        console.log('📅 No hay servicios con fecha válida');
+        return;
+    }
+    
+    // Usar el primer servicio encontrado
+    const primerMes = mesesConServicios[0];
+    console.log(`📍 Primer servicio encontrado en: ${primerMes.mes + 1}/${primerMes.año}`);
+    
+    // Navegar al mes del servicio
+    currentMonth = primerMes.mes;
+    currentYear = primerMes.año;
+    renderCalendar(currentMonth, currentYear);
+    
+    console.log(`✅ Calendario navegado a: ${currentMonth + 1}/${currentYear}`);
 }
-
-// Llamar después de cargar datos
-setTimeout(navegarAlMesDeServicios, 1500);
-// Ejecutar después de cargar los datos
-setTimeout(debugServiciosCompleto, 2000);
-        function obtenerIDTipoServicio(servicio) {
-            if (servicio.tipoServicio?.idTipoServicio) return servicio.tipoServicio.idTipoServicio;
-            if (servicio.idTipoServicio) return servicio.idTipoServicio;
-            if (servicio.id_tipo_servicio) return servicio.id_tipo_servicio;
-            if (servicio.ID_tipo_servicio) return servicio.ID_tipo_servicio;
-            return null;
-        }
 
         function obtenerNombreCliente(servicio) {
             console.log('🔍 Buscando cliente para servicio:', servicio);
