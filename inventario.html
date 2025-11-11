@@ -594,7 +594,7 @@
                 <p>Gestión y control de productos y materiales</p>
             </div>
             <div class="header-actions">
-                <button class="btn btn-secondary">📤 Exportar</button>
+    <button class="btn btn-secondary" onclick="downloadPDF()">📤 Exportar PDF</button>
                 <button class="btn btn-primary" onclick="openAddProductModal()">➕ Agregar Producto</button>
             </div>
         </div>
@@ -671,7 +671,7 @@
             <div class="inventory-header">
                 <span class="inventory-title">Listado de Productos</span>
                 <span>
-                    <button class="btn btn-secondary">⬇️ Descargar</button>
+        <button class="btn btn-secondary" onclick="downloadExcel()">⬇️ Descargar Excel</button>
                 </span>
             </div>
             <div class="table-container">
@@ -763,7 +763,9 @@
             </form>
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script>
 // URL base de la API
 const API_BASE_URL = 'https://backendgeminiambienta-v4-0-428l.onrender.com/api';
