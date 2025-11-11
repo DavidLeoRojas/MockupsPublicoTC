@@ -1137,7 +1137,7 @@ function formatLargeNumber(value) {
     return value.toString();
 }
 // FUNCIÓN actualizarMontoTotal CORREGIDA
-// ✅ FUNCIÓN CORREGIDA - Redondeo adecuado a miles
+// ✅ FUNCIÓN CORREGIDA - Incluye valor del servicio en el cálculo
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
@@ -1147,20 +1147,12 @@ function actualizarMontoTotal() {
         return;
     }
 
-    // Si es factura con cotización, no calcular automáticamente
-    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
-    const tieneCotizacion = document.getElementById('cotizacionSelect').value;
-    
-    if (tipoFactura === 'ConCotizacion' && tieneCotizacion) {
-        return;
-    }
-
     const valorServicio = parseFloat(valorServicioInput.value) || 0;
     const subtotalProductos = detalleFactura.reduce((sum, item) => {
         return sum + (parseFloat(item.subtotal) || 0);
     }, 0);
     
-    // ✅ CORRECCIÓN: REDONDEO CORRECTO A MILES
+    // ✅ CALCULAR MONTO TOTAL INCLUYENDO VALOR DEL SERVICIO
     let montoTotal = subtotalProductos + valorServicio;
     
     // Aplicar redondeo comercial (redondeo matemático)
@@ -1169,11 +1161,10 @@ function actualizarMontoTotal() {
     // Formatear sin decimales para evitar problemas
     montoTotalInput.value = montoTotal.toFixed(0);
     
-    console.log("💰 Cálculo monto total CORREGIDO:", {
+    console.log("💰 Cálculo monto total ACTUALIZADO:", {
         valorServicio: valorServicio,
         subtotalProductos: subtotalProductos,
-        montoTotal: montoTotal,
-        redondeado: Math.round(montoTotal / 1000) * 1000
+        montoTotal: montoTotal
     });
 }
 
@@ -1352,12 +1343,7 @@ function usarSoloProductosConStock() {
 
 // AGREGAR event listener para valor servicio
 document.getElementById('valorServicio').addEventListener('input', function() {
-    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
-    
-    // Solo actualizar automáticamente para facturas simples
-    if (tipoFactura === 'Simple') {
-        actualizarMontoTotal();
-    }
+    actualizarMontoTotal();
 });
 
 
@@ -2047,14 +2033,24 @@ async function editInvoice(id) {
             }
 
             // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
-        const valorServicioInput = document.getElementById('valorServicio');
-        if (valorServicioInput) {
-            const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
-                ? parseFloat(factura.valorServicio) // <--- Aquí se convierte a número
-                : 0;
-            valorServicioInput.value = valorServicio.toFixed(2); // <--- Aquí se asigna como string con 2 decimales
-            console.log("✅ Valor servicio asignado:", valorServicio);
-        }
+const valorServicioInput = document.getElementById('valorServicio');
+if (valorServicioInput) {
+    const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
+        ? parseFloat(factura.valorServicio) 
+        : 0;
+    valorServicioInput.value = valorServicio.toFixed(2);
+    console.log("✅ Valor servicio asignado:", valorServicio);
+    
+    // ✅ FORZAR ACTUALIZACIÓN DEL MONTO TOTAL
+setTimeout(() => {
+    actualizarMontoTotal();
+    console.log("✅ Cálculo final realizado con:", {
+        valorServicio: document.getElementById('valorServicio').value,
+        productos: detalleFactura.length,
+        montoTotal: document.querySelector('input[name="monto_total"]').value
+    });
+}, 300);
+}
             // Monto Total
             const montoTotalInput = document.querySelector('input[name="monto_total"]');
             if (montoTotalInput) {
@@ -2778,11 +2774,14 @@ if (valorServicio > 0) {
         doc.addPage();
         yPos = 20;
     }
+    // ✅ CORRECCIÓN: Mostrar como un ítem más en la lista de detalles
     doc.text(`Servicio`, 25, yPos);
     doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
     yPos += 8;
-} else if (detalles.length === 0) {
-    // Si no hay productos ni valor de servicio
+}
+
+// Si no hay productos ni valor de servicio
+if (detalles.length === 0 && valorServicio <= 0) {
     doc.text('No hay detalles registrados', 25, yPos);
     yPos += 8;
 }
