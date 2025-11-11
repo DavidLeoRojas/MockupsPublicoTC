@@ -2745,42 +2745,48 @@ async function viewInvoice(id) {
         doc.text(`Documento: ${clienteInfo.dni}`, 20, 95);
         doc.text(`Teléfono: ${clienteInfo.telefono}`, 20, 105);
         
-        // Detalles
-        let yPos = 125;
-        doc.text('DETALLES:', 20, yPos);
-        yPos += 10;
-        
-        // Productos/Servicios
-        const detalles = factura.detalleFactura || factura.detalleProductos || factura.detalleServicios || [];
-        
-        if (detalles.length > 0) {
-            detalles.forEach((item, index) => {
-                if (yPos > 250) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                
-                const nombre = item.nombreProducto || item.nombreServicio || 'Producto/Servicio';
-                const cantidad = item.cantidad || 1;
-                const precio = parseFloat(item.precioUnitario) || 0;
-                const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
-                
-                doc.text(`${cantidad}x ${nombre}`, 25, yPos);
-                doc.text(formatCurrencyForPDF(subtotal), 180, yPos, { align: 'right' });
-                yPos += 8;
-            });
-        } else {
-            doc.text('No hay detalles registrados', 25, yPos);
-            yPos += 8;
+// Detalles
+let yPos = 125;
+doc.text('DETALLES:', 20, yPos);
+yPos += 10;
+
+// Productos/Servicios
+const detalles = factura.detalleFactura || factura.detalleProductos || factura.detalleServicios || [];
+
+// Mostrar productos primero
+if (detalles.length > 0) {
+    detalles.forEach((item, index) => {
+        if (yPos > 250) {
+            doc.addPage();
+            yPos = 20;
         }
         
-        // Valor del servicio
-        if (valorServicio > 0) {
-            yPos += 5;
-            doc.text('Valor del Servicio:', 20, yPos);
-            doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
-            yPos += 8;
-        }
+        const nombre = item.nombreProducto || item.nombreServicio || 'Producto/Servicio';
+        const cantidad = item.cantidad || 1;
+        const precio = parseFloat(item.precioUnitario) || 0;
+        const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
+        
+        // Mostrar producto en la lista de detalles
+        doc.text(`${cantidad}x ${nombre}`, 25, yPos);
+        doc.text(formatCurrencyForPDF(subtotal), 180, yPos, { align: 'right' });
+        yPos += 8;
+    });
+}
+
+// Valor del servicio - AHORA SIEMPRE VISIBLE EN DETALLES
+if (valorServicio > 0) {
+    if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+    }
+    doc.text(`Servicio`, 25, yPos);
+    doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
+    yPos += 8;
+} else if (detalles.length === 0) {
+    // Si no hay productos ni valor de servicio
+    doc.text('No hay detalles registrados', 25, yPos);
+    yPos += 8;
+}
         
         // Total
         yPos += 10;
