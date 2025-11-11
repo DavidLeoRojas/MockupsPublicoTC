@@ -763,6 +763,7 @@
             </form>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
 // URL base de la API
 const API_BASE_URL = 'https://backendgeminiambienta-v4-0-428l.onrender.com/api';
@@ -780,6 +781,90 @@ function checkAuth() {
     }
     return true;
 }
+
+// Función para descargar Excel
+function downloadExcel() {
+    if (!checkAuth()) return;
+    
+    // Obtener datos actuales (filtrados o todos)
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const categoriaFilter = document.getElementById('categoryFilter').value;
+    const estadoFilter = document.getElementById('statusFilter').value;
+    const proveedorFilter = document.getElementById('providerFilter').value;
+    
+    let dataToExport = productos;
+    
+    // Aplicar los mismos filtros que en la tabla
+    if (searchTerm) {
+        dataToExport = dataToExport.filter(p => 
+            p.nombre.toLowerCase().includes(searchTerm) || 
+            p.idProducto.toLowerCase().includes(searchTerm)
+        );
+    }
+    if (categoriaFilter) {
+        dataToExport = dataToExport.filter(p => p.idCategoriaProducto === categoriaFilter);
+    }
+    if (estadoFilter) {
+        dataToExport = dataToExport.filter(p => getStatusText(p.stock) === estadoFilter);
+    }
+    if (proveedorFilter) {
+        dataToExport = dataToExport.filter(p => p.proveedor === proveedorFilter);
+    }
+    
+    if (dataToExport.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+    }
+    
+    // Crear libro de Excel
+    const wb = XLSX.utils.book_new();
+    
+    // Preparar datos para la hoja
+    const excelData = dataToExport.map(producto => ({
+        'PRODUCTO': producto.nombre,
+        'CATEGORÍA': producto.nombreCategoria || 'Sin categoría',
+        'CÓDIGO': producto.idProducto,
+        'LOTE': producto.lote || 'N/A',
+        'STOCK': producto.stock,
+        'ESTADO': getStatusText(producto.stock),
+        'PROVEEDOR': producto.proveedor || 'N/A',
+        'PRECIO': producto.precioActual || 0,
+        'UNIDAD DE MEDIDA': producto.unidadMedida || 'Unidad',
+        'OBSERVACIONES': producto.observaciones || ''
+    }));
+    
+    // Crear hoja de trabajo
+    const ws = XLSX.utils.json_to_sheet(excelData);
+    
+    // Añadir hoja al libro
+    XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
+    
+    // Generar nombre de archivo con fecha
+    const fecha = new Date().toISOString().split('T')[0];
+    const fileName = `Inventario_Gemini_Ambiental_${fecha}.xlsx`;
+    
+    // Descargar archivo
+    XLSX.writeFile(wb, fileName);
+}
+
+// Añadir esta línea en la inicialización para conectar el botón
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Inventario cargado. Iniciando carga de datos...');
+    loadInventarioData();
+
+    // Añadir listener al formulario
+    document.getElementById('productForm').addEventListener('submit', saveProduct);
+    // Añadir listener al botón de filtrar
+    document.getElementById('filterProductsButton').addEventListener('click', filterProducts);
+    // Añadir listener al formulario de filtros para Enter
+    document.getElementById('filterForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        filterProducts();
+    });
+    
+    // Añadir listener al botón de descargar Excel
+    document.querySelector('.btn-secondary').addEventListener('click', downloadExcel);
+});
 
 // Obtener clase CSS para estado de stock
 function getStatusClass(stock) {
