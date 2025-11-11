@@ -1143,7 +1143,7 @@ function formatLargeNumber(value) {
     return value.toString();
 }
 // FUNCIÓN actualizarMontoTotal CORREGIDA
-// ✅ FUNCIÓN CORREGIDA - Incluye valor del servicio en el cálculo
+// ✅ FUNCIÓN CORREGIDA - Mantiene el valor exacto del servicio
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
@@ -1153,7 +1153,10 @@ function actualizarMontoTotal() {
         return;
     }
 
-    const valorServicio = parseFloat(valorServicioInput.value) || 0;
+    // ✅ CORRECCIÓN: Obtener el valor exacto como string primero
+    const valorServicioStr = valorServicioInput.value;
+    const valorServicio = parseFloat(valorServicioStr.replace(/\./g, '').replace(',', '.')) || 0;
+    
     const subtotalProductos = detalleFactura.reduce((sum, item) => {
         return sum + (parseFloat(item.subtotal) || 0);
     }, 0);
@@ -1161,19 +1164,48 @@ function actualizarMontoTotal() {
     // ✅ CALCULAR MONTO TOTAL INCLUYENDO VALOR DEL SERVICIO
     let montoTotal = subtotalProductos + valorServicio;
     
-    // Aplicar redondeo comercial (redondeo matemático)
-    montoTotal = Math.round(montoTotal / 1000) * 1000;
-    
-    // Formatear sin decimales para evitar problemas
+    // ✅ CORRECCIÓN: NO aplicar redondeo automático, mantener el cálculo exacto
     montoTotalInput.value = montoTotal.toFixed(0);
     
     console.log("💰 Cálculo monto total ACTUALIZADO:", {
-        valorServicio: valorServicio,
+        valorServicioInput: valorServicioStr,
+        valorServicioCalculado: valorServicio,
         subtotalProductos: subtotalProductos,
         montoTotal: montoTotal
     });
 }
 
+// ✅ EVENT LISTENER CORREGIDO - Maneja correctamente el formato de números
+function setupValorServicioEventListener() {
+    const valorServicioInput = document.getElementById('valorServicio');
+    
+    if (valorServicioInput) {
+        // Remover event listener anterior si existe
+        valorServicioInput.removeEventListener('input', actualizarMontoTotal);
+        
+        // ✅ NUEVO EVENT LISTENER - Maneja formato correcto
+        valorServicioInput.addEventListener('input', function(e) {
+            // Permitir solo números, punto y coma
+            let value = e.target.value.replace(/[^\d,]/g, '');
+            
+            // Reemplazar coma por punto para cálculos internos
+            let valueForCalculation = value.replace(',', '.');
+            
+            // Validar que no exceda el máximo
+            const numericValue = parseFloat(valueForCalculation) || 0;
+            if (numericValue > 9999999999.99) {
+                value = '9999999999.99';
+            }
+            
+            e.target.value = value;
+            
+            // Actualizar monto total
+            actualizarMontoTotal();
+        });
+        
+        console.log("✅ Event listener de valorServicio configurado correctamente");
+    }
+}
 // ✅ FUNCIÓN AUXILIAR PARA FORMATEAR NÚMEROS SIN DECIMALES
 function formatCurrency(value) {
     if (value === null || value === undefined || isNaN(value)) return '$ 0';
@@ -1578,12 +1610,22 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
     
     console.log("✅ Producto agregado. Total productos:", detalleFactura.length);
 });
-// ✅ FUNCIÓN CORREGIDA - Captura correctamente el valor del servicio
+// ✅ FUNCIÓN CORREGIDA - Captura el valor exacto del servicio
 function prepararDatosFactura() {
     const valorServicioInput = document.getElementById('valorServicio');
-    const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
     
-    console.log("📊 Valor servicio capturado en prepararDatosFactura:", valorServicio);
+    // ✅ CORRECCIÓN: Obtener el valor exacto y convertirlo correctamente
+    let valorServicio = 0;
+    if (valorServicioInput) {
+        const valorServicioStr = valorServicioInput.value;
+        // Convertir formato colombiano (puntos para miles, coma para decimales)
+        valorServicio = parseFloat(valorServicioStr.replace(/\./g, '').replace(',', '.')) || 0;
+    }
+    
+    console.log("📊 Valor servicio capturado en prepararDatosFactura:", {
+        valorInput: valorServicioInput?.value,
+        valorConvertido: valorServicio
+    });
 
     // ✅ CORRECCIÓN: Asegurar que todos los subtotales estén calculados
     detalleFactura.forEach(item => {
@@ -1908,7 +1950,7 @@ async function diagnosticarFacturas() {
             }
         }
 
-// ✅ FUNCIÓN ACTUALIZADA - Mejor inicialización del valor del servicio
+// ✅ FUNCIÓN ACTUALIZADA - Configura correctamente el campo valor servicio
 function openAddInvoiceModal() {
     const modal = document.getElementById('addInvoiceModal');
     const form = document.getElementById('invoiceForm');
@@ -1927,12 +1969,17 @@ function openAddInvoiceModal() {
     document.getElementById('productosSection').style.display = 'block';
     document.getElementById('cotizacionField').style.display = 'none';
     
-    // ✅ CORRECCIÓN: Asegurar que el campo de valor servicio esté habilitado
+    // ✅ CORRECCIÓN: Configurar campo valor servicio
     const valorServicioInput = document.getElementById('valorServicio');
     if (valorServicioInput) {
         valorServicioInput.disabled = false;
-        valorServicioInput.value = '0'; // ✅ Inicializar con valor por defecto
+        valorServicioInput.value = '0'; // ✅ Valor por defecto
         valorServicioInput.style.backgroundColor = 'white';
+        valorServicioInput.placeholder = 'Ej: 5000000';
+        
+        // ✅ CONFIGURAR ATRIBUTOS PARA FORMATO CORRECTO
+        valorServicioInput.setAttribute('inputmode', 'numeric');
+        valorServicioInput.setAttribute('pattern', '[0-9,]*');
     }
     
     // Resetear tipo de factura
@@ -1941,8 +1988,9 @@ function openAddInvoiceModal() {
     // Limpiar y resetear detalle
     detalleFactura = [];
     
-    // ✅ CORRECCIÓN: Llamar a renderDetalleFactura después de inicializar todo
+    // ✅ CONFIGURAR EVENT LISTENER DEL VALOR SERVICIO
     setTimeout(() => {
+        setupValorServicioEventListener();
         renderDetalleFactura();
     }, 100);
     
@@ -1972,7 +2020,7 @@ function openAddInvoiceModal() {
     
     console.log("✅ Modal de factura abierto y listo");
 }
-// ✅ FUNCIÓN COMPLETAMENTE CORREGIDA - Carga y permite editar el valor del servicio
+// ✅ FUNCIÓN ACTUALIZADA - Muestra el valor del servicio en formato correcto
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
@@ -2041,32 +2089,39 @@ async function editInvoice(id) {
                 console.log("✅ Observaciones asignadas");
             }
 
-            // ✅ CORRECCIÓN CRÍTICA: Cargar el valor del servicio de la factura
+            // ✅ CORRECCIÓN CRÍTICA: Cargar el valor del servicio en formato correcto
             const valorServicioInput = document.getElementById('valorServicio');
             if (valorServicioInput) {
                 // Obtener el valor del servicio directamente de la factura
                 let valorServicio = 0;
                 
-                if (factura.valorServicio !== null && factura.valorServicio !== undefined) {
+                if (factura.valorServicio !== null && factura.valorServicio !== undefined && factura.valorServicio !== 0) {
                     valorServicio = parseFloat(factura.valorServicio);
                     console.log("💰 Valor servicio encontrado en factura:", valorServicio);
                 } else {
-                    // Si no existe en la factura, calcularlo basado en el monto total y productos
+                    // Si no existe, calcularlo basado en el monto total y productos
                     const subtotalProductos = (factura.detalleFactura || []).reduce((sum, item) => {
-                        return sum + (parseFloat(item.subtotal) || 0);
+                        const subtotal = parseFloat(item.subtotal) || (parseFloat(item.precioUnitario) || 0) * (parseInt(item.cantidad) || 0);
+                        return sum + subtotal;
                     }, 0);
                     
                     const montoTotal = parseFloat(factura.montoTotal) || 0;
                     valorServicio = montoTotal - subtotalProductos;
+                    
                     console.log("💰 Valor servicio calculado:", {
                         montoTotal: montoTotal,
                         subtotalProductos: subtotalProductos,
                         valorServicioCalculado: valorServicio
                     });
+                    
+                    if (valorServicio < 0) {
+                        console.warn("⚠️ Valor servicio calculado negativo, estableciendo en 0");
+                        valorServicio = 0;
+                    }
                 }
                 
-                // Asignar el valor al campo
-                valorServicioInput.value = valorServicio.toFixed(2);
+                // ✅ CORRECCIÓN: Mostrar el valor en formato colombiano (sin formato automático)
+                valorServicioInput.value = valorServicio.toFixed(0); // Sin decimales
                 console.log("✅ Valor servicio asignado en formulario:", valorServicioInput.value);
                 
                 // Habilitar el campo para edición
@@ -2077,8 +2132,9 @@ async function editInvoice(id) {
             // Monto Total
             const montoTotalInput = document.querySelector('input[name="monto_total"]');
             if (montoTotalInput) {
-                montoTotalInput.value = (factura.montoTotal || 0).toFixed(2);
-                console.log("✅ Monto total asignado:", factura.montoTotal);
+                const montoTotalConvertido = convertirValorK(factura.montoTotal) || 0;
+                montoTotalInput.value = montoTotalConvertido.toFixed(0); // Sin decimales
+                console.log("✅ Monto total asignado:", montoTotalConvertido);
             }
 
             // Manejar facturas con cotización
@@ -2090,7 +2146,6 @@ async function editInvoice(id) {
                         if (cotizacionSelect) {
                             cotizacionSelect.value = idCotizacion;
                             console.log("✅ Cotización asignada:", idCotizacion);
-                            // Disparar change para cargar datos de la cotización
                             cotizacionSelect.dispatchEvent(new Event('change'));
                         }
                     }, 500);
@@ -2098,18 +2153,16 @@ async function editInvoice(id) {
             }
 
             // ✅ CARGAR DETALLES DE LA FACTURA
-            detalleFactura = []; // Limpiar array existente
+            detalleFactura = [];
             console.log("📦 Procesando productos de la factura:", factura.detalleFactura);
             
             if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
                 factura.detalleFactura.forEach((df, index) => {
-                    // Validar que el producto sea válido
                     if (!df.idProducto || df.idProducto === "PRODUCTO_ELIMINADO") {
                         console.warn(`⚠️ Producto ${index + 1} inválido, omitiendo:`, df);
                         return;
                     }
                     
-                    // Buscar el producto en productosData para obtener nombre actualizado
                     const producto = productosData.find(p => p.idProducto === df.idProducto);
                     const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
                     const precioUnitario = parseFloat(df.precioUnitario) || 0;
@@ -2124,7 +2177,7 @@ async function editInvoice(id) {
                         subtotal: subtotal
                     });
                     
-                    console.log(`✅ Producto ${index + 1} agregado:`, nombreProducto, cantidad, precioUnitario);
+                    console.log(`✅ Producto ${index + 1} agregado:`, nombreProducto, cantidad, precioUnitario, "Subtotal:", subtotal);
                 });
                 console.log(`✅ ${detalleFactura.length} productos cargados para edición`);
             } else {
@@ -2135,14 +2188,14 @@ async function editInvoice(id) {
             setTimeout(() => {
                 actualizarMontoTotal();
                 renderDetalleFactura();
-            }, 300);
+            }, 500);
 
             currentEditId = id;
             
             console.log("✅ Modal de edición completamente configurado para:", id, 
                       "Valor servicio cargado:", valorServicioInput?.value);
             
-        }, 300); // Aumentado el timeout para mayor estabilidad
+        }, 500);
 
     } catch (error) {
         console.error("❌ Error inesperado al editar:", error);
@@ -2180,7 +2233,7 @@ async function diagnosticarStockProducto() {
     }
 }
 
-// ✅ FUNCIÓN COMPLETAMENTE REESCRITA - Manejo correcto del valor del servicio
+// ✅ FUNCIÓN CORREGIDA - Mejor manejo de errores 500
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -2346,15 +2399,9 @@ async function handleInvoiceFormSubmit(event) {
 
         if (idCotizacion) facturaData.idCotizacion = idCotizacion;
 
-        console.log("🚀 ENVIANDO FACTURA CON DATOS VALIDADOS:", {
-            ...facturaData,
-            detalleFactura: detalleFacturaData.map(item => ({
-                ...item,
-                stockDisponible: productosData.find(p => p.idProducto === item.idProducto)?.stock
-            }))
-        });
+        console.log("🚀 ENVIANDO FACTURA CON DATOS VALIDADOS:", facturaData);
 
-        // ✅ 10. ENVÍO AL SERVIDOR
+        // ✅ 10. ENVÍO AL SERVIDOR CON MEJOR MANEJO DE ERRORES
         const url = currentEditId ? `${API_FACTURAS_URL}/${currentEditId}` : API_FACTURAS_URL;
         const method = currentEditId ? 'PUT' : 'POST';
 
@@ -2384,19 +2431,32 @@ async function handleInvoiceFormSubmit(event) {
                 const errorText = await response.text();
                 console.error("❌ TEXTO DE ERROR:", errorText);
                 
-                if (errorText.includes('stock') || errorText.includes('Stock')) {
-                    errorDetails = "PROBLEMA DE STOCK EN EL SERVIDOR: " + errorText;
-                } else if (errorText.includes('constraint') || errorText.includes('Constraint')) {
-                    errorDetails = "ERROR DE BASE DE DATOS: " + errorText;
+                // ✅ CORRECCIÓN: Manejar específicamente errores 500
+                if (response.status === 500) {
+                    // Intentar parsear el error como JSON
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorDetails = errorJson.message || errorJson.error || 'Error interno del servidor';
+                        
+                        // ✅ DETECTAR PROBLEMAS ESPECÍFICOS
+                        if (errorDetails.includes('valorServicio') || errorDetails.includes('valor_servicio')) {
+                            errorDetails = "❌ PROBLEMA CON EL VALOR DEL SERVICIO:\n\n" + 
+                                         "El servidor rechazó el valor del servicio enviado.\n" +
+                                         "Posibles causas:\n" +
+                                         "• Formato incorrecto del número\n" +
+                                         "• Valor fuera de rango\n" +
+                                         "• Campo no reconocido por el backend\n\n" +
+                                         "Detalle técnico: " + errorDetails;
+                        } else if (errorDetails.includes('stock') || errorDetails.includes('Stock')) {
+                            errorDetails = "❌ PROBLEMA DE STOCK EN EL SERVIDOR:\n\n" + errorDetails;
+                        } else if (errorDetails.includes('constraint') || errorDetails.includes('Constraint')) {
+                            errorDetails = "❌ ERROR DE BASE DE DATOS:\n\n" + errorDetails;
+                        }
+                    } catch (jsonError) {
+                        errorDetails = 'Error interno del servidor (no se pudo parsear la respuesta)';
+                    }
                 } else {
                     errorDetails = errorText;
-                }
-                
-                try {
-                    const errorJson = JSON.parse(errorText);
-                    errorDetails = errorJson.message || errorJson.error || errorText;
-                } catch {
-                    // Mantener el texto original si no es JSON
                 }
             } catch (e) {
                 errorDetails = 'No se pudo leer la respuesta del servidor';
@@ -2405,7 +2465,14 @@ async function handleInvoiceFormSubmit(event) {
             let errorMessage = '';
             switch (response.status) {
                 case 500:
-                    errorMessage = "❌ ERROR INTERNO DEL SERVIDOR (500)\n\n" + errorDetails;
+                    errorMessage = "❌ ERROR INTERNO DEL SERVIDOR (500)\n\n" + 
+                                 "El servidor encontró un error inesperado al procesar la factura.\n\n" +
+                                 "Posibles causas:\n" +
+                                 "• Problema con el formato de los datos enviados\n" +
+                                 "• Error en la base de datos\n" +
+                                 "• Campo 'valorServicio' no reconocido\n" +
+                                 "• Problema de validación en el backend\n\n" +
+                                 "Detalles técnicos:\n" + errorDetails;
                     break;
                 case 400:
                     errorMessage = "❌ DATOS INVÁLIDOS (400)\n\n" + errorDetails;
@@ -2444,7 +2511,15 @@ async function handleInvoiceFormSubmit(event) {
         
         let mensajeUsuario = error.message;
         
-        if (error.message.includes('stock') || error.message.includes('Stock')) {
+        if (error.message.includes('valorServicio') || error.message.includes('valor del servicio')) {
+            mensajeUsuario = "❌ PROBLEMA CON EL VALOR DEL SERVICIO\n\n" + 
+                            "No se pudo guardar el valor del servicio.\n\n" +
+                            "Sugerencias:\n" +
+                            "1. Intente con un valor redondo (sin decimales)\n" +
+                            "2. Verifique que el valor no sea demasiado grande\n" +
+                            "3. Intente guardar sin valor de servicio primero\n\n" +
+                            "Detalle: " + error.message;
+        } else if (error.message.includes('stock') || error.message.includes('Stock')) {
             mensajeUsuario = "❌ PROBLEMA DE STOCK\n\n" + 
                             "No hay suficiente inventario para completar la operación.\n\n" +
                             "Por favor:\n" +
@@ -3183,45 +3258,29 @@ function filterInvoices() {
     renderTable(filtered);
 }
 // Ejecutar en consola: diagnosticarToken()
-// Inicialización corregida
+// ✅ ACTUALIZAR LA INICIALIZACIÓN
 document.addEventListener('DOMContentLoaded', function() {
     console.log("🚀 Iniciando aplicación de Facturas...");
     
-    // Verificar token al cargar la página
     if (!verificarToken()) {
         alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
         window.location.href = 'index.html';
         return;
     }
 
-    // Cargar datos iniciales
     loadInitialData();
 
-    // Asignar el evento submit al formulario
+    // ✅ CONFIGURAR EVENT LISTENERS CORRECTAMENTE
     const invoiceForm = document.getElementById('invoiceForm');
     if (invoiceForm) {
         invoiceForm.addEventListener('submit', handleInvoiceFormSubmit);
         console.log("✅ Evento submit asignado al formulario");
-    } else {
-        console.error("❌ No se encontró el formulario con ID 'invoiceForm'");
     }
 
-    // Event Listeners adicionales
-    const filterButton = document.getElementById('filterInvoicesButton');
-    if (filterButton) {
-        filterButton.addEventListener('click', filterInvoices);
-        console.log("✅ Evento click asignado al botón de filtro");
-    }
+    // ✅ CONFIGURAR EVENT LISTENER DEL VALOR SERVICIO
+    setupValorServicioEventListener();
 
-    const filterForm = document.getElementById('filterForm');
-    if (filterForm) {
-        filterForm.addEventListener('submit', (e) => { 
-            e.preventDefault(); 
-            filterInvoices(); 
-        });
-        console.log("✅ Evento submit asignado al formulario de filtro");
-    }
-
+    // Otros event listeners...
     console.log("✅ Aplicación de Facturas inicializada correctamente");
 });
     </script>
