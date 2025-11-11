@@ -1646,18 +1646,20 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
 function prepararDatosFactura() {
     const valorServicioInput = document.getElementById('valorServicio');
     
-    // ✅ Obtener el valor exacto SIN conversiones complejas
+    // ✅ CORRECCIÓN: Obtener el valor exacto y convertirlo correctamente
     let valorServicio = 0;
     if (valorServicioInput) {
-        valorServicio = parseFloat(limpiarFormatoNumero(valorServicioInput.value)) || 0;
+        const valorServicioStr = valorServicioInput.value;
+        // Convertir formato colombiano (puntos para miles, coma para decimales)
+        valorServicio = parseFloat(valorServicioStr.replace(/\./g, '').replace(',', '.')) || 0;
     }
     
-    console.log("📊 Valor servicio capturado:", {
+    console.log("📊 Valor servicio capturado en prepararDatosFactura:", {
         valorInput: valorServicioInput?.value,
         valorConvertido: valorServicio
     });
 
-    // ✅ Asegurar que todos los subtotales estén calculados
+    // ✅ CORRECCIÓN: Asegurar que todos los subtotales estén calculados
     detalleFactura.forEach(item => {
         if (!item.subtotal || isNaN(item.subtotal)) {
             item.subtotal = (item.precioUnitario || 0) * (item.cantidad || 0);
@@ -1999,7 +2001,7 @@ function openAddInvoiceModal() {
     document.getElementById('productosSection').style.display = 'block';
     document.getElementById('cotizacionField').style.display = 'none';
     
-    // ✅ CONFIGURACIÓN MEJORADA del campo valor servicio
+    // ✅ CORRECCIÓN: Configurar campo valor servicio
     const valorServicioInput = document.getElementById('valorServicio');
     if (valorServicioInput) {
         valorServicioInput.disabled = false;
@@ -2007,11 +2009,9 @@ function openAddInvoiceModal() {
         valorServicioInput.style.backgroundColor = 'white';
         valorServicioInput.placeholder = 'Ej: 5000000';
         
-        // ✅ ATRIBUTOS PARA ENTRADA NUMÉRICA SIMPLE
-        valorServicioInput.type = 'number';
-        valorServicioInput.step = '1';
-        valorServicioInput.min = '0';
-        valorServicioInput.max = '9999999999';
+        // ✅ CONFIGURAR ATRIBUTOS PARA FORMATO CORRECTO
+        valorServicioInput.setAttribute('inputmode', 'numeric');
+        valorServicioInput.setAttribute('pattern', '[0-9,]*');
     }
     
     // Resetear tipo de factura
@@ -2961,7 +2961,7 @@ async function viewInvoice(id) {
                 
                 // Descripción (con wrap si es muy largo)
                 const descLines = doc.splitTextToSize(nombre, 70);
-                doc.text('Valor del Servicio:', margin + 100, yPos);
+                doc.text(descLines, margin + 2, yPos);
                 
                 doc.text(cantidad.toString(), margin + 100, yPos);
                 doc.text(formatCurrencyForPDF(precio), margin + 120, yPos);
