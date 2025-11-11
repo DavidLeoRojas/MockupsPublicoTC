@@ -2047,15 +2047,14 @@ async function editInvoice(id) {
             }
 
             // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
-            const valorServicioInput = document.getElementById('valorServicio');
-            if (valorServicioInput) {
-                const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
-                    ? parseFloat(factura.valorServicio) 
-                    : 0;
-                valorServicioInput.value = valorServicio.toFixed(2);
-                console.log("✅ Valor servicio asignado:", valorServicio);
-            }
-
+        const valorServicioInput = document.getElementById('valorServicio');
+        if (valorServicioInput) {
+            const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
+                ? parseFloat(factura.valorServicio) // <--- Aquí se convierte a número
+                : 0;
+            valorServicioInput.value = valorServicio.toFixed(2); // <--- Aquí se asigna como string con 2 decimales
+            console.log("✅ Valor servicio asignado:", valorServicio);
+        }
             // Monto Total
             const montoTotalInput = document.querySelector('input[name="monto_total"]');
             if (montoTotalInput) {
