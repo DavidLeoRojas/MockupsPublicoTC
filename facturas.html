@@ -1142,8 +1142,7 @@ function formatLargeNumber(value) {
     }
     return value.toString();
 }
-// FUNCIÓN actualizarMontoTotal CORREGIDA
-// ✅ FUNCIÓN CORREGIDA - Mantiene el valor exacto del servicio
+// ✅ FUNCIÓN CORREGIDA - Manejo simple del valor del servicio
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
@@ -1153,28 +1152,61 @@ function actualizarMontoTotal() {
         return;
     }
 
-    // ✅ CORRECCIÓN: Obtener el valor exacto como string primero
-    const valorServicioStr = valorServicioInput.value;
-    const valorServicio = parseFloat(valorServicioStr.replace(/\./g, '').replace(',', '.')) || 0;
+    // ✅ Obtener el valor exacto del servicio SIN conversiones adicionales
+    let valorServicio = parseFloat(valorServicioInput.value) || 0;
+    
+    // Si el valor tiene formato (puntos para miles), limpiarlo
+    if (typeof valorServicioInput.value === 'string' && valorServicioInput.value.includes('.')) {
+        valorServicio = parseFloat(valorServicioInput.value.replace(/\./g, '')) || 0;
+    }
     
     const subtotalProductos = detalleFactura.reduce((sum, item) => {
         return sum + (parseFloat(item.subtotal) || 0);
     }, 0);
     
-    // ✅ CALCULAR MONTO TOTAL INCLUYENDO VALOR DEL SERVICIO
+    // ✅ CALCULAR MONTO TOTAL EXACTO
     let montoTotal = subtotalProductos + valorServicio;
     
-    // ✅ CORRECCIÓN: NO aplicar redondeo automático, mantener el cálculo exacto
+    // ✅ NO aplicar redondeo automático, mantener el cálculo exacto
     montoTotalInput.value = montoTotal.toFixed(0);
     
     console.log("💰 Cálculo monto total ACTUALIZADO:", {
-        valorServicioInput: valorServicioStr,
+        valorServicioInput: valorServicioInput.value,
         valorServicioCalculado: valorServicio,
         subtotalProductos: subtotalProductos,
         montoTotal: montoTotal
     });
 }
 
+// ✅ EVENT LISTENER SIMPLIFICADO - Solo actualiza cuando hay cambios reales
+function setupValorServicioEventListener() {
+    const valorServicioInput = document.getElementById('valorServicio');
+    
+    if (valorServicioInput) {
+        // Remover todos los event listeners anteriores
+        valorServicioInput.removeEventListener('input', actualizarMontoTotal);
+        valorServicioInput.removeEventListener('change', actualizarMontoTotal);
+        
+        // ✅ NUEVO EVENT LISTENER SIMPLE
+        valorServicioInput.addEventListener('input', function(e) {
+            // Pequeño delay para asegurar que el valor esté actualizado
+            setTimeout(actualizarMontoTotal, 100);
+        });
+        
+        console.log("✅ Event listener de valorServicio configurado correctamente");
+    }
+}
+
+// ✅ FUNCIÓN AUXILIAR PARA LIMPIAR FORMATO DE NÚMEROS
+function limpiarFormatoNumero(valor) {
+    if (typeof valor === 'string') {
+        // Remover todo excepto números y punto decimal
+        return valor.replace(/[^\d.,]/g, '')
+                   .replace(/\./g, '')  // Remover puntos de miles
+                   .replace(',', '.');  // Convertir coma decimal a punto
+    }
+    return valor;
+}
 // ✅ EVENT LISTENER CORREGIDO - Maneja correctamente el formato de números
 function setupValorServicioEventListener() {
     const valorServicioInput = document.getElementById('valorServicio');
@@ -1614,20 +1646,18 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
 function prepararDatosFactura() {
     const valorServicioInput = document.getElementById('valorServicio');
     
-    // ✅ CORRECCIÓN: Obtener el valor exacto y convertirlo correctamente
+    // ✅ Obtener el valor exacto SIN conversiones complejas
     let valorServicio = 0;
     if (valorServicioInput) {
-        const valorServicioStr = valorServicioInput.value;
-        // Convertir formato colombiano (puntos para miles, coma para decimales)
-        valorServicio = parseFloat(valorServicioStr.replace(/\./g, '').replace(',', '.')) || 0;
+        valorServicio = parseFloat(limpiarFormatoNumero(valorServicioInput.value)) || 0;
     }
     
-    console.log("📊 Valor servicio capturado en prepararDatosFactura:", {
+    console.log("📊 Valor servicio capturado:", {
         valorInput: valorServicioInput?.value,
         valorConvertido: valorServicio
     });
 
-    // ✅ CORRECCIÓN: Asegurar que todos los subtotales estén calculados
+    // ✅ Asegurar que todos los subtotales estén calculados
     detalleFactura.forEach(item => {
         if (!item.subtotal || isNaN(item.subtotal)) {
             item.subtotal = (item.precioUnitario || 0) * (item.cantidad || 0);
@@ -1969,7 +1999,7 @@ function openAddInvoiceModal() {
     document.getElementById('productosSection').style.display = 'block';
     document.getElementById('cotizacionField').style.display = 'none';
     
-    // ✅ CORRECCIÓN: Configurar campo valor servicio
+    // ✅ CONFIGURACIÓN MEJORADA del campo valor servicio
     const valorServicioInput = document.getElementById('valorServicio');
     if (valorServicioInput) {
         valorServicioInput.disabled = false;
@@ -1977,9 +2007,11 @@ function openAddInvoiceModal() {
         valorServicioInput.style.backgroundColor = 'white';
         valorServicioInput.placeholder = 'Ej: 5000000';
         
-        // ✅ CONFIGURAR ATRIBUTOS PARA FORMATO CORRECTO
-        valorServicioInput.setAttribute('inputmode', 'numeric');
-        valorServicioInput.setAttribute('pattern', '[0-9,]*');
+        // ✅ ATRIBUTOS PARA ENTRADA NUMÉRICA SIMPLE
+        valorServicioInput.type = 'number';
+        valorServicioInput.step = '1';
+        valorServicioInput.min = '0';
+        valorServicioInput.max = '9999999999';
     }
     
     // Resetear tipo de factura
