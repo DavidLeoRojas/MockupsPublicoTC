@@ -594,7 +594,7 @@
                 <p>Gestión y control de productos y materiales</p>
             </div>
             <div class="header-actions">
-    <button class="btn btn-secondary" onclick="downloadPDF()">📤 Exportar PDF</button>
+                <button class="btn btn-secondary">📤 Exportar</button>
                 <button class="btn btn-primary" onclick="openAddProductModal()">➕ Agregar Producto</button>
             </div>
         </div>
@@ -671,7 +671,7 @@
             <div class="inventory-header">
                 <span class="inventory-title">Listado de Productos</span>
                 <span>
-        <button class="btn btn-secondary" onclick="downloadExcel()">⬇️ Descargar Excel</button>
+                    <button class="btn btn-secondary">⬇️ Descargar</button>
                 </span>
             </div>
             <div class="table-container">
@@ -763,9 +763,7 @@
             </form>
         </div>
     </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
 // URL base de la API
 const API_BASE_URL = 'https://backendgeminiambienta-v4-0-428l.onrender.com/api';
@@ -868,134 +866,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.btn-secondary').addEventListener('click', downloadExcel);
 });
 
-// Función para descargar PDF
-function downloadPDF() {
-    if (!checkAuth()) return;
-    
-    const dataToExport = getFilteredData();
-    
-    if (dataToExport.length === 0) {
-        alert('No hay datos para exportar');
-        return;
-    }
-    
-    // Crear instancia de jsPDF
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    
-    // Configuración del PDF
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const fecha = new Date();
-    
-    // Título
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('REPORTE DE INVENTARIO - GEMINI AMBIENTAL', pageWidth / 2, 15, { align: 'center' });
-    
-    // Fecha
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Fecha de generación: ${formatDate(fecha)}`, pageWidth / 2, 22, { align: 'center' });
-    
-    // Estadísticas
-    const total = dataToExport.length;
-    const disponibles = dataToExport.filter(p => p.stock > 5).length;
-    const bajo = dataToExport.filter(p => p.stock > 0 && p.stock <= 5).length;
-    const agotados = dataToExport.filter(p => p.stock === 0).length;
-    
-    doc.setFontSize(10);
-    doc.text(`Total de productos: ${total}`, 14, 35);
-    doc.text(`Disponibles: ${disponibles}`, 14, 42);
-    doc.text(`Stock bajo: ${bajo}`, 14, 49);
-    doc.text(`Agotados: ${agotados}`, 14, 56);
-    
-    // Preparar datos para la tabla
-    const tableData = dataToExport.map(producto => [
-        producto.nombre,
-        producto.nombreCategoria || 'Sin categoría',
-        producto.idProducto,
-        producto.lote || 'N/A',
-        producto.stock.toString(),
-        getStatusText(producto.stock),
-        producto.proveedor || 'N/A'
-    ]);
-    
-    // Encabezados de la tabla
-    const headers = [
-        'Producto',
-        'Categoría',
-        'Código',
-        'Lote',
-        'Stock',
-        'Estado',
-        'Proveedor'
-    ];
-    
-    // Configurar y generar tabla
-    doc.autoTable({
-        head: [headers],
-        body: tableData,
-        startY: 65,
-        styles: {
-            fontSize: 8,
-            cellPadding: 2
-        },
-        headStyles: {
-            fillColor: [74, 139, 100], // Color verde de Gemini Ambiental
-            textColor: 255
-        },
-        alternateRowStyles: {
-            fillColor: [245, 247, 250]
-        },
-        margin: { top: 65 }
-    });
-    
-    // Pie de página
-    const pageCount = doc.internal.getNumberOfPages();
-    for (let i = 1; i <= pageCount; i++) {
-        doc.setPage(i);
-        doc.setFontSize(8);
-        doc.text(
-            `Página ${i} de ${pageCount}`,
-            pageWidth / 2,
-            doc.internal.pageSize.getHeight() - 10,
-            { align: 'center' }
-        );
-    }
-    
-    // Descargar PDF
-    const fileName = `Inventario_Gemini_Ambiental_${fecha.toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
-}
 
-// Función auxiliar para obtener datos filtrados
-function getFilteredData() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const categoriaFilter = document.getElementById('categoryFilter').value;
-    const estadoFilter = document.getElementById('statusFilter').value;
-    const proveedorFilter = document.getElementById('providerFilter').value;
-    
-    let filteredData = productos;
-    
-    // Aplicar los mismos filtros que en la tabla
-    if (searchTerm) {
-        filteredData = filteredData.filter(p => 
-            p.nombre.toLowerCase().includes(searchTerm) || 
-            p.idProducto.toLowerCase().includes(searchTerm)
-        );
-    }
-    if (categoriaFilter) {
-        filteredData = filteredData.filter(p => p.idCategoriaProducto === categoriaFilter);
-    }
-    if (estadoFilter) {
-        filteredData = filteredData.filter(p => getStatusText(p.stock) === estadoFilter);
-    }
-    if (proveedorFilter) {
-        filteredData = filteredData.filter(p => p.proveedor === proveedorFilter);
-    }
-    
-    return filteredData;
-}
 // Obtener clase CSS para estado de stock
 function getStatusClass(stock) {
     if (stock === 0) return 'agotado';
