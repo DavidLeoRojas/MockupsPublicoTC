@@ -803,10 +803,10 @@
         <div class="calendar-layout">
             <div class="calendar-section">
                 <div class="calendar-header">
-                    <h2 class="calendar-title">Enero 2025</h2>
+                    <h2 class="calendar-title" id="calendarMainTitle">Noviembre 2025</h2>
                     <div class="calendar-nav">
                         <button class="nav-btn" onclick="previousMonth()">‹</button>
-                        <div class="month-year">Enero 2025</div>
+                        <div class="month-year" id="calendarMonthYear">Noviembre 2025</div>
                         <button class="nav-btn" onclick="nextMonth()">›</button>
                     </div>
                 </div>
@@ -1434,16 +1434,15 @@ function populateCotizacionSelect(cotizaciones) {
 
         // ========== RENDER CALENDAR ==========
 function renderCalendar(month, year) {
-    const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
-                       "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    console.log(`🎯 Renderizando calendario: ${monthNames[month]} ${year}`);
     
-    // ✅ ACTUALIZAR EL TÍTULO PRINCIPAL TAMBIÉN
-    const calendarTitle = document.querySelector('.calendar-title');
+    // ✅ ACTUALIZAR TODOS LOS ELEMENTOS DEL TÍTULO
+    const calendarTitle = document.getElementById('calendarMainTitle');
+    const monthYearElement = document.getElementById('calendarMonthYear');
+    
     if (calendarTitle) {
         calendarTitle.textContent = `${monthNames[month]} ${year}`;
     }
-    
-    const monthYearElement = document.querySelector('.month-year');
     if (monthYearElement) {
         monthYearElement.textContent = `${monthNames[month]} ${year}`;
     }
@@ -2532,30 +2531,57 @@ function diagnosticarProblemaVisualizacion() {
     }
 }
 
-// Función para forzar navegación al mes correcto
 function navegarAlMesCorrecto() {
-    if (servicios.length === 0) return;
+    console.log('📍 Buscando mes con servicios...');
     
-    // Buscar el primer servicio con fecha válida
-    const servicioConFecha = servicios.find(s => s.fecha);
-    if (!servicioConFecha) return;
-    
-    const fechaServicio = new Date(servicioConFecha.fecha);
-    const añoServicio = fechaServicio.getFullYear();
-    const mesServicio = fechaServicio.getMonth();
-    
-    console.log(`📍 Servicio encontrado en: ${mesServicio + 1}/${añoServicio}`);
-    console.log(`📍 Calendario actual: ${currentMonth + 1}/${currentYear}`);
-    
-    // Solo navegar si es diferente
-    if (mesServicio !== currentMonth || añoServicio !== currentYear) {
-        console.log(`🔄 Navegando al mes del servicio...`);
-        currentMonth = mesServicio;
-        currentYear = añoServicio;
-        renderCalendar(currentMonth, currentYear);
-    } else {
-        console.log('✅ Ya estamos en el mes correcto');
+    if (servicios.length === 0) {
+        console.log('📅 No hay servicios cargados, usando mes actual');
+        const now = new Date();
+        currentMonth = now.getMonth();
+        currentYear = now.getFullYear();
+        return;
     }
+    
+    // Encontrar todos los meses únicos que tienen servicios
+    const mesesConServicios = servicios
+        .filter(s => s.fecha)
+        .map(s => {
+            const fecha = new Date(s.fecha);
+            return {
+                mes: fecha.getMonth(),
+                año: fecha.getFullYear(),
+                fechaStr: fecha.toISOString().split('T')[0]
+            };
+        })
+        .filter((item, index, self) => 
+            index === self.findIndex(t => 
+                t.mes === item.mes && t.año === item.año
+            )
+        );
+    
+    if (mesesConServicios.length === 0) {
+        console.log('📅 No hay servicios con fecha válida, usando mes actual');
+        const now = new Date();
+        currentMonth = now.getMonth();
+        currentYear = now.getFullYear();
+        return;
+    }
+    
+    console.log('📋 Meses con servicios encontrados:', mesesConServicios);
+    
+    // Ordenar por fecha (más reciente primero)
+    mesesConServicios.sort((a, b) => {
+        const dateA = new Date(a.año, a.mes);
+        const dateB = new Date(b.año, b.mes);
+        return dateB - dateA;
+    });
+    
+    // Usar el mes más reciente
+    const mesReciente = mesesConServicios[0];
+    console.log(`📍 Navegando al mes más reciente: ${mesReciente.mes + 1}/${mesReciente.año}`);
+    
+    currentMonth = mesReciente.mes;
+    currentYear = mesReciente.año;
 }
 
 // Llamar estas funciones después de cargar los datos
