@@ -1119,11 +1119,17 @@ async function loadProductos() {
     }
 }
 
+// ✅ FUNCIÓN AUXILIAR PARA FORMATEAR NÚMEROS SIN DECIMALES
 function formatCurrency(value) {
     if (value === null || value === undefined || isNaN(value)) return '$ 0';
     
-    // ✅ CORRECCIÓN DEFINITIVA: Mostrar valores COMPLETOS sin abreviaturas
-    return '$ ' + new Intl.NumberFormat('es-CO').format(value);
+    // Redondear a miles antes de formatear
+    const valorRedondeado = Math.round(value / 1000) * 1000;
+    
+    return '$ ' + new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(valorRedondeado);
 }
 
 function formatLargeNumber(value) {
@@ -1584,8 +1590,13 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
     
     console.log("✅ Producto agregado. Total productos:", detalleFactura.length);
 });
-// Función para validar y preparar datos antes del envío
+// ✅ FUNCIÓN CORREGIDA - Captura correctamente el valor del servicio
 function prepararDatosFactura() {
+    const valorServicioInput = document.getElementById('valorServicio');
+    const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
+    
+    console.log("📊 Valor servicio capturado en prepararDatosFactura:", valorServicio);
+
     // ✅ CORRECCIÓN: Asegurar que todos los subtotales estén calculados
     detalleFactura.forEach(item => {
         if (!item.subtotal || isNaN(item.subtotal)) {
@@ -1610,7 +1621,10 @@ function prepararDatosFactura() {
         subtotal: item.subtotal
     }));
 
-    return detalleFacturaData;
+    return {
+        detalleFactura: detalleFacturaData,
+        valorServicio: valorServicio
+    };
 }
 // Renderizar lista de productos agregados - VERSIÓN MEJORADA
 function renderDetalleFactura() {
@@ -1890,8 +1904,7 @@ async function diagnosticarFacturas() {
             }
         }
 
-        // Abrir modal para agregar factura
-// Abrir modal para agregar/editar factura - VERSIÓN MEJORADA
+// ✅ FUNCIÓN MEJORADA - Inicialización correcta del valor del servicio
 function openAddInvoiceModal() {
     const modal = document.getElementById('addInvoiceModal');
     const form = document.getElementById('invoiceForm');
@@ -1923,6 +1936,7 @@ function openAddInvoiceModal() {
     if (valorServicioInput) {
         valorServicioInput.disabled = false;
         valorServicioInput.value = '0'; // ✅ Inicializar con valor por defecto
+        valorServicioInput.style.backgroundColor = 'white';
     }
     
     // Resetear tipo de factura
@@ -1962,7 +1976,7 @@ function openAddInvoiceModal() {
     
     console.log("✅ Modal de factura abierto y listo");
 }
-// Reemplaza la función editInvoice completa con esta versión corregida
+// ✅ FUNCIÓN ACTUALIZADA - Carga correctamente el valor del servicio al editar
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
@@ -2001,8 +2015,8 @@ async function editInvoice(id) {
             }
 
             // Fecha de emisión
-            const fechaEmision = factura.fechaEmision ?
-                factura.fechaEmision.split('T')[0] :
+            const fechaEmision = factura.fechaEmision ? 
+                factura.fechaEmision.split('T')[0] : 
                 new Date().toISOString().split('T')[0];
             const fechaInput = document.querySelector('input[name="fecha_emision"]');
             if (fechaInput) {
@@ -2028,20 +2042,14 @@ async function editInvoice(id) {
                 console.log("✅ Observaciones asignadas");
             }
 
-            // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined y asignar al input
+            // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
             const valorServicioInput = document.getElementById('valorServicio');
             if (valorServicioInput) {
-                // Leer el valor del objeto factura
-                const valorServicioOriginal = factura.valorServicio;
-                console.log("🔍 Valor Servicio original de la factura:", valorServicioOriginal, typeof valorServicioOriginal); // Diagnóstico
-
-                // Convertir a número, asumiendo 0 si es null, undefined o no es un número válido
-                const valorServicio = parseFloat(valorServicioOriginal) || 0;
-                // Asignar el valor al campo de entrada
-                valorServicioInput.value = valorServicio.toFixed(2); // Opcional: fijar decimales para consistencia
-                console.log("✅ Valor servicio asignado al input:", valorServicio);
-            } else {
-                console.error("❌ No se encontró el campo #valorServicio");
+                const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
+                    ? parseFloat(factura.valorServicio) 
+                    : 0;
+                valorServicioInput.value = valorServicio.toFixed(2);
+                console.log("✅ Valor servicio asignado:", valorServicio);
             }
 
             // Monto Total
@@ -2101,7 +2109,7 @@ async function editInvoice(id) {
             renderDetalleFactura();
             currentEditId = id;
             console.log("✅ Modal de edición completamente configurado para:", id);
-        }, 100); // <-- Este timeout es crucial para esperar que el DOM se actualice.
+        }, 100);
 
     } catch (error) {
         console.error("❌ Error inesperado al editar:", error);
@@ -2139,39 +2147,70 @@ async function diagnosticarStockProducto() {
     }
 }
 
-/// ✅ FUNCIÓN MEJORADA - CON VALIDACIÓN DE STOCK EN TIEMPO REAL
-// Reemplaza la función handleInvoiceFormSubmit completa con esta versión corregida
+// ✅ FUNCIÓN COMPLETAMENTE REESCRITA - Manejo correcto del valor del servicio
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
     isSubmitting = true;
+
     const submitBtn = document.getElementById('submitBtn');
     const originalText = submitBtn.textContent;
-    submitBtn.textContent = '⏳ Validando stock...';
+    submitBtn.textContent = '⏳ Validando...';
     submitBtn.disabled = true;
 
     try {
         console.log("🔍 INICIANDO VALIDACIÓN COMPLETA...");
-        // ✅ 1. ACTUALIZAR DATOS DE PRODUCTOS EN TIEMPO REAL
-        console.log("🔄 Actualizando datos de productos...");
-        await loadProductos(); // Recargar datos actualizados
 
-        // ✅ 2. VALIDACIÓN DETALLADA DE STOCK
+        // ✅ 1. VALIDACIÓN DEL VALOR DEL SERVICIO
+        const valorServicioInput = document.getElementById('valorServicio');
+        const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
+        
+        console.log("💰 Valor servicio validado:", valorServicio);
+
+        if (valorServicio < 0) {
+            throw new Error('❌ El valor del servicio no puede ser negativo');
+        }
+
+        if (valorServicio > 9999999999.99) {
+            throw new Error('❌ El valor del servicio excede el límite permitido');
+        }
+
+        // ✅ 2. CONFIRMAR SI EL VALOR DEL SERVICIO ES CERO
+        if (valorServicio === 0) {
+            const confirmarCero = confirm(
+                '⚠️ El Valor Servicio está en $0. ¿Está seguro de que no hay valor de servicio para esta factura?\n\n' +
+                'Cancelar = Editar el valor\nAceptar = Continuar con $0'
+            );
+            
+            if (!confirmarCero) {
+                valorServicioInput.focus();
+                return;
+            }
+        }
+
+        // ✅ 3. ACTUALIZAR DATOS DE PRODUCTOS EN TIEMPO REAL
+        console.log("🔄 Actualizando datos de productos...");
+        await loadProductos();
+        
+        // ✅ 4. VALIDACIÓN DETALLADA DE STOCK
         console.log("📦 Validando stock para cada producto...");
+        
         let stockValido = true;
         let productosProblema = [];
         let stockDisponible = {};
 
-        // Obtener stock actualizado
         for (const item of detalleFactura) {
             const producto = productosData.find(p => p.idProducto === item.idProducto);
+            
             if (!producto) {
                 console.error(`❌ Producto no encontrado: ${item.idProducto}`);
                 productosProblema.push(`${item.nombreProducto} (no encontrado en sistema)`);
                 stockValido = false;
                 continue;
             }
+
             stockDisponible[item.idProducto] = producto.stock;
+
             if (producto.stock <= 0) {
                 console.error(`❌ Producto sin stock: ${item.idProducto} - Stock: ${producto.stock}`);
                 productosProblema.push(`${item.nombreProducto} (sin stock disponible)`);
@@ -2185,15 +2224,10 @@ async function handleInvoiceFormSubmit(event) {
             }
         }
 
-        // ✅ 3. MANEJO DE ERRORES DE STOCK
+        // ✅ 5. MANEJO DE ERRORES DE STOCK
         if (!stockValido) {
-            const mensajeError = `❌ PROBLEMAS DE STOCK DETECTADOS:
-${productosProblema.join('
-')}
-Stock actual disponible:
-${Object.entries(stockDisponible).map(([id, stock]) => `• ${id}: ${stock} unidades`).join('
-')}
-¿Desea ajustar automáticamente las cantidades al stock disponible?`;
+            const mensajeError = `❌ PROBLEMAS DE STOCK DETECTADOS:\n\n${productosProblema.join('\n')}\n\nStock actual disponible:\n${Object.entries(stockDisponible).map(([id, stock]) => `• ${id}: ${stock} unidades`).join('\n')}\n\n¿Desea ajustar automáticamente las cantidades al stock disponible?`;
+            
             if (confirm(mensajeError)) {
                 // Ajustar automáticamente las cantidades al stock disponible
                 for (const item of detalleFactura) {
@@ -2204,53 +2238,50 @@ ${Object.entries(stockDisponible).map(([id, stock]) => `• ${id}: ${stock} unid
                         item.subtotal = item.precioUnitario * producto.stock;
                     }
                 }
+                
                 renderDetalleFactura();
                 alert("✅ Cantidades ajustadas al stock disponible. Revise los cambios antes de guardar.");
+                
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
                 isSubmitting = false;
-                return; // Permitir que el usuario revise y reintente
+                return;
             } else {
-                throw new Error(`Ajuste las cantidades manualmente:
-${productosProblema.join('
-')}`);
+                throw new Error(`Ajuste las cantidades manualmente:\n${productosProblema.join('\n')}`);
             }
         }
 
         console.log("✅ Validación de stock completada - Todo correcto");
         submitBtn.textContent = '⏳ Preparando datos...';
 
-        // ✅ 4. VALIDACIÓN DE MONTO TOTAL
+        // ✅ 6. VALIDACIÓN DE MONTO TOTAL
         const montoTotalInput = document.querySelector('input[name="monto_total"]');
         let montoTotal = parseFloat(montoTotalInput?.value) || 0;
+        
         if (montoTotal <= 0) {
             throw new Error('El monto total debe ser mayor a 0. Verifique los productos y el valor del servicio.');
         }
+
         if (montoTotal > 9999999.99) {
             throw new Error('El monto total excede el límite permitido.');
         }
 
-        // ✅ 5. OBTENER DATOS DEL FORMULARIO CON VALIDACIONES
+        // ✅ 7. OBTENER DATOS DEL FORMULARIO CON VALIDACIONES
         const token = localStorage.getItem('jwtToken');
         if (!token) {
             throw new Error('Sesión expirada. Por favor, inicie sesión nuevamente.');
         }
+
         const tipoFactura = document.getElementById('tipoFacturaSelect').value;
         const dniCliente = document.getElementById('clienteSelect').value;
         const fechaEmision = document.querySelector('input[name="fecha_emision"]').value;
         const estado = document.querySelector('select[name="estado"]').value;
         const observaciones = document.querySelector('textarea[name="observaciones"]').value || '';
 
-        // CORRECCIÓN CRÍTICA: Leer valorServicio del campo correspondiente
-        const valorServicioInput = document.getElementById('valorServicio');
-        const valorServicio = valorServicioInput ? parseFloat(valorServicioInput.value) || 0 : 0;
-        console.log("🔍 Valor Servicio leído del input para envío:", valorServicio); // Diagnóstico
-
         // Validaciones básicas
         if (!dniCliente) throw new Error('Debe seleccionar un cliente');
         if (!fechaEmision) throw new Error('La fecha de emisión es obligatoria');
         if (!estado) throw new Error('Debe seleccionar un estado para la factura');
-        if (valorServicio < 0) throw new Error('El valor del servicio no puede ser negativo');
 
         let idCotizacion = null;
         if (tipoFactura === 'ConCotizacion') {
@@ -2260,13 +2291,15 @@ ${productosProblema.join('
             }
         }
 
-        // ✅ 6. PREPARAR DETALLE CON VALIDACIÓN EXTRA
-        const detalleFacturaData = prepararDatosFactura();
-        if (detalleFacturaData.length === 0 && valorServicio <= 0) {
+        // ✅ 8. PREPARAR DETALLE CON VALIDACIÓN EXTRA
+        const { detalleFactura: detalleFacturaData, valorServicio: valorServicioValidado } = prepararDatosFactura();
+        
+        // Validar que haya al menos productos o valor de servicio
+        if (detalleFacturaData.length === 0 && valorServicioValidado <= 0) {
             throw new Error('Debe agregar al menos un producto o especificar un valor de servicio');
         }
 
-        // ✅ 7. ESTRUCTURA DE DATOS FINAL - INCLUYE valorServicio
+        // ✅ 9. ESTRUCTURA DE DATOS FINAL - INCLUYENDO VALOR_SERVICIO
         const facturaData = {
             dniCliente: dniCliente,
             fechaEmision: fechaEmision,
@@ -2274,17 +2307,24 @@ ${productosProblema.join('
             estado: estado,
             observaciones: observaciones,
             tipoFactura: tipoFactura,
-            // ✅ INCLUIR valorServicio en el objeto a enviar
-            valorServicio: valorServicio,
+            valorServicio: valorServicioValidado, // ✅ ESTE ES EL CAMPO CLAVE QUE SE ENVÍA
             detalleFactura: detalleFacturaData
         };
+
         if (idCotizacion) facturaData.idCotizacion = idCotizacion;
 
-        console.log("🚀 ENVIANDO FACTURA CON DATOS VALIDADOS:", facturaData); // Diagnóstico
+        console.log("🚀 ENVIANDO FACTURA CON DATOS VALIDADOS:", {
+            ...facturaData,
+            detalleFactura: detalleFacturaData.map(item => ({
+                ...item,
+                stockDisponible: productosData.find(p => p.idProducto === item.idProducto)?.stock
+            }))
+        });
 
-        // ✅ 8. ENVÍO CON MANEJO MEJORADO DE ERRORES
+        // ✅ 10. ENVÍO AL SERVIDOR
         const url = currentEditId ? `${API_FACTURAS_URL}/${currentEditId}` : API_FACTURAS_URL;
         const method = currentEditId ? 'PUT' : 'POST';
+
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
@@ -2292,6 +2332,7 @@ ${productosProblema.join('
         };
 
         submitBtn.textContent = '⏳ Enviando al servidor...';
+
         const response = await fetch(url, {
             method: method,
             headers: headers,
@@ -2309,57 +2350,77 @@ ${productosProblema.join('
             try {
                 const errorText = await response.text();
                 console.error("❌ TEXTO DE ERROR:", errorText);
-
-                let errorMessage = '';
-                switch (response.status) {
-                    case 500:
-                        errorMessage = "❌ ERROR INTERNO DEL SERVIDOR (500)
-" + errorText;
-                        break;
-                    case 400:
-                        errorMessage = "❌ DATOS INVÁLIDOS (400)
-" + errorText;
-                        break;
-                    case 404:
-                        errorMessage = "❌ RECURSO NO ENCONTRADO (404)
-" + errorText;
-                        break;
-                    default:
-                        errorMessage = `❌ ERROR ${response.status}
-${errorText}`;
+                
+                if (errorText.includes('stock') || errorText.includes('Stock')) {
+                    errorDetails = "PROBLEMA DE STOCK EN EL SERVIDOR: " + errorText;
+                } else if (errorText.includes('constraint') || errorText.includes('Constraint')) {
+                    errorDetails = "ERROR DE BASE DE DATOS: " + errorText;
+                } else {
+                    errorDetails = errorText;
                 }
-                throw new Error(errorMessage);
+                
+                try {
+                    const errorJson = JSON.parse(errorText);
+                    errorDetails = errorJson.message || errorJson.error || errorText;
+                } catch {
+                    // Mantener el texto original si no es JSON
+                }
             } catch (e) {
-                console.error("❌ Error al procesar respuesta del servidor:", e);
-                throw new Error("❌ Error de red o servidor. Revisa la consola.");
+                errorDetails = 'No se pudo leer la respuesta del servidor';
             }
+
+            let errorMessage = '';
+            switch (response.status) {
+                case 500:
+                    errorMessage = "❌ ERROR INTERNO DEL SERVIDOR (500)\n\n" + errorDetails;
+                    break;
+                case 400:
+                    errorMessage = "❌ DATOS INVÁLIDOS (400)\n\n" + errorDetails;
+                    break;
+                case 404:
+                    errorMessage = "❌ RECURSO NO ENCONTRADO (404)\n\n" + errorDetails;
+                    break;
+                default:
+                    errorMessage = `❌ ERROR ${response.status}\n\n${errorDetails}`;
+            }
+            
+            throw new Error(errorMessage);
         }
 
-        // ✅ 9. PROCESAR RESPUESTA EXITOSA
+        // ✅ 11. PROCESAR RESPUESTA EXITOSA
         const result = await response.json();
         console.log("✅ FACTURA GUARDADA EXITOSAMENTE:", result);
 
-        alert(`✅ ${currentEditId ? 'FACTURA ACTUALIZADA' : 'FACTURA CREADA'} EXITOSAMENTE
-ID: ${result.idFactura || 'Nuevo'}
-Cliente: ${dniCliente}
-Monto Total: ${formatCurrency(montoTotal)}
-Valor Servicio: ${formatCurrency(valorServicio)}`);
+        // Mostrar resumen de lo que se guardó
+        const resumenProductos = detalleFacturaData.map(item => 
+            `• ${item.cantidad} x ${productosData.find(p => p.idProducto === item.idProducto)?.nombre || item.idProducto}`
+        ).join('\n');
+        
+        alert(`✅ ${currentEditId ? 'FACTURA ACTUALIZADA' : 'FACTURA CREADA'} EXITOSAMENTE\n\n` +
+              `ID: ${result.idFactura || 'Nuevo'}\n` +
+              `Cliente: ${dniCliente}\n` +
+              `Monto Total: ${formatCurrency(montoTotal)}\n` +
+              `Valor Servicio: ${formatCurrency(valorServicioValidado)}\n` +
+              `Productos:\n${resumenProductos}`);
 
         closeModal('addInvoiceModal');
-        await getAllFacturas(); // Recargar lista
+        await getAllFacturas();
 
     } catch (error) {
         console.error("❌ ERROR CRÍTICO AL GUARDAR FACTURA:", error);
+        
         let mensajeUsuario = error.message;
+        
         if (error.message.includes('stock') || error.message.includes('Stock')) {
-            mensajeUsuario = "❌ PROBLEMA DE STOCK
-No hay suficiente inventario para completar la operación.
-Por favor:
-1. Revise las cantidades de productos
-2. Verifique el stock disponible
-3. Ajuste las cantidades o quite productos
-Detalle: " + error.message;
+            mensajeUsuario = "❌ PROBLEMA DE STOCK\n\n" + 
+                            "No hay suficiente inventario para completar la operación.\n\n" +
+                            "Por favor:\n" +
+                            "1. Revise las cantidades de productos\n" +
+                            "2. Verifique el stock disponible\n" +
+                            "3. Ajuste las cantidades o quite productos\n\n" +
+                            "Detalle: " + error.message;
         }
+        
         alert(mensajeUsuario);
     } finally {
         submitBtn.textContent = originalText;
@@ -2614,28 +2675,44 @@ function updateStats() {
     }
 }
 
-// CORREGIR COMPLETAMENTE viewInvoice - ELIMINAR DUPLICADO Y MOSTRAR SERVICIO CORRECTAMENTE
+// CORREGIR COMPLETAMENTE viewInvoice - VERSIÓN MEJORADA
+// VERSIÓN SIMPLIFICADA Y ROBUSTA de viewInvoice
 async function viewInvoice(id) {
     try {
         console.log("📄 Generando PDF para factura:", id);
+        
         const token = localStorage.getItem('jwtToken');
         const headers = { 'Authorization': 'Bearer ' + token };
-
+        
         // 1. Cargar datos de la factura
         const response = await fetch(`${API_FACTURAS_URL}/${id}`, { headers });
         if (!response.ok) throw new Error('Error al cargar factura');
+        
         const factura = await response.json();
         console.log("📋 Factura cargada:", factura);
 
-        // 2. Preparar datos - VERIFICAR QUE SE OBTIENE EL VALOR DEL SERVICIO
-        const valorServicio = parseFloat(factura.valorServicio) || 0;
-        const montoTotal = convertirValorK(factura.montoTotal) || 0;
-        console.log("🔍 VALORES PARA PDF:", {
-            valorServicio: valorServicio,
-            montoTotal: montoTotal,
-            detalleFactura: factura.detalleFactura
-        });
+// 2. Preparar datos - VERIFICAR QUE SE OBTIENE EL VALOR DEL SERVICIO
+const valorServicio = parseFloat(factura.valorServicio) || 0;
+const montoTotal = convertirValorK(factura.montoTotal) || 0;
 
+console.log("🔍 VALORES PARA PDF:", {
+    valorServicio: valorServicio,
+    montoTotal: montoTotal,
+    detalleFactura: factura.detalleFactura
+});
+
+// ✅ VERIFICACIÓN: Si hay diferencia entre productos y total, debe ser el servicio
+const subtotalProductos = (factura.detalleFactura || []).reduce((sum, item) => {
+    return sum + (parseFloat(item.subtotal) || 0);
+}, 0);
+
+console.log("🔍 VERIFICACIÓN MATEMÁTICA:", {
+    subtotalProductos: subtotalProductos,
+    valorServicio: valorServicio,
+    suma: subtotalProductos + valorServicio,
+    montoTotal: montoTotal
+});
+        
         // 3. Obtener información del cliente
         let clienteInfo = {};
         if (factura.cliente) {
@@ -2652,80 +2729,87 @@ async function viewInvoice(id) {
         // 4. Crear PDF básico
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
-
+        
         // Encabezado
         doc.setFontSize(20);
         doc.setTextColor(44, 95, 65);
         doc.text('FACTURA DE VENTA', 105, 20, { align: 'center' });
+        
         doc.setFontSize(10);
         doc.setTextColor(100, 100, 100);
         doc.text('Gemini Ambiental SAS', 105, 28, { align: 'center' });
         doc.text('NIT: 901.234.567-8', 105, 33, { align: 'center' });
-
+        
         // Información de la factura
         doc.setFontSize(12);
         doc.setTextColor(0, 0, 0);
         doc.text(`Factura: ${factura.idFactura}`, 20, 50);
         doc.text(`Fecha: ${formatDateForPDF(factura.fechaEmision)}`, 20, 60);
         doc.text(`Estado: ${factura.estado}`, 20, 70);
-
+        
         // Información del cliente
         doc.text(`Cliente: ${clienteInfo.nombre}`, 20, 85);
         doc.text(`Documento: ${clienteInfo.dni}`, 20, 95);
         doc.text(`Teléfono: ${clienteInfo.telefono}`, 20, 105);
+        
+// Detalles
+let yPos = 125;
+doc.text('DETALLES:', 20, yPos);
+yPos += 10;
 
-        // Detalles
-        let yPos = 125;
-        doc.text('DETALLES:', 20, yPos);
+// Productos/Servicios
+const detalles = factura.detalleFactura || [];
+
+// Mostrar productos primero
+if (detalles.length > 0) {
+    detalles.forEach((item, index) => {
+        if (yPos > 250) {
+            doc.addPage();
+            yPos = 20;
+        }
+        
+        const nombre = item.nombreProducto || 'Producto/Servicio';
+        const cantidad = item.cantidad || 1;
+        const precio = parseFloat(item.precioUnitario) || 0;
+        const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
+        
+        // Mostrar producto en la lista de detalles
+        doc.text(`${cantidad}x ${nombre}`, 25, yPos);
+        doc.text(formatCurrencyForPDF(subtotal), 180, yPos, { align: 'right' });
+        yPos += 8;
+    });
+}
+
+// ✅ CORRECCIÓN CRÍTICA: Mostrar el valor del servicio como un ítem en DETALLES
+// Valor del servicio
+if (valorServicio > 0) {
+    yPos += 5;
+    doc.text('Valor del Servicio:', 20, yPos);
+    doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
+    yPos += 8;
+}
+
+// Total
+yPos += 10;
+doc.setFont(undefined, 'bold');
+doc.text('TOTAL:', 20, yPos);
+doc.text(formatCurrencyForPDF(montoTotal), 180, yPos, { align: 'right' });
+
+// Si no hay productos ni valor de servicio
+if (detalles.length === 0 && valorServicio <= 0) {
+    doc.text('No hay detalles registrados', 25, yPos);
+    yPos += 8;
+}
+        
+        // Total
         yPos += 10;
-
-        // Productos/Servicios
-        const detalles = factura.detalleFactura || [];
-
-        // Mostrar productos primero
-        if (detalles.length > 0) {
-            detalles.forEach((item, index) => {
-                if (yPos > 250) {
-                    doc.addPage();
-                    yPos = 20;
-                }
-                const nombre = item.nombreProducto || 'Producto/Servicio';
-                const cantidad = item.cantidad || 1;
-                const precio = parseFloat(item.precioUnitario) || 0;
-                const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
-
-                // Mostrar producto en la lista de detalles
-                doc.text(`${cantidad}x ${nombre}`, 25, yPos);
-                doc.text(formatCurrencyForPDF(subtotal), 180, yPos, { align: 'right' });
-                yPos += 8;
-            });
-        } else {
-            doc.text('No hay detalles registrados', 25, yPos);
-            yPos += 8;
-        }
-
-        // ✅ CORRECCIÓN CRÍTICA: Mostrar el valor del servicio como un ítem en DETALLES
-        // Valor del servicio
-        if (valorServicio > 0) {
-            if (yPos > 250) { // Verificar espacio antes de añadir la línea
-                doc.addPage();
-                yPos = 20;
-            }
-            yPos += 5; // Espacio antes de la línea del valor del servicio
-            doc.text('Valor del Servicio:', 20, yPos);
-            doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
-            yPos += 8; // Espacio después de la línea
-        }
-
-        // Total - Este es el ÚNICO bloque de Total que debe existir
-        yPos += 10; // Espacio antes del total
         doc.setFont(undefined, 'bold');
         doc.text('TOTAL:', 20, yPos);
         doc.text(formatCurrencyForPDF(montoTotal), 180, yPos, { align: 'right' });
-
+        
         // Observaciones
         if (factura.observaciones) {
-            yPos += 20; // Espacio después del total
+            yPos += 20;
             doc.setFont(undefined, 'normal');
             doc.setFontSize(10);
             doc.text('Observaciones:', 20, yPos);
@@ -2733,7 +2817,7 @@ async function viewInvoice(id) {
             const obsLines = doc.splitTextToSize(factura.observaciones, 170);
             doc.text(obsLines, 20, yPos);
         }
-
+        
         // Pie de página
         const totalPages = doc.internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
@@ -2746,12 +2830,14 @@ async function viewInvoice(id) {
 
         // Mostrar/descargar
         const nombreArchivo = `Factura_${factura.idFactura}.pdf`;
-        if (confirm('¿Desea descargar el PDF?\nCancelar = Vista previa\nAceptar = Descargar')) {
+        
+        if (confirm('¿Desea descargar el PDF?\n\nCancelar = Vista previa\nAceptar = Descargar')) {
             doc.save(nombreArchivo);
         } else {
             const pdfUrl = doc.output('bloburl');
             window.open(pdfUrl, '_blank');
         }
+        
     } catch (error) {
         console.error("❌ Error al generar PDF:", error);
         alert("❌ Error: " + error.message);
