@@ -11,17 +11,24 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #2c5f41 0%, #4a8b64 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+       body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1a2f23;
+    /*background: 
+        linear-gradient(rgba(1, 76, 12, 0.422), rgba(1, 76, 12, 0.422)), /* capa oscura con opacidad */
+        /*url('sdocs/assets/img/bg.png'); /* tu imagen */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 
         .login-container {
-            background: white;
+            background: rgba(211, 204, 204, 0.8); 
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
@@ -32,8 +39,12 @@
             grid-template-columns: 1fr 1fr;
         }
 
+
         .login-visual {
-            background: linear-gradient(135deg, #2c5f41 0%, #4a8b64 100%);
+            background: 
+        linear-gradient(rgba(1, 76, 12, 0.422), rgba(0, 22, 3, 0.422)), url('docs/assets/img/login.jpg'); 
+            background-size: cover;
+            background-position: center;
             display: flex;
             flex-direction: column;
             align-items: center;

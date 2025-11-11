@@ -11,11 +11,12 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+h1, h2, h3, .btn-primary {
+    font-family: 'Poppins', sans-serif;
+}
 
         /* Header y Navegación */
         .header {
@@ -52,6 +53,77 @@
             color: #2c5f41;
         }
 
+
+        .carousel-container {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    overflow: hidden;
+}
+.carousel-slide {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+.carousel-slide.active {
+    opacity: 1;
+}
+.carousel-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    max-width: 800px;
+    z-index: 2;
+}
+.overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1;
+}
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.3);
+    color: white;
+    border: none;
+    font-size: 2rem;
+    padding: 1rem;
+    cursor: pointer;
+    z-index: 3;
+    transition: background 0.3s;
+}
+.carousel-btn:hover { background: rgba(255,255,255,0.6); }
+.next { right: 10px; }
+.prev { left: 10px; }
+
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+.gallery-grid img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+.gallery-grid img:hover {
+    transform: scale(1.05);
+}
+        
         .logo-text {
             font-size: 1.5em;
             font-weight: bold;
@@ -183,6 +255,18 @@
             color: #2c5f41;
         }
 
+        .whatsapp-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    animation: pulse 1.5s infinite;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
         /* Container */
         .container {
             max-width: 1200px;
@@ -394,6 +478,11 @@
             gap: 2rem;
         }
 
+        .service-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
         .service-preview-card {
             background: white;
             border-radius: 15px;
@@ -593,9 +682,180 @@
                 padding: 1rem;
             }
         }
+        /* Estilos para Iconos Hexagonales - Similar a tu ejemplo */
+.service-preview-icon,
+.feature-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa; /* Fondo claro del hexágono */
+    border-radius: 50%; /* Redondeado para emular el hexágono */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, background 0.3s ease;
+    margin: 0 auto 1rem;
+}
+
+/* Para hacerlo más hexagonal (opcional, pero más cercano a tu diseño) */
+/* .service-preview-icon,
+.feature-icon {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    background: #f8f9fa;
+    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease, background 0.3s ease;
+    margin: 0 auto 1rem;
+} */
+
+/* Efecto hover para los iconos */
+.service-preview-icon:hover,
+.feature-icon:hover {
+    transform: scale(1.1);
+    background: #e9ecef;
+}
+
+/* Estilos específicos para cada servicio/feature */
+/* Control de Plagas */
+.icon-plagas {
+    color: #ff6b6b;
+}
+.icon-plagas::before {
+    content: "\f1fa"; /* fa-bug */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Lavado de Tanques */
+.icon-tanques {
+    color: #4a8b64;
+}
+.icon-tanques::before {
+    content: "\f043"; /* fa-tint */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Certificaciones */
+.icon-certificaciones {
+    color: #ffc107;
+}
+.icon-certificaciones::before {
+    content: "\f0a3"; /* fa-certificate */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Experiencia Comprobada */
+.icon-experiencia {
+    color: #6c757d;
+}
+.icon-experiencia::before {
+    content: "\f005"; /* fa-star */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Productos Certificados */
+.icon-productos {
+    color: #28a745;
+}
+.icon-productos::before {
+    content: "\f1ea"; /* fa-flask */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Personal Calificado */
+.icon-personal {
+    color: #17a2b8;
+}
+.icon-personal::before {
+    content: "\f0c0"; /* fa-users */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Servicio 24/7 */
+.icon-247 {
+    color: #dc3545;
+}
+.icon-247::before {
+    content: "\f017"; /* fa-clock */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Documentación Legal */
+.icon-documentacion {
+    color: #6f42c1;
+}
+.icon-documentacion::before {
+    content: "\f0f6"; /* fa-file-alt */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Soluciones Personalizadas */
+.icon-soluciones {
+    color: #fd7e14;
+}
+.icon-soluciones::before {
+    content: "\f007"; /* fa-user */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Contacto */
+.icon-contacto {
+    color: #007bff;
+}
+.icon-contacto::before {
+    content: "\f095"; /* fa-phone */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Email */
+.icon-email {
+    color: #6f42c1;
+}
+.icon-email::before {
+    content: "\f0e0"; /* fa-envelope */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Ubicación */
+.icon-ubicacion {
+    color: #28a745;
+}
+.icon-ubicacion::before {
+    content: "\f3c5"; /* fa-map-marker-alt */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+/* Horarios */
+.icon-horarios {
+    color: #ffc107;
+}
+.icon-horarios::before {
+    content: "\f017"; /* fa-clock */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
     </style>
 </head>
 <body>
+    <!-- Agrega esto dentro de <head> -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <!-- Header -->
     <header class="header">
         <div class="nav-container">
@@ -618,39 +878,113 @@
     <!-- Connection Status -->
     <div id="connection-status" class="connection-status verifying">🔄 Verificando conexión...</div>
 
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="container">
-            <h1>Gemini Ambiental S.A.S</h1>
-            <p>Empresa líder en control de plagas y saneamiento ambiental en Boyacá. Protegemos tu negocio con soluciones profesionales y certificadas para restaurantes, instituciones educativas y empresas del sector alimentario.</p>
-            <div class="hero-buttons">
-                <a href="servicios.html" class="btn-primary">Conoce Nuestros Servicios</a>
-                <a href="contacto.html" class="btn-secondary">Solicita tu Cotización</a>
+<!-- Hero Section - Reemplazado por Carrusel -->
+<section class="hero">
+    <div class="carousel-container">
+        <!-- Diapositiva 1: Fumigaciones -->
+        <div class="carousel-slide active" style="background-image: url('img/fumigacion.jpg');">
+            <div class="overlay"></div>
+            <div class="carousel-content">
+                <h1>🪳 FUMIGACIONES PROFESIONALES</h1>
+                <p>Eliminamos plagas en oficinas, almacenes, cocinas, contenedores y vehículos con productos certificados.</p>
+                <a href="servicios.html#fumigaciones" class="btn-primary">Ver Servicio</a>
             </div>
         </div>
-    </section>
 
-    <!-- AI Consultation Section -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2 class="section-title">🤖 Consulta con Gemini AI</h2>
-            <p style="text-align: center; margin-bottom: 2rem; color: #666;">Obtén asesoría especializada en control de plagas y saneamiento ambiental con nuestra IA</p>
-            
-            <div class="ai-section">
-                <h3>💬 Pregúntale a nuestro experto virtual</h3>
-                <div class="form-group">
-                    <label for="consulta-input">¿Qué necesitas saber sobre control de plagas o saneamiento?</label>
-                    <textarea id="consulta-input" rows="4" placeholder="Ejemplo: ¿Cuál es el mejor método para controlar cucarachas en mi restaurante? ¿Con qué frecuencia debo hacer fumigación?"></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="contexto-input">Contexto adicional (opcional)</label>
-                    <textarea id="contexto-input" rows="2" placeholder="Describe tu establecimiento, tipo de plaga, ubicación, etc..."></textarea>
-                </div>
-                <button onclick="realizarConsulta()" class="btn-primary">🚀 Consultar con IA</button>
-                <div id="resultado-consulta" style="display: none;"></div>
+        <!-- Diapositiva 2: Control de Roedores -->
+        <div class="carousel-slide" style="background-image: url('img/roedores.jpg');">
+            <div class="overlay"></div>
+            <div class="carousel-content">
+                <h1>🐭 CONTROL DE ROEDORES</h1>
+                <p>Soluciones efectivas para ratas y ratones en restaurantes, industrias y espacios públicos.</p>
+                <a href="servicios.html#roedores" class="btn-primary">Ver Servicio</a>
             </div>
         </div>
-    </section>
+
+        <!-- Diapositiva 3: Limpieza de Trampas de Grasa -->
+        <div class="carousel-slide" style="background-image: url('img/trampas-grasa.jpg');">
+            <div class="overlay"></div>
+            <div class="carousel-content">
+                <h1>🧽 LIMPIEZA DE TRAMPAS DE GRASA</h1>
+                <p>Evita obstrucciones y malos olores con limpiezas profundas y seguras en sistemas de drenaje.</p>
+                <a href="servicios.html#trampas-grasa" class="btn-primary">Ver Servicio</a>
+            </div>
+        </div>
+
+        <!-- Diapositiva 4: Asesorías e Implementación del SG-SST -->
+        <div class="carousel-slide" style="background-image: url('img/sg-sst.jpg');">
+            <div class="overlay"></div>
+            <div class="carousel-content">
+                <h1>🧑‍💼 ASESORÍAS E IMPLEMENTACIÓN DEL SG-SST</h1>
+                <p>Garantizamos el cumplimiento normativo en seguridad y salud en el trabajo para tu empresa.</p>
+                <a href="servicios.html#sg-sst" class="btn-primary">Ver Servicio</a>
+            </div>
+        </div>
+
+        <!-- Diapositiva 5: Limpieza y Desinfección de Tanques -->
+        <div class="carousel-slide" style="background-image: url('img/tanques.jpg');">
+            <div class="overlay"></div>
+            <div class="carousel-content">
+                <h1>💧 LIMPIEZA Y DESINFECCIÓN DE TANQUES</h1>
+                <p>Potabilizamos tu agua con análisis microbiológico y certificación oficial.</p>
+                <a href="servicios.html#tanques" class="btn-primary">Ver Servicio</a>
+            </div>
+        </div>
+
+        <!-- Diapositiva 6: Mantenimiento de Zonas Verdes -->
+        <div class="carousel-slide" style="background-image: url('img/zonas-verdes.jpg');">
+            <div class="overlay"></div>
+            <div class="carousel-content">
+                <h1>🌿 MANTENIMIENTO DE ZONAS VERDES</h1>
+                <p>Mantenemos tus áreas verdes libres de malezas y plagas, mejorando la estética y seguridad.</p>
+                <a href="servicios.html#zonas-verdes" class="btn-primary">Ver Servicio</a>
+            </div>
+        </div>
+
+        <!-- Flechas de Navegación -->
+        <button class="carousel-btn prev" onclick="prevSlide()">&#10094;</button>
+        <button class="carousel-btn next" onclick="nextSlide()">&#10095;</button>
+    </div>
+</section>
+ 
+<iframe 
+    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.3299151993556!2d-74.10382612552702!3d4.712634941555029!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f84b60f144789%3A0x7eb81ba29a73eed2!2sCasa%20Cleves!5e0!3m2!1ses!2sco!4v1762904017974!5m2!1ses!2sco" 
+    width="100%" 
+    height="300" 
+    style="border:0; border-radius: 15px; margin: 2rem 0;" 
+    allowfullscreen="" 
+    loading="lazy">
+</iframe>
+<section class="section section-alt">
+    <div class="container">
+        <h2 class="section-title">💬 Lo que Dicen Nuestros Clientes</h2>
+        <div class="testimonials-carousel">
+            <div class="testimonial active">
+                <p>"Excelente servicio, llegaron a tiempo y dejaron todo impecable. ¡Totalmente recomendados!"</p>
+                <strong>— Restaurante La Cabaña, Tunja</strong>
+            </div>
+            <div class="testimonial">
+                <p>"El lavado de nuestros tanques fue profesional y rápido. Además, nos dieron el certificado al día siguiente."</p>
+                <strong>— Colegio San Mateo</strong>
+            </div>
+        </div>
+        <div class="dots" id="testimonial-dots">
+            <span class="dot active" onclick="currentTestimonial(0)"></span>
+            <span class="dot" onclick="currentTestimonial(1)"></span>
+        </div>
+    </div>
+</section>
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Nuestro Trabajo en Acción</h2>
+        <div class="gallery-grid">
+            <img src="img/trabajo1.jpg" alt="Fumigación en restaurante">
+            <img src="img/trabajo2.jpg" alt="Lavado de tanque">
+            <img src="img/trabajo3.jpg" alt="Certificación entregada">
+            <img src="img/trabajo4.jpg" alt="Equipo técnico">
+        </div>
+    </div>
+</section>
 
     <!-- About Section -->
     <section class="section">
@@ -698,207 +1032,121 @@
         </div>
     </section>
 
-    <!-- Document Analysis Section -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2 class="section-title">📄 Análisis de Documentos con IA</h2>
-            <p style="text-align: center; margin-bottom: 2rem; color: #666;">Analiza reportes, certificados y documentos relacionados con control de plagas</p>
-            
-            <div class="ai-section">
-                <h3>📊 Analiza tu documentación</h3>
-                <div class="form-group">
-                    <label for="archivo-input">Subir documento (PDF, TXT, CSV, XLSX, DOCX - Máx. 10MB)</label>
-                    <input type="file" id="archivo-input" accept=".pdf,.txt,.csv,.xlsx,.docx">
-                </div>
-                <div class="form-group">
-                    <label for="tipo-analisis">Tipo de análisis</label>
-                    <select id="tipo-analisis">
-                        <option value="general">Análisis General</option>
-                        <option value="riesgos">Identificación de Riesgos</option>
-                        <option value="cumplimiento">Revisión de Cumplimiento Normativo</option>
-                        <option value="recomendaciones">Recomendaciones de Mejora</option>
-                        <option value="certificaciones">Validación de Certificaciones</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="instrucciones-analisis">Instrucciones específicas (opcional)</label>
-                    <textarea id="instrucciones-analisis" rows="2" placeholder="¿Qué aspectos específicos quieres que analice la IA?"></textarea>
-                </div>
-                <button onclick="realizarAnalisis()" class="btn-primary">🔍 Analizar Documento</button>
-                <div id="resultado-analisis" style="display: none;"></div>
-            </div>
-        </div>
-    </section>
-
+  
     <!-- Services Preview -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">Nuestros Servicios Principales</h2>
-            <div class="services-preview">
-                <div class="service-preview-card">
-                    <div class="service-preview-header">
-                        <div class="service-preview-icon">🐛</div>
-                        <h3>Control de Plagas</h3>
+<!-- Services Preview - Actualizado con Iconos Profesionales -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">Nuestros Servicios Principales</h2>
+        <div class="services-preview">
+            <!-- Servicio 1: Control de Plagas -->
+            <div class="service-preview-card">
+                <div class="service-preview-header">
+                    <div class="service-preview-icon">
+                        <i class="fas fa-bug" style="color: #ff6b6b;"></i>
                     </div>
-                    <div class="service-preview-content">
-                        <p>Eliminación efectiva y prevención de insectos, roedores y otras plagas. Servicio integral con productos certificados y seguimiento continuo.</p>
-                        <ul style="list-style: none; margin: 1rem 0;">
-                            <li style="margin: 0.5rem 0;">✓ Inspección técnica especializada</li>
-                            <li style="margin: 0.5rem 0;">✓ Tratamiento con productos certificados</li>
-                            <li style="margin: 0.5rem 0;">✓ Certificación sanitaria oficial</li>
-                        </ul>
-                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $280,000/mes</div>
-                    </div>
+                    <h3>Control de Plagas</h3>
                 </div>
-
-                <div class="service-preview-card">
-                    <div class="service-preview-header">
-                        <div class="service-preview-icon">🚿</div>
-                        <h3>Lavado de Tanques</h3>
-                    </div>
-                    <div class="service-preview-content">
-                        <p>Limpieza y desinfección profesional de tanques de agua potable, garantizando la calidad del agua para consumo humano.</p>
-                        <ul style="list-style: none; margin: 1rem 0;">
-                            <li style="margin: 0.5rem 0;">✓ Vaciado y limpieza profunda</li>
-                            <li style="margin: 0.5rem 0;">✓ Desinfección con químicos aprobados</li>
-                            <li style="margin: 0.5rem 0;">✓ Certificado de potabilidad</li>
-                        </ul>
-                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $450,000/servicio</div>
-                    </div>
-                </div>
-
-                <div class="service-preview-card">
-                    <div class="service-preview-header">
-                        <div class="service-preview-icon">📋</div>
-                        <h3>Certificaciones</h3>
-                    </div>
-                    <div class="service-preview-content">
-                        <p>Documentación oficial que acredita el cumplimiento de normativas sanitarias para tu establecimiento.</p>
-                        <ul style="list-style: none; margin: 1rem 0;">
-                            <li style="margin: 0.5rem 0;">✓ Certificados de fumigación</li>
-                            <li style="margin: 0.5rem 0;">✓ Actas de lavado y desinfección</li>
-                            <li style="margin: 0.5rem 0;">✓ Reportes técnicos detallados</li>
-                        </ul>
-                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Incluido en servicios</div>
-                    </div>
+                <div class="service-preview-content">
+                    <p>Eliminación efectiva y prevención de insectos, roedores y otras plagas. Servicio integral con productos certificados y seguimiento continuo.</p>
+                    <ul style="list-style: none; margin: 1rem 0;">
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Inspección técnica especializada</li>
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Tratamiento con productos certificados</li>
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Certificación sanitaria oficial</li>
+                    </ul>
+                    <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $280,000/mes</div>
                 </div>
             </div>
-            <div style="text-align: center; margin-top: 2rem;">
-                <a href="servicios.html" class="btn-primary">Ver Todos los Servicios</a>
-            </div>
-        </div>
-    </section>
 
-    <!-- Quotation AI Section -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2 class="section-title">💰 Cotizaciones Inteligentes</h2>
-            <p style="text-align: center; margin-bottom: 2rem; color: #666;">Genera cotizaciones personalizadas con nuestra IA especializada</p>
-            
-            <div class="ai-section">
-                <h3>📝 Generar cotización personalizada</h3>
-                <form id="form-cotizacion">
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
-                        <div class="form-group">
-                            <label for="tipoServicio">Tipo de servicio *</label>
-                            <select name="tipoServicio" required>
-                                <option value="">Seleccionar servicio...</option>
-                                <option value="control-plagas">Control de Plagas Integral</option>
-                                <option value="lavado-tanques">Lavado y Desinfección de Tanques</option>
-                                <option value="desinfeccion">Desinfección de Espacios</option>
-                                <option value="fumigacion">Fumigación Especializada</option>
-                                <option value="saneamiento">Saneamiento Ambiental</option>
-                                <option value="mantenimiento">Mantenimiento Preventivo</option>
-                                <option value="certificaciones">Certificaciones Sanitarias</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="ubicacion">Ubicación del servicio *</label>
-                            <input type="text" name="ubicacion" required placeholder="Ej: Tunja, Boyacá">
-                        </div>
-                        <div class="form-group">
-                            <label for="tamaño">Tamaño del área (m²)</label>
-                            <input type="text" name="tamaño" placeholder="Ej: 500 m²">
-                        </div>
-                        <div class="form-group">
-                            <label for="frecuencia">Frecuencia del servicio</label>
-                            <select name="frecuencia">
-                                <option value="">Seleccionar frecuencia...</option>
-                                <option value="una-vez">Una sola vez</option>
-                                <option value="mensual">Mensual</option>
-                                <option value="bimestral">Bimestral</option>
-                                <option value="trimestral">Trimestral</option>
-                                <option value="semestral">Semestral</option>
-                                <option value="anual">Anual</option>
-                            </select>
-                        </div>
+            <!-- Servicio 2: Lavado de Tanques -->
+            <div class="service-preview-card">
+                <div class="service-preview-header">
+                    <div class="service-preview-icon">
+                        <i class="fas fa-tint" style="color: #4a8b64;"></i>
                     </div>
-                    <div class="form-group">
-                        <label for="descripcion">Descripción detallada del requerimiento</label>
-                        <textarea name="descripcion" rows="3" placeholder="Describe el tipo de establecimiento, problemas específicos, áreas críticas, etc..."></textarea>
+                    <h3>Lavado de Tanques</h3>
+                </div>
+                <div class="service-preview-content">
+                    <p>Limpieza y desinfección profesional de tanques de agua potable, garantizando la calidad del agua para consumo humano.</p>
+                    <ul style="list-style: none; margin: 1rem 0;">
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Vaciado y limpieza profunda</li>
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Desinfección con químicos aprobados</li>
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Certificado de potabilidad</li>
+                    </ul>
+                    <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $450,000/servicio</div>
+                </div>
+            </div>
+
+            <!-- Servicio 3: Certificaciones -->
+            <div class="service-preview-card">
+                <div class="service-preview-header">
+                    <div class="service-preview-icon">
+                        <i class="fas fa-certificate" style="color: #ffc107;"></i>
                     </div>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                        <div class="form-group">
-                            <label for="nombre">Nombre del contacto</label>
-                            <input type="text" name="nombre" placeholder="Tu nombre completo">
-                        </div>
-                        <div class="form-group">
-                            <label for="empresa">Empresa</label>
-                            <input type="text" name="empresa" placeholder="Nombre de tu empresa">
-                        </div>
-                        <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" name="email" placeholder="tu@email.com">
-                        </div>
-                        <div class="form-group">
-                            <label for="telefono">Teléfono</label>
-                            <input type="tel" name="telefono" placeholder="(+57) 300 123 4567">
-                        </div>
-                    </div>
-                    <div style="text-align: center;">
-                        <button type="button" onclick="realizarCotizacion()" class="btn-primary">🚀 Generar Cotización con IA</button>
-                    </div>
-                </form>
-                <div id="resultado-cotizacion" style="display: none;"></div>
+                    <h3>Certificaciones</h3>
+                </div>
+                <div class="service-preview-content">
+                    <p>Documentación oficial que acredita el cumplimiento de normativas sanitarias para tu establecimiento.</p>
+                    <ul style="list-style: none; margin: 1rem 0;">
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Certificados de fumigación</li>
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Actas de lavado y desinfección</li>
+                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Reportes técnicos detallados</li>
+                    </ul>
+                    <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Incluido en servicios</div>
+                </div>
             </div>
         </div>
-    </section>
+        <div style="text-align: center; margin-top: 2rem;">
+            <a href="servicios.html" class="btn-primary">Ver Todos los Servicios</a>
+        </div>
+    </div>
+</section>
 
     <!-- Why Choose Us -->
     <section class="section">
         <div class="container">
             <h2 class="section-title">¿Por Qué Elegir Gemini Ambiental?</h2>
             <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">🏆</div>
-                    <h3>Experiencia Comprobada</h3>
-                    <p>Años de experiencia atendiendo empresas del sector alimentario y educativo con resultados excepcionales.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔬</div>
-                    <h3>Productos Certificados</h3>
-                    <p>Utilizamos únicamente productos aprobados por INVIMA, seguros para personas y alimentos.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">👨‍🔬</div>
-                    <h3>Personal Calificado</h3>
-                    <p>Técnicos certificados con registro INVIMA y capacitación continua en las últimas técnicas.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Servicio 24/7</h3>
-                    <p>Disponibilidad para emergencias las 24 horas del día, los 7 días de la semana.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📋</div>
-                    <h3>Documentación Legal</h3>
-                    <p>Entregamos toda la certificación requerida por entes de control y normativas sanitarias.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🎯</div>
-                    <h3>Soluciones Personalizadas</h3>
-                    <p>Planes de manejo adaptados a las necesidades específicas de cada tipo de establecimiento.</p>
-                </div>
+<div class="feature-card">
+    <div class="feature-icon icon-experiencia"></div>
+    <h3>Experiencia Comprobada</h3>
+    <p>Años de experiencia atendiendo empresas del sector alimentario y educativo con resultados excepcionales.</p>
+</div>
+ 
+<!-- Productos Certificados -->
+<div class="feature-card">
+    <div class="feature-icon icon-productos"></div>
+    <h3>Productos Certificados</h3>
+    <p>Utilizamos únicamente productos aprobados por INVIMA, seguros para personas y alimentos.</p>
+</div>
+
+<!-- Personal Calificado -->
+<div class="feature-card">
+    <div class="feature-icon icon-personal"></div>
+    <h3>Personal Calificado</h3>
+    <p>Técnicos certificados con registro INVIMA y capacitación continua en las últimas técnicas.</p>
+</div>
+
+<!-- Servicio 24/7 -->
+<div class="feature-card">
+    <div class="feature-icon icon-247"></div>
+    <h3>Servicio 24/7</h3>
+    <p>Disponibilidad para emergencias las 24 horas del día, los 7 días de la semana.</p>
+</div>
+
+<!-- Documentación Legal -->
+<div class="feature-card">
+    <div class="feature-icon icon-documentacion"></div>
+    <h3>Documentación Legal</h3>
+    <p>Entregamos toda la certificación requerida por entes de control y normativas sanitarias.</p>
+</div>
+
+<!-- Soluciones Personalizadas -->
+<div class="feature-card">
+    <div class="feature-icon icon-soluciones"></div>
+    <h3>Soluciones Personalizadas</h3>
+    <p>Planes de manejo adaptados a las necesidades específicas de cada tipo de establecimiento.</p>
+</div>
             </div>
         </div>
     </section>
@@ -910,8 +1158,9 @@
             <p>Contáctanos hoy mismo y obtén una cotización gratuita personalizada para tu empresa. Nuestro equipo de expertos está listo para brindarte la mejor solución.</p>
             <div class="hero-buttons">
                 <a href="contacto.html" class="btn-primary">Solicita tu Cotización Gratuita</a>
-                <a href="tel:+573001234567" class="btn-secondary">Llámanos Ahora</a>
+                <a href="tel:+57 3107573564 o +57 3504026272" class="btn-secondary">Llámanos Ahora</a>
             </div>
+            
         </div>
     </section>
 
@@ -921,29 +1170,41 @@
             <h2 class="section-title">Información de Contacto</h2>
             <div class="contact-info">
                 <div class="contact-item">
-                    <div class="contact-icon">📞</div>
-                    <h3>Teléfono</h3>
-                    <p><strong>Principal:</strong> (+57) 300 123 4567</p>
-                    <p><strong>Emergencias:</strong> 24/7</p>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon">📧</div>
-                    <h3>Email</h3>
-                    <p><strong>General:</strong> info@geminiambiental.com</p>
-                    <p><strong>Ventas:</strong> ventas@geminiambiental.com</p>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon">📍</div>
-                    <h3>Ubicación</h3>
-                    <p><strong>Dirección:</strong> Tunja, Boyacá</p>
-                    <p><strong>Colombia</strong></p>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon">🕒</div>
-                    <h3>Horarios</h3>
-                    <p><strong>Lun - Vie:</strong> 8:00 AM - 6:00 PM</p>
-                    <p><strong>Sáb:</strong> 8:00 AM - 2:00 PM</p>
-                </div>
+                    <a href="https://wa.me/573107573564" class="whatsapp-float" target="_blank">
+                        <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="90">
+                    </a>
+
+
+    <div class="contact-icon icon-contacto"></div>
+    <h3>Teléfono</h3>
+    <p><strong>Principal:</strong> (+57) 3107573564  </p>
+    <p><strong>Emergencias:</strong> 3504026272</p>
+</div>
+
+  
+<!-- Email -->
+<div class="contact-item">
+    <div class="contact-icon icon-email"></div>
+    <h3>Email</h3>
+    <p><strong>General:</strong> info@geminiambiental.com</p>
+    <p><strong>Ventas:</strong> ventas@geminiambiental.com</p>
+</div>
+
+<!-- Ubicación -->
+<div class="contact-item">
+    <div class="contact-icon icon-ubicacion"></div>
+    <h3>Ubicación</h3>
+    <p><strong>Dirección:</strong> Tunja, Boyacá</p>
+    <p><strong>Colombia</strong></p>
+</div>
+
+<!-- Horarios -->
+<div class="contact-item">
+    <div class="contact-icon icon-horarios"></div>
+    <h3>Horarios</h3>
+    <p><strong>Lun - Vie:</strong> 8:00 AM - 6:00 PM</p>
+    <p><strong>Sáb:</strong> 8:00 AM - 2:00 PM</p>
+</div>
             </div>
         </div>
     </section>
@@ -960,7 +1221,9 @@
             <div class="footer-section">
                 <h3>Contacto</h3>
                 <p>📍 Tunja, Boyacá - Colombia</p>
-                <p>📞 (+57) 300 123 4567</p>
+                <p><a href="https://wa.me/573001234567"  target="_blank">
+                <img src="docs/assets/img/whatsapp-icon.png  " alt="WhatsApp" width="30">
+</a> (+57) 3107573564 o 3504026272</p>
                 <p>✉️ info@geminiambiental.com</p>
                 <p>🌐 www.geminiambiental.com</p>
             </div>
@@ -1024,7 +1287,29 @@
                 statusElement.className = 'connection-status disconnected';
             }
         }
+let slideIndex = 0;
+const slides = document.querySelectorAll('.carousel-slide');
 
+function showSlides() {
+    slides.forEach(slide => slide.classList.remove('active'));
+    slideIndex++;
+    if (slideIndex > slides.length) slideIndex = 1;
+    slides[slideIndex - 1].classList.add('active');
+}
+
+function nextSlide() {
+    showSlides();
+}
+
+function prevSlide() {
+    slides.forEach(slide => slide.classList.remove('active'));
+    slideIndex--;
+    if (slideIndex < 1) slideIndex = slides.length;
+    slides[slideIndex - 1].classList.add('active');
+}
+
+// Iniciar carrusel automático
+setInterval(showSlides, 5000); // Cambiar cada 5 segundos
         // Función para realizar consultas a Gemini
         async function consultarGemini(consulta, contexto = '') {
             try {
@@ -1205,6 +1490,7 @@
                     nombre: formData.get('nombre'),
                     email: formData.get('email'),
                     telefono: formData.get('telefono'),
+                    
                     empresa: formData.get('empresa')
                 }
             };
