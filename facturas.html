@@ -1908,7 +1908,7 @@ async function diagnosticarFacturas() {
             }
         }
 
-// ✅ FUNCIÓN MEJORADA - Inicialización correcta del valor del servicio
+// ✅ FUNCIÓN ACTUALIZADA - Mejor inicialización del valor del servicio
 function openAddInvoiceModal() {
     const modal = document.getElementById('addInvoiceModal');
     const form = document.getElementById('invoiceForm');
@@ -1927,16 +1927,8 @@ function openAddInvoiceModal() {
     document.getElementById('productosSection').style.display = 'block';
     document.getElementById('cotizacionField').style.display = 'none';
     
-    // ✅ CORRECCIÓN CRÍTICA: Asegurar que los campos estén habilitados
-    const clienteSelect = document.getElementById('clienteSelect');
-    const montoTotalInput = document.querySelector('input[name="monto_total"]');
+    // ✅ CORRECCIÓN: Asegurar que el campo de valor servicio esté habilitado
     const valorServicioInput = document.getElementById('valorServicio');
-    
-    if (clienteSelect) clienteSelect.disabled = false;
-    if (montoTotalInput) {
-        montoTotalInput.disabled = false;
-        montoTotalInput.value = '0'; // ✅ Inicializar con valor por defecto
-    }
     if (valorServicioInput) {
         valorServicioInput.disabled = false;
         valorServicioInput.value = '0'; // ✅ Inicializar con valor por defecto
@@ -1980,7 +1972,7 @@ function openAddInvoiceModal() {
     
     console.log("✅ Modal de factura abierto y listo");
 }
-// ✅ FUNCIÓN CORREGIDA - Carga correctamente el valor del servicio al editar
+// ✅ FUNCIÓN COMPLETAMENTE CORREGIDA - Carga y permite editar el valor del servicio
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
@@ -2003,7 +1995,7 @@ async function editInvoice(id) {
         document.getElementById('invoiceIdInput').value = id;
 
         // ✅ CORRECCIÓN: Esperar para que el modal se renderice completamente
-        setTimeout(() => {
+        setTimeout(async () => {
             // Establecer tipo de factura
             const tipoFactura = factura.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
             document.getElementById('tipoFacturaSelect').value = tipoFactura;
@@ -2049,21 +2041,37 @@ async function editInvoice(id) {
                 console.log("✅ Observaciones asignadas");
             }
 
-            // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
+            // ✅ CORRECCIÓN CRÍTICA: Cargar el valor del servicio de la factura
             const valorServicioInput = document.getElementById('valorServicio');
             if (valorServicioInput) {
-                // ✅ IMPORTANTE: Convertir el valor del servicio de la factura
-                const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
-                    ? parseFloat(factura.valorServicio) 
-                    : 0;
+                // Obtener el valor del servicio directamente de la factura
+                let valorServicio = 0;
                 
+                if (factura.valorServicio !== null && factura.valorServicio !== undefined) {
+                    valorServicio = parseFloat(factura.valorServicio);
+                    console.log("💰 Valor servicio encontrado en factura:", valorServicio);
+                } else {
+                    // Si no existe en la factura, calcularlo basado en el monto total y productos
+                    const subtotalProductos = (factura.detalleFactura || []).reduce((sum, item) => {
+                        return sum + (parseFloat(item.subtotal) || 0);
+                    }, 0);
+                    
+                    const montoTotal = parseFloat(factura.montoTotal) || 0;
+                    valorServicio = montoTotal - subtotalProductos;
+                    console.log("💰 Valor servicio calculado:", {
+                        montoTotal: montoTotal,
+                        subtotalProductos: subtotalProductos,
+                        valorServicioCalculado: valorServicio
+                    });
+                }
+                
+                // Asignar el valor al campo
                 valorServicioInput.value = valorServicio.toFixed(2);
-                console.log("✅ Valor servicio asignado desde factura:", valorServicio);
+                console.log("✅ Valor servicio asignado en formulario:", valorServicioInput.value);
                 
-                // Forzar actualización del monto total
-                setTimeout(() => {
-                    actualizarMontoTotal();
-                }, 200);
+                // Habilitar el campo para edición
+                valorServicioInput.disabled = false;
+                valorServicioInput.style.backgroundColor = 'white';
             }
 
             // Monto Total
@@ -2123,13 +2131,18 @@ async function editInvoice(id) {
                 console.log("📭 No hay productos en esta factura");
             }
 
-            // Renderizar productos
-            renderDetalleFactura();
+            // ✅ FORZAR ACTUALIZACIÓN DEL MONTO TOTAL
+            setTimeout(() => {
+                actualizarMontoTotal();
+                renderDetalleFactura();
+            }, 300);
+
             currentEditId = id;
             
-            console.log("✅ Modal de edición completamente configurado para:", id, "Valor servicio:", valorServicioInput?.value);
+            console.log("✅ Modal de edición completamente configurado para:", id, 
+                      "Valor servicio cargado:", valorServicioInput?.value);
             
-        }, 200); // Aumentado el timeout para mayor estabilidad
+        }, 300); // Aumentado el timeout para mayor estabilidad
 
     } catch (error) {
         console.error("❌ Error inesperado al editar:", error);
@@ -2738,7 +2751,6 @@ async function viewInvoice(id) {
         
         // Configuración de márgenes y colores
         const primaryColor = [44, 95, 65]; // Verde corporativo
-        const secondaryColor = [100, 100, 100];
         const margin = 20;
         let yPos = margin;
 
@@ -2808,10 +2820,10 @@ async function viewInvoice(id) {
         doc.setFontSize(9);
         
         doc.text('Descripción', margin + 2, yPos + 6);
-        doc.text('Cant.', margin + 120, yPos + 6);
-        doc.text('Precio Unit.', margin + 140, yPos + 6);
+        doc.text('Cant.', margin + 100, yPos + 6);
+        doc.text('Precio Unit.', margin + 120, yPos + 6);
         doc.text('Subtotal', margin + 170, yPos + 6, { align: 'right' });
-        doc.text(valorServicio, margin + 3, yPos + 6);
+        
         yPos += 12;
 
         // ✅ PRODUCTOS/SERVICIOS
@@ -2841,18 +2853,15 @@ async function viewInvoice(id) {
                 doc.setFontSize(8);
                 
                 // Descripción (con wrap si es muy largo)
-                const descLines = doc.splitTextToSize(nombre, 80);
+                const descLines = doc.splitTextToSize(nombre, 70);
                 doc.text(descLines, margin + 2, yPos);
                 
-                doc.text(cantidad.toString(), margin + 120, yPos);
-                doc.text(formatCurrencyForPDF(precio), margin + 140, yPos);
+                doc.text(cantidad.toString(), margin + 100, yPos);
+                doc.text(formatCurrencyForPDF(precio), margin + 120, yPos);
                 doc.text(formatCurrencyForPDF(subtotal), margin + 170, yPos, { align: 'right' });
                 
                 yPos += Math.max(descLines.length * 4, 8);
             });
-        } else {
-            doc.text('No hay productos registrados', margin + 2, yPos);
-            yPos += 8;
         }
 
         // ✅ VALOR DEL SERVICIO - MOSTRAR COMO UN ITEM MÁS EN LA TABLA
@@ -2862,10 +2871,11 @@ async function viewInvoice(id) {
                 yPos = margin;
             }
             
+            // Espacio antes del valor del servicio
             yPos += 5;
             
             // Fila para valor del servicio con estilo diferente
-            doc.setFillColor(245, 249, 245); // Verde muy claro
+            doc.setFillColor(230, 245, 230); // Verde claro
             doc.rect(margin, yPos - 4, 170, 10, 'F');
             
             doc.setTextColor(44, 95, 65); // Verde corporativo
@@ -2873,8 +2883,8 @@ async function viewInvoice(id) {
             doc.setFont(undefined, 'bold');
             
             doc.text('VALOR DEL SERVICIO', margin + 2, yPos + 2);
-            doc.text('1', margin + 120, yPos + 2); // Cantidad 1
-            doc.text(formatCurrencyForPDF(valorServicio), margin + 140, yPos + 2); // Precio unitario
+            doc.text('1', margin + 100, yPos + 2); // Cantidad 1
+            doc.text(formatCurrencyForPDF(valorServicio), margin + 120, yPos + 2); // Precio unitario
             doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos + 2, { align: 'right' }); // Subtotal
             
             yPos += 12;
@@ -2893,28 +2903,28 @@ async function viewInvoice(id) {
             doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
             doc.setTextColor(0, 0, 0);
-            doc.text('Subtotal Productos:', margin + 120, yPos);
+            doc.text('Subtotal Productos:', margin + 100, yPos);
             doc.text(formatCurrencyForPDF(subtotalProductos), margin + 170, yPos, { align: 'right' });
             yPos += 6;
         }
 
         // Valor servicio (solo si hay valor de servicio)
         if (valorServicio > 0) {
-            doc.text('Valor del Servicio:', margin + 120, yPos);
+            doc.text('Valor del Servicio:', margin + 100, yPos);
             doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos, { align: 'right' });
             yPos += 6;
         }
 
         // Línea antes del total
         doc.setDrawColor(150, 150, 150);
-        doc.line(margin + 120, yPos, margin + 170, yPos);
+        doc.line(margin + 100, yPos, margin + 170, yPos);
         yPos += 8;
 
         // ✅ TOTAL FINAL
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(...primaryColor);
-        doc.text('TOTAL:', margin + 120, yPos);
+        doc.text('TOTAL:', margin + 100, yPos);
         doc.text(formatCurrencyForPDF(montoTotal), margin + 170, yPos, { align: 'right' });
 
         // ✅ VERIFICACIÓN MATEMÁTICA (solo para debug)
