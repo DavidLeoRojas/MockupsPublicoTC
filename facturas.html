@@ -2829,14 +2829,15 @@ async function viewInvoice(id) {
         const factura = await response.json();
         console.log("📋 Factura cargada:", factura);
 
-        // 2. Preparar datos - VERIFICAR QUE SE OBTIENE EL VALOR DEL SERVICIO
+        // 2. Preparar datos - OBTENER CORRECTAMENTE EL VALOR DEL SERVICIO
         const valorServicio = parseFloat(factura.valorServicio) || 0;
         const montoTotal = convertirValorK(factura.montoTotal) || 0;
 
         console.log("🔍 VALORES PARA PDF:", {
             valorServicio: valorServicio,
             montoTotal: montoTotal,
-            detalleFactura: factura.detalleFactura
+            detalleFactura: factura.detalleFactura,
+            facturaCompleta: factura // Para debug
         });
 
         // 3. Obtener información del cliente
@@ -2961,7 +2962,7 @@ async function viewInvoice(id) {
                 
                 // Descripción (con wrap si es muy largo)
                 const descLines = doc.splitTextToSize(nombre, 70);
-                doc.text('Valor del Servicio:', margin + 100, yPos);
+                doc.text(descLines, margin + 2, yPos);
                 
                 doc.text(cantidad.toString(), margin + 100, yPos);
                 doc.text(formatCurrencyForPDF(precio), margin + 120, yPos);
@@ -2971,7 +2972,7 @@ async function viewInvoice(id) {
             });
         }
 
-        // ✅ VALOR DEL SERVICIO - MOSTRAR COMO UN ITEM MÁS EN LA TABLA
+        // ✅ VALOR DEL SERVICIO - MOSTRAR COMO UN ITEM ESPECIAL EN LA TABLA
         if (valorServicio > 0) {
             if (yPos > 250) {
                 doc.addPage();
@@ -2979,72 +2980,97 @@ async function viewInvoice(id) {
             }
             
             // Espacio antes del valor del servicio
-            yPos += 5;
+            yPos += 8;
             
-            // Fila para valor del servicio con estilo diferente
-            doc.setFillColor(230, 245, 230); // Verde claro
+            // ✅ LÍNEA SEPARADORA ANTES DEL VALOR DEL SERVICIO
+            doc.setDrawColor(200, 200, 200);
+            doc.line(margin, yPos - 2, margin + 170, yPos - 2);
+            yPos += 4;
+            
+            // Fila para valor del servicio con estilo DIFERENTE y DESTACADO
+            doc.setFillColor(240, 248, 255); // Azul claro para destacar
             doc.rect(margin, yPos - 4, 170, 10, 'F');
             
-            doc.setTextColor(44, 95, 65); // Verde corporativo
-            doc.setFontSize(9);
+            doc.setTextColor(0, 82, 204); // Azul corporativo
+            doc.setFontSize(10);
             doc.setFont(undefined, 'bold');
             
-            doc.text('VALOR DEL SERVICIO', margin + 2, yPos + 2);
+            // Descripción extendida para claridad
+            doc.text('SERVICIO PROFESIONAL / HONORARIOS', margin + 2, yPos + 2);
             doc.text('1', margin + 100, yPos + 2); // Cantidad 1
             doc.text(formatCurrencyForPDF(valorServicio), margin + 120, yPos + 2); // Precio unitario
             doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos + 2, { align: 'right' }); // Subtotal
             
             yPos += 12;
+            
+            // ✅ LÍNEA SEPARADORA DESPUÉS DEL VALOR DEL SERVICIO
+            doc.setDrawColor(200, 200, 200);
+            doc.line(margin, yPos - 2, margin + 170, yPos - 2);
+            yPos += 4;
         }
 
-        // ✅ RESUMEN DE TOTALES
+        // ✅ RESUMEN DE TOTALES - MEJORADO
         yPos += 10;
         
-        // Línea separadora
-        doc.setDrawColor(200, 200, 200);
+        // Línea separadora antes de totales
+        doc.setDrawColor(150, 150, 150);
         doc.line(margin + 100, yPos, margin + 170, yPos);
         yPos += 8;
 
+        doc.setFontSize(10);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(0, 0, 0);
+        
         // Subtotal productos (solo si hay productos)
         if (detalles.length > 0) {
-            doc.setFontSize(9);
-            doc.setFont(undefined, 'normal');
-            doc.setTextColor(0, 0, 0);
             doc.text('Subtotal Productos:', margin + 100, yPos);
             doc.text(formatCurrencyForPDF(subtotalProductos), margin + 170, yPos, { align: 'right' });
             yPos += 6;
         }
 
-        // Valor servicio (solo si hay valor de servicio)
+        // Valor servicio (solo si hay valor de servicio) - DESTACADO
         if (valorServicio > 0) {
+            doc.setTextColor(0, 82, 204); // Azul para destacar
             doc.text('Valor del Servicio:', margin + 100, yPos);
             doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos, { align: 'right' });
             yPos += 6;
+            doc.setTextColor(0, 0, 0); // Volver a negro
         }
 
         // Línea antes del total
-        doc.setDrawColor(150, 150, 150);
+        doc.setDrawColor(100, 100, 100);
         doc.line(margin + 100, yPos, margin + 170, yPos);
         yPos += 8;
 
-        // ✅ TOTAL FINAL
+        // ✅ TOTAL FINAL - DESTACADO
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(...primaryColor);
         doc.text('TOTAL:', margin + 100, yPos);
         doc.text(formatCurrencyForPDF(montoTotal), margin + 170, yPos, { align: 'right' });
 
-        // ✅ VERIFICACIÓN MATEMÁTICA (solo para debug)
+        // ✅ VERIFICACIÓN MATEMÁTICA EN CONSOLA
         console.log("🔍 VERIFICACIÓN MATEMÁTICA EN PDF:", {
             subtotalProductos: subtotalProductos,
             valorServicio: valorServicio,
             sumaCalculada: subtotalProductos + valorServicio,
-            montoTotalFactura: montoTotal
+            montoTotalFactura: montoTotal,
+            coincide: (subtotalProductos + valorServicio) === montoTotal
         });
 
-        // ✅ OBSERVACIONES
+        // ✅ OBSERVACIONES - INCLUIR INFORMACIÓN DEL SERVICIO SI EXISTE
         yPos += 20;
-        if (factura.observaciones) {
+        let observacionesCompletas = factura.observaciones || '';
+        
+        // Si hay valor de servicio, agregar información adicional
+        if (valorServicio > 0) {
+            if (observacionesCompletas) {
+                observacionesCompletas += '\n\n';
+            }
+            observacionesCompletas += `INCLUYE SERVICIO PROFESIONAL: ${formatCurrencyForPDF(valorServicio)}`;
+        }
+        
+        if (observacionesCompletas) {
             doc.setFontSize(10);
             doc.setFont(undefined, 'bold');
             doc.setTextColor(0, 0, 0);
@@ -3053,7 +3079,7 @@ async function viewInvoice(id) {
             
             doc.setFont(undefined, 'normal');
             doc.setFontSize(9);
-            const obsLines = doc.splitTextToSize(factura.observaciones, 170);
+            const obsLines = doc.splitTextToSize(observacionesCompletas, 170);
             doc.text(obsLines, margin, yPos);
             yPos += obsLines.length * 5;
         }
@@ -3080,6 +3106,14 @@ async function viewInvoice(id) {
 
         // ✅ MOSTRAR/DESCARGAR
         const nombreArchivo = `Factura_${factura.idFactura}.pdf`;
+        
+        // Mostrar resumen antes de descargar
+        const resumen = `RESUMEN FACTURA ${factura.idFactura}:\n\n` +
+                       `Productos: ${formatCurrencyForPDF(subtotalProductos)}\n` +
+                       `Valor Servicio: ${formatCurrencyForPDF(valorServicio)}\n` +
+                       `TOTAL: ${formatCurrencyForPDF(montoTotal)}`;
+        
+        console.log(resumen);
         
         if (confirm('¿Desea descargar el PDF?\n\nCancelar = Vista previa\nAceptar = Descargar')) {
             doc.save(nombreArchivo);
