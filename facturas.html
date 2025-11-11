@@ -2868,159 +2868,61 @@ async function viewInvoice(id) {
         
         doc.setTextColor(255, 255, 255);
         doc.setFontSize(20);
-        doc.setFont(undefined, 'bold');
-        doc.text('FACTURA DE VENTA', 105, 20, { align: 'center' });
-        
-        doc.setFontSize(10);
-        doc.text('Gemini Ambiental SAS', 105, 28, { align: 'center' });
-        doc.text('NIT: 901.234.567-8', 105, 33, { align: 'center' });
-
-        yPos = 50;
-
-        // ✅ INFORMACIÓN DE LA FACTURA (2 columnas)
-        doc.setTextColor(0, 0, 0);
-        doc.setFontSize(12);
-        doc.setFont(undefined, 'bold');
-        doc.text('INFORMACIÓN DE LA FACTURA', margin, yPos);
-        yPos += 10;
-        
-        doc.setFont(undefined, 'normal');
-        doc.setFontSize(10);
-        doc.text(`Número: ${factura.idFactura}`, margin, yPos);
-        doc.text(`Fecha: ${formatDateForPDF(factura.fechaEmision)}`, 105, yPos);
-        yPos += 6;
-        
-        doc.text(`Estado: ${factura.estado}`, margin, yPos);
-        doc.text(`Tipo: ${factura.tipoFactura || 'Simple'}`, 105, yPos);
-        yPos += 15;
-
-        // ✅ INFORMACIÓN DEL CLIENTE
-        doc.setFont(undefined, 'bold');
-        doc.text('INFORMACIÓN DEL CLIENTE', margin, yPos);
-        yPos += 10;
-        
-        doc.setFont(undefined, 'normal');
-        doc.text(`Nombre: ${clienteInfo.nombre}`, margin, yPos);
-        yPos += 6;
-        
-        doc.text(`Documento: ${clienteInfo.dni}`, margin, yPos);
-        yPos += 6;
-        
-        doc.text(`Teléfono: ${clienteInfo.telefono || 'N/A'}`, margin, yPos);
-        yPos += 6;
-        
-        if (clienteInfo.correo) {
-            doc.text(`Email: ${clienteInfo.correo}`, margin, yPos);
-            yPos += 6;
-        }
-        
-        yPos += 10;
-
         // ✅ DETALLES DE LA FACTURA - TABLA PROFESIONAL
         doc.setFont(undefined, 'bold');
         doc.text('DETALLES DE LA FACTURA', margin, yPos);
         yPos += 8;
-
         // Encabezado de la tabla
         doc.setFillColor(240, 240, 240);
         doc.rect(margin, yPos, 170, 8, 'F');
         doc.setTextColor(0, 0, 0);
         doc.setFontSize(9);
-        
         doc.text('Descripción', margin + 2, yPos + 6);
         doc.text('Cant.', margin + 100, yPos + 6);
         doc.text('Precio Unit.', margin + 120, yPos + 6);
         doc.text('Subtotal', margin + 170, yPos + 6, { align: 'right' });
-        
         yPos += 12;
-
         // ✅ PRODUCTOS/SERVICIOS
         const detalles = factura.detalleFactura || [];
         let subtotalProductos = 0;
-
         if (detalles.length > 0) {
             detalles.forEach((item, index) => {
                 if (yPos > 250) {
                     doc.addPage();
                     yPos = margin;
                 }
-                
                 const nombre = item.nombreProducto || 'Producto/Servicio';
                 const cantidad = item.cantidad || 1;
                 const precio = parseFloat(item.precioUnitario) || 0;
                 const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
                 subtotalProductos += subtotal;
-
                 // Alternar colores de fila
                 if (index % 2 === 0) {
                     doc.setFillColor(250, 250, 250);
                     doc.rect(margin, yPos - 4, 170, 8, 'F');
                 }
-
                 doc.setTextColor(0, 0, 0);
                 doc.setFontSize(8);
-                
                 // Descripción (con wrap si es muy largo)
                 const descLines = doc.splitTextToSize(nombre, 70);
                 doc.text(descLines, margin + 2, yPos);
-                
                 doc.text(cantidad.toString(), margin + 100, yPos);
                 doc.text(formatCurrencyForPDF(precio), margin + 120, yPos);
                 doc.text(formatCurrencyForPDF(subtotal), margin + 170, yPos, { align: 'right' });
-                
                 yPos += Math.max(descLines.length * 4, 8);
             });
         }
 
-        // ✅ VALOR DEL SERVICIO - MOSTRAR COMO UN ITEM ESPECIAL EN LA TABLA
-        if (valorServicio > 0) {
-            if (yPos > 250) {
-                doc.addPage();
-                yPos = margin;
-            }
-            
-            // Espacio antes del valor del servicio
-            yPos += 8;
-            
-            // ✅ LÍNEA SEPARADORA ANTES DEL VALOR DEL SERVICIO
-            doc.setDrawColor(200, 200, 200);
-            doc.line(margin, yPos - 2, margin + 170, yPos - 2);
-            yPos += 4;
-            
-            // Fila para valor del servicio con estilo DIFERENTE y DESTACADO
-            doc.setFillColor(240, 248, 255); // Azul claro para destacar
-            doc.rect(margin, yPos - 4, 170, 10, 'F');
-            
-            doc.setTextColor(0, 82, 204); // Azul corporativo
-            doc.setFontSize(10);
-            doc.setFont(undefined, 'bold');
-            
-            // Descripción extendida para claridad
-            doc.text('SERVICIO PROFESIONAL / HONORARIOS', margin + 2, yPos + 2);
-            doc.text('1', margin + 100, yPos + 2); // Cantidad 1
-            doc.text(formatCurrencyForPDF(valorServicio), margin + 120, yPos + 2); // Precio unitario
-            doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos + 2, { align: 'right' }); // Subtotal
-            
-            yPos += 12;
-            
-            // ✅ LÍNEA SEPARADORA DESPUÉS DEL VALOR DEL SERVICIO
-            doc.setDrawColor(200, 200, 200);
-            doc.line(margin, yPos - 2, margin + 170, yPos - 2);
-            yPos += 4;
-        }
-
-        // ✅ RESUMEN DE TOTALES - MEJORADO
+        // ✅ RESUMEN DE TOTALES - MEJORADO (MODIFICADO PARA INCLUIR VALOR DEL SERVICIO COMO ÍTEM SEPARADO)
         yPos += 10;
-        
         // Línea separadora antes de totales
         doc.setDrawColor(150, 150, 150);
         doc.line(margin + 100, yPos, margin + 170, yPos);
         yPos += 8;
-
         doc.setFontSize(10);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(0, 0, 0);
-        
+
         // Subtotal productos (solo si hay productos)
         if (detalles.length > 0) {
             doc.text('Subtotal Productos:', margin + 100, yPos);
@@ -3028,26 +2930,42 @@ async function viewInvoice(id) {
             yPos += 6;
         }
 
-        // Valor servicio (solo si hay valor de servicio) - DESTACADO
+        // ✅ VALOR DEL SERVICIO - MOSTRARLO COMO UN ÍTEM SEPARADO EN EL RESUMEN (MODIFICACIÓN CLAVE)
         if (valorServicio > 0) {
-            doc.setTextColor(0, 82, 204); // Azul para destacar
-            doc.text('Valor del Servicio:', margin + 100, yPos);
-            doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos, { align: 'right' });
-            yPos += 6;
-            doc.setTextColor(0, 0, 0); // Volver a negro
+            // Línea separadora antes del Valor del Servicio
+            doc.setDrawColor(200, 200, 200);
+            doc.line(margin + 100, yPos, margin + 170, yPos);
+            yPos += 4;
+
+            // Fila para valor del servicio con estilo DIFERENTE y DESTACADO
+            doc.setFillColor(240, 248, 255); // Azul claro para destacar
+            doc.rect(margin, yPos - 4, 170, 10, 'F');
+            doc.setTextColor(0, 82, 204); // Azul corporativo
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.text('Valor del Servicio:', margin + 100, yPos + 2);
+            doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos + 2, { align: 'right' });
+            yPos += 12; // Aumentar el espacio después del ítem destacado
+
+            // Línea separadora después del Valor del Servicio
+            doc.setDrawColor(200, 200, 200);
+            doc.line(margin + 100, yPos - 2, margin + 170, yPos - 2);
+            yPos += 4;
         }
 
         // Línea antes del total
         doc.setDrawColor(100, 100, 100);
         doc.line(margin + 100, yPos, margin + 170, yPos);
         yPos += 8;
-
+        
         // ✅ TOTAL FINAL - DESTACADO
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(...primaryColor);
         doc.text('TOTAL:', margin + 100, yPos);
         doc.text(formatCurrencyForPDF(montoTotal), margin + 170, yPos, { align: 'right' });
+
+
 
         // ✅ VERIFICACIÓN MATEMÁTICA EN CONSOLA
         console.log("🔍 VERIFICACIÓN MATEMÁTICA EN PDF:", {
