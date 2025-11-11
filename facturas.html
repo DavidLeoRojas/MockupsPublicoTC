@@ -2694,8 +2694,7 @@ function updateStats() {
         console.error("❌ Error al actualizar estadísticas:", error);
     }
 }
-
-// ✅ FUNCIÓN COMPLETAMENTE REESCRITA - Muestra el valor del servicio en el PDF
+// ✅ FUNCIÓN CORREGIDA - Muestra claramente el valor del servicio en el PDF
 async function viewInvoice(id) {
     try {
         console.log("📄 Generando PDF para factura:", id);
@@ -2856,54 +2855,75 @@ async function viewInvoice(id) {
             yPos += 8;
         }
 
-        // ✅ VALOR DEL SERVICIO - MOSTRAR SIEMPRE
-        yPos += 10;
-        
+        // ✅ VALOR DEL SERVICIO - MOSTRAR COMO UN ITEM MÁS EN LA TABLA
         if (valorServicio > 0) {
-            // Fila para valor del servicio
-            doc.setFillColor(245, 245, 245);
-            doc.rect(margin, yPos - 4, 170, 8, 'F');
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = margin;
+            }
             
-            doc.setTextColor(0, 0, 0);
+            yPos += 5;
+            
+            // Fila para valor del servicio con estilo diferente
+            doc.setFillColor(245, 249, 245); // Verde muy claro
+            doc.rect(margin, yPos - 4, 170, 10, 'F');
+            
+            doc.setTextColor(44, 95, 65); // Verde corporativo
             doc.setFontSize(9);
             doc.setFont(undefined, 'bold');
-            doc.text('VALOR DEL SERVICIO', margin + 2, yPos);
-            doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos, { align: 'right' });
+            
+            doc.text('VALOR DEL SERVICIO', margin + 2, yPos + 2);
+            doc.text('1', margin + 120, yPos + 2); // Cantidad 1
+            doc.text(formatCurrencyForPDF(valorServicio), margin + 140, yPos + 2); // Precio unitario
+            doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos + 2, { align: 'right' }); // Subtotal
             
             yPos += 12;
         }
 
-        // ✅ SUBTOTALES Y TOTALES
-        yPos += 5;
+        // ✅ RESUMEN DE TOTALES
+        yPos += 10;
         
         // Línea separadora
         doc.setDrawColor(200, 200, 200);
         doc.line(margin + 100, yPos, margin + 170, yPos);
         yPos += 8;
 
-        // Subtotal productos
+        // Subtotal productos (solo si hay productos)
         if (detalles.length > 0) {
             doc.setFontSize(9);
             doc.setFont(undefined, 'normal');
+            doc.setTextColor(0, 0, 0);
             doc.text('Subtotal Productos:', margin + 120, yPos);
             doc.text(formatCurrencyForPDF(subtotalProductos), margin + 170, yPos, { align: 'right' });
             yPos += 6;
         }
 
-        // Valor servicio
+        // Valor servicio (solo si hay valor de servicio)
         if (valorServicio > 0) {
             doc.text('Valor del Servicio:', margin + 120, yPos);
             doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos, { align: 'right' });
             yPos += 6;
         }
 
-        // TOTAL
-        yPos += 5;
+        // Línea antes del total
+        doc.setDrawColor(150, 150, 150);
+        doc.line(margin + 120, yPos, margin + 170, yPos);
+        yPos += 8;
+
+        // ✅ TOTAL FINAL
         doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
         doc.setTextColor(...primaryColor);
         doc.text('TOTAL:', margin + 120, yPos);
         doc.text(formatCurrencyForPDF(montoTotal), margin + 170, yPos, { align: 'right' });
+
+        // ✅ VERIFICACIÓN MATEMÁTICA (solo para debug)
+        console.log("🔍 VERIFICACIÓN MATEMÁTICA EN PDF:", {
+            subtotalProductos: subtotalProductos,
+            valorServicio: valorServicio,
+            sumaCalculada: subtotalProductos + valorServicio,
+            montoTotalFactura: montoTotal
+        });
 
         // ✅ OBSERVACIONES
         yPos += 20;

@@ -2365,7 +2365,13 @@ async function addService(event) {
     isSubmitting = true;
 
     console.log('🔄 INICIANDO PROCESO DE AGREGAR SERVICIO...');
-
+    const form = event.target;
+    if (!form) {
+        console.error('❌ Formulario no encontrado en evento submit');
+        showCustomAlert('Error interno: formulario no detectado.', 'Error', 'error');
+        isSubmitting = false;
+        return;
+    }
     try {
         // Verificar autenticación
         const token = localStorage.getItem('jwtToken');
@@ -2676,8 +2682,17 @@ setTimeout(() => {
             });
         }
 
-document.getElementById('serviceForm').addEventListener('submit', function(event) {
-    addService(event);
+document.addEventListener('DOMContentLoaded', function () {
+    console.log('🚀 Iniciando aplicación de Agenda...');
+    console.log('🔗 API Base URL:', API_BASE_URL);
+    
+    // ✅ Aseguramos que el listener se añada SOLO cuando el DOM esté listo
+    const serviceForm = document.getElementById('serviceForm');
+    if (serviceForm) {
+        serviceForm.addEventListener('submit', addService);
+    }
+
+    loadAgendaData();
 });
         document.getElementById('editServiceForm').addEventListener('submit', updateService);
 
