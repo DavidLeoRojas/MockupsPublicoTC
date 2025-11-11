@@ -2681,15 +2681,24 @@ setTimeout(() => {
                 if (event.target === modal) modal.classList.remove('show');
             });
         }
-
 document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Iniciando aplicación de Agenda...');
     console.log('🔗 API Base URL:', API_BASE_URL);
-    
-    // ✅ Aseguramos que el listener se añada SOLO cuando el DOM esté listo
+
+    // ✅ Registramos los listeners SOLO cuando el DOM esté listo
     const serviceForm = document.getElementById('serviceForm');
+    const editForm = document.getElementById('editServiceForm');
+    
     if (serviceForm) {
         serviceForm.addEventListener('submit', addService);
+    } else {
+        console.error('❌ Formulario serviceForm NO encontrado en DOM');
+    }
+
+    if (editForm) {
+        editForm.addEventListener('submit', updateService);
+    } else {
+        console.error('❌ Formulario editServiceForm NO encontrado en DOM');
     }
 
     loadAgendaData();
