@@ -1962,23 +1962,20 @@ function openAddInvoiceModal() {
     
     console.log("✅ Modal de factura abierto y listo");
 }
-// CORREGIR LA FUNCIÓN editInvoice - Manejar valorServicio correctamente
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
-        
         // Buscar la factura en la lista local
         const factura = allFacturas.find(f => f.idFactura === id);
         if (!factura) {
             alert("❌ Factura no encontrada.");
             return;
         }
-
         console.log("📋 Factura encontrada para editar:", factura);
 
         // Abrir modal de edición PRIMERO
         openAddInvoiceModal();
-        
+
         // Configurar modal para edición
         document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
         document.getElementById('submitBtn').textContent = 'Guardar Cambios';
@@ -1989,7 +1986,6 @@ async function editInvoice(id) {
             // Establecer tipo de factura
             const tipoFactura = factura.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
             document.getElementById('tipoFacturaSelect').value = tipoFactura;
-
             // Disparar evento change para actualizar campos visibles
             document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
 
@@ -2018,7 +2014,6 @@ async function editInvoice(id) {
             if (estado === 'Pendiente') estado = 'PENDIENTE';
             if (estado === 'Pagada') estado = 'PAGADA';
             if (estado === 'Cancelada') estado = 'CANCELADA';
-            
             const estadoSelect = document.querySelector('select[name="estado"]');
             if (estadoSelect) {
                 estadoSelect.value = estado;
@@ -2033,24 +2028,15 @@ async function editInvoice(id) {
             }
 
             // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
-const valorServicioInput = document.getElementById('valorServicio');
-if (valorServicioInput) {
-    const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
-        ? parseFloat(factura.valorServicio) 
-        : 0;
-    valorServicioInput.value = valorServicio.toFixed(2);
-    console.log("✅ Valor servicio asignado:", valorServicio);
-    
-    // ✅ FORZAR ACTUALIZACIÓN DEL MONTO TOTAL
-setTimeout(() => {
-    actualizarMontoTotal();
-    console.log("✅ Cálculo final realizado con:", {
-        valorServicio: document.getElementById('valorServicio').value,
-        productos: detalleFactura.length,
-        montoTotal: document.querySelector('input[name="monto_total"]').value
-    });
-}, 300);
-}
+            const valorServicioInput = document.getElementById('valorServicio');
+            if (valorServicioInput) {
+                const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
+                    ? parseFloat(factura.valorServicio) 
+                    : 0;
+                valorServicioInput.value = valorServicio.toFixed(2);
+                console.log("✅ Valor servicio asignado:", valorServicio);
+            }
+
             // Monto Total
             const montoTotalInput = document.querySelector('input[name="monto_total"]');
             if (montoTotalInput) {
@@ -2076,9 +2062,7 @@ setTimeout(() => {
 
             // ✅ CARGAR DETALLES DE LA FACTURA
             detalleFactura = []; // Limpiar array existente
-            
             console.log("📦 Procesando productos de la factura:", factura.detalleFactura);
-            
             if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
                 factura.detalleFactura.forEach((df, index) => {
                     // Validar que el producto sea válido
@@ -2086,14 +2070,12 @@ setTimeout(() => {
                         console.warn(`⚠️ Producto ${index + 1} inválido, omitiendo:`, df);
                         return;
                     }
-
                     // Buscar el producto en productosData para obtener nombre actualizado
                     const producto = productosData.find(p => p.idProducto === df.idProducto);
                     const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
                     const precioUnitario = parseFloat(df.precioUnitario) || 0;
                     const cantidad = parseInt(df.cantidad) || 0;
                     const subtotal = parseFloat(df.subtotal) || (precioUnitario * cantidad);
-
                     detalleFactura.push({
                         idProducto: df.idProducto,
                         nombreProducto: nombreProducto,
@@ -2101,7 +2083,6 @@ setTimeout(() => {
                         precioUnitario: precioUnitario,
                         subtotal: subtotal
                     });
-                    
                     console.log(`✅ Producto ${index + 1} agregado:`, nombreProducto, cantidad, precioUnitario);
                 });
                 console.log(`✅ ${detalleFactura.length} productos cargados para edición`);
@@ -2111,18 +2092,16 @@ setTimeout(() => {
 
             // Renderizar productos
             renderDetalleFactura();
-
             currentEditId = id;
             console.log("✅ Modal de edición completamente configurado para:", id);
-
-        }, 100);
+        }, 100); // <-- Este timeout es crucial para esperar que el DOM se actualice.
 
     } catch (error) {
         console.error("❌ Error inesperado al editar:", error);
         alert("❌ Error al cargar la factura para editar: " + error.message);
     }
 }
-
+          
 
 // Función de emergencia para diagnosticar el problema de stock
 async function diagnosticarStockProducto() {
@@ -2787,16 +2766,19 @@ if (detalles.length > 0) {
 }
 
 // ✅ CORRECCIÓN CRÍTICA: Mostrar el valor del servicio como un ítem en DETALLES
+// Valor del servicio
 if (valorServicio > 0) {
-    if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-    }
-    // Mostrar como "Servicio" en la lista de detalles
-    doc.text('Servicio', 25, yPos);
+    yPos += 5;
+    doc.text('Valor del Servicio:', 20, yPos);
     doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
     yPos += 8;
 }
+
+// Total
+yPos += 10;
+doc.setFont(undefined, 'bold');
+doc.text('TOTAL:', 20, yPos);
+doc.text(formatCurrencyForPDF(montoTotal), 180, yPos, { align: 'right' });
 
 // Si no hay productos ni valor de servicio
 if (detalles.length === 0 && valorServicio <= 0) {
