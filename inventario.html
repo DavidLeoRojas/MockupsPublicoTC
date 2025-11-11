@@ -782,34 +782,20 @@ function checkAuth() {
     return true;
 }
 
-// Función para descargar Excel
+function formatDate(date) {
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
+}
+
+// Función para descargar Excel con título y fecha
 function downloadExcel() {
     if (!checkAuth()) return;
     
     // Obtener datos actuales (filtrados o todos)
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const categoriaFilter = document.getElementById('categoryFilter').value;
-    const estadoFilter = document.getElementById('statusFilter').value;
-    const proveedorFilter = document.getElementById('providerFilter').value;
-    
-    let dataToExport = productos;
-    
-    // Aplicar los mismos filtros que en la tabla
-    if (searchTerm) {
-        dataToExport = dataToExport.filter(p => 
-            p.nombre.toLowerCase().includes(searchTerm) || 
-            p.idProducto.toLowerCase().includes(searchTerm)
-        );
-    }
-    if (categoriaFilter) {
-        dataToExport = dataToExport.filter(p => p.idCategoriaProducto === categoriaFilter);
-    }
-    if (estadoFilter) {
-        dataToExport = dataToExport.filter(p => getStatusText(p.stock) === estadoFilter);
-    }
-    if (proveedorFilter) {
-        dataToExport = dataToExport.filter(p => p.proveedor === proveedorFilter);
-    }
+    const dataToExport = getFilteredData();
     
     if (dataToExport.length === 0) {
         alert('No hay datos para exportar');
@@ -836,12 +822,26 @@ function downloadExcel() {
     // Crear hoja de trabajo
     const ws = XLSX.utils.json_to_sheet(excelData);
     
+    // Añadir título y fecha en la primera fila
+    const fecha = new Date();
+    const titleRow = ['REPORTE DE INVENTARIO - GEMINI AMBIENTAL'];
+    const dateRow = [`Fecha de generación: ${formatDate(fecha)}`];
+    
+    XLSX.utils.sheet_add_aoa(ws, [titleRow], { origin: 'A1' });
+    XLSX.utils.sheet_add_aoa(ws, [dateRow], { origin: 'A2' });
+    XLSX.utils.sheet_add_aoa(ws, [['']], { origin: 'A3' }); // Fila vacía
+    
+    // Mover los datos existentes 3 filas hacia abajo
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    range.s.r += 3; // Desplazar inicio del rango 3 filas
+    range.e.r += 3; // Desplazar fin del rango 3 filas
+    ws['!ref'] = XLSX.utils.encode_range(range);
+    
     // Añadir hoja al libro
     XLSX.utils.book_append_sheet(wb, ws, 'Inventario');
     
     // Generar nombre de archivo con fecha
-    const fecha = new Date().toISOString().split('T')[0];
-    const fileName = `Inventario_Gemini_Ambiental_${fecha}.xlsx`;
+    const fileName = `Inventario_Gemini_Ambiental_${fecha.toISOString().split('T')[0]}.xlsx`;
     
     // Descargar archivo
     XLSX.writeFile(wb, fileName);
@@ -866,6 +866,134 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelector('.btn-secondary').addEventListener('click', downloadExcel);
 });
 
+// Función para descargar PDF
+function downloadPDF() {
+    if (!checkAuth()) return;
+    
+    const dataToExport = getFilteredData();
+    
+    if (dataToExport.length === 0) {
+        alert('No hay datos para exportar');
+        return;
+    }
+    
+    // Crear instancia de jsPDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Configuración del PDF
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const fecha = new Date();
+    
+    // Título
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('REPORTE DE INVENTARIO - GEMINI AMBIENTAL', pageWidth / 2, 15, { align: 'center' });
+    
+    // Fecha
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Fecha de generación: ${formatDate(fecha)}`, pageWidth / 2, 22, { align: 'center' });
+    
+    // Estadísticas
+    const total = dataToExport.length;
+    const disponibles = dataToExport.filter(p => p.stock > 5).length;
+    const bajo = dataToExport.filter(p => p.stock > 0 && p.stock <= 5).length;
+    const agotados = dataToExport.filter(p => p.stock === 0).length;
+    
+    doc.setFontSize(10);
+    doc.text(`Total de productos: ${total}`, 14, 35);
+    doc.text(`Disponibles: ${disponibles}`, 14, 42);
+    doc.text(`Stock bajo: ${bajo}`, 14, 49);
+    doc.text(`Agotados: ${agotados}`, 14, 56);
+    
+    // Preparar datos para la tabla
+    const tableData = dataToExport.map(producto => [
+        producto.nombre,
+        producto.nombreCategoria || 'Sin categoría',
+        producto.idProducto,
+        producto.lote || 'N/A',
+        producto.stock.toString(),
+        getStatusText(producto.stock),
+        producto.proveedor || 'N/A'
+    ]);
+    
+    // Encabezados de la tabla
+    const headers = [
+        'Producto',
+        'Categoría',
+        'Código',
+        'Lote',
+        'Stock',
+        'Estado',
+        'Proveedor'
+    ];
+    
+    // Configurar y generar tabla
+    doc.autoTable({
+        head: [headers],
+        body: tableData,
+        startY: 65,
+        styles: {
+            fontSize: 8,
+            cellPadding: 2
+        },
+        headStyles: {
+            fillColor: [74, 139, 100], // Color verde de Gemini Ambiental
+            textColor: 255
+        },
+        alternateRowStyles: {
+            fillColor: [245, 247, 250]
+        },
+        margin: { top: 65 }
+    });
+    
+    // Pie de página
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.text(
+            `Página ${i} de ${pageCount}`,
+            pageWidth / 2,
+            doc.internal.pageSize.getHeight() - 10,
+            { align: 'center' }
+        );
+    }
+    
+    // Descargar PDF
+    const fileName = `Inventario_Gemini_Ambiental_${fecha.toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+}
+
+// Función auxiliar para obtener datos filtrados
+function getFilteredData() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const categoriaFilter = document.getElementById('categoryFilter').value;
+    const estadoFilter = document.getElementById('statusFilter').value;
+    const proveedorFilter = document.getElementById('providerFilter').value;
+    
+    let filteredData = productos;
+    
+    // Aplicar los mismos filtros que en la tabla
+    if (searchTerm) {
+        filteredData = filteredData.filter(p => 
+            p.nombre.toLowerCase().includes(searchTerm) || 
+            p.idProducto.toLowerCase().includes(searchTerm)
+        );
+    }
+    if (categoriaFilter) {
+        filteredData = filteredData.filter(p => p.idCategoriaProducto === categoriaFilter);
+    }
+    if (estadoFilter) {
+        filteredData = filteredData.filter(p => getStatusText(p.stock) === estadoFilter);
+    }
+    if (proveedorFilter) {
+        filteredData = filteredData.filter(p => p.proveedor === proveedorFilter);
+    }
+    
+    return filteredData;
+}
 // Obtener clase CSS para estado de stock
 function getStatusClass(stock) {
     if (stock === 0) return 'agotado';
