@@ -2961,7 +2961,7 @@ async function viewInvoice(id) {
                 
                 // Descripción (con wrap si es muy largo)
                 const descLines = doc.splitTextToSize(nombre, 70);
-                doc.text(descLines, margin + 2, yPos);
+                doc.text('Valor del Servicio:', margin + 100, yPos);
                 
                 doc.text(cantidad.toString(), margin + 100, yPos);
                 doc.text(formatCurrencyForPDF(precio), margin + 120, yPos);
