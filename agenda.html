@@ -2018,7 +2018,7 @@ async function addService(event) {
             idTipoServicio: document.getElementById('tipoServicioId').value.trim(),
             fecha: document.getElementById('fecha').value,
             hora: document.getElementById('hora').value,
-            observaciones: document.getElementById('observaciones').value.trim() || null,
+            observaciones: document.getElementById('observaciones').value.trim() || '',
             prioridad: document.getElementById('prioridad').value,
             estado: 'Programado',
             servicioSinCotizacion: true
