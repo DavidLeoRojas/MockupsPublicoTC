@@ -1119,11 +1119,17 @@ async function loadProductos() {
     }
 }
 
+// ✅ FUNCIÓN AUXILIAR PARA FORMATEAR NÚMEROS SIN DECIMALES
 function formatCurrency(value) {
     if (value === null || value === undefined || isNaN(value)) return '$ 0';
     
-    // ✅ CORRECCIÓN DEFINITIVA: Mostrar valores COMPLETOS sin abreviaturas
-    return '$ ' + new Intl.NumberFormat('es-CO').format(value);
+    // Redondear a miles antes de formatear
+    const valorRedondeado = Math.round(value / 1000) * 1000;
+    
+    return '$ ' + new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(valorRedondeado);
 }
 
 function formatLargeNumber(value) {
@@ -1137,7 +1143,7 @@ function formatLargeNumber(value) {
     return value.toString();
 }
 // FUNCIÓN actualizarMontoTotal CORREGIDA
-// ✅ FUNCIÓN CORREGIDA - Redondeo adecuado a miles
+// ✅ FUNCIÓN CORREGIDA - Incluye valor del servicio en el cálculo
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
@@ -1147,20 +1153,12 @@ function actualizarMontoTotal() {
         return;
     }
 
-    // Si es factura con cotización, no calcular automáticamente
-    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
-    const tieneCotizacion = document.getElementById('cotizacionSelect').value;
-    
-    if (tipoFactura === 'ConCotizacion' && tieneCotizacion) {
-        return;
-    }
-
     const valorServicio = parseFloat(valorServicioInput.value) || 0;
     const subtotalProductos = detalleFactura.reduce((sum, item) => {
         return sum + (parseFloat(item.subtotal) || 0);
     }, 0);
     
-    // ✅ CORRECCIÓN: REDONDEO CORRECTO A MILES
+    // ✅ CALCULAR MONTO TOTAL INCLUYENDO VALOR DEL SERVICIO
     let montoTotal = subtotalProductos + valorServicio;
     
     // Aplicar redondeo comercial (redondeo matemático)
@@ -1169,11 +1167,10 @@ function actualizarMontoTotal() {
     // Formatear sin decimales para evitar problemas
     montoTotalInput.value = montoTotal.toFixed(0);
     
-    console.log("💰 Cálculo monto total CORREGIDO:", {
+    console.log("💰 Cálculo monto total ACTUALIZADO:", {
         valorServicio: valorServicio,
         subtotalProductos: subtotalProductos,
-        montoTotal: montoTotal,
-        redondeado: Math.round(montoTotal / 1000) * 1000
+        montoTotal: montoTotal
     });
 }
 
@@ -1190,18 +1187,6 @@ function formatCurrency(value) {
     }).format(valorRedondeado);
 }
 
-// ✅ ACTUALIZAR TAMBIÉN LA FUNCIÓN PARA PDF
-function formatCurrencyForPDF(amount) {
-    if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
-    
-    // Redondear a miles
-    let valorRedondeado = Math.round(amount / 1000) * 1000;
-    
-    return '$ ' + new Intl.NumberFormat('es-CO', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    }).format(valorRedondeado);
-}
 // Función de prueba con producto alternativo
 async function probarConProductoAlternativo() {
     // Limpiar detalle actual
@@ -1352,12 +1337,7 @@ function usarSoloProductosConStock() {
 
 // AGREGAR event listener para valor servicio
 document.getElementById('valorServicio').addEventListener('input', function() {
-    const tipoFactura = document.getElementById('tipoFacturaSelect').value;
-    
-    // Solo actualizar automáticamente para facturas simples
-    if (tipoFactura === 'Simple') {
-        actualizarMontoTotal();
-    }
+    actualizarMontoTotal();
 });
 
 
@@ -1598,8 +1578,13 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
     
     console.log("✅ Producto agregado. Total productos:", detalleFactura.length);
 });
-// Función para validar y preparar datos antes del envío
+// ✅ FUNCIÓN CORREGIDA - Captura correctamente el valor del servicio
 function prepararDatosFactura() {
+    const valorServicioInput = document.getElementById('valorServicio');
+    const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
+    
+    console.log("📊 Valor servicio capturado en prepararDatosFactura:", valorServicio);
+
     // ✅ CORRECCIÓN: Asegurar que todos los subtotales estén calculados
     detalleFactura.forEach(item => {
         if (!item.subtotal || isNaN(item.subtotal)) {
@@ -1624,9 +1609,12 @@ function prepararDatosFactura() {
         subtotal: item.subtotal
     }));
 
-    return detalleFacturaData;
+    return {
+        detalleFactura: detalleFacturaData,
+        valorServicio: valorServicio
+    };
 }
-// Renderizar lista de productos agregados - VERSIÓN MEJORADA
+// ✅ FUNCIÓN ACTUALIZADA - Muestra el valor del servicio en el resumen
 function renderDetalleFactura() {
     const container = document.getElementById('detalleFacturaList');
     if (!container) {
@@ -1669,8 +1657,8 @@ function renderDetalleFactura() {
                 <strong style="color: #2c5f41;">${item.nombreProducto}</strong><br>
                 <small style="color: #718096;">ID: ${item.idProducto}</small><br>
                 <span style="color: #4a5568; font-size: 0.9em;">
-                    ${item.cantidad} x $${(item.precioUnitario || 0).toLocaleString()} = 
-                    <strong>$${(subtotal || 0).toLocaleString()}</strong>
+                    ${item.cantidad} x ${formatCurrency(item.precioUnitario || 0)} = 
+                    <strong>${formatCurrency(subtotal || 0)}</strong>
                 </span>
             </div>
             <div class="detalle-factura-controls" style="display: flex; gap: 0.5rem;">
@@ -1689,7 +1677,10 @@ function renderDetalleFactura() {
         container.appendChild(div);
     });
     
-    // Mostrar resumen
+    // ✅ MOSTRAR RESUMEN CON VALOR DEL SERVICIO
+    const valorServicioInput = document.getElementById('valorServicio');
+    const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
+    
     const resumenDiv = document.createElement('div');
     resumenDiv.style.cssText = `
         margin-top: 1rem;
@@ -1697,15 +1688,28 @@ function renderDetalleFactura() {
         background: #f7fafc;
         border-radius: 8px;
         border: 1px solid #e2e8f0;
-        text-align: right;
     `;
+    
     resumenDiv.innerHTML = `
-        <strong>Subtotal: $${totalProductos.toLocaleString()}</strong>
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+            <span>Subtotal Productos:</span>
+            <strong>${formatCurrency(totalProductos)}</strong>
+        </div>
+        ${valorServicio > 0 ? `
+        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; color: #2c5f41;">
+            <span>Valor del Servicio:</span>
+            <strong>${formatCurrency(valorServicio)}</strong>
+        </div>
+        ` : ''}
+        <div style="display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 0.5rem; font-size: 1.1em;">
+            <strong>Total:</strong>
+            <strong style="color: #2c5f41;">${formatCurrency(totalProductos + valorServicio)}</strong>
+        </div>
     `;
     container.appendChild(resumenDiv);
     
     actualizarMontoTotal();
-    console.log("✅ Productos renderizados:", detalleFactura.length, "Subtotal:", totalProductos);
+    console.log("✅ Productos renderizados:", detalleFactura.length, "Subtotal:", totalProductos, "Valor servicio:", valorServicio);
 }
 // Función para verificar el token JWT
 function verificarToken() {
@@ -1904,8 +1908,7 @@ async function diagnosticarFacturas() {
             }
         }
 
-        // Abrir modal para agregar factura
-// Abrir modal para agregar/editar factura - VERSIÓN MEJORADA
+// ✅ FUNCIÓN MEJORADA - Inicialización correcta del valor del servicio
 function openAddInvoiceModal() {
     const modal = document.getElementById('addInvoiceModal');
     const form = document.getElementById('invoiceForm');
@@ -1937,6 +1940,7 @@ function openAddInvoiceModal() {
     if (valorServicioInput) {
         valorServicioInput.disabled = false;
         valorServicioInput.value = '0'; // ✅ Inicializar con valor por defecto
+        valorServicioInput.style.backgroundColor = 'white';
     }
     
     // Resetear tipo de factura
@@ -1976,7 +1980,7 @@ function openAddInvoiceModal() {
     
     console.log("✅ Modal de factura abierto y listo");
 }
-// CORREGIR LA FUNCIÓN editInvoice - Manejar valorServicio correctamente
+// ✅ FUNCIÓN CORREGIDA - Carga correctamente el valor del servicio al editar
 async function editInvoice(id) {
     try {
         console.log(`✏️ Editando factura: ${id}`);
@@ -1987,27 +1991,27 @@ async function editInvoice(id) {
             alert("❌ Factura no encontrada.");
             return;
         }
-
+        
         console.log("📋 Factura encontrada para editar:", factura);
 
         // Abrir modal de edición PRIMERO
         openAddInvoiceModal();
-        
+
         // Configurar modal para edición
         document.getElementById('invoiceModalTitle').textContent = 'Editar Factura';
         document.getElementById('submitBtn').textContent = 'Guardar Cambios';
         document.getElementById('invoiceIdInput').value = id;
 
-        // ✅ CORRECCIÓN: Esperar un poco para que el modal se renderice completamente
+        // ✅ CORRECCIÓN: Esperar para que el modal se renderice completamente
         setTimeout(() => {
             // Establecer tipo de factura
             const tipoFactura = factura.tipoFactura === 'ConCotizacion' ? 'ConCotizacion' : 'Simple';
             document.getElementById('tipoFacturaSelect').value = tipoFactura;
-
+            
             // Disparar evento change para actualizar campos visibles
             document.getElementById('tipoFacturaSelect').dispatchEvent(new Event('change'));
 
-            // Rellenar datos del formulario - CON VALIDACIONES
+            // Rellenar datos del formulario
             const dniCliente = factura.cliente?.dni || factura.dniCliente;
             if (dniCliente) {
                 const clienteSelect = document.getElementById('clienteSelect');
@@ -2032,7 +2036,6 @@ async function editInvoice(id) {
             if (estado === 'Pendiente') estado = 'PENDIENTE';
             if (estado === 'Pagada') estado = 'PAGADA';
             if (estado === 'Cancelada') estado = 'CANCELADA';
-            
             const estadoSelect = document.querySelector('select[name="estado"]');
             if (estadoSelect) {
                 estadoSelect.value = estado;
@@ -2047,14 +2050,22 @@ async function editInvoice(id) {
             }
 
             // ✅ CORRECCIÓN CRÍTICA: Valor Servicio - manejar null/undefined
-        const valorServicioInput = document.getElementById('valorServicio');
-        if (valorServicioInput) {
-            const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
-                ? parseFloat(factura.valorServicio) // <--- Aquí se convierte a número
-                : 0;
-            valorServicioInput.value = valorServicio.toFixed(2); // <--- Aquí se asigna como string con 2 decimales
-            console.log("✅ Valor servicio asignado:", valorServicio);
-        }
+            const valorServicioInput = document.getElementById('valorServicio');
+            if (valorServicioInput) {
+                // ✅ IMPORTANTE: Convertir el valor del servicio de la factura
+                const valorServicio = factura.valorServicio !== null && factura.valorServicio !== undefined 
+                    ? parseFloat(factura.valorServicio) 
+                    : 0;
+                
+                valorServicioInput.value = valorServicio.toFixed(2);
+                console.log("✅ Valor servicio asignado desde factura:", valorServicio);
+                
+                // Forzar actualización del monto total
+                setTimeout(() => {
+                    actualizarMontoTotal();
+                }, 200);
+            }
+
             // Monto Total
             const montoTotalInput = document.querySelector('input[name="monto_total"]');
             if (montoTotalInput) {
@@ -2080,7 +2091,6 @@ async function editInvoice(id) {
 
             // ✅ CARGAR DETALLES DE LA FACTURA
             detalleFactura = []; // Limpiar array existente
-            
             console.log("📦 Procesando productos de la factura:", factura.detalleFactura);
             
             if (factura.detalleFactura && Array.isArray(factura.detalleFactura)) {
@@ -2090,14 +2100,14 @@ async function editInvoice(id) {
                         console.warn(`⚠️ Producto ${index + 1} inválido, omitiendo:`, df);
                         return;
                     }
-
+                    
                     // Buscar el producto en productosData para obtener nombre actualizado
                     const producto = productosData.find(p => p.idProducto === df.idProducto);
                     const nombreProducto = producto?.nombre || df.nombreProducto || 'Producto desconocido';
                     const precioUnitario = parseFloat(df.precioUnitario) || 0;
                     const cantidad = parseInt(df.cantidad) || 0;
                     const subtotal = parseFloat(df.subtotal) || (precioUnitario * cantidad);
-
+                    
                     detalleFactura.push({
                         idProducto: df.idProducto,
                         nombreProducto: nombreProducto,
@@ -2115,18 +2125,18 @@ async function editInvoice(id) {
 
             // Renderizar productos
             renderDetalleFactura();
-
             currentEditId = id;
-            console.log("✅ Modal de edición completamente configurado para:", id);
-
-        }, 100);
+            
+            console.log("✅ Modal de edición completamente configurado para:", id, "Valor servicio:", valorServicioInput?.value);
+            
+        }, 200); // Aumentado el timeout para mayor estabilidad
 
     } catch (error) {
         console.error("❌ Error inesperado al editar:", error);
         alert("❌ Error al cargar la factura para editar: " + error.message);
     }
 }
-
+          
 
 // Función de emergencia para diagnosticar el problema de stock
 async function diagnosticarStockProducto() {
@@ -2157,7 +2167,7 @@ async function diagnosticarStockProducto() {
     }
 }
 
-/// ✅ FUNCIÓN MEJORADA - CON VALIDACIÓN DE STOCK EN TIEMPO REAL
+// ✅ FUNCIÓN COMPLETAMENTE REESCRITA - Manejo correcto del valor del servicio
 async function handleInvoiceFormSubmit(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -2165,37 +2175,50 @@ async function handleInvoiceFormSubmit(event) {
 
     const submitBtn = document.getElementById('submitBtn');
     const originalText = submitBtn.textContent;
-    submitBtn.textContent = '⏳ Validando stock...';
+    submitBtn.textContent = '⏳ Validando...';
     submitBtn.disabled = true;
-// En la función handleInvoiceFormSubmit, antes del envío:
-const valorServicio = parseFloat(document.getElementById('valorServicio').value) || 0;
 
-if (valorServicio === 0) {
-    const confirmarCero = confirm(
-        '⚠️ El Valor Servicio está en $0. ¿Está seguro de que no hay valor de servicio para esta factura?\n\n' +
-        'Cancelar = Editar el valor\nAceptar = Continuar con $0'
-    );
-    
-    if (!confirmarCero) {
-        document.getElementById('valorServicio').focus();
-        return; // Detener el envío
-    }
-}
     try {
         console.log("🔍 INICIANDO VALIDACIÓN COMPLETA...");
 
-        // ✅ 1. ACTUALIZAR DATOS DE PRODUCTOS EN TIEMPO REAL
-        console.log("🔄 Actualizando datos de productos...");
-        await loadProductos(); // Recargar datos actualizados
+        // ✅ 1. VALIDACIÓN DEL VALOR DEL SERVICIO
+        const valorServicioInput = document.getElementById('valorServicio');
+        const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
         
-        // ✅ 2. VALIDACIÓN DETALLADA DE STOCK
+        console.log("💰 Valor servicio validado:", valorServicio);
+
+        if (valorServicio < 0) {
+            throw new Error('❌ El valor del servicio no puede ser negativo');
+        }
+
+        if (valorServicio > 9999999999.99) {
+            throw new Error('❌ El valor del servicio excede el límite permitido');
+        }
+
+        // ✅ 2. CONFIRMAR SI EL VALOR DEL SERVICIO ES CERO
+        if (valorServicio === 0) {
+            const confirmarCero = confirm(
+                '⚠️ El Valor Servicio está en $0. ¿Está seguro de que no hay valor de servicio para esta factura?\n\n' +
+                'Cancelar = Editar el valor\nAceptar = Continuar con $0'
+            );
+            
+            if (!confirmarCero) {
+                valorServicioInput.focus();
+                return;
+            }
+        }
+
+        // ✅ 3. ACTUALIZAR DATOS DE PRODUCTOS EN TIEMPO REAL
+        console.log("🔄 Actualizando datos de productos...");
+        await loadProductos();
+        
+        // ✅ 4. VALIDACIÓN DETALLADA DE STOCK
         console.log("📦 Validando stock para cada producto...");
         
         let stockValido = true;
         let productosProblema = [];
         let stockDisponible = {};
 
-        // Obtener stock actualizado
         for (const item of detalleFactura) {
             const producto = productosData.find(p => p.idProducto === item.idProducto);
             
@@ -2221,7 +2244,7 @@ if (valorServicio === 0) {
             }
         }
 
-        // ✅ 3. MANEJO DE ERRORES DE STOCK
+        // ✅ 5. MANEJO DE ERRORES DE STOCK
         if (!stockValido) {
             const mensajeError = `❌ PROBLEMAS DE STOCK DETECTADOS:\n\n${productosProblema.join('\n')}\n\nStock actual disponible:\n${Object.entries(stockDisponible).map(([id, stock]) => `• ${id}: ${stock} unidades`).join('\n')}\n\n¿Desea ajustar automáticamente las cantidades al stock disponible?`;
             
@@ -2242,7 +2265,7 @@ if (valorServicio === 0) {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
                 isSubmitting = false;
-                return; // Permitir que el usuario revise y reintente
+                return;
             } else {
                 throw new Error(`Ajuste las cantidades manualmente:\n${productosProblema.join('\n')}`);
             }
@@ -2251,7 +2274,7 @@ if (valorServicio === 0) {
         console.log("✅ Validación de stock completada - Todo correcto");
         submitBtn.textContent = '⏳ Preparando datos...';
 
-        // ✅ 4. VALIDACIÓN DE MONTO TOTAL
+        // ✅ 6. VALIDACIÓN DE MONTO TOTAL
         const montoTotalInput = document.querySelector('input[name="monto_total"]');
         let montoTotal = parseFloat(montoTotalInput?.value) || 0;
         
@@ -2263,7 +2286,7 @@ if (valorServicio === 0) {
             throw new Error('El monto total excede el límite permitido.');
         }
 
-        // ✅ 5. OBTENER DATOS DEL FORMULARIO CON VALIDACIONES
+        // ✅ 7. OBTENER DATOS DEL FORMULARIO CON VALIDACIONES
         const token = localStorage.getItem('jwtToken');
         if (!token) {
             throw new Error('Sesión expirada. Por favor, inicie sesión nuevamente.');
@@ -2274,14 +2297,11 @@ if (valorServicio === 0) {
         const fechaEmision = document.querySelector('input[name="fecha_emision"]').value;
         const estado = document.querySelector('select[name="estado"]').value;
         const observaciones = document.querySelector('textarea[name="observaciones"]').value || '';
-        const valorServicioInput = document.getElementById('valorServicio');
-        const valorServicio = valorServicioInput ? (parseFloat(valorServicioInput.value) || 0) : 0;
 
         // Validaciones básicas
         if (!dniCliente) throw new Error('Debe seleccionar un cliente');
         if (!fechaEmision) throw new Error('La fecha de emisión es obligatoria');
         if (!estado) throw new Error('Debe seleccionar un estado para la factura');
-        if (valorServicio < 0) throw new Error('El valor del servicio no puede ser negativo');
 
         let idCotizacion = null;
         if (tipoFactura === 'ConCotizacion') {
@@ -2291,14 +2311,15 @@ if (valorServicio === 0) {
             }
         }
 
-        // ✅ 6. PREPARAR DETALLE CON VALIDACIÓN EXTRA
-        const detalleFacturaData = prepararDatosFactura();
+        // ✅ 8. PREPARAR DETALLE CON VALIDACIÓN EXTRA
+        const { detalleFactura: detalleFacturaData, valorServicio: valorServicioValidado } = prepararDatosFactura();
         
-        if (detalleFacturaData.length === 0 && valorServicio <= 0) {
+        // Validar que haya al menos productos o valor de servicio
+        if (detalleFacturaData.length === 0 && valorServicioValidado <= 0) {
             throw new Error('Debe agregar al menos un producto o especificar un valor de servicio');
         }
 
-        // ✅ 7. ESTRUCTURA DE DATOS FINAL
+        // ✅ 9. ESTRUCTURA DE DATOS FINAL - INCLUYENDO VALOR_SERVICIO
         const facturaData = {
             dniCliente: dniCliente,
             fechaEmision: fechaEmision,
@@ -2306,7 +2327,7 @@ if (valorServicio === 0) {
             estado: estado,
             observaciones: observaciones,
             tipoFactura: tipoFactura,
-            valorServicio: valorServicio,
+            valorServicio: valorServicioValidado, // ✅ ESTE ES EL CAMPO CLAVE QUE SE ENVÍA
             detalleFactura: detalleFacturaData
         };
 
@@ -2320,7 +2341,7 @@ if (valorServicio === 0) {
             }))
         });
 
-        // ✅ 8. ENVÍO CON MANEJO MEJORADO DE ERRORES
+        // ✅ 10. ENVÍO AL SERVIDOR
         const url = currentEditId ? `${API_FACTURAS_URL}/${currentEditId}` : API_FACTURAS_URL;
         const method = currentEditId ? 'PUT' : 'POST';
 
@@ -2350,7 +2371,6 @@ if (valorServicio === 0) {
                 const errorText = await response.text();
                 console.error("❌ TEXTO DE ERROR:", errorText);
                 
-                // Intentar extraer información útil del error
                 if (errorText.includes('stock') || errorText.includes('Stock')) {
                     errorDetails = "PROBLEMA DE STOCK EN EL SERVIDOR: " + errorText;
                 } else if (errorText.includes('constraint') || errorText.includes('Constraint')) {
@@ -2359,7 +2379,6 @@ if (valorServicio === 0) {
                     errorDetails = errorText;
                 }
                 
-                // Intentar parsear como JSON
                 try {
                     const errorJson = JSON.parse(errorText);
                     errorDetails = errorJson.message || errorJson.error || errorText;
@@ -2370,18 +2389,10 @@ if (valorServicio === 0) {
                 errorDetails = 'No se pudo leer la respuesta del servidor';
             }
 
-            // Mensajes específicos por código de error
             let errorMessage = '';
             switch (response.status) {
                 case 500:
-                    errorMessage = "❌ ERROR INTERNO DEL SERVIDOR (500)\n\n";
-                    errorMessage += "El servidor encontró un error inesperado.\n";
-                    errorMessage += "Posibles causas:\n";
-                    errorMessage += "• Stock insuficiente en base de datos\n";
-                    errorMessage += "• Problema con generación de ID\n";
-                    errorMessage += "• Error en validaciones del backend\n";
-                    errorMessage += "• Base de datos no disponible\n\n";
-                    errorMessage += "Detalles técnicos:\n" + errorDetails;
+                    errorMessage = "❌ ERROR INTERNO DEL SERVIDOR (500)\n\n" + errorDetails;
                     break;
                 case 400:
                     errorMessage = "❌ DATOS INVÁLIDOS (400)\n\n" + errorDetails;
@@ -2396,7 +2407,7 @@ if (valorServicio === 0) {
             throw new Error(errorMessage);
         }
 
-        // ✅ 9. PROCESAR RESPUESTA EXITOSA
+        // ✅ 11. PROCESAR RESPUESTA EXITOSA
         const result = await response.json();
         console.log("✅ FACTURA GUARDADA EXITOSAMENTE:", result);
 
@@ -2409,8 +2420,8 @@ if (valorServicio === 0) {
               `ID: ${result.idFactura || 'Nuevo'}\n` +
               `Cliente: ${dniCliente}\n` +
               `Monto Total: ${formatCurrency(montoTotal)}\n` +
-              `Productos:\n${resumenProductos}\n` +
-              `Valor Servicio: ${formatCurrency(valorServicio)}`);
+              `Valor Servicio: ${formatCurrency(valorServicioValidado)}\n` +
+              `Productos:\n${resumenProductos}`);
 
         closeModal('addInvoiceModal');
         await getAllFacturas();
@@ -2418,7 +2429,6 @@ if (valorServicio === 0) {
     } catch (error) {
         console.error("❌ ERROR CRÍTICO AL GUARDAR FACTURA:", error);
         
-        // Mensaje de error más amigable
         let mensajeUsuario = error.message;
         
         if (error.message.includes('stock') || error.message.includes('Stock')) {
@@ -2685,8 +2695,7 @@ function updateStats() {
     }
 }
 
-// CORREGIR COMPLETAMENTE viewInvoice - VERSIÓN MEJORADA
-// VERSIÓN SIMPLIFICADA Y ROBUSTA de viewInvoice
+// ✅ FUNCIÓN COMPLETAMENTE REESCRITA - Muestra el valor del servicio en el PDF
 async function viewInvoice(id) {
     try {
         console.log("📄 Generando PDF para factura:", id);
@@ -2701,10 +2710,16 @@ async function viewInvoice(id) {
         const factura = await response.json();
         console.log("📋 Factura cargada:", factura);
 
-        // 2. Preparar datos
+        // 2. Preparar datos - VERIFICAR QUE SE OBTIENE EL VALOR DEL SERVICIO
         const valorServicio = parseFloat(factura.valorServicio) || 0;
         const montoTotal = convertirValorK(factura.montoTotal) || 0;
-        
+
+        console.log("🔍 VALORES PARA PDF:", {
+            valorServicio: valorServicio,
+            montoTotal: montoTotal,
+            detalleFactura: factura.detalleFactura
+        });
+
         // 3. Obtener información del cliente
         let clienteInfo = {};
         if (factura.cliente) {
@@ -2718,103 +2733,215 @@ async function viewInvoice(id) {
             };
         }
 
-        // 4. Crear PDF básico
+        // 4. Crear PDF PROFESIONAL
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF();
         
-        // Encabezado
+        // Configuración de márgenes y colores
+        const primaryColor = [44, 95, 65]; // Verde corporativo
+        const secondaryColor = [100, 100, 100];
+        const margin = 20;
+        let yPos = margin;
+
+        // ✅ ENCABEZADO PROFESIONAL
+        doc.setFillColor(...primaryColor);
+        doc.rect(0, 0, 210, 40, 'F');
+        
+        doc.setTextColor(255, 255, 255);
         doc.setFontSize(20);
-        doc.setTextColor(44, 95, 65);
+        doc.setFont(undefined, 'bold');
         doc.text('FACTURA DE VENTA', 105, 20, { align: 'center' });
         
         doc.setFontSize(10);
-        doc.setTextColor(100, 100, 100);
         doc.text('Gemini Ambiental SAS', 105, 28, { align: 'center' });
         doc.text('NIT: 901.234.567-8', 105, 33, { align: 'center' });
-        
-        // Información de la factura
-        doc.setFontSize(12);
+
+        yPos = 50;
+
+        // ✅ INFORMACIÓN DE LA FACTURA (2 columnas)
         doc.setTextColor(0, 0, 0);
-        doc.text(`Factura: ${factura.idFactura}`, 20, 50);
-        doc.text(`Fecha: ${formatDateForPDF(factura.fechaEmision)}`, 20, 60);
-        doc.text(`Estado: ${factura.estado}`, 20, 70);
-        
-        // Información del cliente
-        doc.text(`Cliente: ${clienteInfo.nombre}`, 20, 85);
-        doc.text(`Documento: ${clienteInfo.dni}`, 20, 95);
-        doc.text(`Teléfono: ${clienteInfo.telefono}`, 20, 105);
-        
-// Detalles
-let yPos = 125;
-doc.text('DETALLES:', 20, yPos);
-yPos += 10;
-
-// Productos/Servicios
-const detalles = factura.detalleFactura || factura.detalleProductos || factura.detalleServicios || [];
-
-// Mostrar productos primero
-if (detalles.length > 0) {
-    detalles.forEach((item, index) => {
-        if (yPos > 250) {
-            doc.addPage();
-            yPos = 20;
-        }
-        
-        const nombre = item.nombreProducto || item.nombreServicio || 'Producto/Servicio';
-        const cantidad = item.cantidad || 1;
-        const precio = parseFloat(item.precioUnitario) || 0;
-        const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
-        
-        // Mostrar producto en la lista de detalles
-        doc.text(`${cantidad}x ${nombre}`, 25, yPos);
-        doc.text(formatCurrencyForPDF(subtotal), 180, yPos, { align: 'right' });
-        yPos += 8;
-    });
-}
-
-// Valor del servicio - AHORA SIEMPRE VISIBLE EN DETALLES
-if (valorServicio > 0) {
-    if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-    }
-    doc.text(`Servicio`, 25, yPos);
-    doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
-    yPos += 8;
-} else if (detalles.length === 0) {
-    // Si no hay productos ni valor de servicio
-    doc.text('No hay detalles registrados', 25, yPos);
-    yPos += 8;
-}
-        
-        // Total
-        yPos += 10;
+        doc.setFontSize(12);
         doc.setFont(undefined, 'bold');
-        doc.text('TOTAL:', 20, yPos);
-        doc.text(formatCurrencyForPDF(montoTotal), 180, yPos, { align: 'right' });
+        doc.text('INFORMACIÓN DE LA FACTURA', margin, yPos);
+        yPos += 10;
         
-        // Observaciones
-        if (factura.observaciones) {
-            yPos += 20;
-            doc.setFont(undefined, 'normal');
-            doc.setFontSize(10);
-            doc.text('Observaciones:', 20, yPos);
-            yPos += 5;
-            const obsLines = doc.splitTextToSize(factura.observaciones, 170);
-            doc.text(obsLines, 20, yPos);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(10);
+        doc.text(`Número: ${factura.idFactura}`, margin, yPos);
+        doc.text(`Fecha: ${formatDateForPDF(factura.fechaEmision)}`, 105, yPos);
+        yPos += 6;
+        
+        doc.text(`Estado: ${factura.estado}`, margin, yPos);
+        doc.text(`Tipo: ${factura.tipoFactura || 'Simple'}`, 105, yPos);
+        yPos += 15;
+
+        // ✅ INFORMACIÓN DEL CLIENTE
+        doc.setFont(undefined, 'bold');
+        doc.text('INFORMACIÓN DEL CLIENTE', margin, yPos);
+        yPos += 10;
+        
+        doc.setFont(undefined, 'normal');
+        doc.text(`Nombre: ${clienteInfo.nombre}`, margin, yPos);
+        yPos += 6;
+        
+        doc.text(`Documento: ${clienteInfo.dni}`, margin, yPos);
+        yPos += 6;
+        
+        doc.text(`Teléfono: ${clienteInfo.telefono || 'N/A'}`, margin, yPos);
+        yPos += 6;
+        
+        if (clienteInfo.correo) {
+            doc.text(`Email: ${clienteInfo.correo}`, margin, yPos);
+            yPos += 6;
         }
         
-        // Pie de página
+        yPos += 10;
+
+        // ✅ DETALLES DE LA FACTURA - TABLA PROFESIONAL
+        doc.setFont(undefined, 'bold');
+        doc.text('DETALLES DE LA FACTURA', margin, yPos);
+        yPos += 8;
+
+        // Encabezado de la tabla
+        doc.setFillColor(240, 240, 240);
+        doc.rect(margin, yPos, 170, 8, 'F');
+        doc.setTextColor(0, 0, 0);
+        doc.setFontSize(9);
+        
+        doc.text('Descripción', margin + 2, yPos + 6);
+        doc.text('Cant.', margin + 120, yPos + 6);
+        doc.text('Precio Unit.', margin + 140, yPos + 6);
+        doc.text('Subtotal', margin + 170, yPos + 6, { align: 'right' });
+        
+        yPos += 12;
+
+        // ✅ PRODUCTOS/SERVICIOS
+        const detalles = factura.detalleFactura || [];
+        let subtotalProductos = 0;
+
+        if (detalles.length > 0) {
+            detalles.forEach((item, index) => {
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = margin;
+                }
+                
+                const nombre = item.nombreProducto || 'Producto/Servicio';
+                const cantidad = item.cantidad || 1;
+                const precio = parseFloat(item.precioUnitario) || 0;
+                const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
+                subtotalProductos += subtotal;
+
+                // Alternar colores de fila
+                if (index % 2 === 0) {
+                    doc.setFillColor(250, 250, 250);
+                    doc.rect(margin, yPos - 4, 170, 8, 'F');
+                }
+
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(8);
+                
+                // Descripción (con wrap si es muy largo)
+                const descLines = doc.splitTextToSize(nombre, 80);
+                doc.text(descLines, margin + 2, yPos);
+                
+                doc.text(cantidad.toString(), margin + 120, yPos);
+                doc.text(formatCurrencyForPDF(precio), margin + 140, yPos);
+                doc.text(formatCurrencyForPDF(subtotal), margin + 170, yPos, { align: 'right' });
+                
+                yPos += Math.max(descLines.length * 4, 8);
+            });
+        } else {
+            doc.text('No hay productos registrados', margin + 2, yPos);
+            yPos += 8;
+        }
+
+        // ✅ VALOR DEL SERVICIO - MOSTRAR SIEMPRE
+        yPos += 10;
+        
+        if (valorServicio > 0) {
+            // Fila para valor del servicio
+            doc.setFillColor(245, 245, 245);
+            doc.rect(margin, yPos - 4, 170, 8, 'F');
+            
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'bold');
+            doc.text('VALOR DEL SERVICIO', margin + 2, yPos);
+            doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos, { align: 'right' });
+            
+            yPos += 12;
+        }
+
+        // ✅ SUBTOTALES Y TOTALES
+        yPos += 5;
+        
+        // Línea separadora
+        doc.setDrawColor(200, 200, 200);
+        doc.line(margin + 100, yPos, margin + 170, yPos);
+        yPos += 8;
+
+        // Subtotal productos
+        if (detalles.length > 0) {
+            doc.setFontSize(9);
+            doc.setFont(undefined, 'normal');
+            doc.text('Subtotal Productos:', margin + 120, yPos);
+            doc.text(formatCurrencyForPDF(subtotalProductos), margin + 170, yPos, { align: 'right' });
+            yPos += 6;
+        }
+
+        // Valor servicio
+        if (valorServicio > 0) {
+            doc.text('Valor del Servicio:', margin + 120, yPos);
+            doc.text(formatCurrencyForPDF(valorServicio), margin + 170, yPos, { align: 'right' });
+            yPos += 6;
+        }
+
+        // TOTAL
+        yPos += 5;
+        doc.setFontSize(12);
+        doc.setFont(undefined, 'bold');
+        doc.setTextColor(...primaryColor);
+        doc.text('TOTAL:', margin + 120, yPos);
+        doc.text(formatCurrencyForPDF(montoTotal), margin + 170, yPos, { align: 'right' });
+
+        // ✅ OBSERVACIONES
+        yPos += 20;
+        if (factura.observaciones) {
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'bold');
+            doc.setTextColor(0, 0, 0);
+            doc.text('OBSERVACIONES:', margin, yPos);
+            yPos += 6;
+            
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(9);
+            const obsLines = doc.splitTextToSize(factura.observaciones, 170);
+            doc.text(obsLines, margin, yPos);
+            yPos += obsLines.length * 5;
+        }
+
+        // ✅ PIE DE PÁGINA PROFESIONAL
         const totalPages = doc.internal.getNumberOfPages();
         for (let i = 1; i <= totalPages; i++) {
             doc.setPage(i);
+            
+            // Línea separadora del footer
+            doc.setDrawColor(200, 200, 200);
+            doc.line(margin, 275, 210 - margin, 275);
+            
+            // Información de la empresa
             doc.setFontSize(8);
             doc.setTextColor(100, 100, 100);
-            doc.text(`Página ${i} de ${totalPages}`, 105, 285, { align: 'center' });
-            doc.text(`Generado el: ${new Date().toLocaleDateString('es-CO')}`, 105, 290, { align: 'center' });
+            doc.text('Gemini Ambiental SAS - NIT: 901.234.567-8', margin, 282);
+            doc.text('Tel: +57 1 234 5678 - Email: info@geminiambiental.com', margin, 287);
+            
+            // Número de página
+            doc.text(`Página ${i} de ${totalPages} - Generado el: ${new Date().toLocaleDateString('es-CO')}`, 
+                    210 - margin, 287, { align: 'right' });
         }
 
-        // Mostrar/descargar
+        // ✅ MOSTRAR/DESCARGAR
         const nombreArchivo = `Factura_${factura.idFactura}.pdf`;
         
         if (confirm('¿Desea descargar el PDF?\n\nCancelar = Vista previa\nAceptar = Descargar')) {
@@ -2891,18 +3018,20 @@ function convertirValorK(valor) {
     }
     return parseFloat(valor) || 0;
 }
-
-// ✅ AGREGAR TAMBIÉN formatCurrencyForPDF si no existe
+// ✅ FUNCIÓN MEJORADA - Formato profesional para PDF
 function formatCurrencyForPDF(amount) {
     if (amount === null || amount === undefined || isNaN(amount)) return '$ 0';
     
-    // ✅ CORRECCIÓN: Aplicar redondeo antes de formatear para PDF
+    // Redondear a miles
     let valorRedondeado = Math.round(amount / 1000) * 1000;
     
-    return '$ ' + new Intl.NumberFormat('es-CO').format(valorRedondeado);
+    return '$ ' + new Intl.NumberFormat('es-CO', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    }).format(valorRedondeado);
 }
 
-// ✅ AGREGAR formatDateForPDF si no existe
+// ✅ FUNCIÓN MEJORADA - Formato de fecha profesional
 function formatDateForPDF(dateString) {
     if (!dateString) return 'N/A';
     try {
@@ -2910,7 +3039,9 @@ function formatDateForPDF(dateString) {
         return date.toLocaleDateString('es-CO', {
             year: 'numeric',
             month: '2-digit',
-            day: '2-digit'
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
         });
     } catch (e) {
         return 'Fecha inválida';
