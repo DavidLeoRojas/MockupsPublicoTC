@@ -2697,9 +2697,27 @@ async function viewInvoice(id) {
         const factura = await response.json();
         console.log("📋 Factura cargada:", factura);
 
-        // 2. Preparar datos
-        const valorServicio = parseFloat(factura.valorServicio) || 0;
-        const montoTotal = convertirValorK(factura.montoTotal) || 0;
+// 2. Preparar datos - VERIFICAR QUE SE OBTIENE EL VALOR DEL SERVICIO
+const valorServicio = parseFloat(factura.valorServicio) || 0;
+const montoTotal = convertirValorK(factura.montoTotal) || 0;
+
+console.log("🔍 VALORES PARA PDF:", {
+    valorServicio: valorServicio,
+    montoTotal: montoTotal,
+    detalleFactura: factura.detalleFactura
+});
+
+// ✅ VERIFICACIÓN: Si hay diferencia entre productos y total, debe ser el servicio
+const subtotalProductos = (factura.detalleFactura || []).reduce((sum, item) => {
+    return sum + (parseFloat(item.subtotal) || 0);
+}, 0);
+
+console.log("🔍 VERIFICACIÓN MATEMÁTICA:", {
+    subtotalProductos: subtotalProductos,
+    valorServicio: valorServicio,
+    suma: subtotalProductos + valorServicio,
+    montoTotal: montoTotal
+});
         
         // 3. Obtener información del cliente
         let clienteInfo = {};
@@ -2746,7 +2764,7 @@ doc.text('DETALLES:', 20, yPos);
 yPos += 10;
 
 // Productos/Servicios
-const detalles = factura.detalleFactura || factura.detalleProductos || factura.detalleServicios || [];
+const detalles = factura.detalleFactura || [];
 
 // Mostrar productos primero
 if (detalles.length > 0) {
@@ -2756,7 +2774,7 @@ if (detalles.length > 0) {
             yPos = 20;
         }
         
-        const nombre = item.nombreProducto || item.nombreServicio || 'Producto/Servicio';
+        const nombre = item.nombreProducto || 'Producto/Servicio';
         const cantidad = item.cantidad || 1;
         const precio = parseFloat(item.precioUnitario) || 0;
         const subtotal = parseFloat(item.subtotal) || (precio * cantidad);
@@ -2768,14 +2786,14 @@ if (detalles.length > 0) {
     });
 }
 
-// Valor del servicio - AHORA SIEMPRE VISIBLE EN DETALLES
+// ✅ CORRECCIÓN CRÍTICA: Mostrar el valor del servicio como un ítem en DETALLES
 if (valorServicio > 0) {
     if (yPos > 250) {
         doc.addPage();
         yPos = 20;
     }
-    // ✅ CORRECCIÓN: Mostrar como un ítem más en la lista de detalles
-    doc.text(`Servicio`, 25, yPos);
+    // Mostrar como "Servicio" en la lista de detalles
+    doc.text('Servicio', 25, yPos);
     doc.text(formatCurrencyForPDF(valorServicio), 180, yPos, { align: 'right' });
     yPos += 8;
 }
