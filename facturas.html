@@ -846,6 +846,9 @@ input[type="date"] {
         <div class="invoices-section">
             <div class="invoices-header">
                 <span class="invoices-title">Listado de Facturas</span>
+                <span>
+                    <button class="btn btn-secondary">⬇️ Descargar</button>
+                </span>
             </div>
             <div class="table-container">
                 <table class="invoices-table">
@@ -1139,7 +1142,8 @@ function formatLargeNumber(value) {
     }
     return value.toString();
 }
-// ✅ FUNCIÓN CORREGIDA - Manejo simple del valor del servicio
+// FUNCIÓN actualizarMontoTotal CORREGIDA
+// ✅ FUNCIÓN CORREGIDA - Mantiene el valor exacto del servicio
 function actualizarMontoTotal() {
     const valorServicioInput = document.getElementById('valorServicio');
     const montoTotalInput = document.querySelector('input[name="monto_total"]');
@@ -1149,61 +1153,28 @@ function actualizarMontoTotal() {
         return;
     }
 
-    // ✅ Obtener el valor exacto del servicio SIN conversiones adicionales
-    let valorServicio = parseFloat(valorServicioInput.value) || 0;
-    
-    // Si el valor tiene formato (puntos para miles), limpiarlo
-    if (typeof valorServicioInput.value === 'string' && valorServicioInput.value.includes('.')) {
-        valorServicio = parseFloat(valorServicioInput.value.replace(/\./g, '')) || 0;
-    }
+    // ✅ CORRECCIÓN: Obtener el valor exacto como string primero
+    const valorServicioStr = valorServicioInput.value;
+    const valorServicio = parseFloat(valorServicioStr.replace(/\./g, '').replace(',', '.')) || 0;
     
     const subtotalProductos = detalleFactura.reduce((sum, item) => {
         return sum + (parseFloat(item.subtotal) || 0);
     }, 0);
     
-    // ✅ CALCULAR MONTO TOTAL EXACTO
+    // ✅ CALCULAR MONTO TOTAL INCLUYENDO VALOR DEL SERVICIO
     let montoTotal = subtotalProductos + valorServicio;
     
-    // ✅ NO aplicar redondeo automático, mantener el cálculo exacto
+    // ✅ CORRECCIÓN: NO aplicar redondeo automático, mantener el cálculo exacto
     montoTotalInput.value = montoTotal.toFixed(0);
     
     console.log("💰 Cálculo monto total ACTUALIZADO:", {
-        valorServicioInput: valorServicioInput.value,
+        valorServicioInput: valorServicioStr,
         valorServicioCalculado: valorServicio,
         subtotalProductos: subtotalProductos,
         montoTotal: montoTotal
     });
 }
 
-// ✅ EVENT LISTENER SIMPLIFICADO - Solo actualiza cuando hay cambios reales
-function setupValorServicioEventListener() {
-    const valorServicioInput = document.getElementById('valorServicio');
-    
-    if (valorServicioInput) {
-        // Remover todos los event listeners anteriores
-        valorServicioInput.removeEventListener('input', actualizarMontoTotal);
-        valorServicioInput.removeEventListener('change', actualizarMontoTotal);
-        
-        // ✅ NUEVO EVENT LISTENER SIMPLE
-        valorServicioInput.addEventListener('input', function(e) {
-            // Pequeño delay para asegurar que el valor esté actualizado
-            setTimeout(actualizarMontoTotal, 100);
-        });
-        
-        console.log("✅ Event listener de valorServicio configurado correctamente");
-    }
-}
-
-// ✅ FUNCIÓN AUXILIAR PARA LIMPIAR FORMATO DE NÚMEROS
-function limpiarFormatoNumero(valor) {
-    if (typeof valor === 'string') {
-        // Remover todo excepto números y punto decimal
-        return valor.replace(/[^\d.,]/g, '')
-                   .replace(/\./g, '')  // Remover puntos de miles
-                   .replace(',', '.');  // Convertir coma decimal a punto
-    }
-    return valor;
-}
 // ✅ EVENT LISTENER CORREGIDO - Maneja correctamente el formato de números
 function setupValorServicioEventListener() {
     const valorServicioInput = document.getElementById('valorServicio');
@@ -3287,29 +3258,45 @@ function filterInvoices() {
     renderTable(filtered);
 }
 // Ejecutar en consola: diagnosticarToken()
-// ✅ ACTUALIZAR LA INICIALIZACIÓN
+// Inicialización corregida
 document.addEventListener('DOMContentLoaded', function() {
     console.log("🚀 Iniciando aplicación de Facturas...");
     
+    // Verificar token al cargar la página
     if (!verificarToken()) {
         alert('❌ Sesión expirada. Por favor, inicie sesión nuevamente.');
         window.location.href = 'index.html';
         return;
     }
 
+    // Cargar datos iniciales
     loadInitialData();
 
-    // ✅ CONFIGURAR EVENT LISTENERS CORRECTAMENTE
+    // Asignar el evento submit al formulario
     const invoiceForm = document.getElementById('invoiceForm');
     if (invoiceForm) {
         invoiceForm.addEventListener('submit', handleInvoiceFormSubmit);
         console.log("✅ Evento submit asignado al formulario");
+    } else {
+        console.error("❌ No se encontró el formulario con ID 'invoiceForm'");
     }
 
-    // ✅ CONFIGURAR EVENT LISTENER DEL VALOR SERVICIO
-    setupValorServicioEventListener();
+    // Event Listeners adicionales
+    const filterButton = document.getElementById('filterInvoicesButton');
+    if (filterButton) {
+        filterButton.addEventListener('click', filterInvoices);
+        console.log("✅ Evento click asignado al botón de filtro");
+    }
 
-    // Otros event listeners...
+    const filterForm = document.getElementById('filterForm');
+    if (filterForm) {
+        filterForm.addEventListener('submit', (e) => { 
+            e.preventDefault(); 
+            filterInvoices(); 
+        });
+        console.log("✅ Evento submit asignado al formulario de filtro");
+    }
+
     console.log("✅ Aplicación de Facturas inicializada correctamente");
 });
     </script>
