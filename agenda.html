@@ -1559,41 +1559,31 @@ eventsContainer.appendChild(eventElement);
             if (nombreServicio.includes('seguimiento')) return 'seguimiento';
             return 'control-plagas';
         }
-
 // ========== SHOW DAY SERVICES ========== (CORREGIDA Y MEJORADA VISUALMENTE)
 function showDayServices(date) {
     selectedDate = date; // Guardar la fecha seleccionada
-
     const modal = document.getElementById('dayServicesModal');
     const title = document.getElementById('dayServicesTitle');
     const content = document.getElementById('dayServicesContent');
-
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
-
     // ✅ CORRECCIÓN: Filtrar por fecha usando una comparación segura (sin depender de new Date)
     // Convertir la fecha del servicio a formato YYYY-MM-DD y comparar directamente
     const serviciosDelDia = servicios.filter(s => {
         if (!s.fecha) return false;
-
         // Extraer año, mes y día de la fecha del servicio (formato YYYY-MM-DD)
         const [servYear, servMonth, servDay] = s.fecha.split('-').map(Number);
-
         // Comparar solo año, mes y día
         return servYear === year && servMonth === (month + 1) && servDay === day;
     });
-
     console.log(`📅 Mostrando servicios para ${day}/${month + 1}/${year}: ${serviciosDelDia.length} encontrados`);
-
     title.textContent = `Servicios del ${day} de ${monthNames[month]} de ${year}`;
     content.innerHTML = '';
-
     if (serviciosDelDia.length === 0) {
         content.innerHTML = '<p style="text-align:center; color:#718096; padding: 2rem;">No hay servicios programados para este día.</p>';
         return;
     }
-
     // ✅ CREAR UN CONTENEDOR DE LISTA CON SCROLL
     const listContainer = document.createElement('div');
     listContainer.style.maxHeight = '300px';
@@ -1601,7 +1591,6 @@ function showDayServices(date) {
     listContainer.style.padding = '0.5rem';
     listContainer.style.border = '1px solid #e2e8f0';
     listContainer.style.borderRadius = '0.5rem';
-
     serviciosDelDia.forEach(serv => {
         // ✅ MEJORA VISUAL: Crear un elemento de lista para cada servicio con más información
         const listItem = document.createElement('div');
@@ -1612,14 +1601,12 @@ function showDayServices(date) {
         listItem.style.cursor = 'pointer';
         listItem.style.transition = 'background-color 0.2s';
         listItem.style.backgroundColor = '#f8fafc'; // Fondo claro para mejorar la legibilidad
-
         // Extraer información
         const hora = serv.hora ? serv.hora.substring(0, 5) : 'N/A';
         const nombreCliente = obtenerNombreCliente(serv);
         const primerNombre = nombreCliente.split(' ')[0];
         const nombreServicio = obtenerNombreServicio(serv);
         const estado = serv.estado || 'Programado';
-
         // Asignar contenido HTML estructurado con más detalles
         listItem.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -1639,20 +1626,18 @@ function showDayServices(date) {
                 </div>
             </div>
         `;
-
         // Añadir título emergente con más detalles
         listItem.title = `${nombreServicio}
 Cliente: ${nombreCliente}
 Técnico: ${obtenerNombreTecnico(serv)}
 Hora: ${hora}
 Estado: ${estado}`;
-
         // ✅ CORRECCIÓN: Capturar el objeto 'serv' en el closure del evento click
         listItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openEditServiceModal(serv.idServicio); // Pasar el ID del servicio
+            e.stopPropagation(); // Previene que se propague al clic del día
+            // PASAR EL ID DEL SERVICIO EN LUGAR DEL OBJETO COMPLETO
+            openEditServiceModal(serv.idServicio);
         });
-
         // ✅ Efecto hover
         listItem.addEventListener('mouseenter', () => {
             listItem.style.backgroundColor = '#ebf4ff';
@@ -1660,12 +1645,9 @@ Estado: ${estado}`;
         listItem.addEventListener('mouseleave', () => {
             listItem.style.backgroundColor = '#f8fafc';
         });
-
         listContainer.appendChild(listItem);
     });
-
     content.appendChild(listContainer);
-
     modal.classList.add('show');
 }
 
