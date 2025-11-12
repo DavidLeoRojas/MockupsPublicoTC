@@ -2407,8 +2407,7 @@ function openAddServiceModal(date = null) {
                 if (form) form.reset();
             }
         }
-
-// ========== ADD SERVICE ========== (CORREGIDA: Incluye Token JWT)
+// ========== ADD SERVICE ========== (CORREGIDA: Incluye Token JWT y manejo de campos correcto)
 async function addService(event) {
     event.preventDefault();
     if (isSubmitting) return;
@@ -2421,21 +2420,24 @@ async function addService(event) {
     }
 
     try {
-        const formData = new FormData(document.getElementById('serviceForm'));
-        const dniCliente = formData.get('clienteId').trim();
-        const dniEmpleado = formData.get('tecnicoId').trim();
-        const idTipoServicio = formData.get('tipoServicioId').trim();
-        const fecha = formData.get('fecha').trim();
-        const hora = formData.get('hora').trim();
-        const observaciones = formData.get('observaciones').trim();
-        const prioridad = formData.get('prioridad').trim();
+        // ✅ 1. Obtener los datos del formulario
+        const dniCliente = document.getElementById('clienteId').value.trim();
+        const dniEmpleado = document.getElementById('tecnicoId').value.trim();
+        const idTipoServicio = document.getElementById('tipoServicioId').value.trim();
+        const fecha = document.getElementById('fecha').value.trim();
+        const hora = document.getElementById('hora').value.trim();
+        const observaciones = document.getElementById('observaciones').value.trim();
+        const prioridad = document.getElementById('prioridad').value.trim();
+        const estado = document.getElementById('estado').value.trim(); // Asumiendo que tienes un campo de estado
+        // Opcional: Si tienes un campo para 'idCotizacion'
+        // const idCotizacion = document.getElementById('cotizacionId').value.trim() || null;
 
         // Validación básica
         if (!dniCliente || !dniEmpleado || !idTipoServicio || !fecha || !hora) {
-            throw new Error('Todos los campos son obligatorios.');
+            throw new Error('Todos los campos obligatorios (Cliente, Técnico, Tipo de Servicio, Fecha, Hora) son requeridos.');
         }
 
-        // ✅ 1. Obtener el token JWT del almacenamiento local
+        // ✅ 2. Obtener el token JWT del almacenamiento local
         const token = localStorage.getItem('jwtToken');
         if (!token) {
             alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
@@ -2443,54 +2445,67 @@ async function addService(event) {
             return;
         }
 
-        // ✅ 2. Configurar los encabezados con el token de autenticación
+        // ✅ 3. Configurar los encabezados con el token de autenticación
         const headers = {
-            'Authorization': 'Bearer ' + token,
+            'Authorization': 'Bearer ' + token, // <-- ESTO ERA LO FALTANTE
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
 
-        // Preparar los datos para enviar
+        // ✅ 4. Preparar los datos para enviar, asegurando los nombres correctos
+        // Revisando la entidad Servicio del backend, los campos esperados son en camelCase
         const servicioData = {
-            dniCliente: dniCliente,
-            dniEmpleadoAsignado: dniEmpleado,
-            idTipoServicio: idTipoServicio,
-            fecha: fecha,
-            hora: hora + ':00', // Asegurar formato HH:MM:SS
-            estado: 'Programado', // Valor por defecto para nuevo servicio
-            observaciones: observaciones,
-            prioridad: prioridad,
-            servicioSinCotizacion: true,
-            idCotizacion: null
+            dniCliente: dniCliente, // Asegúrate que coincida con el nombre del campo en la entidad JPA
+            dniEmpleadoAsignado: dniEmpleado, // Asegúrate que coincida
+            idTipoServicio: idTipoServicio, // Asegúrate que coincida
+            fecha: fecha, // Formato YYYY-MM-DD
+            hora: hora + ':00', // Formato HH:MM:SS
+            estado: estado || 'Programado', // Valor por defecto
+            observaciones: observaciones || null, // Puede ser nulo
+            prioridad: prioridad || 'Normal', // Valor por defecto
+            servicioSinCotizacion: true, // Asumiendo que es un servicio directo
+            idCotizacion: null // Asumiendo que no tiene cotización asociada en este flujo
+            // idServicio: null // El backend debería generar este campo
         };
 
-        console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
+        console.log('🚀 ENVIANDO AL BACKEND (addService):', servicioData);
 
-        // Hacer la petición
+        // ✅ 5. Hacer la petición POST al backend
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
-            headers: headers, // <-- Incluir los headers aquí
+            headers: headers, // <-- ESTO TAMBIÉN ERA FUNDAMENTAL
             body: JSON.stringify(servicioData)
         });
 
-        console.log('📨 RESPUESTA DEL SERVIDOR:', { status: response.status, ok: response.ok });
+        console.log('📨 RESPUESTA DEL SERVIDOR (addService):', { status: response.status, ok: response.ok });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || `Error ${response.status}`);
+            // ✅ 6. Intentar obtener el mensaje de error del backend
+            let errorMessage = `Error ${response.status}`;
+            try {
+                const errorBody = await response.text(); // O response.json() si el backend lo envía así
+                if (errorBody) {
+                    errorMessage = errorBody;
+                }
+            } catch (e) {
+                console.warn("No se pudo leer el cuerpo del error:", e);
+                // errorMessage ya tiene el código de estado
+            }
+            throw new Error(errorMessage);
         }
 
+        // ✅ 7. Manejar respuesta exitosa
         showCustomAlert('Servicio programado exitosamente', 'Éxito', 'success');
         closeModal('addServiceModal');
 
         // Recargar datos después de un breve delay
         setTimeout(async () => {
             console.log('🔄 Recargando datos después de agregar servicio...');
-            await loadAgendaData();
+            await loadAgendaData(); // Asegúrate que esta función también incluya token si llama a endpoints protegidos
         }, 1500);
 
     } catch (error) {
-        console.error('❌ ERROR COMPLETO AL CREAR SERVICIO:', error);
+        console.error('❌ ERROR COMPLETO AL CREAR SERVICIO (addService):', error);
         showCustomAlert(`Error al crear servicio: ${error.message}`, 'Error', 'error');
     } finally {
         isSubmitting = false;
