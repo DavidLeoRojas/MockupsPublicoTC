@@ -1499,21 +1499,22 @@ function renderCalendar(month, year) {
 
                 const eventsContainer = dayElement.querySelector('.day-events');
                 serviciosDelDia.forEach(serv => {
-                    const eventElement = document.createElement('div');
-                    // --- MODIFICACIÓN AQUÍ ---
-                    // Se añade la clase del estado del servicio a la clase del tipo
-                    eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
-                    // --- FIN MODIFICACIÓN ---
-                    const nombreCliente = obtenerNombreCliente(serv);
-                    const primerNombre = nombreCliente.split(' ')[0];
-                    eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
-                    eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
-                    eventElement.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openEditServiceModal(serv); // Asegúrate de que esta función exista y funcione como esperas
-                    });
-                    eventsContainer.appendChild(eventElement);
-                });
+                   const eventElement = document.createElement('div');
+// --- MODIFICACIÓN AQUÍ ---
+// Se añade la clase del estado del servicio a la clase del tipo
+eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+// --- FIN MODIFICACIÓN ---
+const nombreCliente = obtenerNombreCliente(serv);
+const primerNombre = nombreCliente.split(' ')[0];
+eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
+eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
+eventElement.addEventListener('click', (e) => {
+    e.stopPropagation();
+    // ✅ PASAR EL ID DEL SERVICIO EN LUGAR DEL OBJETO COMPLETO
+    openEditServiceModal(serv.idServicio);
+});
+eventsContainer.appendChild(eventElement);
+});
 
                 dayElement.addEventListener('click', () => showDayServices(date));
                 calendarGrid.appendChild(dayElement);
