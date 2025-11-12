@@ -1549,77 +1549,156 @@ function renderCalendar(month, year) {
             return 'control-plagas';
         }
 
-        // ========== SHOW DAY SERVICES ==========
-        function showDayServices(date) {
-            selectedDate = date; // Guardar la fecha seleccionada
-            
-            const modal = document.getElementById('dayServicesModal');
-            const title = document.getElementById('dayServicesTitle');
-            const content = document.getElementById('dayServicesContent');
+// ========== SHOW DAY SERVICES ========== (CORREGIDA)
+function showDayServices(date) {
+    selectedDate = date; // Guardar la fecha seleccionada
 
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            const day = date.getDate();
+    const modal = document.getElementById('dayServicesModal');
+    const title = document.getElementById('dayServicesTitle');
+    const content = document.getElementById('dayServicesContent');
 
-            const serviciosDelDia = servicios.filter(s => {
-                if (!s.fecha) return false;
-                const fechaServicio = new Date(s.fecha + 'T00:00:00');
-                return fechaServicio.getDate() === day &&
-                       fechaServicio.getMonth() === month &&
-                       fechaServicio.getFullYear() === year;
-            });
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
 
-            const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-            title.textContent = `Servicios del ${dateStr}`;
+    // ✅ CORRECCIÓN: Usar una copia o filtrar sin modificar la variable global 'servicios'
+    // No usamos 'servicios' directamente, sino que filtramos sobre la lista original
+    const serviciosDelDia = servicios.filter(s => {
+        if (!s.fecha) return false;
+        const fechaServicio = new Date(s.fecha);
+        const dia = fechaServicio.getDate();
+        const mes = fechaServicio.getMonth();
+        const año = fechaServicio.getFullYear();
+        return dia === day && mes === month && año === year;
+    });
 
-            console.log(`📅 Mostrando servicios del ${dateStr}:`, serviciosDelDia.length, 'servicios encontrados');
+    console.log(`📅 Mostrando servicios para ${day}/${month + 1}/${year}: ${serviciosDelDia.length} encontrados`);
 
-            if (serviciosDelDia.length === 0) {
-                content.innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: #718096;">
-                        <div style="font-size: 3em; margin-bottom: 1rem;">📅</div>
-                        <p style="font-size: 1.1em; margin-bottom: 0.5rem;">No hay servicios programados para esta fecha</p>
-                        <p style="font-size: 0.9em;">Haga clic en el botón de abajo para programar uno</p>
-                    </div>
-                `;
-            } else {
-                content.innerHTML = serviciosDelDia.map(serv => {
-                    const nombreCliente = obtenerNombreCliente(serv);
-                    const nombreTecnico = obtenerNombreTecnico(serv);
-                    const nombreServicio = obtenerNombreServicio(serv);
-                    const hora = serv.hora ? serv.hora.substring(0, 5) : 'No definida';
+    title.textContent = `Servicios del ${day} de ${monthNames[month]} de ${year}`;
+    content.innerHTML = '';
 
-                    // ✅ Asegúrate de que serv.estado sea un string limpio
-                    const estadoMostrado = serv.estado ? serv.estado.charAt(0).toUpperCase() + serv.estado.slice(1).replace('_', ' ') : 'Programado';
+    if (serviciosDelDia.length === 0) {
+        content.innerHTML = '<p style="text-align:center; color:#718096;">No hay servicios programados para este día.</p>';
+        return;
+    }
 
-                    return `<div class="service-card">
-                        <div class="service-card-header">
-                            <span class="service-time">${hora}</span>
-                            <div class="service-actions">
-                                <button class="btn btn-sm btn-outline-primary" onclick="openEditServiceModal('${serv.idServicio}')">✏️ Editar</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="cancelarServicio('${serv.idServicio}')">🗑️ Cancelar</button>
-                            </div>
-                        </div>
-                        <div class="service-card-body">
-                            <div class="service-info-row"><span class="service-info-label">Servicio:</span><span class="service-info-value">${nombreServicio}</span></div>
-                            <div class="service-info-row"><span class="service-info-label">Cliente:</span><span class="service-info-value">${nombreCliente}</span></div>
-                            <div class="service-info-row"><span class="service-info-label">Técnico:</span><span class="service-info-value">${nombreTecnico}</span></div>
-                            <div class="service-info-row"><span class="service-info-label">Prioridad:</span><span class="service-info-value">${serv.prioridad || 'Normal'}</span></div>
-                            <!-- ✅ Mostrar el estado con la clase CSS correcta -->
-                            <div class="service-info-row">
-                                <span class="service-info-label">Estado:</span>
-                                <span class="service-info-value">
-                                    <span class="badge ${getEstadoClass(serv.estado)}">${estadoMostrado}</span>
-                                </span>
-                            </div>
-                            ${serv.observaciones ? `<div class="service-info-row"><span class="service-info-label">Observaciones:</span><span class="service-info-value">${serv.observaciones}</span></div>` : ''}
-                        </div>
-                    </div>`;
-                }).join('');
-            }
+    serviciosDelDia.forEach(serv => {
+        const eventElement = document.createElement('div');
+        eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+        const nombreCliente = obtenerNombreCliente(serv);
+        const primerNombre = nombreCliente.split(' ')[0];
+        eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
 
-            modal.classList.add('show');
+        eventElement.title = `${obtenerNombreServicio(serv)}
+Cliente: ${nombreCliente}
+Hora: ${serv.hora || 'No definida'}
+Estado: ${serv.estado}`;
+
+        // ✅ Asegurar que se pasa el objeto completo del servicio, no solo el ID
+        eventElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditServiceModal(serv); // Pasar el objeto completo del servicio
+        });
+
+        content.appendChild(eventElement);
+    });
+
+    modal.classList.add('show');
+}
+
+// ========== ADD SERVICE ========== (CORREGIDA)
+async function addService(event) {
+    event.preventDefault();
+    if (isSubmitting) return;
+
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Programando...';
+    }
+
+    try {
+        const formData = new FormData(document.getElementById('serviceForm'));
+        const dniCliente = formData.get('clienteId').trim();
+        const dniEmpleado = formData.get('tecnicoId').trim();
+        const idTipoServicio = formData.get('tipoServicioId').trim();
+        const fecha = formData.get('fecha').trim();
+        const hora = formData.get('hora').trim();
+        const observaciones = formData.get('observaciones').trim();
+        const prioridad = formData.get('prioridad').trim();
+
+        // Validación básica
+        if (!dniCliente || !dniEmpleado || !idTipoServicio || !fecha || !hora) {
+            throw new Error('Todos los campos son obligatorios.');
         }
+
+        // ✅ 1. Obtener el token JWT del almacenamiento local
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // ✅ 2. Configurar los encabezados con el token de autenticación
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        };
+
+        // Preparar los datos para enviar
+        const servicioData = {
+            idServicio: null, // El backend generará el ID
+            DNI_empleado_asignado: dniEmpleado,
+            DNI_cliente: dniCliente,
+            fecha: fecha,
+            hora: hora + ':00', // Asegurar formato HH:MM:SS
+            estado: 'Programado',
+            observaciones: observaciones,
+            prioridad: prioridad,
+            servicioSinCotizacion: true,
+            idCotizacion: null,
+            id_tipo_servicio: idTipoServicio // <-- Enviar el ID del tipo de servicio
+        };
+
+        console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
+
+        // Hacer la petición
+        const response = await fetch(`${API_BASE_URL}/servicios`, {
+            method: 'POST',
+            headers: headers, // <-- Incluir los headers aquí
+            body: JSON.stringify(servicioData)
+        });
+
+        console.log('📨 RESPUESTA DEL SERVIDOR:', { status: response.status, ok: response.ok });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
+        }
+
+        showCustomAlert('Servicio programado exitosamente', 'Éxito', 'success');
+        closeModal('addServiceModal');
+
+        // Recargar datos después de un breve delay
+        setTimeout(async () => {
+            console.log('🔄 Recargando datos después de agregar servicio...');
+            await loadAgendaData();
+        }, 1500);
+
+    } catch (error) {
+        console.error('❌ ERROR COMPLETO AL CREAR SERVICIO:', error);
+        showCustomAlert(`Error al crear servicio: ${error.message}`, 'Error', 'error');
+    } finally {
+        isSubmitting = false;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Programar Servicio';
+        }
+    }
+}
 
         // Función para abrir modal de agregar desde el día
         function openAddServiceModalFromDay() {
