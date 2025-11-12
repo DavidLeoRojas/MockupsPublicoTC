@@ -1305,28 +1305,229 @@ async function loadAgendaData() {
         console.log('   Tipos servicio:', tiposServRes.length);
         console.log('   Cotizaciones:', cotizacionesRes.length);
 
-        // PROCESAR SERVICIOS CON MEJOR MANEJO DE ERRORES
-        servicios = Array.isArray(serviciosRes) ? serviciosRes.map(servicio => {
-            // Asegurar que todos los campos necesarios existan
-            return {
-                idServicio: servicio.idServicio || servicio.id_servicio || '',
-                idCotizacion: servicio.idCotizacion || servicio.id_cotizacion || null,
-                dniEmpleadoAsignado: servicio.dniEmpleadoAsignado || servicio.dni_empleado_asignado || '',
-                dniCliente: servicio.dniCliente || servicio.dni_cliente || '',
-                fecha: servicio.fecha || '',
-                hora: servicio.hora || '',
-                estado: servicio.estado || '',
-                prioridad: servicio.prioridad || 'Normal',
-                observaciones: servicio.observaciones || null,
-                duracionEstimada: servicio.duracionEstimada || servicio.duracion_estimada || null,
-                servicioSinCotizacion: servicio.servicioSinCotizacion !== undefined ? servicio.servicioSinCotizacion : false,
-                idTipoServicio: servicio.idTipoServicio || servicio.id_tipo_servicio || '',
-                activo: servicio.activo !== undefined ? servicio.activo : null
-            };
-        }).filter(servicio => {
-            // Filtrar solo servicios con fecha válida
-            return servicio.fecha && servicio.fecha !== '';
-        }) : [];
+    // FUNCIONES DE NORMALIZACIÓN
+function normalizarServicio(rawServicio) {
+    // Si el servicio tiene cliente o empleado como objeto anidado, extraer solo el DNI
+    const dniCliente = rawServicio.cliente?.dni || rawServicio.dniCliente || rawServicio.dni_cliente || rawServicio.DNI_cliente || '';
+    const dniEmpleadoAsignado = rawServicio.empleadoAsignado?.dni || rawServicio.dniEmpleadoAsignado || rawServicio.dni_empleado_asignado || rawServicio.DNI_empleado_asignado || '';
+
+    return {
+        idServicio: rawServicio.idServicio || rawServicio.id_servicio || rawServicio.id || '', // Añadir 'id' como fallback
+        idCotizacion: rawServicio.idCotizacion || rawServicio.id_cotizacion || rawServicio.id_cotizacion || null,
+        dniCliente: dniCliente,
+        dniEmpleadoAsignado: dniEmpleadoAsignado,
+        idTipoServicio: rawServicio.tipoServicio?.idTipoServicio || rawServicio.idTipoServicio || rawServicio.id_tipo_servicio || rawServicio.id_tipo || '', // Añadir 'id_tipo' como fallback
+        fecha: rawServicio.fecha || '',
+        hora: rawServicio.hora || '',
+        estado: rawServicio.estado || 'Pendiente', // Asegurar valor por defecto
+        prioridad: rawServicio.prioridad || 'Normal', // Asegurar valor por defecto
+        observaciones: rawServicio.observaciones || '', // Asegurar valor por defecto
+        duracionEstimada: rawServicio.duracionEstimada || rawServicio.duracion_estimada || null,
+        servicioSinCotizacion: rawServicio.servicioSinCotizacion || rawServicio.servicio_sin_cotizacion || false,
+        activo: rawServicio.activo !== undefined ? rawServicio.activo : true,
+        // Asegurar campos para compatibilidad con funciones de edición/creación
+        // Si el backend no envía el objeto completo, estos campos deben estar disponibles
+    };
+}
+
+function normalizarPersona(rawPersona) {
+    return {
+        dni: rawPersona.dni || rawPersona.DNI || rawPersona.id || '', // Añadir 'id' como fallback si DNI es el ID
+        nombre: rawPersona.nombre || rawPersona.Nombre || rawPersona.nombreCompleto || rawPersona.name || 'Nombre Desconocido',
+        rol: rawPersona.rol || rawPersona.Rol || rawPersona.tipo || 'Rol Desconocido', // Añadir 'tipo' como fallback
+        // Añadir otros campos si es necesario
+    };
+}
+
+function normalizarTipoServicio(rawTipo) {
+    return {
+        idTipoServicio: rawTipo.idTipoServicio || rawTipo.id_tipo_servicio || rawTipo.id || '', // Añadir 'id' como fallback
+        nombreServicio: rawTipo.nombreServicio || rawTipo.nombre_servicio || rawTipo.nombre || 'Tipo Desconocido', // Añadir 'nombre' como fallback
+        costo: rawTipo.costo || rawTipo.Costo || 0,
+        activo: rawTipo.activo !== undefined ? rawTipo.activo : true,
+        // Añadir otros campos si es necesario
+    };
+}
+
+
+// ========== CARGA DE DATOS MEJORADA ========== (Línea donde se define loadAgendaData)
+async function loadAgendaData() {
+    console.log("🔄 Iniciando carga de datos de la agenda...");
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+         // alert('❌ No hay token de autenticación. Por favor, inicie sesión.');
+         showCustomAlert('No hay token de autenticación. Por favor, inicie sesión.', 'Error', 'error');
+         window.location.href = 'login.html'; // Ajusta la ruta a tu página de login
+         return;
+    }
+
+    try {
+        // Usar Promise.all para cargar todos los datos simultáneamente
+        const [serviciosRes, personasRes, tiposRes, cotizacionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/servicios`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/personas`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/tiposServicio`, { // Asegúrate que la ruta sea correcta
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/cotizaciones`, { // Asegúrate que la ruta sea correcta
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            })
+        ]);
+
+        // Normalizar los datos recibidos
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.map(normalizarServicio) : [];
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes.map(normalizarPersona) : [];
+        todosLosTiposServicio = Array.isArray(tiposRes) ? tiposRes.map(normalizarTipoServicio) : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : []; // Puedes normalizar cotizaciones también si es necesario
+
+        console.log("✅ Datos cargados exitosamente:");
+        console.log("📋 Servicios:", servicios.length);
+        console.log("👥 Personas:", todasLasPersonas.length);
+        console.log("🛠️ Tipos de servicio:", todosLosTiposServicio.length);
+        console.log("💰 Cotizaciones:", cotizaciones.length);
+
+        // Poblar selects
+        populateClienteSelect(todasLasPersonas);
+        populateTecnicoSelect(todasLasPersonas);
+        populateTipoServicioSelect(todosLosTiposServicio);
+
+        // Renderizar calendario
+        console.log("🎨 Renderizando calendario...");
+        renderCalendar(currentMonth, currentYear);
+
+        // Renderizar agenda de hoy
+        console.log("📅 Renderizando agenda de hoy...");
+        renderTodaySchedule();
+
+    } catch (error) {
+        console.error("❌ Error al cargar la agenda:", error);
+        // alert("Error al cargar la agenda: " + error.message);
+        showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
+    }
+}
+function normalizarPersona(rawPersona) {
+    return {
+        dni: rawPersona.dni || rawPersona.DNI || rawPersona.id || '', // Añadir 'id' como fallback si DNI es el ID
+        nombre: rawPersona.nombre || rawPersona.Nombre || rawPersona.nombreCompleto || rawPersona.name || 'Nombre Desconocido',
+        rol: rawPersona.rol || rawPersona.Rol || rawPersona.tipo || 'Rol Desconocido', // Añadir 'tipo' como fallback
+        // Añadir otros campos si es necesario
+    };
+}
+
+function normalizarTipoServicio(rawTipo) {
+    return {
+        idTipoServicio: rawTipo.idTipoServicio || rawTipo.id_tipo_servicio || rawTipo.id || '', // Añadir 'id' como fallback
+        nombreServicio: rawTipo.nombreServicio || rawTipo.nombre_servicio || rawTipo.nombre || 'Tipo Desconocido', // Añadir 'nombre' como fallback
+        costo: rawTipo.costo || rawTipo.Costo || 0,
+        activo: rawTipo.activo !== undefined ? rawTipo.activo : true,
+        // Añadir otros campos si es necesario
+    };
+}
+
+
+// ========== CARGA DE DATOS MEJORADA ========== (Línea donde se define loadAgendaData)
+async function loadAgendaData() {
+    console.log("🔄 Iniciando carga de datos de la agenda...");
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+         // alert('❌ No hay token de autenticación. Por favor, inicie sesión.');
+         showCustomAlert('No hay token de autenticación. Por favor, inicie sesión.', 'Error', 'error');
+         window.location.href = 'login.html'; // Ajusta la ruta a tu página de login
+         return;
+    }
+
+    try {
+        // Usar Promise.all para cargar todos los datos simultáneamente
+        const [serviciosRes, personasRes, tiposRes, cotizacionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/servicios`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/personas`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/tiposServicio`, { // Asegúrate que la ruta sea correcta
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/cotizaciones`, { // Asegúrate que la ruta sea correcta
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            })
+        ]);
+
+        // Normalizar los datos recibidos
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.map(normalizarServicio) : [];
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes.map(normalizarPersona) : [];
+        todosLosTiposServicio = Array.isArray(tiposRes) ? tiposRes.map(normalizarTipoServicio) : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : []; // Puedes normalizar cotizaciones también si es necesario
+
+        console.log("✅ Datos cargados exitosamente:");
+        console.log("📋 Servicios:", servicios.length);
+        console.log("👥 Personas:", todasLasPersonas.length);
+        console.log("🛠️ Tipos de servicio:", todosLosTiposServicio.length);
+        console.log("💰 Cotizaciones:", cotizaciones.length);
+
+        // Poblar selects
+        populateClienteSelect(todasLasPersonas);
+        populateTecnicoSelect(todasLasPersonas);
+        populateTipoServicioSelect(todosLosTiposServicio);
+
+        // Renderizar calendario
+        console.log("🎨 Renderizando calendario...");
+        renderCalendar(currentMonth, currentYear);
+
+        // Renderizar agenda de hoy
+        console.log("📅 Renderizando agenda de hoy...");
+        renderTodaySchedule();
+
+    } catch (error) {
+        console.error("❌ Error al cargar la agenda:", error);
+        // alert("Error al cargar la agenda: " + error.message);
+        showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
+    }
+}
 
         console.log('📋 Servicios procesados:', servicios.length);
 
@@ -1562,11 +1763,11 @@ function renderCalendar(month, year) {
                 
                 eventElement.textContent = `${horaDisplay} ${primerNombre}`;
                 eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}\nEstado: ${serv.estado}`;
-                
-                eventElement.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditServiceModal(serv);
-                });
+eventElement.addEventListener('click', (e) => {
+    e.stopPropagation();
+    console.log('🖱️ Click en servicio:', servicio.idServicio);
+    openEditServiceModal(servicio); // Pasar el objeto completo
+});
                 
                 eventsContainer.appendChild(eventElement);
                 serviciosRenderizados++;
