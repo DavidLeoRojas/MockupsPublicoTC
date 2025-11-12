@@ -1561,14 +1561,16 @@ function showDayServices(date) {
     const month = date.getMonth();
     const day = date.getDate();
 
-    // ✅ CORRECCIÓN: Usar la variable global 'servicios' que se carga en loadAgendaData
+    // ✅ CORRECCIÓN: Filtrar por fecha usando una comparación segura
+    // Convertir la fecha del servicio a formato YYYY-MM-DD para comparar
     const serviciosDelDia = servicios.filter(s => {
         if (!s.fecha) return false;
-        const fechaServicio = new Date(s.fecha); // Asumiendo formato YYYY-MM-DD
-        const dia = fechaServicio.getDate();
-        const mes = fechaServicio.getMonth();
-        const año = fechaServicio.getFullYear();
-        return dia === day && mes === month && año === year;
+
+        // Extraer año, mes y día de la fecha del servicio (formato YYYY-MM-DD)
+        const [servYear, servMonth, servDay] = s.fecha.split('-').map(Number);
+
+        // Comparar solo año, mes y día
+        return servYear === year && servMonth === (month + 1) && servDay === day;
     });
 
     console.log(`📅 Mostrando servicios para ${day}/${month + 1}/${year}: ${serviciosDelDia.length} encontrados`);
@@ -1583,14 +1585,14 @@ function showDayServices(date) {
 
     // ✅ CREAR UN CONTENEDOR DE LISTA CON SCROLL
     const listContainer = document.createElement('div');
-    listContainer.style.maxHeight = '300px'; // Altura máxima para permitir scroll
+    listContainer.style.maxHeight = '300px';
     listContainer.style.overflowY = 'auto';
     listContainer.style.padding = '0.5rem';
     listContainer.style.border = '1px solid #e2e8f0';
     listContainer.style.borderRadius = '0.5rem';
 
     serviciosDelDia.forEach(serv => {
-        // ✅ MEJORA VISUAL: Crear un elemento de lista para cada servicio
+        // ✅ MEJORA VISUAL: Crear un elemento de lista para cada servicio con más información
         const listItem = document.createElement('div');
         listItem.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
         listItem.style.padding = '0.75rem';
@@ -1598,24 +1600,31 @@ function showDayServices(date) {
         listItem.style.borderRadius = '0.5rem';
         listItem.style.cursor = 'pointer';
         listItem.style.transition = 'background-color 0.2s';
+        listItem.style.backgroundColor = '#f8fafc'; // Fondo claro para mejorar la legibilidad
 
         // Extraer información
         const hora = serv.hora ? serv.hora.substring(0, 5) : 'N/A';
         const nombreCliente = obtenerNombreCliente(serv);
         const primerNombre = nombreCliente.split(' ')[0];
         const nombreServicio = obtenerNombreServicio(serv);
+        const estado = serv.estado || 'Programado';
 
-        // Asignar contenido HTML estructurado
+        // Asignar contenido HTML estructurado con más detalles
         listItem.innerHTML = `
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: start;">
                 <div>
-                    <strong>${hora}</strong> - ${nombreServicio}
+                    <strong style="font-size: 1.1em; color: #1e293b;">${hora}</strong> - <span style="font-weight: bold; color: #0f172a;">${nombreServicio}</span>
                     <div style="font-size: 0.85em; color: #4a5568; margin-top: 0.25rem;">
-                        Cliente: ${primerNombre}
+                        Cliente: <strong>${primerNombre}</strong>
+                    </div>
+                    <div style="font-size: 0.85em; color: #4a5568; margin-top: 0.25rem;">
+                        Técnico: <strong>${obtenerNombreTecnico(serv)}</strong>
                     </div>
                 </div>
-                <div style="font-size: 0.75em; font-weight: bold;">
-                    Estado: ${serv.estado}
+                <div style="text-align: right; font-size: 0.75em; font-weight: bold; padding-left: 1rem;">
+                    <div style="color: #059669; background-color: #ecfdf5; padding: 0.25rem 0.5rem; border-radius: 0.25rem; margin-bottom: 0.25rem;">
+                        ${estado}
+                    </div>
                 </div>
             </div>
         `;
@@ -1623,8 +1632,9 @@ function showDayServices(date) {
         // Añadir título emergente con más detalles
         listItem.title = `${nombreServicio}
 Cliente: ${nombreCliente}
+Técnico: ${obtenerNombreTecnico(serv)}
 Hora: ${hora}
-Estado: ${serv.estado}`;
+Estado: ${estado}`;
 
         // ✅ CORRECCIÓN: Capturar el objeto 'serv' en el closure del evento click
         listItem.addEventListener('click', (e) => {
@@ -1637,7 +1647,7 @@ Estado: ${serv.estado}`;
             listItem.style.backgroundColor = '#ebf4ff';
         });
         listItem.addEventListener('mouseleave', () => {
-            listItem.style.backgroundColor = '';
+            listItem.style.backgroundColor = '#f8fafc';
         });
 
         listContainer.appendChild(listItem);
