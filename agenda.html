@@ -2418,6 +2418,7 @@ function analizarServiciosExistentes() {
 // Ejecutar después de cargar los datos
 setTimeout(analizarServiciosExistentes, 3000);
 // Función para agregar servicio - VERSIÓN CORREGIDA CON ESTRUCTURA EXACTA
+// Función para agregar servicio - VERSIÓN CORREGIDA CON ESTRUCTURA EXACTA
 async function addService(event) {
     event.preventDefault();
     
@@ -2483,25 +2484,26 @@ async function addService(event) {
             throw new Error('No puede programar un servicio en fecha u hora pasada.');
         }
 
-        // 6. PREPARAR DATOS SEGÚN ESTRUCTURA DEL BACKEND
-        // Basado en los servicios existentes, usamos esta estructura:
+        // 6. PREPARAR DATOS SEGÚN ESTRUCTURA EXACTA DEL BACKEND
+        // BASADO EN EL ANÁLISIS DE SERVICIOS EXISTENTES:
         const servicioData = {
             dniCliente: formData.dniCliente,
             dniEmpleadoAsignado: formData.dniEmpleadoAsignado,
             idTipoServicio: formData.idTipoServicio,
             fecha: formData.fecha,
             hora: formData.hora + ':00', // Formato HH:MM:SS
-            estado: formData.estado,
+            estado: formData.estado.toUpperCase(), // IMPORTANTE: En mayúsculas como los existentes
             prioridad: formData.prioridad,
             observaciones: formData.observaciones,
             duracionEstimada: formData.duracionEstimada,
-            // Campos que podrían ser requeridos por el backend:
-            servicioSinCotizacion: true,
-            activo: true,
-            idCotizacion: null // Importante: null para servicios sin cotización
+            // CORRECCIÓN CRÍTICA: Seguir la estructura exacta de servicios existentes
+            servicioSinCotizacion: false, // ❌ CAMBIO: Todos los existentes tienen false
+            idCotizacion: null, // Mantener null para servicios sin cotización
+            activo: null // ❌ CAMBIO: Los existentes tienen null, no true
+            // NOTA: No incluir campos que no están en los servicios existentes
         };
 
-        console.log('🚀 DATOS A ENVIAR AL BACKEND:', JSON.stringify(servicioData, null, 2));
+        console.log('🚀 DATOS A ENVIAR AL BACKEND (ESTRUCTURA EXACTA):', JSON.stringify(servicioData, null, 2));
 
         // 7. Configurar headers
         const headers = {
@@ -2567,29 +2569,28 @@ async function addService(event) {
     }
 }
 
-// Función para probar con estructura idéntica a servicios existentes
+// Función para probar con estructura IDÉNTICA a servicios existentes
 async function probarEstructuraExacta() {
     console.log('🧪 PROBANDO CON ESTRUCTURA IDÉNTICA A EXISTENTES');
     
-    // Usar datos de un servicio existente como base
-    const servicioBase = servicios[0]; // Tomar el primer servicio como referencia
-    
+    // ESTRUCTURA EXACTA basada en el análisis de servicios existentes
     const servicioPrueba = {
         dniCliente: "333444555", // Lucía Gómez
         dniEmpleadoAsignado: "987654321", // María López  
         idTipoServicio: "TPS001", // Fumigación General
         fecha: "2025-11-15", // Fecha futura
         hora: "10:00:00", // Formato exacto HH:MM:SS
-        estado: "Programado",
+        estado: "PROGRAMADO", // IMPORTANTE: En mayúsculas
         prioridad: "Normal",
         observaciones: "Prueba con estructura exacta",
         duracionEstimada: "2 horas",
-        servicioSinCotizacion: true,
-        activo: true,
-        idCotizacion: null // IMPORTANTE: null para servicios sin cotización
+        // ESTRUCTURA CRÍTICA: Igual a servicios existentes
+        servicioSinCotizacion: false, // ❌ TODOS los existentes tienen false
+        idCotizacion: null,
+        activo: null // ❌ Los existentes tienen null
     };
 
-    console.log('🎯 ESTRUCTURA DE PRUEBA:', JSON.stringify(servicioPrueba, null, 2));
+    console.log('🎯 ESTRUCTURA DE PRUEBA (EXACTA):', JSON.stringify(servicioPrueba, null, 2));
 
     const token = localStorage.getItem('jwtToken');
     const headers = {
@@ -2613,10 +2614,23 @@ async function probarEstructuraExacta() {
             const resultado = await response.json();
             console.log('✅ ÉXITO:', resultado);
             showCustomAlert('Servicio de prueba creado exitosamente!', 'Éxito', 'success');
+            
+            // Recargar datos
+            setTimeout(async () => {
+                await loadAgendaData();
+            }, 1000);
         } else {
             const errorText = await response.text();
             console.error('❌ ERROR:', errorText);
-            showCustomAlert(`Error: ${errorText}`, 'Error', 'error');
+            
+            // Intentar obtener más detalles del error
+            try {
+                const errorData = JSON.parse(errorText);
+                console.error('❌ ERROR DETALLADO:', errorData);
+                showCustomAlert(`Error del servidor:\n\n${JSON.stringify(errorData, null, 2)}`, 'Error', 'error');
+            } catch (e) {
+                showCustomAlert(`Error: ${errorText}`, 'Error', 'error');
+            }
         }
     } catch (error) {
         console.error('❌ EXCEPCIÓN:', error);
