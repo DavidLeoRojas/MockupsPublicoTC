@@ -1434,7 +1434,7 @@ async function loadAgendaData() {
             });
         }
 
-   // ========== RENDER CALENDAR MEJORADO ==========
+// ========== RENDER CALENDAR CORREGIDO ==========
 function renderCalendar(month, year) {
     console.log(`🎯 Renderizando calendario: ${monthNames[month]} ${year}`);
     console.log(`📊 Servicios disponibles para renderizar: ${servicios.length}`);
@@ -1467,9 +1467,7 @@ function renderCalendar(month, year) {
     const totalDays = lastDay.getDate();
     const prevLastDay = new Date(year, month, 0).getDate();
 
-    console.log(`📅 Configuración del mes:`);
-    console.log(`   Primer día: ${firstDay.toDateString()}`);
-    console.log(`   Último día: ${lastDay.toDateString()}`);
+    console.log(`📅 Configuración del mes: ${monthNames[month]} ${year}`);
     console.log(`   Días en el mes: ${totalDays}`);
     console.log(`   Día de inicio: ${startDay}`);
 
@@ -1499,20 +1497,52 @@ function renderCalendar(month, year) {
         
         dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
-        // BUSCAR SERVICIOS PARA ESTE DÍA
-        const serviciosDelDia = servicios.filter(s => {
-            if (!s.fecha) {
-                console.warn('⚠️ Servicio sin fecha:', s.idServicio);
+        // BUSCAR SERVICIOS PARA ESTE DÍA - VERSIÓN CORREGIDA
+        const serviciosDelDia = servicios.filter(serv => {
+            if (!serv.fecha) {
                 return false;
             }
             
             try {
-                const fechaServicio = new Date(s.fecha + 'T00:00:00');
-                return fechaServicio.getDate() === day && 
-                       fechaServicio.getMonth() === month && 
-                       fechaServicio.getFullYear() === year;
+                // MÚLTIPLES FORMATOS DE FECHA
+                let fechaServicio;
+                
+                // Intentar formato ISO (YYYY-MM-DD)
+                if (serv.fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    fechaServicio = new Date(serv.fecha + 'T00:00:00');
+                } 
+                // Intentar formato con timestamp
+                else if (serv.fecha.match(/^\d{4}-\d{2}-\d{2}T/)) {
+                    fechaServicio = new Date(serv.fecha);
+                }
+                // Otros formatos
+                else {
+                    fechaServicio = new Date(serv.fecha);
+                }
+                
+                // Verificar si la fecha es válida
+                if (isNaN(fechaServicio.getTime())) {
+                    console.warn(`⚠️ Fecha inválida en servicio ${serv.idServicio}:`, serv.fecha);
+                    return false;
+                }
+                
+                // Comparar día, mes y año
+                const mismoDia = fechaServicio.getDate() === day;
+                const mismoMes = fechaServicio.getMonth() === month;
+                const mismoAño = fechaServicio.getFullYear() === year;
+                
+                if (mismoDia && mismoMes && mismoAño) {
+                    console.log(`✅ Servicio ${serv.idServicio} coincide con día ${day}:`, {
+                        fechaServicio: fechaServicio.toDateString(),
+                        fechaCalendario: date.toDateString()
+                    });
+                    return true;
+                }
+                
+                return false;
+                
             } catch (error) {
-                console.error('❌ Error parseando fecha del servicio:', s.idServicio, s.fecha, error);
+                console.error(`❌ Error procesando fecha del servicio ${serv.idServicio}:`, error);
                 return false;
             }
         });
@@ -1541,6 +1571,8 @@ function renderCalendar(month, year) {
                 eventsContainer.appendChild(eventElement);
                 serviciosRenderizados++;
                 
+                console.log(`   ✅ Renderizado servicio ${serv.idServicio} en día ${day}`);
+                
             } catch (error) {
                 console.error('❌ Error renderizando servicio:', serv.idServicio, error);
             }
@@ -1560,10 +1592,386 @@ function renderCalendar(month, year) {
         calendarGrid.appendChild(dayElement);
     }
 
-    console.log(`✅ Calendario renderizado: ${serviciosRenderizados} servicios mostrados`);
+    console.log(`✅ Calendario renderizado: ${serviciosRenderizados} servicios mostrados de ${servicios.length} totales`);
+}
+// Función para ver todos los servicios con detalles completos
+function verServiciosConDetalles() {
+    console.log('📋 DETALLES COMPLETOS DE TODOS LOS SERVICIOS:');
+    
+    servicios.forEach((servicio, index) => {
+        console.log(`\n${index + 1}. ${servicio.idServicio}:`);
+        console.log('   Fecha:', servicio.fecha);
+        console.log('   Hora:', servicio.hora);
+        console.log('   Estado:', servicio.estado);
+        console.log('   Cliente DNI:', servicio.dniCliente);
+        console.log('   Técnico DNI:', servicio.dniEmpleadoAsignado);
+        console.log('   Tipo Servicio:', servicio.idTipoServicio);
+        
+        // Información derivada
+        console.log('   Cliente Nombre:', obtenerNombreCliente(servicio));
+        console.log('   Técnico Nombre:', obtenerNombreTecnico(servicio));
+        console.log('   Servicio Nombre:', obtenerNombreServicio(servicio));
+        
+        // Procesar fecha
+        if (servicio.fecha) {
+            try {
+                const fecha = new Date(servicio.fecha);
+                console.log('   📅 Fecha procesada:', fecha.toString());
+                console.log('   📅 Año/Mes/Día:', `${fecha.getFullYear()}/${fecha.getMonth() + 1}/${fecha.getDate()}`);
+                
+                // Verificar si está en mes actual
+                const enMesActual = fecha.getMonth() === currentMonth && fecha.getFullYear() === currentYear;
+                console.log('   📍 En mes actual:', enMesActual ? '✅ SÍ' : '❌ NO');
+                
+            } catch (error) {
+                console.error('   ❌ Error procesando fecha:', error.message);
+            }
+        }
+    });
 }
 
 
+// Función para probar un servicio específico en el calendario
+function probarServicioEspecifico() {
+    console.log('🎯 PROBANDO SERVICIO ESPECÍFICO EN CALENDARIO');
+    
+    if (servicios.length === 0) {
+        console.log('❌ No hay servicios para probar');
+        return;
+    }
+    
+    // Tomar el primer servicio
+    const servicio = servicios[0];
+    console.log('🔍 Probando servicio:', servicio.idServicio);
+    console.log('   Fecha:', servicio.fecha);
+    console.log('   Hora:', servicio.hora);
+    
+    // Procesar fecha manualmente
+    if (servicio.fecha) {
+        const fecha = new Date(servicio.fecha);
+        console.log('   📅 Fecha procesada:', fecha.toString());
+        console.log('   📅 Día del mes:', fecha.getDate());
+        console.log('   📅 Mes:', fecha.getMonth() + 1);
+        console.log('   📅 Año:', fecha.getFullYear());
+        
+        // Buscar en el calendario renderizado
+        const calendarGrid = document.getElementById('calendarGrid');
+        if (calendarGrid) {
+            const diaElement = calendarGrid.querySelector(`.calendar-day:not(.other-month) .day-number:contains("${fecha.getDate()}")`);
+            if (diaElement) {
+                console.log('   ✅ Elemento del día encontrado en calendario');
+            } else {
+                console.log('   ❌ Elemento del día NO encontrado en calendario');
+            }
+        }
+    }
+}
+
+// Agregar botones de depuración
+function agregarBotonesDepuracion() {
+    const header = document.querySelector('.header');
+    if (!header) return;
+    
+    const contenedorBotones = header.querySelector('div'); // El div que contiene los botones existentes
+    
+    if (contenedorBotones) {
+        // Botón forzar visualización
+        const botonForzar = document.createElement('button');
+        botonForzar.className = 'btn btn-secondary';
+        botonForzar.innerHTML = '🔧 Forzar Visualización';
+        botonForzar.onclick = forzarVisualizacionServicios;
+        botonForzar.style.marginLeft = '1rem';
+        
+        // Botón depurar fechas
+        const botonFechas = document.createElement('button');
+        botonFechas.className = 'btn btn-secondary';
+        botonFechas.innerHTML = '📅 Depurar Fechas';
+        botonFechas.onclick = depurarProblemaFechas;
+        botonFechas.style.marginLeft = '0.5rem';
+        
+        // Botón ver detalles
+        const botonDetalles = document.createElement('button');
+        botonDetalles.className = 'btn btn-secondary';
+        botonDetalles.innerHTML = '📋 Ver Detalles';
+        botonDetalles.onclick = verServiciosConDetalles;
+        botonDetalles.style.marginLeft = '0.5rem';
+        
+        contenedorBotones.appendChild(botonForzar);
+        contenedorBotones.appendChild(botonFechas);
+        contenedorBotones.appendChild(botonDetalles);
+    }
+}
+
+// Ejecutar después de cargar
+setTimeout(agregarBotonesDepuracion, 2000);
+
+// Función mejorada para depurar problemas de fechas
+function depurarProblemaFechasCompleto() {
+    console.log('🔍 DEPURACIÓN COMPLETA DE FECHAS DE SERVICIOS');
+    
+    if (servicios.length === 0) {
+        console.log('❌ No hay servicios para depurar');
+        return;
+    }
+    
+    let serviciosConProblemas = 0;
+    
+    servicios.forEach((servicio, index) => {
+        console.log(`\n📋 Servicio ${index + 1}: ${servicio.idServicio}`);
+        console.log('   Fecha original:', servicio.fecha);
+        console.log('   Hora:', servicio.hora);
+        console.log('   Estado:', servicio.estado);
+        
+        if (servicio.fecha) {
+            // PROBAR DIFERENTES MÉTODOS DE PARSEO
+            const metodosParseo = [
+                { nombre: 'Con T', fecha: new Date(servicio.fecha + 'T00:00:00') },
+                { nombre: 'Sin T', fecha: new Date(servicio.fecha) },
+                { nombre: 'Con espacio', fecha: new Date(servicio.fecha.replace(' ', 'T')) },
+                { nombre: 'Solo fecha', fecha: new Date(servicio.fecha.split('T')[0]) }
+            ];
+            
+            let fechaValida = null;
+            
+            metodosParseo.forEach(metodo => {
+                const esValida = !isNaN(metodo.fecha.getTime());
+                console.log(`   📅 ${metodo.nombre}: ${metodo.fecha.toString()} → ${esValida ? '✅ VÁLIDA' : '❌ INVÁLIDA'}`);
+                
+                if (esValida && !fechaValida) {
+                    fechaValida = metodo.fecha;
+                }
+            });
+            
+            if (fechaValida) {
+                console.log('   ✅ Usando fecha válida:', fechaValida.toString());
+                console.log('   📍 Año/Mes/Día:', `${fechaValida.getFullYear()}/${fechaValida.getMonth() + 1}/${fechaValida.getDate()}`);
+                
+                // Verificar si está en mes actual
+                const enMesActual = fechaValida.getMonth() === currentMonth && fechaValida.getFullYear() === currentYear;
+                console.log('   📍 En mes actual:', enMesActual ? '✅ SÍ' : '❌ NO');
+                
+                if (!enMesActual) {
+                    serviciosConProblemas++;
+                    console.log('   ⚠️ SERVICIO FUERA DEL MES ACTUAL');
+                }
+            } else {
+                serviciosConProblemas++;
+                console.log('   ❌ TODOS LOS MÉTODOS DE PARSEO FALLARON');
+            }
+        } else {
+            serviciosConProblemas++;
+            console.log('   ❌ SERVICIO SIN FECHA');
+        }
+    });
+    
+    console.log(`\n📊 RESUMEN: ${serviciosConProblemas} de ${servicios.length} servicios con problemas`);
+}
+
+// Función corregida para renderizar eventos en el calendario
+function renderizarEventosCorregido() {
+    console.log('🎯 RENDERIZANDO EVENTOS CORREGIDO');
+    
+    const calendarGrid = document.getElementById('calendarGrid');
+    if (!calendarGrid) {
+        console.error('❌ No se encontró calendarGrid');
+        return;
+    }
+    
+    let eventosRenderizados = 0;
+    
+    servicios.forEach(servicio => {
+        if (!servicio.fecha) {
+            console.warn('⚠️ Servicio sin fecha:', servicio.idServicio);
+            return;
+        }
+        
+        try {
+            // PARSEO ROBUSTO DE FECHA
+            let fechaServicio;
+            if (servicio.fecha.includes('T')) {
+                fechaServicio = new Date(servicio.fecha);
+            } else {
+                fechaServicio = new Date(servicio.fecha + 'T00:00:00');
+            }
+            
+            if (isNaN(fechaServicio.getTime())) {
+                console.error('❌ Fecha inválida:', servicio.idServicio, servicio.fecha);
+                return;
+            }
+            
+            // Verificar si está en el mes actual
+            if (fechaServicio.getMonth() !== currentMonth || fechaServicio.getFullYear() !== currentYear) {
+                console.log(`📅 Servicio ${servicio.idServicio} fuera del mes actual:`, fechaServicio.toString());
+                return;
+            }
+            
+            const dia = fechaServicio.getDate();
+            
+            // Buscar el elemento del día en el calendario
+            const dias = calendarGrid.querySelectorAll('.calendar-day:not(.other-month)');
+            const diaElement = Array.from(dias).find(diaElem => {
+                const dayNumber = diaElem.querySelector('.day-number');
+                return dayNumber && parseInt(dayNumber.textContent) === dia;
+            });
+            
+            if (diaElement) {
+                const eventsContainer = diaElement.querySelector('.day-events');
+                if (eventsContainer) {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = `event-item ${getEventTypeClass(servicio)} ${getEstadoClass(servicio.estado)}`;
+                    
+                    const nombreCliente = obtenerNombreCliente(servicio);
+                    const primerNombre = nombreCliente.split(' ')[0];
+                    const horaDisplay = servicio.hora ? servicio.hora.substring(0,5) : '--:--';
+                    
+                    eventElement.textContent = `${horaDisplay} ${primerNombre}`;
+                    eventElement.title = `${obtenerNombreServicio(servicio)}\nCliente: ${nombreCliente}\nHora: ${servicio.hora || 'No definida'}\nEstado: ${servicio.estado}`;
+                    
+                    // ✅ CORRECCIÓN CRÍTICA: Pasar el objeto servicio completo, no solo el ID
+                    eventElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        console.log('🖱️ Click en servicio:', servicio.idServicio);
+                        openEditServiceModal(servicio); // Pasar el objeto completo
+                    });
+                    
+                    eventsContainer.appendChild(eventElement);
+                    eventosRenderizados++;
+                    
+                    console.log(`✅ Renderizado servicio ${servicio.idServicio} en día ${dia}`);
+                }
+            } else {
+                console.warn(`⚠️ No se encontró el día ${dia} en el calendario para servicio ${servicio.idServicio}`);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error renderizando servicio:', servicio.idServicio, error);
+        }
+    });
+    
+    console.log(`🎉 Eventos renderizados: ${eventosRenderizados} de ${servicios.length} servicios`);
+}
+
+// ========== EDIT SERVICE MODAL CORREGIDO ==========
+function openEditServiceModal(servicioObj) {
+    console.log('🔍 Abriendo modal de edición para servicio:', servicioObj);
+    
+    // ✅ ACEPTAR TANTO OBJETO COMO ID
+    let servicio;
+    if (typeof servicioObj === 'string') {
+        // Si se pasa un ID, buscar el servicio
+        servicio = servicios.find(s => s.idServicio === servicioObj);
+        if (!servicio) {
+            console.error('❌ Servicio no encontrado con ID:', servicioObj);
+            showCustomAlert("Servicio no encontrado. Por favor, recargue la página.", 'Error', 'error');
+            return;
+        }
+    } else {
+        // Si se pasa el objeto completo, usarlo directamente
+        servicio = servicioObj;
+    }
+
+    console.log('📋 Servicio a editar:', servicio);
+
+    const dniCliente = obtenerDNICliente(servicio);
+    const dniTecnico = obtenerDNITecnico(servicio);
+    const idTipoServ = obtenerIDTipoServicio(servicio);
+
+    console.log('📝 Valores extraídos:', { dniCliente, dniTecnico, idTipoServ });
+
+    if (!dniCliente || !dniTecnico || !idTipoServ) {
+        const faltantes = [];
+        if (!dniCliente) faltantes.push('Cliente');
+        if (!dniTecnico) faltantes.push('Técnico');
+        if (!idTipoServ) faltantes.push('Tipo de servicio');
+        
+        showCustomAlert(`⚠️ Este servicio tiene datos incompletos:\n\n• ${faltantes.join('\n• ')}\n\nPor favor, complete estos datos antes de guardar.`, 'Advertencia', 'warning');
+    }
+
+    // Llenar formulario
+    document.getElementById('editClienteId').value = dniCliente || '';
+    document.getElementById('editTecnicoId').value = dniTecnico || '';
+    document.getElementById('editTipoServicioId').value = idTipoServ || '';
+    document.getElementById('editFecha').value = servicio.fecha || '';
+    document.getElementById('editHora').value = servicio.hora ? servicio.hora.substring(0, 5) : '';
+    document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
+    document.getElementById('editObservaciones').value = servicio.observaciones || '';
+    
+    // Normalizar estado para el select
+    const estadoNormalizado = servicio.estado ? servicio.estado.replace('_', ' ') : 'Programado';
+    document.getElementById('editEstado').value = estadoNormalizado;
+    
+    document.getElementById('editServiceId').value = servicio.idServicio;
+
+    closeModal('dayServicesModal');
+    document.getElementById('editServiceModal').classList.add('show');
+    
+    console.log('✅ Modal de edición abierto correctamente');
+}
+
+// Función para forzar re-renderizado completo
+function forzarRenderizadoCompleto() {
+    console.log('🔄 FORZANDO RE-RENDERIZADO COMPLETO');
+    
+    // 1. Limpiar calendario completamente
+    const calendarGrid = document.getElementById('calendarGrid');
+    if (calendarGrid) {
+        const headers = calendarGrid.querySelectorAll('.calendar-day-header');
+        calendarGrid.innerHTML = '';
+        headers.forEach(header => calendarGrid.appendChild(header));
+    }
+    
+    // 2. Re-renderizar calendario base
+    renderCalendar(currentMonth, currentYear);
+    
+    // 3. Re-renderizar eventos corregidos
+    setTimeout(() => {
+        renderizarEventosCorregido();
+    }, 100);
+    
+    // 4. Mostrar diagnóstico
+    setTimeout(() => {
+        depurarProblemaFechasCompleto();
+    }, 500);
+}
+
+// Agregar botones de depuración mejorados
+function agregarBotonesDepuracionCompletos() {
+    const header = document.querySelector('.header');
+    if (!header) return;
+    
+    const contenedorBotones = header.querySelector('div');
+    
+    if (contenedorBotones) {
+        // Limpiar botones anteriores si existen
+        const botonesExistentes = contenedorBotones.querySelectorAll('.btn-depuracion');
+        botonesExistentes.forEach(boton => boton.remove());
+        
+        // Botón forzar renderizado completo
+        const botonForzar = document.createElement('button');
+        botonForzar.className = 'btn btn-secondary btn-depuracion';
+        botonForzar.innerHTML = '🔧 Forzar Renderizado';
+        botonForzar.onclick = forzarRenderizadoCompleto;
+        botonForzar.style.marginLeft = '1rem';
+        
+        // Botón depurar fechas completo
+        const botonFechas = document.createElement('button');
+        botonFechas.className = 'btn btn-secondary btn-depuracion';
+        botonFechas.innerHTML = '📅 Depurar Fechas';
+        botonFechas.onclick = depurarProblemaFechasCompleto;
+        botonFechas.style.marginLeft = '0.5rem';
+        
+        // Botón renderizar eventos
+        const botonEventos = document.createElement('button');
+        botonEventos.className = 'btn btn-secondary btn-depuracion';
+        botonEventos.innerHTML = '🎯 Renderizar Eventos';
+        botonEventos.onclick = renderizarEventosCorregido;
+        botonEventos.style.marginLeft = '0.5rem';
+        
+        contenedorBotones.appendChild(botonForzar);
+        contenedorBotones.appendChild(botonFechas);
+        contenedorBotones.appendChild(botonEventos);
+    }
+}
 // Función para forzar la visualización de servicios
 function forzarVisualizacionServicios() {
     console.log('🔧 FORZANDO VISUALIZACIÓN DE SERVICIOS');
@@ -1636,6 +2044,56 @@ function verServiciosEnConsola() {
         Servicio: obtenerNombreServicio(serv)
     })));
 }
+// Función para depurar problemas de fechas
+function depurarProblemaFechas() {
+    console.log('🔍 DEPURACIÓN DE FECHAS DE SERVICIOS');
+    
+    if (servicios.length === 0) {
+        console.log('❌ No hay servicios para depurar');
+        return;
+    }
+    
+    servicios.forEach((servicio, index) => {
+        console.log(`\n📋 Servicio ${index + 1}: ${servicio.idServicio}`);
+        console.log('   Fecha original:', servicio.fecha);
+        console.log('   Hora:', servicio.hora);
+        
+        // Verificar formato de fecha
+        if (servicio.fecha) {
+            try {
+                // Intentar diferentes formatos de fecha
+                const fechaConT = new Date(servicio.fecha + 'T00:00:00');
+                const fechaSinT = new Date(servicio.fecha);
+                const fechaConEspacio = new Date(servicio.fecha.replace(' ', 'T'));
+                
+                console.log('   📅 Fecha con T:', fechaConT.toString());
+                console.log('   📅 Fecha sin T:', fechaSinT.toString());
+                console.log('   📅 Fecha con espacio:', fechaConEspacio.toString());
+                
+                // Verificar si es fecha válida
+                console.log('   ✅ Fecha con T válida:', !isNaN(fechaConT.getTime()));
+                console.log('   ✅ Fecha sin T válida:', !isNaN(fechaSinT.getTime()));
+                console.log('   ✅ Fecha con espacio válida:', !isNaN(fechaConEspacio.getTime()));
+                
+                // Verificar mes y año
+                if (!isNaN(fechaConT.getTime())) {
+                    console.log('   📍 Año:', fechaConT.getFullYear(), 'Mes:', fechaConT.getMonth() + 1, 'Día:', fechaConT.getDate());
+                    console.log('   📍 Coincide con calendario actual:', 
+                        fechaConT.getMonth() === currentMonth && 
+                        fechaConT.getFullYear() === currentYear ? '✅ SÍ' : '❌ NO');
+                }
+                
+            } catch (error) {
+                console.error('   ❌ Error procesando fecha:', error.message);
+            }
+        } else {
+            console.log('   ❌ SERVICIO SIN FECHA');
+        }
+    });
+}
+
+// Ejecutar inmediatamente
+setTimeout(depurarProblemaFechas, 1000);
 // Ejecutar después de cargar
 setTimeout(agregarBotonForzarVisualizacion, 3000);
         // ========== FUNCIONES DE ESTADO ==========
