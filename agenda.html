@@ -970,12 +970,7 @@
             <button class="close-btn" onclick="closeModal('addServiceModal')">&times;</button>
         </div>
             <form id="serviceForm">
-                <div class="form-group">
-                    <label>Cotización Origen (Opcional)</label>
-                    <select class="form-control" id="cotizacionId">
-                        <option value="">Seleccionar cotización</option>
-                    </select>
-                </div>
+
                 <div class="form-group">
                     <label>Cliente *</label>
                     <select class="form-control" id="clienteId" required>
@@ -1072,7 +1067,6 @@ const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         let servicios = [];
         let todasLasPersonas = [];
         let todosLosTiposServicio = [];
-        let cotizaciones = [];
         let currentView = 'all';
         let currentEditingId = null;
         let isSubmitting = false;
@@ -1311,8 +1305,7 @@ async function loadAgendaData() {
                 prioridad: s.prioridad || s.prioridad_servicio || s.priority,
                 duracionEstimada: s.duracionEstimada || s.duracion_estimada || s.duration,
                 activo: s.activo !== undefined ? s.activo : s.active, // Manejar booleanos si es necesario
-                servicioSinCotizacion: s.servicioSinCotizacion !== undefined ? s.servicioSinCotizacion : s.standalone,
-                idCotizacion: s.idCotizacion || s.cotizacionId // Asegurar consistencia en ID de cotización también si se usa
+            
             };
         }) : [];
 
@@ -1330,7 +1323,6 @@ async function loadAgendaData() {
         populateClienteSelect(todasLasPersonas);
         populateTecnicoSelect(todasLasPersonas);
         populateTipoServicioSelect(todosLosTiposServicio);
-        populateCotizacionSelect(cotizaciones);
         populateFilterTecnico(todasLasPersonas);
         renderCalendar(currentMonth, currentYear);
         renderTodaySchedule(new Date());
@@ -1401,24 +1393,6 @@ async function loadAgendaData() {
                 });
             });
         }
-
-
-function populateCotizacionSelect(cotizaciones) {
-    const select = document.getElementById('cotizacionId');
-    if (!select) return;
-    select.innerHTML = '<option value="">Seleccionar cotización</option>';
-    
-    // ✅ SOLO mostrar cotizaciones APROBADAS (sin importar si ya se usaron)
-    const cotizacionesAprobadas = cotizaciones.filter(c => c.estado === 'Aprobada');
-    
-    cotizacionesAprobadas.forEach(c => {
-        const clienteNombre = c.cliente?.nombre || c.nombreCliente || 'Cliente desconocido';
-        const option = document.createElement('option');
-        option.value = c.idCotizacion;
-        option.textContent = `#${c.idCotizacion} - ${clienteNombre} - ${c.descripcionProblema || 'Sin descripción'}`;
-        select.appendChild(option);
-    });
-}
 
         function populateFilterTecnico(personas) {
             const select = document.getElementById('filterTecnico');
@@ -2389,7 +2363,7 @@ async function addService(event) {
             observaciones: document.getElementById('observaciones').value.trim() || '',
             prioridad: document.getElementById('prioridad').value,
             estado: 'Programado',
-            servicioSinCotizacion: true
+
         };
 
         console.log('📋 DATOS DEL FORMULARIO:', formData);
@@ -2425,9 +2399,8 @@ async function addService(event) {
             estado: 'Programado',
             observaciones: formData.observaciones,
             prioridad: formData.prioridad,
-            servicioSinCotizacion: true,
             idCotizacion: null,
-            servicioSinCotizacion: true
+
         };
 
         console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
