@@ -753,6 +753,13 @@
         </a>
     </div>
     <div class="nav-item">
+        <a href="cotizaciones.html" class="nav-link">
+            <!-- Icono Cotizaciones: moneda/dólar -->
+            <span class="nav-icon"><i class="fas fa-money-bill-wave"></i></span>
+            <span>Cotizaciones</span>
+        </a>
+    </div>
+    <div class="nav-item">
         <a href="facturas.html" class="nav-link">
             <!-- Icono Facturas: documento -->
             <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
@@ -1471,18 +1478,15 @@ function renderCalendar(month, year) {
             }
 
             const today = new Date();
-for (let day = 1; day <= totalDays; day++) {
-    const date = new Date(year, month, day); // <-- Fecha del día actual en el bucle
-    const dayElement = document.createElement('div');
-    dayElement.className = 'calendar-day';
-    // ... (código para configurar la clase 'today', etc.) ...
-    dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
-    // ... (código para poblar los eventos del día en 'day-events') ...
-    // ----> ESTA ES LA LÍNEA A MODIFICAR <----
-   dayElement.addEventListener('click', () => openAddServiceModal(date));
-    // ----> FIN DE LA LÍNEA A MODIFICAR <----
-    calendarGrid.appendChild(dayElement);
-}
+            for (let day = 1; day <= totalDays; day++) {
+                const date = new Date(year, month, day);
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                if (date.getDate() === today.getDate() && 
+                    date.getMonth() === today.getMonth() && 
+                    date.getFullYear() === today.getFullYear()) {
+                    dayElement.classList.add('today');
+                }
                 dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
                 const serviciosDelDia = servicios.filter(s => {
@@ -1512,7 +1516,7 @@ eventElement.addEventListener('click', (e) => {
 eventsContainer.appendChild(eventElement);
 });
 
-                dayElement.addEventListener('click', () => showDayServices(date));
+                dayElement.addEventListener('click', () => openAddServiceModal());
                 calendarGrid.appendChild(dayElement);
             }
 
@@ -1524,7 +1528,7 @@ eventsContainer.appendChild(eventElement);
                 dayElement.innerHTML = `<div class="day-number">${day}</div>`;
                 calendarGrid.appendChild(dayElement);
             }
-        
+        }
         // ========== FUNCIONES DE ESTADO ==========
         function getEstadoClass(estado) {
             // Normalizar el estado: convertir a string, trim, reemplazar espacios por _, y a minúsculas
@@ -1555,31 +1559,41 @@ eventsContainer.appendChild(eventElement);
             if (nombreServicio.includes('seguimiento')) return 'seguimiento';
             return 'control-plagas';
         }
+
 // ========== SHOW DAY SERVICES ========== (CORREGIDA Y MEJORADA VISUALMENTE)
 function showDayServices(date) {
     selectedDate = date; // Guardar la fecha seleccionada
+
     const modal = document.getElementById('dayServicesModal');
     const title = document.getElementById('dayServicesTitle');
     const content = document.getElementById('dayServicesContent');
+
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
+
     // ✅ CORRECCIÓN: Filtrar por fecha usando una comparación segura (sin depender de new Date)
     // Convertir la fecha del servicio a formato YYYY-MM-DD y comparar directamente
     const serviciosDelDia = servicios.filter(s => {
         if (!s.fecha) return false;
+
         // Extraer año, mes y día de la fecha del servicio (formato YYYY-MM-DD)
         const [servYear, servMonth, servDay] = s.fecha.split('-').map(Number);
+
         // Comparar solo año, mes y día
         return servYear === year && servMonth === (month + 1) && servDay === day;
     });
+
     console.log(`📅 Mostrando servicios para ${day}/${month + 1}/${year}: ${serviciosDelDia.length} encontrados`);
+
     title.textContent = `Servicios del ${day} de ${monthNames[month]} de ${year}`;
     content.innerHTML = '';
+
     if (serviciosDelDia.length === 0) {
         content.innerHTML = '<p style="text-align:center; color:#718096; padding: 2rem;">No hay servicios programados para este día.</p>';
         return;
     }
+
     // ✅ CREAR UN CONTENEDOR DE LISTA CON SCROLL
     const listContainer = document.createElement('div');
     listContainer.style.maxHeight = '300px';
@@ -1587,6 +1601,7 @@ function showDayServices(date) {
     listContainer.style.padding = '0.5rem';
     listContainer.style.border = '1px solid #e2e8f0';
     listContainer.style.borderRadius = '0.5rem';
+
     serviciosDelDia.forEach(serv => {
         // ✅ MEJORA VISUAL: Crear un elemento de lista para cada servicio con más información
         const listItem = document.createElement('div');
@@ -1597,12 +1612,14 @@ function showDayServices(date) {
         listItem.style.cursor = 'pointer';
         listItem.style.transition = 'background-color 0.2s';
         listItem.style.backgroundColor = '#f8fafc'; // Fondo claro para mejorar la legibilidad
+
         // Extraer información
         const hora = serv.hora ? serv.hora.substring(0, 5) : 'N/A';
         const nombreCliente = obtenerNombreCliente(serv);
         const primerNombre = nombreCliente.split(' ')[0];
         const nombreServicio = obtenerNombreServicio(serv);
         const estado = serv.estado || 'Programado';
+
         // Asignar contenido HTML estructurado con más detalles
         listItem.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start;">
@@ -1622,18 +1639,20 @@ function showDayServices(date) {
                 </div>
             </div>
         `;
+
         // Añadir título emergente con más detalles
         listItem.title = `${nombreServicio}
 Cliente: ${nombreCliente}
 Técnico: ${obtenerNombreTecnico(serv)}
 Hora: ${hora}
 Estado: ${estado}`;
+
         // ✅ CORRECCIÓN: Capturar el objeto 'serv' en el closure del evento click
         listItem.addEventListener('click', (e) => {
-            e.stopPropagation(); // Previene que se propague al clic del día
-            // PASAR EL ID DEL SERVICIO EN LUGAR DEL OBJETO COMPLETO
-            openEditServiceModal(serv.idServicio);
+            e.stopPropagation();
+            openEditServiceModal(serv.idServicio); // Pasar el ID del servicio
         });
+
         // ✅ Efecto hover
         listItem.addEventListener('mouseenter', () => {
             listItem.style.backgroundColor = '#ebf4ff';
@@ -1641,9 +1660,12 @@ Estado: ${estado}`;
         listItem.addEventListener('mouseleave', () => {
             listItem.style.backgroundColor = '#f8fafc';
         });
+
         listContainer.appendChild(listItem);
     });
+
     content.appendChild(listContainer);
+
     modal.classList.add('show');
 }
 
@@ -2071,18 +2093,23 @@ async function viewInvoice(id) {
 // ========== EDIT SERVICE ========== (CORREGIDA)
 function openEditServiceModal(id) {
     console.log('🔍 Abriendo modal de edición para servicio:', id);
+
     // ✅ CORRECCIÓN: Buscar el servicio en la variable global 'servicios'
     const servicio = servicios.find(s => s.idServicio === id);
+
     if (!servicio) {
         console.error('❌ Servicio no encontrado');
         showCustomAlert("Servicio no encontrado. Por favor, recargue la página.", 'Error', 'error');
         return;
     }
+
     console.log('📋 Servicio a editar:', servicio);
+
     // Llenar el formulario de edición con los valores correctos
     document.getElementById('editServiceId').value = servicio.idServicio || '';
     document.getElementById('editClienteId').value = servicio.dniCliente || '';
     document.getElementById('editTecnicoId').value = servicio.dniEmpleadoAsignado || '';
+
     // Cargar el tipo de servicio (manejar posibles nombres de campo)
     if (servicio.id_tipo_servicio) {
         document.getElementById('editTipoServicioId').value = servicio.id_tipo_servicio;
@@ -2093,6 +2120,7 @@ function openEditServiceModal(id) {
     } else {
         document.getElementById('editTipoServicioId').value = ''; // Limpiar si no se encuentra
     }
+
     // Cargar fecha y hora
     if (servicio.fecha) {
         document.getElementById('editFecha').value = servicio.fecha; // Formato YYYY-MM-DD
@@ -2100,23 +2128,20 @@ function openEditServiceModal(id) {
     if (servicio.hora) {
         document.getElementById('editHora').value = servicio.hora.substring(0, 5); // Formato HH:MM
     }
+
     document.getElementById('editObservaciones').value = servicio.observaciones || '';
     document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
+
     // Cargar estado (normalizar para el select)
     const estadoNormalizado = servicio.estado ? servicio.estado.replace(/\s+/g, '_') : 'Programado';
     document.getElementById('editEstado').value = estadoNormalizado;
+
     // Cambiar el título del modal
     document.querySelector('#editServiceModal .modal-title').textContent = '✏️ Editar Servicio';
     document.querySelector('#editServiceModal .btn-primary').textContent = '💾 Guardar Cambios';
+
     // Mostrar el modal
     document.getElementById('editServiceModal').classList.add('show');
-} // <-- Línea 1527: Cierre de la función openEditServiceModal
-// Función para actualizar un servicio existente
-async function updateService(event) { // <-- Esta línea probablemente es la 1528
-    event.preventDefault();
-    if (isSubmitting) return;
-    isSubmitting = true;
-    // ... (resto de la función updateService)
 }
 
 
@@ -2401,10 +2426,10 @@ async function verificarAutenticacion() {
         }
 
 // ========== MODAL FUNCTIONS ==========
-function openAddServiceModal(date = null) { // Recibe la fecha opcionalmente
+function openAddServiceModal(date = null) {
     const serviceForm = document.getElementById('serviceForm');
     if (serviceForm) {
-        serviceForm.reset(); // Limpiar el formulario antes de abrirlo
+        serviceForm.reset();
     }
     // ✅ CORREGIDO: Actualizar el título del modal
     const titleElement = document.getElementById('serviceModalTitle');
@@ -2412,19 +2437,19 @@ function openAddServiceModal(date = null) { // Recibe la fecha opcionalmente
         titleElement.textContent = 'Programar Nuevo Servicio';
     }
     const submitBtn = document.getElementById('submitBtn');
-    // Asegúrate de que el botón tenga el ID correcto en el HTML, o cámbialo aquí si es necesario
-    // document.querySelector('#addServiceModal .btn-primary').textContent = 'Programar Servicio';
-
+    if (submitBtn) {
+        submitBtn.textContent = 'Programar Servicio';
+    }
     // ✅ CORREGIDO: Poner la fecha si se pasa
     if (date) {
         const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-        const fechaInput = document.getElementById('fecha'); // Input de fecha en el modal de agregar
+        const fechaInput = document.getElementById('fecha');
         if (fechaInput) {
             fechaInput.value = formattedDate;
         }
     }
-    currentEditingId = null; // Asegurar que no esté en modo edición
-    isSubmitting = false;    // Asegurar que no esté en proceso de envío
+    currentEditingId = null;
+    isSubmitting = false;
     const addServiceModal = document.getElementById('addServiceModal');
     if (addServiceModal) {
         addServiceModal.classList.add('show');
@@ -2768,7 +2793,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     loadAgendaData();
 });
-
+        document.getElementById('editServiceForm').addEventListener('submit', updateService);
 
         document.addEventListener('DOMContentLoaded', function () {
             console.log('🚀 Iniciando aplicación de Agenda...');
