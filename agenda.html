@@ -1549,77 +1549,114 @@ function renderCalendar(month, year) {
             return 'control-plagas';
         }
 
-        // ========== SHOW DAY SERVICES ==========
-        function showDayServices(date) {
-            selectedDate = date; // Guardar la fecha seleccionada
-            
-            const modal = document.getElementById('dayServicesModal');
-            const title = document.getElementById('dayServicesTitle');
-            const content = document.getElementById('dayServicesContent');
+// ========== SHOW DAY SERVICES ========== (CORREGIDA)
+function showDayServices(date) {
+    selectedDate = date; // Guardar la fecha seleccionada
 
-            const year = date.getFullYear();
-            const month = date.getMonth();
-            const day = date.getDate();
+    const modal = document.getElementById('dayServicesModal');
+    const title = document.getElementById('dayServicesTitle');
+    const content = document.getElementById('dayServicesContent');
 
-            const serviciosDelDia = servicios.filter(s => {
-                if (!s.fecha) return false;
-                const fechaServicio = new Date(s.fecha + 'T00:00:00');
-                return fechaServicio.getDate() === day &&
-                       fechaServicio.getMonth() === month &&
-                       fechaServicio.getFullYear() === year;
-            });
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
 
-            const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-            title.textContent = `Servicios del ${dateStr}`;
+    // ✅ CORRECCIÓN: Usar la variable global 'servicios' que se carga en loadAgendaData
+    // Asegurarse de que la variable 'servicios' ya esté llena antes de llamar a esta función
+    const serviciosDelDia = servicios.filter(s => {
+        if (!s.fecha) return false;
+        const fechaServicio = new Date(s.fecha); // Asumiendo formato YYYY-MM-DD
+        const dia = fechaServicio.getDate();
+        const mes = fechaServicio.getMonth();
+        const año = fechaServicio.getFullYear();
+        return dia === day && mes === month && año === year;
+    });
 
-            console.log(`📅 Mostrando servicios del ${dateStr}:`, serviciosDelDia.length, 'servicios encontrados');
+    console.log(`📅 Mostrando servicios para ${day}/${month + 1}/${year}: ${serviciosDelDia.length} encontrados`);
 
-            if (serviciosDelDia.length === 0) {
-                content.innerHTML = `
-                    <div style="text-align: center; padding: 3rem; color: #718096;">
-                        <div style="font-size: 3em; margin-bottom: 1rem;">📅</div>
-                        <p style="font-size: 1.1em; margin-bottom: 0.5rem;">No hay servicios programados para esta fecha</p>
-                        <p style="font-size: 0.9em;">Haga clic en el botón de abajo para programar uno</p>
-                    </div>
-                `;
-            } else {
-                content.innerHTML = serviciosDelDia.map(serv => {
-                    const nombreCliente = obtenerNombreCliente(serv);
-                    const nombreTecnico = obtenerNombreTecnico(serv);
-                    const nombreServicio = obtenerNombreServicio(serv);
-                    const hora = serv.hora ? serv.hora.substring(0, 5) : 'No definida';
+    title.textContent = `Servicios del ${day} de ${monthNames[month]} de ${year}`;
+    content.innerHTML = '';
 
-                    // ✅ Asegúrate de que serv.estado sea un string limpio
-                    const estadoMostrado = serv.estado ? serv.estado.charAt(0).toUpperCase() + serv.estado.slice(1).replace('_', ' ') : 'Programado';
+    if (serviciosDelDia.length === 0) {
+        content.innerHTML = '<p style="text-align:center; color:#718096;">No hay servicios programados para este día.</p>';
+        return;
+    }
 
-                    return `<div class="service-card">
-                        <div class="service-card-header">
-                            <span class="service-time">${hora}</span>
-                            <div class="service-actions">
-                                <button class="btn btn-sm btn-outline-primary" onclick="openEditServiceModal('${serv.idServicio}')">✏️ Editar</button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="cancelarServicio('${serv.idServicio}')">🗑️ Cancelar</button>
-                            </div>
-                        </div>
-                        <div class="service-card-body">
-                            <div class="service-info-row"><span class="service-info-label">Servicio:</span><span class="service-info-value">${nombreServicio}</span></div>
-                            <div class="service-info-row"><span class="service-info-label">Cliente:</span><span class="service-info-value">${nombreCliente}</span></div>
-                            <div class="service-info-row"><span class="service-info-label">Técnico:</span><span class="service-info-value">${nombreTecnico}</span></div>
-                            <div class="service-info-row"><span class="service-info-label">Prioridad:</span><span class="service-info-value">${serv.prioridad || 'Normal'}</span></div>
-                            <!-- ✅ Mostrar el estado con la clase CSS correcta -->
-                            <div class="service-info-row">
-                                <span class="service-info-label">Estado:</span>
-                                <span class="service-info-value">
-                                    <span class="badge ${getEstadoClass(serv.estado)}">${estadoMostrado}</span>
-                                </span>
-                            </div>
-                            ${serv.observaciones ? `<div class="service-info-row"><span class="service-info-label">Observaciones:</span><span class="service-info-value">${serv.observaciones}</span></div>` : ''}
-                        </div>
-                    </div>`;
-                }).join('');
-            }
+    serviciosDelDia.forEach(serv => {
+        const eventElement = document.createElement('div');
+        eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+        const nombreCliente = obtenerNombreCliente(serv);
+        const primerNombre = nombreCliente.split(' ')[0];
+        eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
 
-            modal.classList.add('show');
-        }
+        eventElement.title = `${obtenerNombreServicio(serv)}
+Cliente: ${nombreCliente}
+Hora: ${serv.hora || 'No definida'}
+Estado: ${serv.estado}`;
+
+        // ✅ CORRECCIÓN: Capturar el objeto 'serv' en el closure del evento click
+        eventElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            openEditServiceModal(serv); // Pasar el OBJETO COMPLETO del servicio
+        });
+
+        content.appendChild(eventElement);
+    });
+
+    modal.classList.add('show');
+}
+
+// ========== EDIT SERVICE ========== (CORREGIDA para recibir objeto directamente)
+function openEditServiceModal(servicioRecibido) {
+    console.log('🔍 Abriendo modal de edición para servicio:', servicioRecibido);
+
+    // ✅ CORRECCIÓN: Usar el objeto recibido directamente en lugar de buscarlo en una variable global
+    // Esto evita problemas de sincronización con la variable global 'servicios' o 'serviciosAgendados'
+    if (!servicioRecibido || !servicioRecibido.idServicio) {
+        console.error('❌ Servicio inválido recibido para edición:', servicioRecibido);
+        showCustomAlert("Servicio no encontrado o inválido. Por favor, recargue la página.", 'Error', 'error');
+        return;
+    }
+
+    const servicio = servicioRecibido; // Asignar el objeto recibido
+    console.log('📋 Servicio a editar:', servicio);
+
+    // Llenar el formulario de edición
+    document.getElementById('editServiceId').value = servicio.idServicio || '';
+    document.getElementById('editClienteId').value = servicio.dniCliente || servicio.DNI_cliente || ''; // Asegurar ambos posibles nombres
+    document.getElementById('editTecnicoId').value = servicio.dniEmpleadoAsignado || servicio.DNI_empleado_asignado || ''; // Asegurar ambos posibles nombres
+
+    // ✅ Cargar el tipo de servicio
+    if (servicio.id_tipo_servicio) {
+        document.getElementById('editTipoServicioId').value = servicio.id_tipo_servicio;
+    } else if (servicio.idTipoServicio) { // Otro posible nombre
+        document.getElementById('editTipoServicioId').value = servicio.idTipoServicio;
+    } else if (servicio.tipoServicio && servicio.tipoServicio.idTipoServicio) { // Si viene como objeto anidado
+        document.getElementById('editTipoServicioId').value = servicio.tipoServicio.idTipoServicio;
+    } else {
+        console.warn("Advertencia: No se encontró el ID del tipo de servicio para el servicio", servicio.idServicio);
+        document.getElementById('editTipoServicioId').value = ''; // Limpiar o dejar opción por defecto
+    }
+
+    // ✅ Cargar fecha y hora
+    if (servicio.fecha) {
+        document.getElementById('editFecha').value = servicio.fecha; // Formato YYYY-MM-DD
+    }
+    if (servicio.hora) {
+        document.getElementById('editHora').value = servicio.hora.substring(0, 5); // Formato HH:MM
+    }
+
+    document.getElementById('editObservaciones').value = servicio.observaciones || '';
+    document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
+    document.getElementById('editEstado').value = servicio.estado || 'Programado'; // Cargar estado actual
+
+    // Cambiar el título del modal
+    document.querySelector('#editServiceModal .modal-title').textContent = '✏️ Editar Servicio';
+    document.querySelector('#editServiceModal .btn-primary').textContent = '💾 Guardar Cambios';
+
+    // Mostrar el modal
+    document.getElementById('editServiceModal').classList.add('show');
+}
 
         // Función para abrir modal de agregar desde el día
         function openAddServiceModalFromDay() {
@@ -2358,120 +2395,81 @@ function openAddServiceModal(date = null) {
             }
         }
 
-// Función para agregar un nuevo servicio
+// ========== ADD SERVICE ========== (CORREGIDA Y MEJORADA)
 async function addService(event) {
     event.preventDefault();
     if (isSubmitting) return;
-    isSubmitting = true;
 
-    console.log('🔄 INICIANDO PROCESO DE AGREGAR SERVICIO...');
-    const form = event.target;
-    if (!form) {
-        console.error('❌ Formulario no encontrado en evento submit');
-        showCustomAlert('Error interno: formulario no detectado.', 'Error', 'error');
-        isSubmitting = false;
-        return;
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Programando...';
     }
+
     try {
-        // Verificar autenticación
+        const formData = new FormData(document.getElementById('serviceForm'));
+        const dniCliente = formData.get('clienteId').trim();
+        const dniEmpleado = formData.get('tecnicoId').trim();
+        const idTipoServicio = formData.get('tipoServicioId').trim();
+        const fecha = formData.get('fecha').trim();
+        const hora = formData.get('hora').trim();
+        const observaciones = formData.get('observaciones').trim();
+        const prioridad = formData.get('prioridad').trim();
+
+        // Validación básica
+        if (!dniCliente || !dniEmpleado || !idTipoServicio || !fecha || !hora) {
+            throw new Error('Todos los campos son obligatorios.');
+        }
+
+        // ✅ 1. Obtener el token JWT del almacenamiento local
         const token = localStorage.getItem('jwtToken');
         if (!token) {
-            throw new Error('No hay token de autenticación. Por favor, inicie sesión nuevamente.');
+            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            window.location.href = 'index.html';
+            return;
         }
 
-        // Obtener datos del formulario
-        const formData = {
-            dniCliente: document.getElementById('clienteId').value.trim(),
-            dniEmpleadoAsignado: document.getElementById('tecnicoId').value.trim(),
-            idTipoServicio: document.getElementById('tipoServicioId').value.trim(),
-            fecha: document.getElementById('fecha').value,
-            hora: document.getElementById('hora').value,
-            observaciones: document.getElementById('observaciones').value.trim() || '',
-            prioridad: document.getElementById('prioridad').value,
-            estado: 'Programado',
-            servicioSinCotizacion: true
-        };
-
-        console.log('📋 DATOS DEL FORMULARIO:', formData);
-
-        // Validaciones
-        const camposRequeridos = [
-            { campo: 'Cliente', valor: formData.dniCliente },
-            { campo: 'Técnico', valor: formData.dniEmpleadoAsignado },
-            { campo: 'Tipo Servicio', valor: formData.idTipoServicio },
-            { campo: 'Fecha', valor: formData.fecha },
-            { campo: 'Hora', valor: formData.hora }
-        ];
-
-        const camposFaltantes = camposRequeridos.filter(c => !c.valor);
-        if (camposFaltantes.length > 0) {
-            throw new Error(`Campos obligatorios faltantes:\n${camposFaltantes.map(c => `• ${c.campo}`).join('\n')}`);
-        }
-
-        // Validar fecha futura
-        const fechaServicio = new Date(formData.fecha + 'T' + formData.hora);
-        const ahora = new Date();
-        if (fechaServicio < ahora) {
-            throw new Error('No puede programar un servicio en fecha u hora pasada.');
-        }
-
-        // Preparar datos para enviar (asegurar formato correcto)
-        const servicioData = {
-            dniCliente: formData.dniCliente,
-            dniEmpleadoAsignado: formData.dniEmpleadoAsignado,
-            idTipoServicio: formData.idTipoServicio,
-            fecha: formData.fecha,
-            hora: formData.hora + ':00', // Asegurar formato HH:MM:SS
-            estado: 'Programado',
-            observaciones: formData.observaciones,
-            prioridad: formData.prioridad,
-            servicioSinCotizacion: true,
-    
-            idCotizacion: null,
-    
-        };
-    
-
-        console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
-
+        // ✅ 2. Configurar los encabezados con el token de autenticación
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
 
+        // Preparar los datos para enviar
+        const servicioData = {
+            dniCliente: dniCliente,
+            dniEmpleadoAsignado: dniEmpleado,
+            idTipoServicio: idTipoServicio,
+            fecha: fecha,
+            hora: hora + ':00', // Asegurar formato HH:MM:SS
+            estado: 'Programado', // Valor por defecto para nuevo servicio
+            observaciones: observaciones,
+            prioridad: prioridad,
+            servicioSinCotizacion: true,
+            idCotizacion: null
+        };
+
+        console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
+
         // Hacer la petición
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
-            headers: headers,
+            headers: headers, // <-- Incluir los headers aquí
             body: JSON.stringify(servicioData)
         });
 
-        console.log('📨 RESPUESTA DEL SERVIDOR:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok
-        });
+        console.log('📨 RESPUESTA DEL SERVIDOR:', { status: response.status, ok: response.ok });
 
         if (!response.ok) {
-            let errorMessage = `Error ${response.status}: ${response.statusText}`;
-            try {
-                const errorData = await response.json();
-                console.error('❌ ERROR DEL SERVIDOR:', errorData);
-                errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
-            } catch (e) {
-                const errorText = await response.text();
-                errorMessage = errorText || errorMessage;
-            }
-            throw new Error(errorMessage);
+            const errorText = await response.text();
+            throw new Error(errorText || `Error ${response.status}`);
         }
-
-        const result = await response.json();
-        console.log('✅ SERVICIO CREADO EXITOSAMENTE:', result);
 
         showCustomAlert('Servicio programado exitosamente', 'Éxito', 'success');
         closeModal('addServiceModal');
-        
+
         // Recargar datos después de un breve delay
         setTimeout(async () => {
             console.log('🔄 Recargando datos después de agregar servicio...');
@@ -2480,9 +2478,13 @@ async function addService(event) {
 
     } catch (error) {
         console.error('❌ ERROR COMPLETO AL CREAR SERVICIO:', error);
-        showCustomAlert(`Error al crear servicio:\n\n${error.message}`, 'Error', 'error');
+        showCustomAlert(`Error al crear servicio: ${error.message}`, 'Error', 'error');
     } finally {
         isSubmitting = false;
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Programar Servicio';
+        }
     }
 }
 
