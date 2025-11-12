@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agenda - Gemini Ambiental Admin</title>
@@ -723,64 +721,56 @@
                 <img src="LogoMenu.png" alt="Gemini Ambiental" style="height: 60px; object-fit: contain;">
             </div>
         </div>
-       <nav class="nav-menu">
-    <div class="nav-item">
-        <a href="dashboard.html" class="nav-link">
-            <!-- Icono Dashboard: gráfico de barras -->
-            <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
-            <span>Dashboard</span>
-        </a>
-    </div>
-    <div class="nav-item">
-        <a href="inventario.html" class="nav-link">
-            <!-- Icono Inventario: caja -->
-            <span class="nav-icon"><i class="fas fa-boxes"></i></span>
-            <span>Inventario</span>
-        </a>
-    </div>
-    <div class="nav-item">
-        <a href="agenda.html" class="nav-link active">
-            <!-- Icono Agenda: calendario -->
-            <span class="nav-icon"><i class="fas fa-calendar-alt"></i></span>
-            <span>Agenda</span>
-        </a>
-    </div>
-    <div class="nav-item">
-        <a href="personal.html" class="nav-link">
-            <!-- Icono Personas: usuarios -->
-            <span class="nav-icon"><i class="fas fa-users"></i></span>
-            <span>Personas</span>
-        </a>
-    </div>
-    <div class="nav-item">
-        <a href="cotizaciones.html" class="nav-link">
-            <!-- Icono Cotizaciones: moneda/dólar -->
-            <span class="nav-icon"><i class="fas fa-money-bill-wave"></i></span>
-            <span>Cotizaciones</span>
-        </a>
-    </div>
-    <div class="nav-item">
-        <a href="facturas.html" class="nav-link">
-            <!-- Icono Facturas: documento -->
-            <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
-            <span>Facturas</span>
-        </a>
-    </div>
-    <div class="nav-item">
-        <a href="servicios.html" class="nav-link">
-            <!-- Icono Servicios: herramienta -->
-            <span class="nav-icon"><i class="fas fa-wrench"></i></span>
-            <span>Servicios</span>
-        </a>
-    </div>
-</nav>
-<div class="logout-section">
-    <a href="index.html" class="logout-btn">
-        <!-- Icono Cerrar Sesión: puerta saliendo -->
-        <span class="nav-icon"><i class="fas fa-sign-out-alt"></i></span>
-        <span>Cerrar Sesión</span>
-    </a>
-</div>
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="inventario.html" class="nav-link">
+                    <span class="nav-icon">📦</span>
+                    <span>Inventario</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="agenda.html" class="nav-link active">
+                    <span class="nav-icon">📅</span>
+                    <span>Agenda</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="personal.html" class="nav-link">
+                    <span class="nav-icon">👥</span>
+                    <span>Personas</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="cotizaciones.html" class="nav-link">
+                    <span class="nav-icon">💰</span>
+                    <span>Cotizaciones</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="facturas.html" class="nav-link">
+                    <span class="nav-icon">📄</span>
+                    <span>Facturas</span>
+                </a>
+            </div>
+            <div class="nav-item">
+                <a href="servicios.html" class="nav-link">
+                    <span class="nav-icon">🔧</span>
+                    <span>Servicios</span>
+                </a>
+            </div>
+        </nav>
+        <div class="logout-section">
+            <a href="index.html" class="logout-btn">
+                <span class="nav-icon">🚪</span>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
     </div>
 
     <div class="main-content">
@@ -1499,31 +1489,19 @@ function renderCalendar(month, year) {
 
                 const eventsContainer = dayElement.querySelector('.day-events');
                 serviciosDelDia.forEach(serv => {
-                   const eventElement = document.createElement('div');
-eventElement.className = `calendar-event ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
-eventElement.textContent = `${hora} ${nombreCliente}`;
-
-// ✅ Almacenar la fecha y hora del servicio en el elemento
-eventElement.dataset.fecha = serv.fecha;
-eventElement.dataset.hora = serv.hora;
-
-// ✅ Al hacer clic, buscar el servicio en la lista global 'servicios' usando fecha y hora
-eventElement.addEventListener('click', () => {
-    const fechaEvento = eventElement.dataset.fecha;
-    const horaEvento = eventElement.dataset.hora;
-
-    // Buscar el servicio en la lista global 'servicios' usando la fecha y hora
-    const servicioEncontrado = servicios.find(s => s.fecha === fechaEvento && s.hora === horaEvento);
-
-    if (!servicioEncontrado) {
-        console.error('❌ Servicio no encontrado por fecha y hora:', fechaEvento, horaEvento);
-        showCustomAlert("Servicio no encontrado. Por favor, recargue la página.", 'Error', 'error');
-        return;
-    }
-
-    // ✅ Abrir el modal de edición con el ID del servicio encontrado
-    openEditServiceModal(servicioEncontrado.idServicio);
-});
+                    const eventElement = document.createElement('div');
+                    // --- MODIFICACIÓN AQUÍ ---
+                    // Se añade la clase del estado del servicio a la clase del tipo
+                    eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+                    // --- FIN MODIFICACIÓN ---
+                    const nombreCliente = obtenerNombreCliente(serv);
+                    const primerNombre = nombreCliente.split(' ')[0];
+                    eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
+                    eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
+                    eventElement.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openEditServiceModal(serv); // Asegúrate de que esta función exista y funcione como esperas
+                    });
                     eventsContainer.appendChild(eventElement);
                 });
 
@@ -2101,11 +2079,11 @@ async function viewInvoice(id) {
         alert("❌ Error al generar el PDF: " + error.message);
     }
 }
-// ========== EDIT SERVICE ========== (CORREGIDA)
+// ========== EDIT SERVICE ========== (CORREGIDA Y MEJORADA VISUALMENTE)
 function openEditServiceModal(id) {
     console.log('🔍 Abriendo modal de edición para servicio:', id);
 
-    // ✅ CORRECCIÓN: Buscar el servicio en la variable global 'servicios'
+    // ✅ CORRECCIÓN: Buscar el servicio en la variable global 'servicios' (que se carga en loadAgendaData)
     const servicio = servicios.find(s => s.idServicio === id);
 
     if (!servicio) {
