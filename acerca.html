@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acerca de Nosotros - Gemini Ambiental</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,106 +14,131 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: 'Open Sans', sans-serif;
         }
 
-        /* Header y Navegación  */
-        .header {
-            background: linear-gradient(135deg, #7bce9e 0%, #4a8b64 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        h1, h2, h3, .btn-primary {
+            font-family: 'Poppins', sans-serif;
         }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+  /* Header y Navegación - Con Imagen de Fondo - ACTUALIZADO */
+.header {
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('docs/assets/img/bg.png') no-repeat center center;
+    background-size: cover;
+    color: white;
+    padding: 1rem 0; /* Mismo padding que acerca.html */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: relative;
+}
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1;
+}
 
-        .logo-img {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #2c5f41;
-        }
+.header > * {
+    position: relative;
+    z-index: 2;
+}
 
-        .logo-text {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
 
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
 
-        .nav-menu a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 2rem;
+}
 
-        .nav-menu a:hover,
-        .nav-menu a.active {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
-        }
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
 
-        .admin-btn {
-            background: #ff6b6b;
-            color: white;
-            padding: 0.5rem 1rem;
-            text-decoration: none;
-            border-radius: 25px;
-            transition: all 0.3s ease;
-        }
+.nav-menu a:hover,
+.nav-menu a.active {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
 
-        .admin-btn:hover {
-            background: #ff5252;
-            transform: translateY(-2px);
-        }
+.admin-btn {
+    background: #ff6b6b;
+    color: white;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
 
+.admin-btn:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+}
         /* Hero Section */
         .hero {
-            background: linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)), 
-                        linear-gradient(135deg, #e8f5e8 0%, #c8e8c8 100%);
-            padding: 4rem 0;
+            background: 
+                linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)),
+                url('docs/assets/img/bg.png') no-repeat center center;
+            background-size: cover;
+            padding: 6rem 0;
             text-align: center;
             color: white;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 2;
         }
 
         .hero h1 {
-            font-size: 3em;
+            font-size: 3.5em;
             margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .hero p {
-            font-size: 1.2em;
-            max-width: 600px;
-            margin: 0 auto;
+            font-size: 1.3em;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.7;
         }
 
-        /* Content Sections */
+        /* Container */
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -128,15 +155,16 @@
 
         .section-title {
             font-size: 2.5em;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
             text-align: center;
             color: #2c5f41;
         }
 
+        /* Content Sections */
         .content-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 3rem;
+            gap: 4rem;
             align-items: center;
             margin: 3rem 0;
         }
@@ -144,44 +172,64 @@
         .content-text h3 {
             color: #2c5f41;
             margin-bottom: 1rem;
-            font-size: 1.5em;
+            font-size: 1.8em;
         }
 
         .content-text p {
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
             color: #666;
             line-height: 1.7;
         }
 
+        .content-visual {
+            text-align: center;
+        }
+
+        .content-visual img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Values Grid */
         .values-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin: 3rem 0;
         }
 
         .value-card {
             background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             text-align: center;
+            transition: transform 0.3s ease;
             border-top: 4px solid #4a8b64;
+        }
+
+        .value-card:hover {
+            transform: translateY(-10px);
         }
 
         .value-icon {
             font-size: 3em;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
+            color: #4a8b64;
         }
 
         .value-card h3 {
             color: #2c5f41;
             margin-bottom: 1rem;
+            font-size: 1.4em;
         }
 
+        /* Team Grid */
         .team-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin: 3rem 0;
         }
@@ -195,11 +243,11 @@
         }
 
         .team-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px);
         }
 
         .team-photo {
-            height: 200px;
+            height: 250px;
             background: linear-gradient(135deg, #4a8b64, #2c5f41);
             display: flex;
             align-items: center;
@@ -209,38 +257,98 @@
         }
 
         .team-info {
-            padding: 1.5rem;
+            padding: 2rem;
             text-align: center;
         }
 
         .team-info h3 {
             color: #2c5f41;
             margin-bottom: 0.5rem;
+            font-size: 1.3em;
         }
 
         .team-info p {
             color: #666;
+            margin-bottom: 0.5rem;
         }
 
+        /* Certifications */
         .certifications {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 2rem;
             margin: 3rem 0;
         }
 
         .cert-card {
             background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .cert-card:hover {
+            transform: translateY(-5px);
         }
 
         .cert-icon {
-            font-size: 2.5em;
+            font-size: 3em;
             color: #4a8b64;
             margin-bottom: 1rem;
+        }
+
+        .cert-card h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: linear-gradient(135deg, #2c5f41, #4a8b64);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* WhatsApp Float */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         /* Footer */
@@ -311,6 +419,10 @@
             }
 
             .hero h1 {
+                font-size: 2.5em;
+            }
+
+            .section-title {
                 font-size: 2em;
             }
         }
@@ -321,14 +433,12 @@
     <header class="header">
         <div class="nav-container">
             <div class="logo-section">
-                <img src="Logo.png" width="300" height="80" alt="Logo">
-
+                <img src="LogoMenu.png" width="300" height="80" alt="Logo">
             </div>
             <nav>
                 <ul class="nav-menu">
                     <li><a href="index.html">Inicio</a></li>
                     <li><a href="acerca.html" class="active">Acerca de</a></li>
-                    <li><a href="servicios.html">Servicios</a></li>
                     <li><a href="testimonios.html">Testimonios</a></li>
                     <li><a href="contacto.html">Contacto</a></li>
                 </ul>
@@ -341,7 +451,7 @@
     <section class="hero">
         <div class="container">
             <h1>Acerca de Gemini Ambiental</h1>
-            <p>Más de 15 años de experiencia brindando soluciones profesionales en control de plagas y saneamiento ambiental</p>
+            <p>Más de 5 años de experiencia brindando soluciones profesionales en control de plagas y saneamiento ambiental</p>
         </div>
     </section>
 
@@ -352,10 +462,36 @@
                 <div class="content-text">
                     <h3>¿Quiénes Somos?</h3>
                     <p>Gemini Ambiental S.A.S. es una empresa líder en servicios de control de plagas y saneamiento ambiental en Boyacá, especializada en el sector alimentario, educativo y hotelero.</p>
-                    <p>Fundada en 2010, hemos construido una sólida reputación basada en la calidad de nuestros servicios, el cumplimiento normativo y la satisfacción del cliente.</p>
+                    <p>Fundada en 2020, hemos construido una sólida reputación basada en la calidad de nuestros servicios, el cumplimiento normativo y la satisfacción del cliente.</p>
+                    <p>Nuestro equipo de profesionales certificados está comprometido con brindar soluciones efectivas y personalizadas para cada uno de nuestros clientes.</p>
                 </div>
                 <div class="content-visual">
-                    <div style="background: linear-gradient(135deg, #4a8b64, #2c5f41); height: 300px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: white; font-size: 4em;">🏢</div>
+                    <img src="docs/assets/img/about-team.jpg" alt="Nuestro equipo de trabajo" style="background: linear-gradient(135deg, #4a8b64, #2c5f41); height: 400px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <h2 style="margin-bottom: 3rem; font-size: 2.5em;">Nuestros Logros</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-number">100+</span>
+                    <div class="stat-label">Clientes Satisfechos</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">5+</span>
+                    <div class="stat-label">Años de Experiencia</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <div class="stat-label">Proyectos Completados</div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">100%</span>
+                    <div class="stat-label">Clientes Satisfechos</div>
                 </div>
             </div>
         </div>
@@ -365,14 +501,18 @@
     <section class="section section-alt">
         <div class="container">
             <h2 class="section-title">Nuestra Misión y Visión</h2>
-            <div class="content-grid">
+            <div class="values-grid">
                 <div class="value-card">
-                    <div class="value-icon">🎯</div>
+                    <div class="value-icon">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
                     <h3>Misión</h3>
                     <p>Brindar soluciones integrales en control de plagas y saneamiento ambiental, garantizando ambientes seguros y saludables para nuestros clientes, cumpliendo con los más altos estándares de calidad y normatividad vigente.</p>
                 </div>
                 <div class="value-card">
-                    <div class="value-icon">👁️</div>
+                    <div class="value-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
                     <h3>Visión</h3>
                     <p>Ser la empresa líder en servicios ambientales en la región andina, reconocida por nuestra excelencia técnica, innovación constante y compromiso con la sostenibilidad ambiental.</p>
                 </div>
@@ -386,24 +526,32 @@
             <h2 class="section-title">Nuestros Valores</h2>
             <div class="values-grid">
                 <div class="value-card">
-                    <div class="value-icon">✅</div>
+                    <div class="value-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
                     <h3>Calidad</h3>
-                    <p>Comprometidos con la excelencia en cada servicio que brindamos.</p>
+                    <p>Comprometidos con la excelencia en cada servicio que brindamos, superando las expectativas de nuestros clientes.</p>
                 </div>
                 <div class="value-card">
-                    <div class="value-icon">🛡️</div>
+                    <div class="value-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
                     <h3>Confianza</h3>
-                    <p>Construimos relaciones duraderas basadas en la transparencia y honestidad.</p>
+                    <p>Construimos relaciones duraderas basadas en la transparencia, honestidad y cumplimiento de nuestras promesas.</p>
                 </div>
                 <div class="value-card">
-                    <div class="value-icon">🌱</div>
+                    <div class="value-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
                     <h3>Sostenibilidad</h3>
-                    <p>Cuidamos el medio ambiente en todos nuestros procesos.</p>
+                    <p>Cuidamos el medio ambiente en todos nuestros procesos, utilizando productos y métodos eco-amigables.</p>
                 </div>
                 <div class="value-card">
-                    <div class="value-icon">🎓</div>
+                    <div class="value-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
                     <h3>Innovación</h3>
-                    <p>Adoptamos las mejores tecnologías y métodos del sector.</p>
+                    <p>Adoptamos las mejores tecnologías y métodos del sector para ofrecer soluciones vanguardistas y efectivas.</p>
                 </div>
             </div>
         </div>
@@ -415,7 +563,9 @@
             <h2 class="section-title">Nuestro Equipo</h2>
             <div class="team-grid">
                 <div class="team-card">
-                    <div class="team-photo">👨‍💼</div>
+                    <div class="team-photo">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
                     <div class="team-info">
                         <h3>Carlos Rodríguez</h3>
                         <p>Director General</p>
@@ -423,7 +573,9 @@
                     </div>
                 </div>
                 <div class="team-card">
-                    <div class="team-photo">👩‍🔬</div>
+                    <div class="team-photo">
+                        <i class="fas fa-user-md"></i>
+                    </div>
                     <div class="team-info">
                         <h3>María González</h3>
                         <p>Jefe Técnico</p>
@@ -431,7 +583,9 @@
                     </div>
                 </div>
                 <div class="team-card">
-                    <div class="team-photo">👨‍🔧</div>
+                    <div class="team-photo">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
                     <div class="team-info">
                         <h3>Juan Pérez</h3>
                         <p>Técnico Senior</p>
@@ -448,22 +602,30 @@
             <h2 class="section-title">Certificaciones y Registros</h2>
             <div class="certifications">
                 <div class="cert-card">
-                    <div class="cert-icon">📜</div>
+                    <div class="cert-icon">
+                        <i class="fas fa-file-certificate"></i>
+                    </div>
                     <h3>INVIMA</h3>
                     <p>Registro Sanitario Vigente</p>
                 </div>
                 <div class="cert-card">
-                    <div class="cert-icon">🏅</div>
+                    <div class="cert-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
                     <h3>ISO 9001</h3>
                     <p>Gestión de Calidad</p>
                 </div>
                 <div class="cert-card">
-                    <div class="cert-icon">🌿</div>
+                    <div class="cert-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
                     <h3>ISO 14001</h3>
                     <p>Gestión Ambiental</p>
                 </div>
                 <div class="cert-card">
-                    <div class="cert-icon">⚡</div>
+                    <div class="cert-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
                     <h3>OHSAS 18001</h3>
                     <p>Seguridad y Salud Ocupacional</p>
                 </div>
@@ -471,7 +633,12 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/573107573564" class="whatsapp-float" target="_blank">
+        <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="90">
+    </a>
+
+       <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -483,17 +650,19 @@
             <div class="footer-section">
                 <h3>Contacto</h3>
                 <p>📍 Tunja, Boyacá - Colombia</p>
-                <p>📞 (+57) 300 123 4567</p>
+                <p><a href="https://wa.me/573001234567"  target="_blank">
+                <img src="docs/assets/img/whatsapp-icon.png  " alt="WhatsApp" width="30">
+</a> (+57) 3107573564 o 3504026272</p>
                 <p>✉️ info@geminiambiental.com</p>
                 <p>🌐 www.geminiambiental.com</p>
             </div>
             <div class="footer-section">
                 <h3>Servicios</h3>
                 <ul>
-                    <li><a href="servicios.html">Control de Plagas</a></li>
-                    <li><a href="servicios.html">Lavado de Tanques</a></li>
-                    <li><a href="servicios.html">Certificaciones</a></li>
-                    <li><a href="servicios.html">Mantenimiento Preventivo</a></li>
+                    <li><a href="">Control de Plagas</a></li>
+                    <li><a href="">Lavado de Tanques</a></li>
+                    <li><a href="">Certificaciones</a></li>
+                    <li><a href="">Mantenimiento Preventivo</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -512,5 +681,25 @@
             </div>
         </div>
     </footer>
+    <script>
+        // Animación simple para números de estadísticas
+        document.addEventListener('DOMContentLoaded', function() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            statNumbers.forEach(stat => {
+                const target = parseInt(stat.textContent);
+                let current = 0;
+                const increment = target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    stat.textContent = Math.floor(current) + (stat.textContent.includes('%') ? '%' : '+');
+                }, 50);
+            });
+        });
+    </script>
 </body>
 </html>

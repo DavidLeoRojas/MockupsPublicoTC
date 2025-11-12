@@ -461,26 +461,219 @@ h1, h2, h3, .btn-primary {
             background: #2c5f41;
         }
 
-        /* About Section */
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
+/* About Section - MEJORADA */
+.about-section {
+    position: relative;
+    overflow: hidden;
+}
 
-        .about-text h3 {
-            color: #2c5f41;
-            font-size: 1.5em;
-            margin-bottom: 1rem;
-        }
+.about-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(74, 139, 100, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(44, 95, 65, 0.05) 0%, transparent 50%);
+    z-index: -1;
+}
 
-        .about-text p {
-            margin-bottom: 1.5rem;
-            color: #666;
-            line-height: 1.7;
-        }
+.about-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
 
+/* Stats Grid Mejorado */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(74, 139, 100, 0.1);
+}
+
+.stat-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, #4a8b64, #2c5f41);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+}
+
+.stat-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+}
+
+.stat-item:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-number {
+    font-size: 3em;
+    font-weight: 700;
+    color: #4a8b64;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+    position: relative;
+    font-family: 'Poppins', sans-serif;
+}
+
+.stat-number::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #4a8b64, #2c5f41);
+    transition: width 1.5s ease;
+}
+
+.stat-item:hover .stat-number::after {
+    width: 100%;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 1em;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.stat-item:hover .stat-label {
+    color: #2c5f41;
+}
+
+.stat-icon {
+    font-size: 2.5em;
+    margin-bottom: 1rem;
+    color: #4a8b64;
+    opacity: 0.8;
+    transition: all 0.4s ease;
+}
+
+.stat-item:hover .stat-icon {
+    transform: scale(1.1);
+    opacity: 1;
+}
+
+/* Misión y Visión Mejoradas */
+.mission-vision-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.mission-card, .vision-card {
+    background: white;
+    border-radius: 15px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: all 0.4s ease;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(74, 139, 100, 0.1);
+}
+
+.mission-card:hover, .vision-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+}
+
+.mission-card::before, .vision-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(74, 139, 100, 0.03) 0%, transparent 100%);
+    z-index: 0;
+}
+
+.mission-card > *, .vision-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+.mission-icon, .vision-icon {
+    font-size: 3em;
+    margin-bottom: 1.5rem;
+    display: inline-block;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(74, 139, 100, 0.1);
+    transition: all 0.4s ease;
+}
+
+.mission-card:hover .mission-icon, .vision-card:hover .vision-icon {
+    background: rgba(74, 139, 100, 0.2);
+    transform: rotate(5deg) scale(1.05);
+}
+
+.mission-card h3, .vision-card h3 {
+    color: #2c5f41;
+    margin-bottom: 1rem;
+    font-size: 1.5em;
+}
+
+.mission-card p, .vision-card p {
+    color: #555;
+    line-height: 1.7;
+}
+
+/* Animaciones */
+@keyframes countUp {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s ease;
+}
+
+.animate-on-scroll.animated {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.stat-number.animated {
+    animation: countUp 3s ease-out forwards;
+}
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -887,6 +1080,92 @@ h1, h2, h3, .btn-primary {
     font-family: "Font Awesome 6 Free";
     font-weight: 900;
 }
+
+/* REEMPLAZA ESTA SECCIÓN EN TU CSS */
+.services-container {
+    display: grid;
+    grid-template-columns: 50px 1fr; /* REDUCE el ancho para el GIF */
+    gap: 2rem;
+    align-items: start;
+}
+
+.services-gif {
+    text-align: center;
+    position: sticky;
+    top: 2rem;
+    margin-left: -500px; /* MUEVE el GIF más a la izquierda */
+}
+
+.services-preview {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.service-preview-card {
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+    width: 100%;
+    min-height: 450px; /* AUMENTA la altura */
+}
+
+.service-preview-header {
+    background: linear-gradient(135deg, #4a8b64, #2c5f41);
+    color: white;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.service-preview-content {
+    padding: 1.5rem;
+    text-align: center;
+    height: calc(100% - 120px); /* AJUSTA para más espacio */
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .services-container {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
+    .services-preview {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+    
+    .services-gif {
+        position: relative;
+        top: 0;
+        max-width: 300px;
+        margin: 0 auto;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .services-preview {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    
+    .service-preview-card {
+        min-height: 400px;
+    }
+}
+
+@media (max-width: 768px) {
+    .services-preview {
+        grid-template-columns: 1fr;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+}
     </style>
 </head>
 <body>
@@ -897,7 +1176,7 @@ h1, h2, h3, .btn-primary {
     <header class="header">
         <div class="nav-container">
             <div class="logo-section">
-                <img src="LogoMenu.png" width="300" height="80" alt="Logo">
+                <img src="LogoMenu.png" width="200" height="60" alt="Logo">
             </div>
             <nav>
                 <ul class="nav-menu">
@@ -911,8 +1190,6 @@ h1, h2, h3, .btn-primary {
         </div>
     </header>
 
-    <!-- Connection Status -->
-    <div id="connection-status" class="connection-status verifying">🔄 Verificando conexión...</div>
 
 <!-- Hero Section - Reemplazado por Carrusel -->
 <section class="hero">
@@ -936,7 +1213,7 @@ h1, h2, h3, .btn-primary {
         </div>
 
         <!-- Diapositiva 3: Limpieza de Trampas de Grasa -->
-        <div class="carousel-slide" style="background-image: url('img/trampas-grasa.jpg');">
+        <div class="carousel-slide" style="background-image: url('docs/assets/img/grasa.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
                 <h1>🧽 LIMPIEZA DE TRAMPAS DE GRASA</h1>
@@ -945,7 +1222,7 @@ h1, h2, h3, .btn-primary {
         </div>
 
         <!-- Diapositiva 4: Asesorías e Implementación del SG-SST -->
-        <div class="carousel-slide" style="background-image: url('docs/assets/img/tanques.png');">
+        <div class="carousel-slide" style="background-image: url('docs/assets/img/certificacion.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
                 <h1>ASESORÍAS E IMPLEMENTACIÓN DEL SG-SST</h1>
@@ -954,7 +1231,7 @@ h1, h2, h3, .btn-primary {
         </div>
 
         <!-- Diapositiva 5: Limpieza y Desinfección de Tanques -->
-        <div class="carousel-slide" style="background-image: url('img/tanques.jpg');">
+        <div class="carousel-slide" style="background-image: url('docs/assets/img/tanques.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
                 <h1>💧 LIMPIEZA Y DESINFECCIÓN DE TANQUES</h1>
@@ -977,69 +1254,110 @@ h1, h2, h3, .btn-primary {
     </div>
 </section>
  
-<!-- Services Preview - Actualizado con Iconos Profesionales -->
+<!-- REEMPLAZA ESTA SECCIÓN EN TU HTML -->
+<!-- Services Preview - GIF izquierda, Servicios centrados -->
 <section class="section">
     <div class="container">
         <h2 class="section-title">Nuestros Servicios Principales</h2>
-        <div class="services-preview">
-            <!-- Servicio 1: Control de Plagas -->
-            <div class="service-preview-card">
-                <div class="service-preview-header">
-                    <div class="service-preview-icon">
-                        <i class="fas fa-bug" style="color: #ff6b6b;"></i>
-                    </div>
-                    <h3>Control de Plagas</h3>
-                </div>
-                <div class="service-preview-content">
-                    <p>Eliminación efectiva y prevención de insectos, roedores y otras plagas. Servicio integral con productos certificados y seguimiento continuo.</p>
-                    <ul style="list-style: none; margin: 1rem 0;">
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Inspección técnica especializada</li>
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Tratamiento con productos certificados</li>
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Certificación sanitaria oficial</li>
-                    </ul>
-                    <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $280,000/mes</div>
-                </div>
+        <div class="services-container">
+            <!-- GIF en el lado izquierdo -->
+            <div class="services-gif">
+                <img src="docs/assets/img/gif1.gif" alt="Nuestros servicios en acción" style="width: 100%; max-width: 250px; border-radius: 100px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
             </div>
-
-            <!-- Servicio 2: Lavado de Tanques -->
-            <div class="service-preview-card">
-                <div class="service-preview-header">
-                    <div class="service-preview-icon">
-                        <i class="fas fa-tint" style="color: #4a8b64;"></i>
+            
+            <!-- 3 Servicios centrados en el lado derecho -->
+            <div class="services-preview">
+                <!-- Servicio 1: Control de Plagas -->
+                <div class="service-preview-card">
+                    <div class="service-preview-header">
+                        <div class="service-preview-icon">
+                            <i class="fas fa-bug" style="color: #ff6b6b;"></i>
+                        </div>
+                        <h3>Control de Plagas</h3>
                     </div>
-                    <h3>Lavado de Tanques</h3>
-                </div>
-                <div class="service-preview-content">
-                    <p>Limpieza y desinfección profesional de tanques de agua potable, garantizando la calidad del agua para consumo humano.</p>
-                    <ul style="list-style: none; margin: 1rem 0;">
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Vaciado y limpieza profunda</li>
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Desinfección con químicos aprobados</li>
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Certificado de potabilidad</li>
-                    </ul>
-                    <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Desde $450,000/servicio</div>
-                </div>
-            </div>
-
-            <!-- Servicio 3: Certificaciones -->
-            <div class="service-preview-card">
-                <div class="service-preview-header">
-                    <div class="service-preview-icon">
-                        <i class="fas fa-certificate" style="color: #ffc107;"></i>
+                    <div class="service-preview-content">
+                        <p>Eliminación efectiva y prevención de insectos, roedores y otras plagas. Servicio integral con productos certificados y seguimiento continuo.</p>
+                        <ul style="list-style: none; margin: 1rem 0; padding: 0;">
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Inspección técnica especializada
+                            </li>
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Tratamiento con productos certificados
+                            </li>
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Certificación sanitaria oficial
+                            </li>
+                        </ul>
+                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">
+                            Desde $280,000/mes
+                        </div>
                     </div>
-                    <h3>Certificaciones</h3>
                 </div>
-                <div class="service-preview-content">
-                    <p>Documentación oficial que acredita el cumplimiento de normativas sanitarias para tu establecimiento.</p>
-                    <ul style="list-style: none; margin: 1rem 0;">
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Certificados de fumigación</li>
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Actas de lavado y desinfección</li>
-                        <li style="margin: 0.5rem 0;"><i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>Reportes técnicos detallados</li>
-                    </ul>
-                    <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">Incluido en servicios</div>
+
+                <!-- Servicio 2: Lavado de Tanques -->
+                <div class="service-preview-card">
+                    <div class="service-preview-header">
+                        <div class="service-preview-icon">
+                            <i class="fas fa-tint" style="color: #4a8b64;"></i>
+                        </div>
+                        <h3>Lavado de Tanques</h3>
+                    </div>
+                    <div class="service-preview-content">
+                        <p>Limpieza y desinfección profesional de tanques de agua potable, garantizando la calidad del agua para consumo humano.</p>
+                        <ul style="list-style: none; margin: 1rem 0; padding: 0;">
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Vaciado y limpieza profunda
+                            </li>
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Desinfección con químicos aprobados
+                            </li>
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Certificado de potabilidad
+                            </li>
+                        </ul>
+                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">
+                            Desde $450,000/servicio
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Servicio 3: Certificaciones -->
+                <div class="service-preview-card">
+                    <div class="service-preview-header">
+                        <div class="service-preview-icon">
+                            <i class="fas fa-certificate" style="color: #ffc107;"></i>
+                        </div>
+                        <h3>Certificaciones</h3>
+                    </div>
+                    <div class="service-preview-content">
+                        <p>Documentación oficial que acredita el cumplimiento de normativas sanitarias para tu establecimiento.</p>
+                        <ul style="list-style: none; margin: 1rem 0; padding: 0;">
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Certificados de fumigación
+                            </li>
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Actas de lavado y desinfección
+                            </li>
+                            <li style="margin: 0.5rem 0; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-check" style="color: #4a8b64; margin-right: 0.5rem;"></i>
+                                Reportes técnicos detallados
+                            </li>
+                        </ul>
+                        <div style="color: #4a8b64; font-weight: bold; margin-top: 1rem;">
+                            Incluido en servicios
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-
     </div>
 </section>
 <iframe 
@@ -1052,45 +1370,64 @@ h1, h2, h3, .btn-primary {
 </iframe>
 
 
-    <!-- About Section -->
-<section class="section">
+ <!-- About Section - MEJORADA -->
+<section class="section about-section">
     <div class="container">
         <h2 class="section-title">¿Quiénes Somos?</h2>
         <div class="about-content">
-            <div class="about-text">
+            <div class="about-text animate-on-scroll">
                 <h3>Experiencia y Confianza</h3>
                 <p>Somos una empresa especializada en control de plagas y lavado de tanques de agua, con enfoque en clientes corporativos. Nuestro compromiso es brindar soluciones integrales que garanticen ambientes seguros y saludables.</p>
                 <p>Contamos con personal técnico certificado, productos aprobados por INVIMA y procesos que cumplen con todas las normativas sanitarias vigentes.</p>
+                
                 <div class="stats-grid">
-                    <div class="stat-item">
-                        <div class="stat-number">100+</div>
+                    <div class="stat-item animate-on-scroll">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number" data-target="60">0</div>
                         <div class="stat-label">Clientes Satisfechos</div>
                     </div>
-                    <div class="stat-item">
-                        <div class="stat-number">5+</div>
+                    <div class="stat-item animate-on-scroll">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="stat-number" data-target="5">0</div>
                         <div class="stat-label">Años de Experiencia</div>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item animate-on-scroll">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
                         <div class="stat-number">24/7</div>
                         <div class="stat-label">Servicio de Emergencia</div>
                     </div>
-                    <div class="stat-item">
+                    <div class="stat-item animate-on-scroll">
+                        <div class="stat-icon">
+                            <i class="fas fa-certificate"></i>
+                        </div>
                         <div class="stat-number">100%</div>
                         <div class="stat-label">Productos Certificados</div>
                     </div>
                 </div>
             </div>
-            <div class="about-image">
-                <div class="contact-info">
+            
+            <div class="about-image animate-on-scroll">
+                <div class="mission-vision-container">
                     <!-- Misión -->
-                    <div class="contact-item">
-                        <div class="contact-icon icon-mision"></div>
+                    <div class="mission-card">
+                        <div class="mission-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
                         <h3>Misión</h3>
                         <p>Brindar soluciones efectivas en control de plagas y saneamiento ambiental, garantizando la salud y seguridad de nuestros clientes mediante servicios técnicos de alta calidad.</p>
                     </div>
+                    
                     <!-- Visión -->
-                    <div class="contact-item">
-                        <div class="contact-icon icon-vision"></div>
+                    <div class="vision-card">
+                        <div class="vision-icon">
+                            <i class="fas fa-eye"></i>
+                        </div>
                         <h3>Visión</h3>
                         <p>Ser reconocidos como la empresa líder en servicios ambientales en Boyacá, innovando continuamente en sostenibilidad y excelencia operativa.</p>
                     </div>
@@ -1099,7 +1436,6 @@ h1, h2, h3, .btn-primary {
         </div>
     </div>
 </section>
-
   
   
 
@@ -1152,18 +1488,7 @@ h1, h2, h3, .btn-primary {
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <div class="container">
-            <h2>¿Listo para Proteger tu Negocio?</h2>
-            <p>Contáctanos hoy mismo y obtén una cotización gratuita personalizada para tu empresa. Nuestro equipo de expertos está listo para brindarte la mejor solución.</p>
-            <div class="hero-buttons">
-                <a href="contacto.html" class="btn-primary">Solicita tu Cotización Gratuita</a>
-                <a href="tel:+57 3107573564 o +57 3504026272" class="btn-secondary">Llámanos Ahora</a>
-            </div>
-            
-        </div>
-    </section>
+
 
     <!-- Contact Info -->
     <section class="section section-alt">
@@ -1259,35 +1584,68 @@ h1, h2, h3, .btn-primary {
         // Configuración de conexión con tu backend Spring Boot
         const API_BASE_URL = 'https://backendgeminiambienta-v4-0.onrender.com/api';
 
-        // Función para verificar conexión
-        async function verificarConexion() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/public/info`);
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('✅ Backend conectado:', data);
-                    mostrarEstadoConexion('conectado', data.service || 'Backend Spring Boot');
-                    return true;
-                }
-            } catch (error) {
-                console.error('❌ Error de conexión:', error);
-                mostrarEstadoConexion('desconectado');
-                return false;
+        
+// Animaciones para números dinámicos y scroll
+function animateNumbers() {
+    const statNumbers = document.querySelectorAll('.stat-number[data-target]');
+    
+    statNumbers.forEach(stat => {
+        const target = parseInt(stat.getAttribute('data-target'));
+        const duration = 2000; // 2 segundos
+        const step = target / (duration / 16); // 60 FPS
+        
+        let current = 0;
+        const timer = setInterval(() => {
+            current += step;
+            if (current >= target) {
+                current = target;
+                clearInterval(timer);
             }
-        }
+            stat.textContent = Math.floor(current) + (stat.textContent.includes('%') ? '%' : '+');
+        }, 16);
+    });
+}
 
-        // Mostrar estado de conexión en la UI
-        function mostrarEstadoConexion(estado, servicio = '') {
-            const statusElement = document.getElementById('connection-status');
+// Animación al hacer scroll
+function checkScroll() {
+    const elements = document.querySelectorAll('.animate-on-scroll');
+    
+    elements.forEach(element => {
+        const elementTop = element.getBoundingClientRect().top;
+        const windowHeight = window.innerHeight;
+        
+        if (elementTop < windowHeight - 100) {
+            element.classList.add('animated');
             
-            if (estado === 'conectado') {
-                statusElement.innerHTML = `🟢 ${servicio} Conectado`;
-                statusElement.className = 'connection-status connected';
-            } else {
-                statusElement.innerHTML = '🔴 Backend Sin Conexión';
-                statusElement.className = 'connection-status disconnected';
+            // Si es un número con data-target, animarlo
+            if (element.querySelector('.stat-number[data-target]')) {
+                setTimeout(animateNumbers, 300);
             }
         }
+    });
+}
+
+// Inicializar animaciones
+document.addEventListener('DOMContentLoaded', function() {
+    // Verificar elementos visibles al cargar
+    checkScroll();
+    
+    // Verificar al hacer scroll
+    window.addEventListener('scroll', checkScroll);
+    
+    // Efecto hover para todos los elementos animados
+    const animatedElements = document.querySelectorAll('.animate-on-scroll');
+    animatedElements.forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+       
 let slideIndex = 0;
 const slides = document.querySelectorAll('.carousel-slide');
 
