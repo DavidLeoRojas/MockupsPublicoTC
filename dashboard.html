@@ -763,75 +763,112 @@
 // URL base de la API
 const API_BASE_URL = 'https://backendgeminiambienta-v4-0-428l.onrender.com/api';
 
-// Función para cargar datos del dashboard
+// Función mejorada para cargar datos del dashboard
 async function loadDashboardData() {
-    console.log("Iniciando carga de datos del dashboard...");
+    console.log('🔄 Iniciando carga de datos del dashboard...');
     
-    // ✅ 1. Obtener el token JWT del almacenamiento local
     const token = localStorage.getItem('jwtToken');
     if (!token) {
-        alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
-        window.location.href = 'index.html'; // Redirige a la página de login
+        console.error('❌ No hay token de autenticación');
+        showNotification('Sesión expirada. Redirigiendo al login...', 'error');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
         return;
     }
 
-    // ✅ 2. Configurar los encabezados con el token de autenticación
     const headers = {
         'Authorization': 'Bearer ' + token,
         'Content-Type': 'application/json'
     };
 
     try {
-        // ✅ 3. Usar los headers en cada solicitud fetch
-        const [
-            clientesRes,
-            serviciosRes,
-            facturasRes,
-            productosRes
-        ] = await Promise.all([
-            fetch(`${API_BASE_URL}/personas?rol=Cliente`, { headers }).then(r => r.json()),
-            fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => r.json()),
-            fetch(`${API_BASE_URL}/facturas`, { headers }).then(r => r.json()),
-            fetch(`${API_BASE_URL}/productos`, { headers }).then(r => r.json())
+        // Cargar datos en paralelo con manejo de errores individual
+        const [clientesData, serviciosData, facturasData, productosData] = await Promise.all([
+            // Clientes
+            fetch(`${API_BASE_URL}/personas?rol=Cliente`, { headers })
+                .then(response => {
+                    if (!response.ok) {
+                        console.warn('⚠️ Error cargando clientes:', response.status);
+                        return [];
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('❌ Error cargando clientes:', error);
+                    return [];
+                }),
+
+            // Servicios - CON MANEJO ESPECIAL DE ERROR 500
+            fetch(`${API_BASE_URL}/servicios`, { headers })
+                .then(async response => {
+                    if (!response.ok) {
+                        if (response.status === 500) {
+                            console.warn('⚠️ Error 500 en servicios, intentando recuperar...');
+                            // Intentar cargar datos básicos o usar array vacío
+                            return [];
+                        }
+                        throw new Error(`Error ${response.status} al cargar servicios`);
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('❌ Error cargando servicios:', error);
+                    // En caso de error, usar array vacío para que el dashboard funcione
+                    return [];
+                }),
+
+            // Facturas
+            fetch(`${API_BASE_URL}/facturas`, { headers })
+                .then(response => {
+                    if (!response.ok) {
+                        console.warn('⚠️ Error cargando facturas:', response.status);
+                        return [];
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('❌ Error cargando facturas:', error);
+                    return [];
+                }),
+
+            // Productos
+            fetch(`${API_BASE_URL}/productos`, { headers })
+                .then(response => {
+                    if (!response.ok) {
+                        console.warn('⚠️ Error cargando productos:', response.status);
+                        return [];
+                    }
+                    return response.json();
+                })
+                .catch(error => {
+                    console.error('❌ Error cargando productos:', error);
+                    return [];
+                })
         ]);
 
-        const clientes = Array.isArray(clientesRes) ? clientesRes : [];
-        const servicios = Array.isArray(serviciosRes) ? serviciosRes : [];
-        const facturas = Array.isArray(facturasRes) ? facturasRes : [];
-        const productos = Array.isArray(productosRes) ? productosRes : [];
+        console.log('📊 Datos recibidos - Clientes:', clientesData.length, 
+                   'Servicios:', serviciosData.length, 
+                   'Facturas:', facturasData.length, 
+                   'Productos:', productosData.length);
 
-        console.log("Datos recibidos - Clientes:", clientes.length, "Servicios:", servicios.length, "Facturas:", facturas.length, "Productos:", productos.length);
+        // Actualizar el dashboard incluso si algunos datos fallaron
+        updateDashboardStats({
+            clientes: clientesData,
+            servicios: serviciosData,
+            facturas: facturasData,
+            productos: productosData
+        });
 
-        // --- Actualizar Estadísticas ---
-        updateStatCard('primary', clientes.length); // Clientes Activos
-        updateStatCard('warning', servicios.filter(s => s.estado === 'Programado' || s.estado === 'En_Progreso').length); // Servicios Pendientes
-
-        // Calcular facturación mensual
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
-        const facturacionMensual = facturas
-            .filter(f => {
-                const fechaFactura = new Date(f.fechaEmision);
-                return fechaFactura.getMonth() === currentMonth && fechaFactura.getFullYear() === currentYear;
-            })
-            .reduce((sum, f) => sum + (f.montoTotal || 0), 0);
-
-        updateStatCard('success', formatCurrency(facturacionMensual)); // Facturación Mensual
-        updateStatCard('info', productos.filter(p => p.stock > 0).length); // Productos en Stock
-
-        // --- Actualizar Actividades Recientes ---
-        renderRecentActivities(servicios, facturas);
+        // Mostrar advertencia si hay problemas
+        if (serviciosData.length === 0) {
+            console.warn('⚠️ No se pudieron cargar los servicios, mostrando datos limitados');
+            showNotification('No se pudieron cargar algunos datos. El dashboard muestra información limitada.', 'warning', 5000);
+        }
 
     } catch (error) {
-        console.error('Error al cargar datos del dashboard:', error);
-        // Mostrar mensaje de error en la UI
-        const statNumbers = document.querySelectorAll('.stat-number');
-        statNumbers.forEach(el => el.textContent = 'Error');
-        
-        const activitiesContainer = document.querySelector('.card');
-        if (activitiesContainer) {
-            activitiesContainer.innerHTML = '<p style="color: #f56565; text-align: center;">Error al cargar actividades</p>';
-        }
+        console.error('❌ Error general cargando datos del dashboard:', error);
+        showNotification('Error al cargar los datos del dashboard', 'error');
     }
 }
     // Función para actualizar una tarjeta de estadística
