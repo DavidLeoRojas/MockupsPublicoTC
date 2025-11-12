@@ -2340,6 +2340,7 @@ function openAddServiceModal(date = null) {
         }
 
 // Función para agregar un nuevo servicio - VERSIÓN MEJORADA
+// Función para agregar un nuevo servicio - VERSIÓN MEJORADA CON DEPURACIÓN
 async function addService(event) {
     event.preventDefault();
     
@@ -2359,37 +2360,59 @@ async function addService(event) {
             throw new Error('No hay token de autenticación. Por favor, inicie sesión nuevamente.');
         }
 
-        // 2. Obtener datos del formulario
+        // 2. Obtener datos del formulario con más validaciones
+        const clienteSelect = document.getElementById('clienteId');
+        const tecnicoSelect = document.getElementById('tecnicoId');
+        const tipoServicioSelect = document.getElementById('tipoServicioId');
+        const fechaInput = document.getElementById('fecha');
+        const horaInput = document.getElementById('hora');
+
         const formData = {
-            dniCliente: document.getElementById('clienteId').value.trim(),
-            dniEmpleadoAsignado: document.getElementById('tecnicoId').value.trim(),
-            idTipoServicio: document.getElementById('tipoServicioId').value.trim(),
-            fecha: document.getElementById('fecha').value,
-            hora: document.getElementById('hora').value,
-            duracionEstimada: document.getElementById('duracionEstimada').value.trim() || null,
-            observaciones: document.getElementById('observaciones').value.trim() || null,
-            prioridad: document.getElementById('prioridad').value,
-            estado: document.getElementById('estado').value
+            dniCliente: clienteSelect ? clienteSelect.value.trim() : '',
+            dniEmpleadoAsignado: tecnicoSelect ? tecnicoSelect.value.trim() : '',
+            idTipoServicio: tipoServicioSelect ? tipoServicioSelect.value.trim() : '',
+            fecha: fechaInput ? fechaInput.value : '',
+            hora: horaInput ? horaInput.value : '',
+            duracionEstimada: document.getElementById('duracionEstimada')?.value.trim() || null,
+            observaciones: document.getElementById('observaciones')?.value.trim() || null,
+            prioridad: document.getElementById('prioridad')?.value || 'Normal',
+            estado: document.getElementById('estado')?.value || 'Programado'
         };
 
         console.log('📋 DATOS DEL FORMULARIO RECOLECTADOS:', formData);
 
-        // 3. Validaciones básicas
+        // 3. Validaciones detalladas
         const camposRequeridos = [
-            { campo: 'Cliente', valor: formData.dniCliente },
-            { campo: 'Técnico', valor: formData.dniEmpleadoAsignado },
-            { campo: 'Tipo de Servicio', valor: formData.idTipoServicio },
-            { campo: 'Fecha', valor: formData.fecha },
-            { campo: 'Hora', valor: formData.hora }
+            { campo: 'Cliente', valor: formData.dniCliente, elemento: clienteSelect },
+            { campo: 'Técnico', valor: formData.dniEmpleadoAsignado, elemento: tecnicoSelect },
+            { campo: 'Tipo de Servicio', valor: formData.idTipoServicio, elemento: tipoServicioSelect },
+            { campo: 'Fecha', valor: formData.fecha, elemento: fechaInput },
+            { campo: 'Hora', valor: formData.hora, elemento: horaInput }
         ];
 
         const camposFaltantes = camposRequeridos.filter(c => !c.valor);
         if (camposFaltantes.length > 0) {
             const mensajeError = `Campos obligatorios faltantes:\n${camposFaltantes.map(c => `• ${c.campo}`).join('\n')}`;
+            console.error('❌ CAMPOS FALTANTES:', camposFaltantes);
             throw new Error(mensajeError);
         }
 
-        // 4. Validar fecha y hora futuras
+        // 4. Validar que los valores existan en las listas cargadas
+        const clienteExiste = todasLasPersonas.find(p => p.dni === formData.dniCliente && p.rol === 'Cliente');
+        const tecnicoExiste = todasLasPersonas.find(p => p.dni === formData.dniEmpleadoAsignado && p.rol === 'Empleado');
+        const tipoServicioExiste = todosLosTiposServicio.find(t => t.idTipoServicio === formData.idTipoServicio);
+
+        if (!clienteExiste) {
+            throw new Error(`El cliente seleccionado no existe o no tiene rol de Cliente`);
+        }
+        if (!tecnicoExiste) {
+            throw new Error(`El técnico seleccionado no existe o no tiene rol de Empleado`);
+        }
+        if (!tipoServicioExiste) {
+            throw new Error(`El tipo de servicio seleccionado no existe`);
+        }
+
+        // 5. Validar fecha y hora futuras
         const fechaHoraServicio = new Date(`${formData.fecha}T${formData.hora}`);
         const ahora = new Date();
         
@@ -2397,7 +2420,7 @@ async function addService(event) {
             throw new Error('No puede programar un servicio en fecha u hora pasada. Por favor, seleccione una fecha y hora futuras.');
         }
 
-        // 5. Preparar datos para enviar al backend
+        // 6. Preparar datos para enviar al backend - ESTRUCTURA CORREGIDA
         const servicioData = {
             dniCliente: formData.dniCliente,
             dniEmpleadoAsignado: formData.dniEmpleadoAsignado,
@@ -2412,17 +2435,18 @@ async function addService(event) {
             activo: true
         };
 
-        console.log('🚀 DATOS A ENVIAR AL BACKEND:', servicioData);
+        console.log('🚀 DATOS A ENVIAR AL BACKEND:', JSON.stringify(servicioData, null, 2));
 
-        // 6. Configurar headers con autenticación
+        // 7. Configurar headers con autenticación
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
 
-        // 7. Enviar petición al backend
+        // 8. Enviar petición al backend con más información de depuración
         console.log('📨 Enviando petición POST a:', `${API_BASE_URL}/servicios`);
+        console.log('🔑 Headers:', headers);
         
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
@@ -2430,34 +2454,42 @@ async function addService(event) {
             body: JSON.stringify(servicioData)
         });
 
-        console.log('📩 Respuesta del servidor:', {
-            status: response.status,
-            statusText: response.statusText,
-            ok: response.ok
-        });
+        console.log('📩 Respuesta del servidor - Status:', response.status);
+        console.log('📩 Respuesta del servidor - OK:', response.ok);
 
-        // 8. Manejar respuesta
+        // 9. Manejar respuesta - OBTENER MÁS INFORMACIÓN DEL ERROR
         if (!response.ok) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;
+            let errorDetails = '';
             
             try {
-                const errorData = await response.json();
-                console.error('❌ ERROR DETALLADO DEL SERVIDOR:', errorData);
-                errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
-            } catch (parseError) {
+                // Intentar obtener el cuerpo de la respuesta como texto primero
                 const errorText = await response.text();
-                errorMessage = errorText || errorMessage;
-                console.error('❌ ERROR DE TEXTO DEL SERVIDOR:', errorText);
+                console.error('❌ ERROR TEXT DEL SERVIDOR:', errorText);
+                
+                // Intentar parsear como JSON si es posible
+                try {
+                    const errorData = JSON.parse(errorText);
+                    errorDetails = errorData.message || errorData.error || JSON.stringify(errorData);
+                    console.error('❌ ERROR JSON DEL SERVIDOR:', errorData);
+                } catch (e) {
+                    errorDetails = errorText;
+                }
+                
+                errorMessage = errorDetails || errorMessage;
+            } catch (parseError) {
+                console.error('❌ ERROR AL PROCESAR RESPUESTA:', parseError);
+                errorMessage = `Error ${response.status}: No se pudo obtener detalles del error`;
             }
             
             throw new Error(errorMessage);
         }
 
-        // 9. Procesar respuesta exitosa
+        // 10. Procesar respuesta exitosa
         const resultado = await response.json();
         console.log('✅ SERVICIO CREADO EXITOSAMENTE:', resultado);
 
-        // 10. Mostrar confirmación y limpiar
+        // 11. Mostrar confirmación y limpiar
         showCustomAlert('¡Servicio programado exitosamente!', 'Éxito', 'success');
         
         // Cerrar modal
@@ -2473,8 +2505,14 @@ async function addService(event) {
         console.error('❌ ERROR COMPLETO AL CREAR SERVICIO:', error);
         
         let mensajeError = error.message;
-        if (error.message.includes('JSON') || error.message.includes('parse')) {
+        
+        // Mensajes más amigables para errores comunes
+        if (error.message.includes('500')) {
+            mensajeError = 'Error interno del servidor. El servidor no pudo procesar la solicitud. Por favor, contacte al administrador.';
+        } else if (error.message.includes('JSON') || error.message.includes('parse')) {
             mensajeError = 'Error en el formato de datos. Verifique que todos los campos sean válidos.';
+        } else if (error.message.includes('Network')) {
+            mensajeError = 'Error de conexión. Verifique su conexión a internet e intente nuevamente.';
         }
         
         showCustomAlert(`Error al crear servicio:\n\n${mensajeError}`, 'Error', 'error');
@@ -2738,7 +2776,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.getElementById('editServiceForm').addEventListener('submit', updateService);
 
-            
+
         function showCustomAlert(message, title = 'Información', type = 'info') {
             const modal = document.getElementById('customAlertModal');
             const titleElement = document.getElementById('customAlertTitle');
