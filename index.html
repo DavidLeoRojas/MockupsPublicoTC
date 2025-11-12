@@ -19,16 +19,33 @@ h1, h2, h3, .btn-primary {
 }
 
      /* Header y Navegación - Con Imagen de Fondo */
+/* ESTILOS UNIFICADOS PARA HEADER */
 .header {
-   background: 
-        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), /* capa oscura con opacidad */
-        url('docs/assets/img/bg.png') no-repeat center center; /* Ruta a tu imagen */
-    background-size: cover; /* Ajusta la imagen para cubrir todo el header */
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('docs/assets/img/bg.png') no-repeat center center;
+    background-size: cover;
     color: white;
     padding: 1rem 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    /* Opcional: Añade un overlay semitransparente para que el texto sea legible */
-    position: relative;
+    position: sticky; /* O relative, elige uno */
+    top: 0;
+    z-index: 1000;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem; /* Valor consistente */
+}
+
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 0.4rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-size: 0.95em; /* Tamaño consistente */
 }
 .header::before {
     content: '';
@@ -94,7 +111,7 @@ h1, h2, h3, .btn-primary {
             position: relative;
             width: 100%;
             height: 80vh;
-            overflow: hidden;
+
         }
         .carousel-slide {
             position: absolute;
@@ -186,7 +203,7 @@ h1, h2, h3, .btn-primary {
         }
 
         .admin-btn {
-            background: #ff6b6b;
+            background: #5cda7a;
             color: white;
             padding: 0.5rem 1rem;
             text-decoration: none;
@@ -195,7 +212,7 @@ h1, h2, h3, .btn-primary {
         }
 
         .admin-btn:hover {
-            background: #ff5252;
+            background: #036b35;
             transform: translateY(-2px);
         }
 
@@ -305,13 +322,14 @@ h1, h2, h3, .btn-primary {
     100% { transform: scale(1); }
 }
         /* Container */
-        .container {
+        .container {    
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 2rem;
         }
 
         .section {
+            background: #f8f9fa;
             padding: 4rem 0;
         }
 
@@ -612,7 +630,13 @@ h1, h2, h3, .btn-primary {
     background: linear-gradient(135deg, rgba(74, 139, 100, 0.03) 0%, transparent 100%);
     z-index: 0;
 }
-
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 80vh;
+    /* No necesitas overflow: hidden aquí si ya lo quitaste del .hero */
+    z-index: 1; /* 👈 Menor que el header */
+}
 .mission-card > *, .vision-card > * {
     position: relative;
     z-index: 1;
@@ -884,11 +908,6 @@ h1, h2, h3, .btn-primary {
                 gap: 1rem;
             }
 
-            .nav-menu {
-                flex-wrap: wrap;
-                gap: 1rem;
-                justify-content: center;
-            }
 
             .hero h1 {
                 font-size: 2.5em;
@@ -923,7 +942,7 @@ h1, h2, h3, .btn-primary {
     background: #f8f9fa; /* Fondo claro del hexágono */
     border-radius: 50%; /* Redondeado para emular el hexágono */
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease, background 0.3s ease;
+    transition: transform 0.3s ease,  0.3s ease;
     margin: 0 auto 1rem;
 }
 
@@ -1198,7 +1217,7 @@ h1, h2, h3, .btn-primary {
         <div class="carousel-slide active" style="background-image: url('docs/assets/img/Fumigaciones.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
-                <h1>🪳 FUMIGACIONES PROFESIONALES</h1>
+                <h1>FUMIGACIONES PROFESIONALES</h1>
                 <p>Eliminamos plagas en oficinas, almacenes, cocinas, contenedores y vehículos con productos certificados.</p>
             </div>
         </div>
@@ -1216,7 +1235,7 @@ h1, h2, h3, .btn-primary {
         <div class="carousel-slide" style="background-image: url('docs/assets/img/grasa.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
-                <h1>🧽 LIMPIEZA DE TRAMPAS DE GRASA</h1>
+                <h1>LIMPIEZA DE TRAMPAS DE GRASA</h1>
                 <p>Evita obstrucciones y malos olores con limpiezas profundas y seguras en sistemas de drenaje.</p>
             </div>
         </div>
@@ -1234,7 +1253,7 @@ h1, h2, h3, .btn-primary {
         <div class="carousel-slide" style="background-image: url('docs/assets/img/tanques.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
-                <h1>💧 LIMPIEZA Y DESINFECCIÓN DE TANQUES</h1>
+                <h1>LIMPIEZA Y DESINFECCIÓN DE TANQUES</h1>
                 <p>Potabilizamos tu agua con análisis microbiológico y certificación oficial.</p>
             </div>
         </div>
@@ -1243,7 +1262,7 @@ h1, h2, h3, .btn-primary {
         <div class="carousel-slide" style="background-image: url('docs/assets/img/Zn.jpg');">
             <div class="overlay"></div>
             <div class="carousel-content">
-                <h1>🌿 MANTENIMIENTO DE ZONAS VERDES</h1>
+                <h1>MANTENIMIENTO DE ZONAS VERDES</h1>
                 <p>Mantenemos tus áreas verdes libres de malezas y plagas, mejorando la estética y seguridad.</p>
             </div>
         </div>
@@ -1360,6 +1379,7 @@ h1, h2, h3, .btn-primary {
         </div>
     </div>
 </section>
+
 <iframe 
     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.3299151993556!2d-74.10382612552702!3d4.712634941555029!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f84b60f144789%3A0x7eb81ba29a73eed2!2sCasa%20Cleves!5e0!3m2!1ses!2sco!4v1762904017974!5m2!1ses!2sco" 
     width="100%" 
@@ -1490,50 +1510,7 @@ h1, h2, h3, .btn-primary {
 
 
 
-    <!-- Contact Info -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2 class="section-title">Información de Contacto</h2>
-            <div class="contact-info">
-                <div class="contact-item">
-                    <a href="https://wa.me/573107573564" class="whatsapp-float" target="_blank">
-                        <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="90">
-                    </a>
-
-
-    <div class="contact-icon icon-contacto"></div>
-    <h3>Teléfono</h3>
-    <p><strong>Principal:</strong> (+57) 3107573564  </p>
-    <p><strong>Emergencias:</strong> 3504026272</p>
-</div>
-
-  
-<!-- Email -->
-<div class="contact-item">
-    <div class="contact-icon icon-email"></div>
-    <h3>Email</h3>
-    <p><strong>General:</strong> info@geminiambiental.com</p>
-    <p><strong>Ventas:</strong> ventas@geminiambiental.com</p>
-</div>
-
-<!-- Ubicación -->
-<div class="contact-item">
-    <div class="contact-icon icon-ubicacion"></div>
-    <h3>Ubicación</h3>
-    <p><strong>Dirección:</strong> Tunja, Boyacá</p>
-    <p><strong>Colombia</strong></p>
-</div>
-
-<!-- Horarios -->
-<div class="contact-item">
-    <div class="contact-icon icon-horarios"></div>
-    <h3>Horarios</h3>
-    <p><strong>Lun - Vie:</strong> 8:00 AM - 6:00 PM</p>
-    <p><strong>Sáb:</strong> 8:00 AM - 2:00 PM</p>
-</div>
-            </div>
-        </div>
-    </section>
+    
 
     <!-- Footer -->
     <footer class="footer">
@@ -1591,7 +1568,7 @@ function animateNumbers() {
     
     statNumbers.forEach(stat => {
         const target = parseInt(stat.getAttribute('data-target'));
-        const duration = 2000; // 2 segundos
+        const duration = 5000; // 2 segundos
         const step = target / (duration / 16); // 60 FPS
         
         let current = 0;
@@ -1879,69 +1856,6 @@ setInterval(showSlides, 5000); // Cambiar cada 5 segundos
             }
         }
 
-        // Funciones adicionales
-        function descargarCotizacion() {
-            const contenido = document.querySelector('.cotizacion-content');
-            if (contenido) {
-                const texto = contenido.innerText;
-                const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
-                const url = window.URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `cotizacion_gemini_ambiental_${new Date().getTime()}.txt`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-            }
-        }
-
-        function imprimirCotizacion() {
-            const contenido = document.querySelector('.cotizacion-content');
-            if (contenido) {
-                const ventanaImpresion = window.open('', '_blank');
-                ventanaImpresion.document.write(`
-                    <html>
-                        <head>
-                            <title>Cotización - Gemini Ambiental S.A.S</title>
-                            <style>
-                                body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-                                h1 { color: #2c5f41; }
-                                .header { border-bottom: 2px solid #4a8b64; padding-bottom: 10px; margin-bottom: 20px; }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="header">
-                                <h1>Gemini Ambiental S.A.S</h1>
-                                <p>Control de Plagas y Saneamiento Ambiental</p>
-                            </div>
-                            ${contenido.innerHTML}
-                        </body>
-                    </html>
-                `);
-                ventanaImpresion.document.close();
-                ventanaImpresion.print();
-            }
-        }
-
-        // Inicializar cuando el DOM esté listo
-        document.addEventListener('DOMContentLoaded', function() {
-            verificarConexion();
-            console.log('🌿 Gemini Ambiental S.A.S - Sistema iniciado');
-        });
-
-        // Función de debug
-        window.testConnection = async function() {
-            try {
-                const result = await verificarConexion();
-                if (result) {
-                    alert('✅ Conexión exitosa con el backend Spring Boot!');
-                }
-            } catch (error) {
-                alert('❌ Error de conexión: ' + error.message);
-            }
-        };
     </script>
     <script>
         fetch('https://backendgeminiambienta-v4-0.onrender.com/api/public/info')

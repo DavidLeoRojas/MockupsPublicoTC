@@ -21,18 +21,52 @@
             font-family: 'Poppins', sans-serif;
         }
 
-  /* Header y Navegación - Con Imagen de Fondo - ACTUALIZADO */
+ 
+
+
+
+/* Menú más compacto */
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem; /* REDUCIDO el espacio entre items */
+}
+
+
+
+.nav-menu a:hover,
+.nav-menu a.active {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-1px); /* EFECTO MÁS SUTIL */
+}
+/* ESTILOS UNIFICADOS PARA HEADER */
 .header {
     background: 
         linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
         url('docs/assets/img/bg.png') no-repeat center center;
     background-size: cover;
     color: white;
-    padding: 1rem 0; /* Mismo padding que acerca.html */
+    padding: 1rem 0;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    position: relative;
+    position: sticky; /* O relative, elige uno */
+    top: 0;
+    z-index: 1000;
 }
 
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem; /* Valor consistente */
+}
+
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 0.4rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-size: 0.95em; /* Tamaño consistente */
+}
 .header::before {
     content: '';
     position: absolute;
@@ -40,7 +74,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.3);
+    background: rgba(0, 0, 0, 0.3); /* Overlay oscuro para mejorar la legibilidad */
     z-index: 1;
 }
 
@@ -63,11 +97,20 @@
     align-items: center;
     gap: 1rem;
 }
-
-.nav-menu {
+.logo-img {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
     display: flex;
-    list-style: none;
-    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #2c5f41;
+}
+.logo-text {
+    font-size: 1.5em;
+    font-weight: bold;
 }
 
 .nav-menu a {
@@ -76,6 +119,7 @@
     padding: 0.5rem 1rem;
     border-radius: 5px;
     transition: all 0.3s ease;
+    font-size: 0.7em;
 }
 
 .nav-menu a:hover,
@@ -83,60 +127,59 @@
     background: rgba(255,255,255,0.2);
     transform: translateY(-2px);
 }
-
-.admin-btn {
-    background: #ff6b6b;
-    color: white;
-    padding: 0.5rem 1rem;
-    text-decoration: none;
-    border-radius: 25px;
-    transition: all 0.3s ease;
-}
-
-.admin-btn:hover {
-    background: #ff5252;
-    transform: translateY(-2px);
-}
-        /* Hero Section */
-        .hero {
-            background: 
-                linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)),
-                url('docs/assets/img/bg.png') no-repeat center center;
-            background-size: cover;
-            padding: 6rem 0;
-            text-align: center;
+        .admin-btn {
+            background: #5cda7a;
             color: white;
-            position: relative;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            z-index: 1;
+        .admin-btn:hover {
+            background: #036b35;
+            transform: translateY(-2px);
         }
+       /* Hero Section más compacta */
+.hero {
+    background: 
+        linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)),
+        url('docs/assets/img/bg.png') no-repeat center center;
+    background-size: cover;
+    padding: 4rem 0; /* REDUCIDO de 6rem/8rem */
+    text-align: center;
+    color: white;
+    position: relative;
+}
 
-        .hero > * {
-            position: relative;
-            z-index: 2;
-        }
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
 
-        .hero h1 {
-            font-size: 3.5em;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
+.hero > * {
+    position: relative;
+    z-index: 2;
+}
 
-        .hero p {
-            font-size: 1.3em;
-            max-width: 800px;
-            margin: 0 auto 2rem;
-            line-height: 1.7;
-        }
+.hero h1 {
+    font-size: 2.8em; /* REDUCIDO de 3.5em/4em */
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.hero p {
+    font-size: 1    .1em; /* REDUCIDO de 1.3em/1.5em */
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
 
         /* Container */
         .container {
@@ -429,22 +472,24 @@
     </style>
 </head>
 <body>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <!-- Header -->
-    <header class="header">
-        <div class="nav-container">
-            <div class="logo-section">
-                <img src="LogoMenu.png" width="300" height="80" alt="Logo">
-            </div>
-            <nav>
-                <ul class="nav-menu">
-                    <li><a href="index.html">Inicio</a></li>
-                    <li><a href="acerca.html" class="active">Acerca de</a></li>
-                    <li><a href="testimonios.html">Testimonios</a></li>
-                    <li><a href="contacto.html">Contacto</a></li>
-                </ul>
-            </nav>
-            <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
+   <header class="header">
+    <div class="nav-container">
+        <div class="logo-section">
+            <img src="LogoMenu.png" width="150" height="40" alt="Logo">
         </div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="acerca.html" class="active">Acerca de</a></li>
+                <li><a href="testimonios.html">Testimonios</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+        <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
+    </div>
     </header>
 
     <!-- Hero Section -->
@@ -556,46 +601,33 @@
             </div>
         </div>
     </section>
-
-    <!-- Equipo -->
+<!-- FAQ Section -->
     <section class="section section-alt">
         <div class="container">
-            <h2 class="section-title">Nuestro Equipo</h2>
-            <div class="team-grid">
-                <div class="team-card">
-                    <div class="team-photo">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <div class="team-info">
-                        <h3>Carlos Rodríguez</h3>
-                        <p>Director General</p>
-                        <p>Ing. Ambiental - 20+ años experiencia</p>
-                    </div>
+            <h2 class="section-title">Preguntas Frecuentes</h2>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <h3>¿Cuál es el tiempo de respuesta?</h3>
+                    <p>Para solicitudes regulares respondemos en máximo 24 horas. Para emergencias, nuestro equipo se contacta en menos de 30 minutos.</p>
                 </div>
-                <div class="team-card">
-                    <div class="team-photo">
-                        <i class="fas fa-user-md"></i>
-                    </div>
-                    <div class="team-info">
-                        <h3>María González</h3>
-                        <p>Jefe Técnico</p>
-                        <p>Bióloga - Especialista en Control de Plagas</p>
-                    </div>
+                
+                <div class="faq-item">
+                    <h3>¿Trabajan fines de semana?</h3>
+                    <p>Sí, atendemos emergencias las 24 horas los 7 días de la semana. Servicios regulares los sábados hasta las 2:00 PM.</p>
                 </div>
-                <div class="team-card">
-                    <div class="team-photo">
-                        <i class="fas fa-user-cog"></i>
-                    </div>
-                    <div class="team-info">
-                        <h3>Juan Pérez</h3>
-                        <p>Técnico Senior</p>
-                        <p>15 años de experiencia en campo</p>
-                    </div>
+                
+                <div class="faq-item">
+                    <h3>¿Cubren toda Boyacá?</h3>
+                    <p>Tenemos cobertura en todo el departamento de Boyacá, con equipos móviles en las principales ciudades y municipios.</p>
+                </div>
+                
+                <div class="faq-item">
+                    <h3>¿Ofrecen certificaciones?</h3>
+                    <p>Sí, emitimos certificaciones sanitarias oficiales avaladas por la Secretaría de Salud de Boyacá.</p>
                 </div>
             </div>
         </div>
     </section>
-
     <!-- Certificaciones -->
     <section class="section">
         <div class="container">

@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto - Gemini Ambiental</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,17 +14,41 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: 'Open Sans', sans-serif;
         }
 
-        /* Header y Navegación  */
+        h1, h2, h3, .btn-primary {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* ESTILOS UNIFICADOS PARA HEADER */
         .header {
-            background: linear-gradient(135deg, #7bce9e 0%, #4a8b64 100%);
+            background: 
+                linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url('docs/assets/img/bg.png') no-repeat center center;
+            background-size: cover;
             color: white;
             padding: 1rem 0;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        .header > * {
+            position: relative;
+            z-index: 2;
         }
 
         .nav-container {
@@ -60,25 +86,26 @@
         .nav-menu {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: 1.5rem;
         }
 
         .nav-menu a {
             color: white;
             text-decoration: none;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 1rem;
             border-radius: 5px;
             transition: all 0.3s ease;
+            font-size: 0.95em;
         }
 
         .nav-menu a:hover,
         .nav-menu a.active {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-1px);
         }
 
         .admin-btn {
-            background: #ff6b6b;
+            background: #5cda7a;
             color: white;
             padding: 0.5rem 1rem;
             text-decoration: none;
@@ -87,28 +114,49 @@
         }
 
         .admin-btn:hover {
-            background: #ff5252;
+            background: #036b35;
             transform: translateY(-2px);
         }
 
         /* Hero Section */
         .hero {
-            background: linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)), 
-                        linear-gradient(135deg, #e8f5e8 0%, #c8e8c8 100%);
+            background: 
+                linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)),
+                url('docs/assets/img/bg.png') no-repeat center center;
+            background-size: cover;
             padding: 4rem 0;
             text-align: center;
             color: white;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 2;
         }
 
         .hero h1 {
-            font-size: 3em;
+            font-size: 2.8em;
             margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
 
         .hero p {
-            font-size: 1.2em;
-            max-width: 600px;
-            margin: 0 auto;
+            font-size: 1.1em;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
         }
 
         /* Container */
@@ -126,250 +174,271 @@
             background: #f8f9fa;
         }
 
-        /* Contact Info */
-        .contact-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-
-        .info-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .section-title {
+            font-size: 2.5em;
+            margin-bottom: 3rem;
             text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .info-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .info-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #4a8b64, #2c5f41);
-            border-radius: 50%;
-            margin: 0 auto 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: white;
-        }
-
-        .info-card h3 {
-            color: #2c5f41;
-            margin-bottom: 1rem;
-        }
-
-        .info-card p {
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-
-        .info-card strong {
             color: #2c5f41;
         }
 
-        /* Contact Form */
-        .contact-form-section {
+        /* Contact Grid */
+        .contact-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 4rem;
-            align-items: start;
             margin: 3rem 0;
         }
 
-        .form-content h2 {
-            color: #2c5f41;
-            margin-bottom: 1rem;
-            font-size: 2em;
-        }
-
-        .form-content p {
-            color: #666;
-            margin-bottom: 2rem;
-            line-height: 1.7;
+        .contact-info {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
         .contact-form {
             background: white;
-            padding: 2rem;
+            padding: 2.5rem;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .form-group {
-            margin-bottom: 1.5rem;
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid #eee;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+        .info-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #4a8b64, #2c5f41);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5em;
+            flex-shrink: 0;
+        }
+
+        .info-content h3 {
+            color: #2c5f41;
+            margin-bottom: 0.8rem;
+            font-size: 1.4em;
+        }
+
+        .info-content p {
+            color: #666;
+            line-height: 1.6;
+            font-size: 1em;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 1.8rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
-            color: #2c5f41;
+            margin-bottom: 0.6rem;
             font-weight: 600;
-        }
-
-        .form-group input,
-        .form-group textarea,
-        .form-group select {
-            width: 100%;
-            padding: 1rem;
-            border: 2px solid #e9ecef;
-            border-radius: 10px;
+            color: #2c5f41;
             font-size: 1em;
-            transition: border-color 0.3s ease;
         }
 
-        .form-group input:focus,
-        .form-group textarea:focus,
-        .form-group select:focus {
-            border-color: #4a8b64;
+        .form-control {
+            width: 100%;
+            padding: 0.9rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .form-control:focus {
             outline: none;
+            border-color: #4a8b64;
             box-shadow: 0 0 0 3px rgba(74, 139, 100, 0.1);
         }
 
-        .form-group textarea {
+        textarea.form-control {
+            min-height: 140px;
             resize: vertical;
-            min-height: 120px;
         }
 
-        .submit-btn {
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%232c5f41' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 12px;
+        }
+
+        .btn {
             background: linear-gradient(135deg, #4a8b64, #2c5f41);
             color: white;
-            padding: 1rem 2rem;
             border: none;
+            padding: 1rem 2.5rem;
             border-radius: 25px;
             font-size: 1.1em;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
+            font-family: 'Poppins', sans-serif;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(74, 139, 100, 0.3);
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(74, 139, 100, 0.3);
         }
 
-        /* Emergency Contact */
+        /* Emergency Section */
         .emergency-contact {
             background: linear-gradient(135deg, #ff6b6b, #ff5252);
             color: white;
-            padding: 3rem 0;
+            padding: 3.5rem;
+            border-radius: 15px;
             text-align: center;
+            margin: 3rem 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .emergency-content {
-            max-width: 800px;
-            margin: 0 auto;
+        .emergency-icon {
+            font-size: 4.5em;
+            margin-bottom: 1.5rem;
         }
 
-        .emergency-content h2 {
-            font-size: 2.5em;
-            margin-bottom: 1rem;
+        .emergency-contact h2 {
+            font-size: 2.2em;
+            margin-bottom: 1.2rem;
+            font-weight: 600;
         }
 
-        .emergency-content p {
+        .emergency-contact p {
             font-size: 1.2em;
-            margin-bottom: 2rem;
-            opacity: 0.9;
+            margin-bottom: 1.8rem;
+            opacity: 0.95;
+            line-height: 1.6;
         }
 
         .emergency-phone {
-            font-size: 2em;
+            font-size: 2.8em;
             font-weight: bold;
-            background: rgba(255,255,255,0.2);
-            padding: 1rem 2rem;
-            border-radius: 15px;
-            display: inline-block;
-            margin: 1rem 0;
+            margin-bottom: 1.5rem;
+            display: block;
         }
 
-        /* Service Areas */
-        .service-areas {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin: 3rem 0;
-        }
-
-        .area-item {
-            background: white;
-            padding: 1.5rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            border-top: 3px solid #4a8b64;
-        }
-
-        .area-item h4 {
-            color: #2c5f41;
-            margin-bottom: 0.5rem;
-        }
-
-        .area-item p {
-            color: #666;
-            font-size: 0.9em;
+        .emergency-note {
+            font-size: 0.95em;
+            opacity: 0.85;
+            font-style: italic;
         }
 
         /* Map Section */
-        .map-section {
-            background: #f8f9fa;
-            padding: 4rem 0;
+        .map-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 3rem 0;
         }
 
-        .map-container {
-            background: #e9ecef;
+        .map-placeholder {
+            background: linear-gradient(135deg, #e8f5e8, #c8e8c8);
             height: 400px;
-            border-radius: 15px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #666;
+            color: #2c5f41;
             font-size: 1.2em;
-            margin-top: 2rem;
+            text-align: center;
         }
 
-        /* FAQ */
-        .faq-section {
+        /* FAQ Section */
+        .faq-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
             margin: 3rem 0;
         }
 
         .faq-item {
             background: white;
-            margin-bottom: 1rem;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            overflow: hidden;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            border-top: 4px solid #4a8b64;
         }
 
-        .faq-question {
-            background: #4a8b64;
-            color: white;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: background 0.3s ease;
+        .faq-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .faq-item h3 {
+            color: #2c5f41;
+            margin-bottom: 1.2rem;
+            font-size: 1.3em;
             font-weight: 600;
         }
 
-        .faq-question:hover {
-            background: #2c5f41;
-        }
-
-        .faq-answer {
-            padding: 1.5rem;
+        .faq-item p {
             color: #666;
             line-height: 1.7;
+            font-size: 1em;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background: linear-gradient(135deg, #2c5f41, #4a8b64);
+            color: white;
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        /* WhatsApp Float */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            z-index: 1000;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         /* Footer */
@@ -434,25 +503,27 @@
                 justify-content: center;
             }
 
-            .hero h1 {
-                font-size: 2em;
-            }
-
-            .contact-form-section {
+            .contact-grid {
                 grid-template-columns: 1fr;
                 gap: 2rem;
             }
 
-            .form-row {
-                grid-template-columns: 1fr;
+            .hero h1 {
+                font-size: 2.5em;
             }
 
-            .emergency-content h2 {
+            .section-title {
                 font-size: 2em;
             }
 
             .emergency-phone {
-                font-size: 1.5em;
+                font-size: 2em;
+            }
+
+            .info-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
             }
         }
     </style>
@@ -462,14 +533,12 @@
     <header class="header">
         <div class="nav-container">
             <div class="logo-section">
-                <img src="Logo.png" width="300" height="80" alt="Logo">
-
+                <img src="LogoMenu.png" width="150" height="40" alt="Logo">
             </div>
             <nav>
                 <ul class="nav-menu">
                     <li><a href="index.html">Inicio</a></li>
                     <li><a href="acerca.html">Acerca de</a></li>
-                    <li><a href="servicios.html">Servicios</a></li>
                     <li><a href="testimonios.html">Testimonios</a></li>
                     <li><a href="contacto.html" class="active">Contacto</a></li>
                 </ul>
@@ -482,217 +551,100 @@
     <section class="hero">
         <div class="container">
             <h1>Contáctanos</h1>
-            <p>Solicita tu cotización gratuita o consulta sobre nuestros servicios. Estamos aquí para ayudarte.</p>
+            <p>Estamos aquí para ayudarte. Ponte en contacto con nuestro equipo de expertos en control ambiental</p>
         </div>
     </section>
 
-    <!-- Información de Contacto -->
+    <!-- Contact Section -->
     <section class="section">
         <div class="container">
-            <div class="contact-info">
-                <div class="info-card">
-                    <div class="info-icon">📞</div>
-                    <h3>Teléfono</h3>
-                    <p><strong>Principal:</strong> (+57) 300 123 4567</p>
-                    <p><strong>Oficina:</strong> (+57) 8 742 8765</p>
-                    <p><strong>Emergencias:</strong> 24/7</p>
+        
+            <div class="contact-grid">
+                <!-- Información de Contacto -->
+                <div class="contact-info">
+                    <div class="info-item">
+                        <div class="info-icon">📍</div>
+                        <div class="info-content">
+                            <h3>Nuestra Ubicación</h3>
+                            <p>Calle 12 # 10-45, Centro<br>Tunja, Boyacá - Colombia</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">📞</div>
+                        <div class="info-content">
+                            <h3>Teléfonos</h3>
+                            <p>Fijo: (608) 742 1234<br>Móvil: (+57) 300 123 4567<br>WhatsApp: (+57) 310 987 6543</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">✉️</div>
+                        <div class="info-content">
+                            <h3>Correo Electrónico</h3>
+                            <p>info@geminiambiental.com<br>servicios@geminiambiental.com<br>soporte@geminiambiental.com</p>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">🕒</div>
+                        <div class="info-content">
+                            <h3>Horarios de Atención</h3>
+                            <p>Lunes a Viernes: 7:00 AM - 6:00 PM<br>Sábados: 8:00 AM - 2:00 PM<br>Emergencias: 24/7</p>
+                        </div>
+                    </div>
                 </div>
-                <div class="info-card">
-                    <div class="info-icon">📧</div>
-                    <h3>Email</h3>
-                    <p><strong>General:</strong> info@geminiambiental.com</p>
-                    <p><strong>Cotizaciones:</strong> ventas@geminiambiental.com</p>
-                    <p><strong>Soporte:</strong> soporte@geminiambiental.com</p>
-                </div>
-                <div class="info-card">
-                    <div class="info-icon">📍</div>
-                    <h3>Dirección</h3>
-                    <p><strong>Calle 19 #15-45</strong></p>
-                    <p>Barrio Centro</p>
-                    <p>Tunja, Boyacá - Colombia</p>
-                    <p>Código Postal: 150001</p>
-                </div>
-                <div class="info-card">
-                    <div class="info-icon">🕒</div>
-                    <h3>Horarios</h3>
-                    <p><strong>Lun - Vie:</strong> 8:00 AM - 6:00 PM</p>
-                    <p><strong>Sábados:</strong> 8:00 AM - 12:00 PM</p>
-                    <p><strong>Emergencias:</strong> 24 horas</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Formulario de Contacto -->
-    <section class="section section-alt">
-        <div class="container">
-            <div class="contact-form-section">
-                <div class="form-content">
-                    <h2>Solicita tu Cotización</h2>
-                    <p>Completa el formulario con los detalles de tu solicitud y nos pondremos en contacto contigo en menos de 24 horas. Todos nuestros servicios incluyen visita técnica gratuita y cotización sin compromiso.</p>
-                    
-                    <h3 style="color: #2c5f41; margin-top: 2rem; margin-bottom: 1rem;">¿Por qué elegirnos?</h3>
-                    <ul style="color: #666; line-height: 1.7;">
-                        <li style="margin-bottom: 0.5rem;">✓ Más de 15 años de experiencia</li>
-                        <li style="margin-bottom: 0.5rem;">✓ Personal técnico certificado</li>
-                        <li style="margin-bottom: 0.5rem;">✓ Productos seguros y aprobados</li>
-                        <li style="margin-bottom: 0.5rem;">✓ Certificaciones oficiales incluidas</li>
-                        <li style="margin-bottom: 0.5rem;">✓ Servicio de emergencias 24/7</li>
-                        <li style="margin-bottom: 0.5rem;">✓ Garantía en todos nuestros servicios</li>
-                    </ul>
-                </div>
-                
-                <form class="contact-form">
-                    <div class="form-row">
+                <!-- Formulario de Contacto -->
+                <div class="contact-form">
+                    <form id="contactForm">
                         <div class="form-group">
-                            <label for="nombre">Nombre Completo *</label>
-                            <input type="text" id="nombre" name="nombre" required>
+                            <label for="name">Nombre Completo *</label>
+                            <input type="text" id="name" class="form-control" required>
                         </div>
+                        
                         <div class="form-group">
-                            <label for="empresa">Empresa</label>
-                            <input type="text" id="empresa" name="empresa">
+                            <label for="email">Correo Electrónico *</label>
+                            <input type="email" id="email" class="form-control" required>
                         </div>
-                    </div>
-                    
-                    <div class="form-row">
+                        
                         <div class="form-group">
-                            <label for="telefono">Teléfono *</label>
-                            <input type="tel" id="telefono" name="telefono" required>
+                            <label for="phone">Teléfono</label>
+                            <input type="tel" id="phone" class="form-control">
                         </div>
+                        
                         <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input type="email" id="email" name="email" required>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="servicio">Servicio de Interés *</label>
-                            <select id="servicio" name="servicio" required>
-                                <option value="">Selecciona un servicio</option>
+                            <label for="service">Servicio de Interés</label>
+                            <select id="service" class="form-control">
+                                <option value="">Seleccione un servicio</option>
                                 <option value="control-plagas">Control de Plagas</option>
                                 <option value="lavado-tanques">Lavado de Tanques</option>
-                                <option value="ambos-servicios">Ambos Servicios</option>
+                                <option value="certificaciones">Certificaciones Sanitarias</option>
                                 <option value="emergencia">Servicio de Emergencia</option>
-                                <option value="otro">Otro</option>
+                                <option value="otros">Otros</option>
                             </select>
                         </div>
+                        
                         <div class="form-group">
-                            <label for="tipo-establecimiento">Tipo de Establecimiento</label>
-                            <select id="tipo-establecimiento" name="tipo-establecimiento">
-                                <option value="">Selecciona una opción</option>
-                                <option value="restaurante">Restaurante</option>
-                                <option value="educativo">Institución Educativa</option>
-                                <option value="hotel">Hotel</option>
-                                <option value="salud">Centro de Salud</option>
-                                <option value="industrial">Industria Alimentaria</option>
-                                <option value="oficina">Oficinas</option>
-                                <option value="otro">Otro</option>
-                            </select>
+                            <label for="message">Mensaje *</label>
+                            <textarea id="message" class="form-control" required></textarea>
                         </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="direccion">Dirección del Servicio</label>
-                        <input type="text" id="direccion" name="direccion" placeholder="Dirección donde se realizará el servicio">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="mensaje">Mensaje Adicional</label>
-                        <textarea id="mensaje" name="mensaje" placeholder="Describe tu situación específica, urgencia del servicio, horarios preferidos, etc."></textarea>
-                    </div>
-                    
-                    <button type="submit" class="submit-btn">Enviar Solicitud</button>
-                </form>
-            </div>
-        </div>
-    </section>
-
-    <!-- Emergencias -->
-    <section class="emergency-contact">
-        <div class="container">
-            <div class="emergency-content">
-                <h2>🚨 Servicio de Emergencias</h2>
-                <p>¿Tienes una emergencia con plagas? Nuestro equipo está disponible las 24 horas del día, todos los días del año.</p>
-                <div class="emergency-phone">📞 (+57) 300 123 4567</div>
-                <p>Atención inmediata para situaciones críticas en restaurantes, hoteles e industrias alimentarias.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Áreas de Servicio -->
-    <section class="section">
-        <div class="container">
-            <h2 style="text-align: center; color: #2c5f41; margin-bottom: 2rem; font-size: 2.5em;">Áreas de Cobertura</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 3rem; font-size: 1.1em;">Brindamos nuestros servicios en toda la región de Boyacá</p>
-            <div class="service-areas">
-                <div class="area-item">
-                    <h4>Tunja</h4>
-                    <p>Ciudad principal - Servicio inmediato</p>
-                </div>
-                <div class="area-item">
-                    <h4>Duitama</h4>
-                    <p>Cobertura completa</p>
-                </div>
-                <div class="area-item">
-                    <h4>Sogamoso</h4>
-                    <p>Atención especializada</p>
-                </div>
-                <div class="area-item">
-                    <h4>Chiquinquirá</h4>
-                    <p>Servicio regular</p>
-                </div>
-                <div class="area-item">
-                    <h4>Paipa</h4>
-                    <p>Sector hotelero</p>
-                </div>
-                <div class="area-item">
-                    <h4>Villa de Leyva</h4>
-                    <p>Turismo y restaurantes</p>
+                        
+                        <button type="submit" class="btn">Enviar Mensaje</button>
+                    </form>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Mapa -->
-    <section class="map-section">
-        <div class="container">
-            <h2 style="text-align: center; color: #2c5f41; margin-bottom: 1rem; font-size: 2.5em;">Nuestra Ubicación</h2>
-            <p style="text-align: center; color: #666; margin-bottom: 2rem;">Encuéntranos en el centro de Tunja, fácil acceso y parqueadero disponible</p>
-            <div class="map-container">
-                🗺️ Mapa Interactivo - Calle 19 #15-45, Tunja, Boyacá
-            </div>
-        </div>
-    </section>
+   
 
-    <!-- FAQ Contacto -->
-    <section class="section">
-        <div class="container">
-            <h2 style="text-align: center; color: #2c5f41; margin-bottom: 2rem; font-size: 2.5em;">Preguntas Frecuentes sobre Nuestros Servicios</h2>
-            <div class="faq-section">
-                <div class="faq-item">
-                    <div class="faq-question">¿Cuánto tiempo tardan en responder una solicitud de cotización?</div>
-                    <div class="faq-answer">Respondemos todas las solicitudes en menos de 24 horas hábiles. Para emergencias, la respuesta es inmediata por teléfono.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿La visita técnica tiene algún costo?</div>
-                    <div class="faq-answer">No, la visita técnica y la cotización son completamente gratuitas y sin compromiso de contratación.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Atienden fines de semana?</div>
-                    <div class="faq-answer">Atendemos emergencias 24/7 incluidos fines de semana y festivos. Para servicios programados, trabajamos de lunes a sábado.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Qué documentos entregan después del servicio?</div>
-                    <div class="faq-answer">Entregamos certificado sanitario oficial, acta de servicio, recomendaciones técnicas y cronograma de próximos servicios.</div>
-                </div>
-                <div class="faq-item">
-                    <div class="faq-question">¿Tienen cobertura fuera de Tunja?</div>
-                    <div class="faq-answer">Sí, cubrimos toda Boyacá. Los municipios más lejanos pueden tener un recargo por desplazamiento que se informa en la cotización.</div>
-                </div>
-            </div>
-        </div>
-    </section>
+    
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/573107573564" class="whatsapp-float" target="_blank">
+        <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="90">
+    </a>
 
     <!-- Footer -->
     <footer class="footer">
@@ -706,17 +658,19 @@
             <div class="footer-section">
                 <h3>Contacto</h3>
                 <p>📍 Tunja, Boyacá - Colombia</p>
-                <p>📞 (+57) 300 123 4567</p>
+                <p><a href="https://wa.me/573001234567" target="_blank">
+                    <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="30">
+                </a> (+57) 3107573564 o 3504026272</p>
                 <p>✉️ info@geminiambiental.com</p>
                 <p>🌐 www.geminiambiental.com</p>
             </div>
             <div class="footer-section">
                 <h3>Servicios</h3>
                 <ul>
-                    <li><a href="servicios.html">Control de Plagas</a></li>
-                    <li><a href="servicios.html">Lavado de Tanques</a></li>
-                    <li><a href="servicios.html">Certificaciones</a></li>
-                    <li><a href="servicios.html">Mantenimiento Preventivo</a></li>
+                    <li><a href="">Control de Plagas</a></li>
+                    <li><a href="">Lavado de Tanques</a></li>
+                    <li><a href="">Certificaciones</a></li>
+                    <li><a href="">Mantenimiento Preventivo</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -737,10 +691,75 @@
     </footer>
 
     <script>
-        // Funcionalidad básica para el formulario
-        document.querySelector('.contact-form').addEventListener('submit', function(e) {
+        // Manejar el envío del formulario de contacto
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('Gracias por tu solicitud. Nos pondremos en contacto contigo pronto.');
+            
+            // Obtener valores del formulario
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const service = document.getElementById('service').value;
+            
+            // Simular envío del formulario
+            alert(`¡Gracias ${name}! Hemos recibido tu mensaje. Te contactaremos pronto al correo ${email}.`);
+            
+            // Limpiar el formulario
+            document.getElementById('contactForm').reset();
+        });
+
+        // Efecto de escritura para el hero
+        const heroTitle = document.querySelector('.hero h1');
+        const originalText = heroTitle.textContent;
+        heroTitle.textContent = '';
+        
+        let i = 0;
+        const typeWriter = () => {
+            if (i < originalText.length) {
+                heroTitle.textContent += originalText.charAt(i);
+                i++;
+                setTimeout(typeWriter, 100);
+            }
+        };
+        
+        // Iniciar efecto después de cargar la página
+        window.addEventListener('load', typeWriter);
+
+        // Animación para números de estadísticas
+        document.addEventListener('DOMContentLoaded', function() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            statNumbers.forEach(stat => {
+                let target;
+                if (stat.textContent.includes('min')) {
+                    target = 30;
+                } else if (stat.textContent.includes('%')) {
+                    target = 98;
+                } else if (stat.textContent.includes('+')) {
+                    target = 15;
+                } else {
+                    target = 24;
+                }
+                
+                let current = 0;
+                const increment = target / 30;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    
+                    if (stat.textContent.includes('min')) {
+                        stat.textContent = Math.floor(current) + 'min';
+                    } else if (stat.textContent.includes('%')) {
+                        stat.textContent = Math.floor(current) + '%';
+                    } else if (stat.textContent.includes('+')) {
+                        stat.textContent = Math.floor(current) + '+';
+                    } else {
+                        stat.textContent = Math.floor(current) + '/7';
+                    }
+                }, 80);
+            });
         });
     </script>
 </body>

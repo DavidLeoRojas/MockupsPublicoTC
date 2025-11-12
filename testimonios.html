@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testimonios - Gemini Ambiental</title>
+    <title>Acerca de Nosotros - Gemini Ambiental</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,73 +14,121 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
+            font-family: 'Open Sans', sans-serif;
         }
 
-        /* Header y Navegación  */
-        .header {
-            background: linear-gradient(135deg, #7bce9e 0%, #4a8b64 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        h1, h2, h3, .btn-primary {
+            font-family: 'Poppins', sans-serif;
         }
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+ 
 
-        .logo-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
 
-        .logo-img {
-            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            color: #2c5f41;
-        }
 
-        .logo-text {
-            font-size: 1.5em;
-            font-weight: bold;
-        }
+/* Menú más compacto */
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem; /* REDUCIDO el espacio entre items */
+}
 
-        .nav-menu {
-            display: flex;
-            list-style: none;
-            gap: 2rem;
-        }
 
-        .nav-menu a {
-            color: white;
-            text-decoration: none;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-        }
 
-        .nav-menu a:hover,
-        .nav-menu a.active {
-            background: rgba(255,255,255,0.2);
-            transform: translateY(-2px);
-        }
+.nav-menu a:hover,
+.nav-menu a.active {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-1px); /* EFECTO MÁS SUTIL */
+}
+/* ESTILOS UNIFICADOS PARA HEADER */
+.header {
+    background: 
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+        url('docs/assets/img/bg.png') no-repeat center center;
+    background-size: cover;
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky; /* O relative, elige uno */
+    top: 0;
+    z-index: 1000;
+}
 
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem; /* Valor consistente */
+}
+
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 0.4rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-size: 0.95em; /* Tamaño consistente */
+}
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Overlay oscuro para mejorar la legibilidad */
+    z-index: 1;
+}
+
+.header > * {
+    position: relative;
+    z-index: 2;
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.logo-img {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: #2c5f41;
+}
+.logo-text {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    font-size: 0.7em;
+}
+
+.nav-menu a:hover,
+.nav-menu a.active {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
         .admin-btn {
-            background: #ff6b6b;
+            background: #5cda7a;
             color: white;
             padding: 0.5rem 1rem;
             text-decoration: none;
@@ -87,29 +137,49 @@
         }
 
         .admin-btn:hover {
-            background: #ff5252;
+            background: #036b35;
             transform: translateY(-2px);
         }
+       /* Hero Section más compacta */
+.hero {
+    background: 
+        linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)),
+        url('docs/assets/img/bg.png') no-repeat center center;
+    background-size: cover;
+    padding: 4rem 0; /* REDUCIDO de 6rem/8rem */
+    text-align: center;
+    color: white;
+    position: relative;
+}
 
-        /* Hero Section */
-        .hero {
-            background: linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)), 
-                        linear-gradient(135deg, #e8f5e8 0%, #c8e8c8 100%);
-            padding: 4rem 0;
-            text-align: center;
-            color: white;
-        }
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1;
+}
 
-        .hero h1 {
-            font-size: 3em;
-            margin-bottom: 1rem;
-        }
+.hero > * {
+    position: relative;
+    z-index: 2;
+}
 
-        .hero p {
-            font-size: 1.2em;
-            max-width: 600px;
-            margin: 0 auto;
-        }
+.hero h1 {
+    font-size: 2.8em; /* REDUCIDO de 3.5em/4em */
+    margin-bottom: 1rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.hero p {
+    font-size: 1    .1em; /* REDUCIDO de 1.3em/1.5em */
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    line-height: 1.6;
+}
 
         /* Container */
         .container {
@@ -133,235 +203,195 @@
             color: #2c5f41;
         }
 
-        /* Testimonials Grid */
-        .testimonials-grid {
+        /* Content Sections */
+        .content-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+            margin: 3rem 0;
+        }
+
+        .content-text h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+            font-size: 1.8em;
+        }
+
+        .content-text p {
+            margin-bottom: 1.5rem;
+            color: #666;
+            line-height: 1.7;
+        }
+
+        .content-visual {
+            text-align: center;
+        }
+
+        .content-visual img {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* Values Grid */
+        .values-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 2rem;
             margin: 3rem 0;
         }
 
-        .testimonial-card {
+        .value-card {
             background: white;
-            padding: 2rem;
+            padding: 2.5rem;
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            position: relative;
+            text-align: center;
+            transition: transform 0.3s ease;
+            border-top: 4px solid #4a8b64;
         }
 
-        .testimonial-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        .value-card:hover {
+            transform: translateY(-10px);
         }
 
-        .testimonial-card::before {
-            content: '"';
-            position: absolute;
-            top: -20px;
-            left: 20px;
-            font-size: 6em;
-            color: #4a8b64;
-            opacity: 0.3;
-        }
-
-        .testimonial-text {
-            font-style: italic;
+        .value-icon {
+            font-size: 3em;
             margin-bottom: 1.5rem;
-            color: #555;
-            line-height: 1.7;
-            position: relative;
-            z-index: 1;
+            color: #4a8b64;
         }
 
-        .client-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .value-card h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
+            font-size: 1.4em;
         }
 
-        .client-avatar {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
+        /* Team Grid */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .team-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-10px);
+        }
+
+        .team-photo {
+            height: 250px;
             background: linear-gradient(135deg, #4a8b64, #2c5f41);
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 1.5em;
-            font-weight: bold;
+            font-size: 4em;
         }
 
-        .client-details h4 {
+        .team-info {
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .team-info h3 {
             color: #2c5f41;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.5rem;
+            font-size: 1.3em;
         }
 
-        .client-details p {
+        .team-info p {
             color: #666;
-            font-size: 0.9em;
+            margin-bottom: 0.5rem;
         }
 
-        .rating {
-            display: flex;
-            gap: 0.2rem;
-            margin-top: 0.5rem;
+        /* Certifications */
+        .certifications {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
         }
 
-        .star {
-            color: #ffc107;
-            font-size: 1.2em;
+        .cert-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .cert-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .cert-icon {
+            font-size: 3em;
+            color: #4a8b64;
+            margin-bottom: 1rem;
+        }
+
+        .cert-card h3 {
+            color: #2c5f41;
+            margin-bottom: 1rem;
         }
 
         /* Stats Section */
-        .stats {
-            background: linear-gradient(135deg, #2c5f41 0%, #4a8b64 100%);
+        .stats-section {
+            background: linear-gradient(135deg, #2c5f41, #4a8b64);
             color: white;
             padding: 4rem 0;
+            text-align: center;
         }
 
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .stat-item {
             text-align: center;
+            padding: 2rem;
         }
 
-        .stat-item h3 {
+        .stat-number {
             font-size: 3em;
+            font-weight: bold;
             margin-bottom: 0.5rem;
+            display: block;
         }
 
-        .stat-item p {
+        .stat-label {
             font-size: 1.1em;
             opacity: 0.9;
         }
 
-        /* Case Studies */
-        .case-study {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 2rem;
+        /* WhatsApp Float */
+        .whatsapp-float {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            animation: pulse 1.5s infinite;
         }
 
-        .case-header {
-            background: linear-gradient(135deg, #4a8b64, #2c5f41);
-            color: white;
-            padding: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-        }
-
-        .case-icon {
-            font-size: 4em;
-            opacity: 0.8;
-        }
-
-        .case-title h3 {
-            font-size: 1.8em;
-            margin-bottom: 0.5rem;
-        }
-
-        .case-title p {
-            opacity: 0.9;
-        }
-
-        .case-content {
-            padding: 2rem;
-        }
-
-        .case-details {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-
-        .detail-item {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 8px;
-        }
-
-        .detail-item h4 {
-            color: #2c5f41;
-            margin-bottom: 0.5rem;
-        }
-
-        .detail-item p {
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        .case-results {
-            background: #e8f5e8;
-            padding: 1.5rem;
-            border-radius: 10px;
-            border-left: 4px solid #4a8b64;
-        }
-
-        .case-results h4 {
-            color: #2c5f41;
-            margin-bottom: 1rem;
-        }
-
-        .case-results ul {
-            list-style: none;
-        }
-
-        .case-results li {
-            padding: 0.3rem 0;
-            position: relative;
-            padding-left: 1.5rem;
-        }
-
-        .case-results li:before {
-            content: '✓';
-            position: absolute;
-            left: 0;
-            color: #4a8b64;
-            font-weight: bold;
-        }
-
-        /* Awards Section */
-        .awards-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 2rem;
-            margin: 3rem 0;
-        }
-
-        .award-card {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .award-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .award-icon {
-            font-size: 3em;
-            color: #4a8b64;
-            margin-bottom: 1rem;
-        }
-
-        .award-card h3 {
-            color: #2c5f41;
-            margin-bottom: 0.5rem;
-        }
-
-        .award-card p {
-            color: #666;
-            font-size: 0.9em;
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
 
         /* Footer */
@@ -426,297 +456,234 @@
                 justify-content: center;
             }
 
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
             .hero h1 {
+                font-size: 2.5em;
+            }
+
+            .section-title {
                 font-size: 2em;
-            }
-
-            .testimonials-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .case-details {
-                grid-template-columns: 1fr;
-            }
-
-            .case-header {
-                flex-direction: column;
-                text-align: center;
             }
         }
     </style>
 </head>
 <body>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
     <!-- Header -->
-    <header class="header">
-        <div class="nav-container">
-            <div class="logo-section">
-                <img src="Logo.png" width="300" height="80" alt="Logo">
-
-            </div>
-            <nav>
-                <ul class="nav-menu">
-                    <li><a href="index.html">Inicio</a></li>
-                    <li><a href="acerca.html">Acerca de</a></li>
-                    <li><a href="servicios.html">Servicios</a></li>
-                    <li><a href="testimonios.html" class="active">Testimonios</a></li>
-                    <li><a href="contacto.html">Contacto</a></li>
-                </ul>
-            </nav>
-            <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
+   <header class="header">
+    <div class="nav-container">
+        <div class="logo-section">
+            <img src="LogoMenu.png" width="150" height="40" alt="Logo">
         </div>
+        <nav>
+            <ul class="nav-menu">
+                <li><a href="index.html">Inicio</a></li>
+                <li><a href="acerca.html" >Acerca de</a></li>
+                <li><a href="testimonios.html"class="active">Testimonios</a></li>
+                <li><a href="contacto.html">Contacto</a></li>
+            </ul>
+        </nav>
+        <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
+    </div>
     </header>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Testimonios de Clientes</h1>
-            <p>Conoce las experiencias de nuestros clientes y casos de éxito en toda Boyacá</p>
+            <h1>Acerca de Gemini Ambiental</h1>
+            <p>Más de 5 años de experiencia brindando soluciones profesionales en control de plagas y saneamiento ambiental</p>
         </div>
     </section>
 
-    <!-- Estadísticas -->
-    <section class="stats">
+    <!-- Quiénes Somos -->
+    <section class="section">
         <div class="container">
+            <div class="content-grid">
+                <div class="content-text">
+                    <h3>¿Quiénes Somos?</h3>
+                    <p>Gemini Ambiental S.A.S. es una empresa líder en servicios de control de plagas y saneamiento ambiental en Boyacá, especializada en el sector alimentario, educativo y hotelero.</p>
+                    <p>Fundada en 2020, hemos construido una sólida reputación basada en la calidad de nuestros servicios, el cumplimiento normativo y la satisfacción del cliente.</p>
+                    <p>Nuestro equipo de profesionales certificados está comprometido con brindar soluciones efectivas y personalizadas para cada uno de nuestros clientes.</p>
+                </div>
+                <div class="content-visual">
+                    <img src="docs/assets/img/about-team.jpg" alt="Nuestro equipo de trabajo" style="background: linear-gradient(135deg, #4a8b64, #2c5f41); height: 400px; object-fit: cover;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <h2 style="margin-bottom: 3rem; font-size: 2.5em;">Nuestros Logros</h2>
             <div class="stats-grid">
                 <div class="stat-item">
-                    <h3>500+</h3>
-                    <p>Clientes Satisfechos</p>
+                    <span class="stat-number">100+</span>
+                    <div class="stat-label">Clientes Satisfechos</div>
                 </div>
                 <div class="stat-item">
-                    <h3>98%</h3>
-                    <p>Tasa de Satisfacción</p>
+                    <span class="stat-number">5+</span>
+                    <div class="stat-label">Años de Experiencia</div>
                 </div>
                 <div class="stat-item">
-                    <h3>15+</h3>
-                    <p>Años de Experiencia</p>
+                    <span class="stat-number">500+</span>
+                    <div class="stat-label">Proyectos Completados</div>
                 </div>
                 <div class="stat-item">
-                    <h3>24/7</h3>
-                    <p>Atención al Cliente</p>
+                    <span class="stat-number">100%</span>
+                    <div class="stat-label">Clientes Satisfechos</div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Testimonios -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">Lo que Dicen Nuestros Clientes</h2>
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"Llevamos 5 años trabajando con Gemini Ambiental y su servicio es excepcional. Siempre puntuales, profesionales y con resultados garantizados. Han sido clave para mantener nuestras certificaciones sanitarias."</p>
-                    <div class="client-info">
-                        <div class="client-avatar">CR</div>
-                        <div class="client-details">
-                            <h4>Carlos Rodríguez</h4>
-                            <p>Gerente - Restaurante El Sabor</p>
-                            <div class="rating">
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"Como institución educativa, la seguridad de nuestros estudiantes es primordial. Gemini Ambiental nos brinda la tranquilidad de saber que nuestras instalaciones están completamente protegidas."</p>
-                    <div class="client-info">
-                        <div class="client-avatar">MG</div>
-                        <div class="client-details">
-                            <h4>María González</h4>
-                            <p>Directora - Colegio San José</p>
-                            <div class="rating">
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"El servicio de lavado de tanques es impecable. Nos entregan toda la documentación necesaria y el agua siempre queda con excelente calidad. Muy recomendados."</p>
-                    <div class="client-info">
-                        <div class="client-avatar">LM</div>
-                        <div class="client-details">
-                            <h4>Luis Martínez</h4>
-                            <p>Administrador - Hotel Plaza</p>
-                            <div class="rating">
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"Profesionales de primer nivel. Solucionaron un problema de roedores que teníamos hace meses y desde entonces no hemos vuelto a tener inconvenientes. Excelente inversión."</p>
-                    <div class="client-info">
-                        <div class="client-avatar">AS</div>
-                        <div class="client-details">
-                            <h4>Ana Suárez</h4>
-                            <p>Propietaria - Panadería La Esquina</p>
-                            <div class="rating">
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"Contratamos sus servicios de emergencia un domingo y respondieron inmediatamente. Solucionaron el problema de hormigas en nuestra cocina en tiempo récord. Servicio 24/7 real."</p>
-                    <div class="client-info">
-                        <div class="client-avatar">JP</div>
-                        <div class="client-details">
-                            <h4>Jorge Peña</h4>
-                            <p>Chef Ejecutivo - Hotel Boutique Tunja</p>
-                            <div class="rating">
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="testimonial-card">
-                    <p class="testimonial-text">"La atención al cliente es sobresaliente. Siempre nos recuerdan las fechas de renovación y nos mantienen informados sobre nuevas normativas. Un socio estratégico confiable."</p>
-                    <div class="client-info">
-                        <div class="client-avatar">CT</div>
-                        <div class="client-details">
-                            <h4>Carmen Torres</h4>
-                            <p>Coordinadora de Calidad - Clínica Santa María</p>
-                            <div class="rating">
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                                <span class="star">★</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Casos de Éxito -->
+    <!-- Misión y Visión -->
     <section class="section section-alt">
         <div class="container">
-            <h2 class="section-title">Casos de Éxito</h2>
-            
-            <!-- Caso 1 -->
-            <div class="case-study">
-                <div class="case-header">
-                    <div class="case-icon">🏫</div>
-                    <div class="case-title">
-                        <h3>Universidad Pedagógica y Tecnológica de Colombia</h3>
-                        <p>Manejo integral de plagas en campus universitario</p>
+            <h2 class="section-title">Nuestra Misión y Visión</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-bullseye"></i>
                     </div>
+                    <h3>Misión</h3>
+                    <p>Brindar soluciones integrales en control de plagas y saneamiento ambiental, garantizando ambientes seguros y saludables para nuestros clientes, cumpliendo con los más altos estándares de calidad y normatividad vigente.</p>
                 </div>
-                <div class="case-content">
-                    <div class="case-details">
-                        <div class="detail-item">
-                            <h4>Desafío</h4>
-                            <p>Infestación de roedores en comedores estudiantiles y laboratorios, afectando la seguridad alimentaria y el funcionamiento académico.</p>
-                        </div>
-                        <div class="detail-item">
-                            <h4>Solución</h4>
-                            <p>Plan de manejo integrado con tratamientos mensuales, sellado de accesos, instalación de estaciones de monitoreo y capacitación al personal.</p>
-                        </div>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-eye"></i>
                     </div>
-                    <div class="case-results">
-                        <h4>Resultados Obtenidos:</h4>
-                        <ul>
-                            <li>100% eliminación de roedores en 60 días</li>
-                            <li>Certificación sanitaria renovada exitosamente</li>
-                            <li>Reducción del 95% en quejas de usuarios</li>
-                            <li>Ahorro del 40% en costos de fumigación anual</li>
-                            <li>Personal capacitado en prevención</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Caso 2 -->
-            <div class="case-study">
-                <div class="case-header">
-                    <div class="case-icon">🏭</div>
-                    <div class="case-title">
-                        <h3>Planta Procesadora Alimentos Andinos</h3>
-                        <p>Implementación de programa HACCP</p>
-                    </div>
-                </div>
-                <div class="case-content">
-                    <div class="case-details">
-                        <div class="detail-item">
-                            <h4>Desafío</h4>
-                            <p>Necesidad de implementar protocolo HACCP para exportación, con control estricto de plagas en líneas de producción.</p>
-                        </div>
-                        <div class="detail-item">
-                            <h4>Solución</h4>
-                            <p>Diseño de programa de monitoreo continuo, instalación de cortinas de aire, trampas lumínicas y protocolos de limpieza especializados.</p>
-                        </div>
-                    </div>
-                    <div class="case-results">
-                        <h4>Resultados Obtenidos:</h4>
-                        <ul>
-                            <li>Certificación HACCP aprobada sin observaciones</li>
-                            <li>Apertura de mercados internacionales</li>
-                            <li>Cero incidentes de contaminación por plagas</li>
-                            <li>Aumento del 25% en productividad</li>
-                            <li>Reconocimiento como proveedor clase A</li>
-                        </ul>
-                    </div>
+                    <h3>Visión</h3>
+                    <p>Ser la empresa líder en servicios ambientales en la región andina, reconocida por nuestra excelencia técnica, innovación constante y compromiso con la sostenibilidad ambiental.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Reconocimientos -->
+    <!-- Valores -->
     <section class="section">
         <div class="container">
-            <h2 class="section-title">Reconocimientos y Certificaciones</h2>
-            <div class="awards-grid">
-                <div class="award-card">
-                    <div class="award-icon">🏆</div>
-                    <h3>Mejor Empresa de Servicios 2024</h3>
-                    <p>Cámara de Comercio de Tunja</p>
+            <h2 class="section-title">Nuestros Valores</h2>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Calidad</h3>
+                    <p>Comprometidos con la excelencia en cada servicio que brindamos, superando las expectativas de nuestros clientes.</p>
                 </div>
-                <div class="award-card">
-                    <div class="award-icon">🌟</div>
-                    <h3>Certificación ISO 9001</h3>
-                    <p>Sistema de Gestión de Calidad</p>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Confianza</h3>
+                    <p>Construimos relaciones duraderas basadas en la transparencia, honestidad y cumplimiento de nuestras promesas.</p>
                 </div>
-                <div class="award-card">
-                    <div class="award-icon">🛡️</div>
-                    <h3>Proveedor Confiable</h3>
-                    <p>Secretaría de Salud de Boyacá</p>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3>Sostenibilidad</h3>
+                    <p>Cuidamos el medio ambiente en todos nuestros procesos, utilizando productos y métodos eco-amigables.</p>
                 </div>
-                <div class="award-card">
-                    <div class="award-icon">🎯</div>
-                    <h3>Excelencia en Servicio</h3>
-                    <p>Asociación Hotelera de Boyacá</p>
+                <div class="value-card">
+                    <div class="value-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>Innovación</h3>
+                    <p>Adoptamos las mejores tecnologías y métodos del sector para ofrecer soluciones vanguardistas y efectivas.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Equipo -->
+    <section class="section section-alt">
+        <div class="container">
+            <h2 class="section-title">Nuestro Equipo</h2>
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-photo">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="team-info">
+                        <h3>Carlos Rodríguez</h3>
+                        <p>Director General</p>
+                        <p>Ing. Ambiental - 20+ años experiencia</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-photo">
+                        <i class="fas fa-user-md"></i>
+                    </div>
+                    <div class="team-info">
+                        <h3>María González</h3>
+                        <p>Jefe Técnico</p>
+                        <p>Bióloga - Especialista en Control de Plagas</p>
+                    </div>
+                </div>
+                <div class="team-card">
+                    <div class="team-photo">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <div class="team-info">
+                        <h3>Juan Pérez</h3>
+                        <p>Técnico Senior</p>
+                        <p>15 años de experiencia en campo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Certificaciones -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">Certificaciones y Registros</h2>
+            <div class="certifications">
+                <div class="cert-card">
+                    <div class="cert-icon">
+                        <i class="fas fa-file-certificate"></i>
+                    </div>
+                    <h3>INVIMA</h3>
+                    <p>Registro Sanitario Vigente</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+                    <h3>ISO 9001</h3>
+                    <p>Gestión de Calidad</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h3>ISO 14001</h3>
+                    <p>Gestión Ambiental</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3>OHSAS 18001</h3>
+                    <p>Seguridad y Salud Ocupacional</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- WhatsApp Float -->
+    <a href="https://wa.me/573107573564" class="whatsapp-float" target="_blank">
+        <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="90">
+    </a>
+
+       <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -728,17 +695,19 @@
             <div class="footer-section">
                 <h3>Contacto</h3>
                 <p>📍 Tunja, Boyacá - Colombia</p>
-                <p>📞 (+57) 300 123 4567</p>
+                <p><a href="https://wa.me/573001234567"  target="_blank">
+                <img src="docs/assets/img/whatsapp-icon.png  " alt="WhatsApp" width="30">
+</a> (+57) 3107573564 o 3504026272</p>
                 <p>✉️ info@geminiambiental.com</p>
                 <p>🌐 www.geminiambiental.com</p>
             </div>
             <div class="footer-section">
                 <h3>Servicios</h3>
                 <ul>
-                    <li><a href="servicios.html">Control de Plagas</a></li>
-                    <li><a href="servicios.html">Lavado de Tanques</a></li>
-                    <li><a href="servicios.html">Certificaciones</a></li>
-                    <li><a href="servicios.html">Mantenimiento Preventivo</a></li>
+                    <li><a href="">Control de Plagas</a></li>
+                    <li><a href="">Lavado de Tanques</a></li>
+                    <li><a href="">Certificaciones</a></li>
+                    <li><a href="">Mantenimiento Preventivo</a></li>
                 </ul>
             </div>
             <div class="footer-section">
@@ -757,5 +726,25 @@
             </div>
         </div>
     </footer>
+    <script>
+        // Animación simple para números de estadísticas
+        document.addEventListener('DOMContentLoaded', function() {
+            const statNumbers = document.querySelectorAll('.stat-number');
+            
+            statNumbers.forEach(stat => {
+                const target = parseInt(stat.textContent);
+                let current = 0;
+                const increment = target / 50;
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    stat.textContent = Math.floor(current) + (stat.textContent.includes('%') ? '%' : '+');
+                }, 50);
+            });
+        });
+    </script>
 </body>
 </html>
