@@ -18,13 +18,32 @@ h1, h2, h3, .btn-primary {
     font-family: 'Poppins', sans-serif;
 }
 
-        /* Header y Navegación */
-        .header {
-            background: linear-gradient(135deg, #7bce9e 0%, #4a8b64 100%);
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
+     /* Header y Navegación - Con Imagen de Fondo */
+.header {
+   background: 
+        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), /* capa oscura con opacidad */
+        url('docs/assets/img/bg.png') no-repeat center center; /* Ruta a tu imagen */
+    background-size: cover; /* Ajusta la imagen para cubrir todo el header */
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    /* Opcional: Añade un overlay semitransparente para que el texto sea legible */
+    position: relative;
+}
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3); /* Overlay oscuro para mejorar la legibilidad */
+    z-index: 1;
+}
+.header > * {
+    position: relative;
+    z-index: 2;
+}
 
         .nav-container {
             max-width: 1200px;
@@ -53,22 +72,39 @@ h1, h2, h3, .btn-primary {
             color: #2c5f41;
         }
 
+/* Misión y Visión */
+.icon-mision {
+    color: #28a745;
+}
+.icon-mision::before {
+    content: "\f0eb"; /* fa-flag */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
 
+.icon-vision {
+    color: #17a2b8;
+}
+.icon-vision::before {
+    content: "\f06e"; /* fa-eye */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
         .carousel-container {
-    position: relative;
-    width: 100%;
-    height: 80vh;
-    overflow: hidden;
-}
-.carousel-slide {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
-    opacity: 0;
-    transition: opacity 1s ease;
-}
+            position: relative;
+            width: 100%;
+            height: 80vh;
+            overflow: hidden;
+        }
+        .carousel-slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
 .carousel-slide.active {
     opacity: 1;
 }
@@ -191,13 +227,14 @@ h1, h2, h3, .btn-primary {
         }
 
         /* Hero Section */
-        .hero {
-            background: linear-gradient(rgba(75, 175, 77, 0.844), rgba(44,95,65,0.8)), 
-                        linear-gradient(135deg, #e8f5e8 0%, #c8e8c8 100%);
-            padding: 6rem 0;
-            text-align: center;
-            color: white;
-        }
+/* Hero Section - Sin fondo degradado, solo el carrusel */
+.hero {
+    padding: 0; /* Ajusta el padding si necesitas espacio */
+    text-align: center;
+    color: white;
+    position: relative; /* Asegura que el carrusel se comporte bien */
+    overflow: hidden; /* Evita desbordamientos */
+}
 
         .hero h1 {
             font-size: 3.5em;
@@ -860,7 +897,7 @@ h1, h2, h3, .btn-primary {
     <header class="header">
         <div class="nav-container">
             <div class="logo-section">
-                <img src="Logo.png" width="300" height="80" alt="Logo">
+                <img src="LogoMenu.png" width="300" height="80" alt="Logo">
             </div>
             <nav>
                 <ul class="nav-menu">
@@ -882,20 +919,19 @@ h1, h2, h3, .btn-primary {
 <section class="hero">
     <div class="carousel-container">
         <!-- Diapositiva 1: Fumigaciones -->
-        <div class="carousel-slide active" style="background-image: url('img/fumigacion.jpg');">
+        <div class="carousel-slide active" style="background-image: url('docs/assets/img/Fumigaciones.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
                 <h1>🪳 FUMIGACIONES PROFESIONALES</h1>
                 <p>Eliminamos plagas en oficinas, almacenes, cocinas, contenedores y vehículos con productos certificados.</p>
-                <a href="servicios.html#fumigaciones" class="btn-primary">Ver Servicio</a>
             </div>
         </div>
 
         <!-- Diapositiva 2: Control de Roedores -->
-        <div class="carousel-slide" style="background-image: url('img/roedores.jpg');">
+        <div class="carousel-slide" style="background-image: url('docs/assets/img/Rodedores.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
-                <h1>🐭 CONTROL DE ROEDORES</h1>
+                <h1>CONTROL DE ROEDORES</h1>
                 <p>Soluciones efectivas para ratas y ratones en restaurantes, industrias y espacios públicos.</p>
                 <a href="servicios.html#roedores" class="btn-primary">Ver Servicio</a>
             </div>
@@ -912,10 +948,10 @@ h1, h2, h3, .btn-primary {
         </div>
 
         <!-- Diapositiva 4: Asesorías e Implementación del SG-SST -->
-        <div class="carousel-slide" style="background-image: url('img/sg-sst.jpg');">
+        <div class="carousel-slide" style="background-image: url('docs/assets/img/tanques.png');">
             <div class="overlay"></div>
             <div class="carousel-content">
-                <h1>🧑‍💼 ASESORÍAS E IMPLEMENTACIÓN DEL SG-SST</h1>
+                <h1>ASESORÍAS E IMPLEMENTACIÓN DEL SG-SST</h1>
                 <p>Garantizamos el cumplimiento normativo en seguridad y salud en el trabajo para tu empresa.</p>
                 <a href="servicios.html#sg-sst" class="btn-primary">Ver Servicio</a>
             </div>
@@ -932,7 +968,7 @@ h1, h2, h3, .btn-primary {
         </div>
 
         <!-- Diapositiva 6: Mantenimiento de Zonas Verdes -->
-        <div class="carousel-slide" style="background-image: url('img/zonas-verdes.jpg');">
+        <div class="carousel-slide" style="background-image: url('docs/assets/img/Zn.jpg');">
             <div class="overlay"></div>
             <div class="carousel-content">
                 <h1>🌿 MANTENIMIENTO DE ZONAS VERDES</h1>
@@ -950,87 +986,60 @@ h1, h2, h3, .btn-primary {
 <iframe 
     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.3299151993556!2d-74.10382612552702!3d4.712634941555029!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f84b60f144789%3A0x7eb81ba29a73eed2!2sCasa%20Cleves!5e0!3m2!1ses!2sco!4v1762904017974!5m2!1ses!2sco" 
     width="100%" 
-    height="300" 
+    height="600" 
     style="border:0; border-radius: 15px; margin: 2rem 0;" 
     allowfullscreen="" 
     loading="lazy">
 </iframe>
-<section class="section section-alt">
-    <div class="container">
-        <h2 class="section-title">💬 Lo que Dicen Nuestros Clientes</h2>
-        <div class="testimonials-carousel">
-            <div class="testimonial active">
-                <p>"Excelente servicio, llegaron a tiempo y dejaron todo impecable. ¡Totalmente recomendados!"</p>
-                <strong>— Restaurante La Cabaña, Tunja</strong>
-            </div>
-            <div class="testimonial">
-                <p>"El lavado de nuestros tanques fue profesional y rápido. Además, nos dieron el certificado al día siguiente."</p>
-                <strong>— Colegio San Mateo</strong>
-            </div>
-        </div>
-        <div class="dots" id="testimonial-dots">
-            <span class="dot active" onclick="currentTestimonial(0)"></span>
-            <span class="dot" onclick="currentTestimonial(1)"></span>
-        </div>
-    </div>
-</section>
-<section class="section">
-    <div class="container">
-        <h2 class="section-title">Nuestro Trabajo en Acción</h2>
-        <div class="gallery-grid">
-            <img src="img/trabajo1.jpg" alt="Fumigación en restaurante">
-            <img src="img/trabajo2.jpg" alt="Lavado de tanque">
-            <img src="img/trabajo3.jpg" alt="Certificación entregada">
-            <img src="img/trabajo4.jpg" alt="Equipo técnico">
-        </div>
-    </div>
-</section>
+
 
     <!-- About Section -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">¿Quiénes Somos?</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <h3>Experiencia y Confianza</h3>
-                    <p>Somos una empresa especializada en control de plagas y lavado de tanques de agua, con enfoque en clientes corporativos. Nuestro compromiso es brindar soluciones integrales que garanticen ambientes seguros y saludables.</p>
-                    <p>Contamos con personal técnico certificado, productos aprobados por INVIMA y procesos que cumplen con todas las normativas sanitarias vigentes.</p>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-number">100+</div>
-                            <div class="stat-label">Clientes Satisfechos</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">5+</div>
-                            <div class="stat-label">Años de Experiencia</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">24/7</div>
-                            <div class="stat-label">Servicio de Emergencia</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-number">100%</div>
-                            <div class="stat-label">Productos Certificados</div>
-                        </div>
+<section class="section">
+    <div class="container">
+        <h2 class="section-title">¿Quiénes Somos?</h2>
+        <div class="about-content">
+            <div class="about-text">
+                <h3>Experiencia y Confianza</h3>
+                <p>Somos una empresa especializada en control de plagas y lavado de tanques de agua, con enfoque en clientes corporativos. Nuestro compromiso es brindar soluciones integrales que garanticen ambientes seguros y saludables.</p>
+                <p>Contamos con personal técnico certificado, productos aprobados por INVIMA y procesos que cumplen con todas las normativas sanitarias vigentes.</p>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">100+</div>
+                        <div class="stat-label">Clientes Satisfechos</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">5+</div>
+                        <div class="stat-label">Años de Experiencia</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Servicio de Emergencia</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Productos Certificados</div>
                     </div>
                 </div>
-                <div class="about-image">
-                    <div class="contact-info">
-                        <div class="contact-item">
-                            <div class="contact-icon">🎯</div>
-                            <h3>Misión</h3>
-                            <p>Brindar soluciones efectivas en control de plagas y saneamiento ambiental.</p>
-                        </div>
-                        <div class="contact-item">
-                            <div class="contact-icon">👁️</div>
-                            <h3>Visión</h3>
-                            <p>Ser la empresa líder en servicios ambientales en la región de Boyacá.</p>
-                        </div>
+            </div>
+            <div class="about-image">
+                <div class="contact-info">
+                    <!-- Misión -->
+                    <div class="contact-item">
+                        <div class="contact-icon icon-mision"></div>
+                        <h3>Misión</h3>
+                        <p>Brindar soluciones efectivas en control de plagas y saneamiento ambiental, garantizando la salud y seguridad de nuestros clientes mediante servicios técnicos de alta calidad.</p>
+                    </div>
+                    <!-- Visión -->
+                    <div class="contact-item">
+                        <div class="contact-icon icon-vision"></div>
+                        <h3>Visión</h3>
+                        <p>Ser reconocidos como la empresa líder en servicios ambientales en Boyacá, innovando continuamente en sostenibilidad y excelencia operativa.</p>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
   
     <!-- Services Preview -->
