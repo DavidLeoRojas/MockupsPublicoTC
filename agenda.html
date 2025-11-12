@@ -1257,53 +1257,8 @@ function navegarAlMesDeServicios() {
             console.error('❌ No se pudo obtener tipo de servicio');
             return '⚠️ Servicio Desconocido';
         }
-
-
-// ========== CARGA DE DATOS MEJORADA ==========
-async function loadAgendaData() {
-    console.log("🔄 Iniciando carga de datos de la agenda...");
     
-    const token = localStorage.getItem('jwtToken');
-    if (!token) {
-        showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
-        setTimeout(() => {
-            window.location.href = 'index.html';
-        }, 2000);
-        return;
-    }
-    
-    const headers = {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-    };
 
-    try {
-        console.log('📡 Solicitando datos al backend...');
-        
-        const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => {
-                if (!r.ok) throw new Error('Error al cargar servicios');
-                return r.json();
-            }),
-            fetch(`${API_BASE_URL}/personas`, { headers }).then(r => {
-                if (!r.ok) throw new Error('Error al cargar personas');
-                return r.json();
-            }),
-            fetch(`${API_BASE_URL}/tipos-servicio`, { headers }).then(r => {
-                if (!r.ok) throw new Error('Error al cargar tipos de servicio');
-                return r.json();
-            }),
-            fetch(`${API_BASE_URL}/cotizaciones`, { headers }).then(r => {
-                if (!r.ok) throw new Error('Error al cargar cotizaciones');
-                return r.json();
-            })
-        ]);
-
-        console.log('✅ Datos recibidos del backend:');
-        console.log('   Servicios:', serviciosRes.length);
-        console.log('   Personas:', personasRes.length);
-        console.log('   Tipos servicio:', tiposServRes.length);
-        console.log('   Cotizaciones:', cotizacionesRes.length);
 
     // FUNCIONES DE NORMALIZACIÓN
 function normalizarServicio(rawServicio) {
@@ -1327,6 +1282,25 @@ function normalizarServicio(rawServicio) {
         activo: rawServicio.activo !== undefined ? rawServicio.activo : true,
         // Asegurar campos para compatibilidad con funciones de edición/creación
         // Si el backend no envía el objeto completo, estos campos deben estar disponibles
+    };
+}
+
+function normalizarPersona(rawPersona) {
+    return {
+        dni: rawPersona.dni || rawPersona.DNI || rawPersona.id || '', // Añadir 'id' como fallback si DNI es el ID
+        nombre: rawPersona.nombre || rawPersona.Nombre || rawPersona.nombreCompleto || rawPersona.name || 'Nombre Desconocido',
+        rol: rawPersona.rol || rawPersona.Rol || rawPersona.tipo || 'Rol Desconocido', // Añadir 'tipo' como fallback
+        // Añadir otros campos si es necesario
+    };
+}
+
+function normalizarTipoServicio(rawTipo) {
+    return {
+        idTipoServicio: rawTipo.idTipoServicio || rawTipo.id_tipo_servicio || rawTipo.id || '', // Añadir 'id' como fallback
+        nombreServicio: rawTipo.nombreServicio || rawTipo.nombre_servicio || rawTipo.nombre || 'Tipo Desconocido', // Añadir 'nombre' como fallback
+        costo: rawTipo.costo || rawTipo.Costo || 0,
+        activo: rawTipo.activo !== undefined ? rawTipo.activo : true,
+        // Añadir otros campos si es necesario
     };
 }
 
@@ -1429,26 +1403,39 @@ async function loadAgendaData() {
         showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
     }
 }
-function normalizarPersona(rawPersona) {
-    return {
-        dni: rawPersona.dni || rawPersona.DNI || rawPersona.id || '', // Añadir 'id' como fallback si DNI es el ID
-        nombre: rawPersona.nombre || rawPersona.Nombre || rawPersona.nombreCompleto || rawPersona.name || 'Nombre Desconocido',
-        rol: rawPersona.rol || rawPersona.Rol || rawPersona.tipo || 'Rol Desconocido', // Añadir 'tipo' como fallback
-        // Añadir otros campos si es necesario
-    };
+
+        console.log('📋 Servicios procesados:', servicios.length);
+
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+        todosLosTiposServicio = Array.isArray(tiposServRes) ? tiposServRes.filter(t => t.estado && t.estado.toUpperCase() === 'ACTIVO') : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
+
+        console.log(`✅ Datos cargados exitosamente:`);
+        console.log(`   📋 ${servicios.length} servicios`);
+        console.log(`   👥 ${todasLasPersonas.length} personas`);
+        console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio ACTIVOS`);
+        console.log(`   💰 ${cotizaciones.length} cotizaciones`);
+
+        // POBLAR SELECTS
+        populateClienteSelect(todasLasPersonas);
+        populateTecnicoSelect(todasLasPersonas);
+        populateTipoServicioSelect(todosLosTiposServicio);
+        populateFilterTecnico(todasLasPersonas);
+
+        // RENDERIZAR
+        console.log('🎨 Renderizando calendario...');
+        renderCalendar(currentMonth, currentYear);
+        
+        console.log('📅 Renderizando agenda de hoy...');
+        renderTodaySchedule(new Date());
+        
+        console.log('✅ Inicialización completada');
+
+    } catch (error) {
+        console.error('❌ Error al cargar datos de agenda:', error);
+        showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
+    }
 }
-
-function normalizarTipoServicio(rawTipo) {
-    return {
-        idTipoServicio: rawTipo.idTipoServicio || rawTipo.id_tipo_servicio || rawTipo.id || '', // Añadir 'id' como fallback
-        nombreServicio: rawTipo.nombreServicio || rawTipo.nombre_servicio || rawTipo.nombre || 'Tipo Desconocido', // Añadir 'nombre' como fallback
-        costo: rawTipo.costo || rawTipo.Costo || 0,
-        activo: rawTipo.activo !== undefined ? rawTipo.activo : true,
-        // Añadir otros campos si es necesario
-    };
-}
-
-
         // ========== POPULATION FUNCTIONS ==========
         function populateClienteSelect(personas) {
             const selects = ['clienteId', 'editClienteId', 'quickCliente'];
