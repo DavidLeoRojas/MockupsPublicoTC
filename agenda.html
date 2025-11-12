@@ -2404,10 +2404,10 @@ async function verificarAutenticacion() {
         }
 
 // ========== MODAL FUNCTIONS ==========
-function openAddServiceModal(date = null) {
+function openAddServiceModal(date = null) { // Recibe la fecha opcionalmente
     const serviceForm = document.getElementById('serviceForm');
     if (serviceForm) {
-        serviceForm.reset();
+        serviceForm.reset(); // Limpiar el formulario antes de abrirlo
     }
     // ✅ CORREGIDO: Actualizar el título del modal
     const titleElement = document.getElementById('serviceModalTitle');
@@ -2415,19 +2415,19 @@ function openAddServiceModal(date = null) {
         titleElement.textContent = 'Programar Nuevo Servicio';
     }
     const submitBtn = document.getElementById('submitBtn');
-    if (submitBtn) {
-        submitBtn.textContent = 'Programar Servicio';
-    }
+    // Asegúrate de que el botón tenga el ID correcto en el HTML, o cámbialo aquí si es necesario
+    // document.querySelector('#addServiceModal .btn-primary').textContent = 'Programar Servicio';
+
     // ✅ CORREGIDO: Poner la fecha si se pasa
     if (date) {
         const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
-        const fechaInput = document.getElementById('fecha');
+        const fechaInput = document.getElementById('fecha'); // Input de fecha en el modal de agregar
         if (fechaInput) {
             fechaInput.value = formattedDate;
         }
     }
-    currentEditingId = null;
-    isSubmitting = false;
+    currentEditingId = null; // Asegurar que no esté en modo edición
+    isSubmitting = false;    // Asegurar que no esté en proceso de envío
     const addServiceModal = document.getElementById('addServiceModal');
     if (addServiceModal) {
         addServiceModal.classList.add('show');
