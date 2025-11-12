@@ -1156,13 +1156,26 @@ async function eliminarServicio(id) {
         alert("❌ Servicio no encontrado.");
         return;
     }
-
     try {
+        // ✅ 1. Obtener el token JWT (igual que en loadServicesData)
+        const token = localStorage.getItem('jwtToken');
+        if (!token) {
+            alert('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // ✅ 2. Configurar los encabezados con el token de autenticación
+        const headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        };
+
         // Recargar servicios agendados para asegurar datos actualizados
-        const agendadosRes = await fetch(`${API_BASE_URL}/servicios`);
+        // ✅ 3. Incluir los headers en la solicitud
+        const agendadosRes = await fetch(`${API_BASE_URL}/servicios`, { headers }); // <-- Aquí está el cambio
         if (!agendadosRes.ok) throw new Error('Error al verificar servicios agendados');
         serviciosAgendados = await agendadosRes.json();
-
         console.log(`📋 Verificando si tipo de servicio ${id} está en uso activamente...`);
         console.log(`Total servicios agendados: ${serviciosAgendados.length}`);
 
@@ -1185,7 +1198,6 @@ async function eliminarServicio(id) {
 
         // Verificar si hay servicios vinculados en estado distinto a Completado o Cancelado
         const vinculadosActivos = vinculados.filter(s => !['Completado', 'Cancelado'].includes(s.estado));
-
         console.log(`🔍 Servicios vinculados activos (no Completado/Cancelado): ${vinculadosActivos.length}`);
         console.log(`🔍 Servicios vinculados totales: ${vinculados.length}`);
 
@@ -1200,7 +1212,6 @@ async function eliminarServicio(id) {
             }).join('\n');
 
             alert(`❌ NO SE PUEDE ELIMINAR "${servicio.nombreServicio}"
-            
 ⚠️ Motivo: Existen ${vinculadosActivos.length} servicio(s) programado(s) que utilizan este tipo de servicio y no están Completados o Cancelados.
 📋 Servicios vinculados activos:
 ${detalles}
@@ -1211,12 +1222,15 @@ ${detalles}
             const confirmacion = confirm(`⚠️ Este tipo de servicio tiene ${vinculados.length} servicio(s) asociado(s), pero todos están en estado "Completado" o "Cancelado". ¿Desea eliminarlo de todos modos?`);
             if (!confirmacion) return;
         }
-        // Si no hay ninguno vinculado, también se puede eliminar
 
         // Si llegó hasta aquí, puede eliminar
         console.log(`✅ Tipo de servicio ${id} no tiene servicios activos vinculados. Procediendo a eliminar...`);
         if (confirm(`⚠️ ¿Está seguro de eliminar "${servicio.nombreServicio}"? Esta acción no se puede deshacer.`)) {
-            const res = await fetch(`${API_BASE_URL}/tipos-servicio/${id}`, { method: 'DELETE' });
+            // ✅ 4. Incluir los headers en la solicitud DELETE también
+            const res = await fetch(`${API_BASE_URL}/tipos-servicio/${id}`, {
+                method: 'DELETE',
+                headers: headers // <-- Asegúrate de incluir los headers aquí también
+            });
             if (!res.ok) {
                 const errorText = await res.text();
                 throw new Error(errorText || 'Error al eliminar');
@@ -1224,7 +1238,6 @@ ${detalles}
             alert("✅ Tipo de servicio eliminado exitosamente.");
             await loadServicesData(); // Recargar la lista de servicios
         }
-
     } catch (error) {
         console.error("❌ Error al intentar eliminar servicio:", error);
         alert(`❌ Error: ${error.message}`);
