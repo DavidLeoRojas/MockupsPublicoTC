@@ -753,13 +753,6 @@
         </a>
     </div>
     <div class="nav-item">
-        <a href="cotizaciones.html" class="nav-link">
-            <!-- Icono Cotizaciones: moneda/dólar -->
-            <span class="nav-icon"><i class="fas fa-money-bill-wave"></i></span>
-            <span>Cotizaciones</span>
-        </a>
-    </div>
-    <div class="nav-item">
         <a href="facturas.html" class="nav-link">
             <!-- Icono Facturas: documento -->
             <span class="nav-icon"><i class="fas fa-file-invoice-dollar"></i></span>
@@ -1478,15 +1471,18 @@ function renderCalendar(month, year) {
             }
 
             const today = new Date();
-            for (let day = 1; day <= totalDays; day++) {
-                const date = new Date(year, month, day);
-                const dayElement = document.createElement('div');
-                dayElement.className = 'calendar-day';
-                if (date.getDate() === today.getDate() && 
-                    date.getMonth() === today.getMonth() && 
-                    date.getFullYear() === today.getFullYear()) {
-                    dayElement.classList.add('today');
-                }
+for (let day = 1; day <= totalDays; day++) {
+    const date = new Date(year, month, day); // <-- Fecha del día actual en el bucle
+    const dayElement = document.createElement('div');
+    dayElement.className = 'calendar-day';
+    // ... (código para configurar la clase 'today', etc.) ...
+    dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
+    // ... (código para poblar los eventos del día en 'day-events') ...
+    // ----> ESTA ES LA LÍNEA A MODIFICAR <----
+    dayElement.addEventListener('click', () => showDayServices(date));
+    // ----> FIN DE LA LÍNEA A MODIFICAR <----
+    calendarGrid.appendChild(dayElement);
+}
                 dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
                 const serviciosDelDia = servicios.filter(s => {
