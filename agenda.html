@@ -1577,14 +1577,27 @@ function showDayServices(date) {
     content.innerHTML = '';
 
     if (serviciosDelDia.length === 0) {
-        content.innerHTML = '<p style="text-align:center; color:#718096;">No hay servicios programados para este día.</p>';
+        content.innerHTML = '<p style="text-align:center; color:#718096; padding: 2rem;">No hay servicios programados para este día.</p>';
         return;
     }
 
+    // ✅ CREAR UN CONTENEDOR DE LISTA CON SCROLL
+    const listContainer = document.createElement('div');
+    listContainer.style.maxHeight = '300px'; // Altura máxima para permitir scroll
+    listContainer.style.overflowY = 'auto';
+    listContainer.style.padding = '0.5rem';
+    listContainer.style.border = '1px solid #e2e8f0';
+    listContainer.style.borderRadius = '0.5rem';
+
     serviciosDelDia.forEach(serv => {
-        // ✅ MEJORA VISUAL: Crear un contenedor más estructurado para cada evento
-        const eventElement = document.createElement('div');
-        eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+        // ✅ MEJORA VISUAL: Crear un elemento de lista para cada servicio
+        const listItem = document.createElement('div');
+        listItem.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+        listItem.style.padding = '0.75rem';
+        listItem.style.marginBottom = '0.5rem';
+        listItem.style.borderRadius = '0.5rem';
+        listItem.style.cursor = 'pointer';
+        listItem.style.transition = 'background-color 0.2s';
 
         // Extraer información
         const hora = serv.hora ? serv.hora.substring(0, 5) : 'N/A';
@@ -1593,28 +1606,44 @@ function showDayServices(date) {
         const nombreServicio = obtenerNombreServicio(serv);
 
         // Asignar contenido HTML estructurado
-        eventElement.innerHTML = `
-            <div class="event-time">${hora}</div>
-            <div class="event-details">
-                <div class="event-service">${nombreServicio}</div>
-                <div class="event-client">Cliente: ${primerNombre}</div>
+        listItem.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>${hora}</strong> - ${nombreServicio}
+                    <div style="font-size: 0.85em; color: #4a5568; margin-top: 0.25rem;">
+                        Cliente: ${primerNombre}
+                    </div>
+                </div>
+                <div style="font-size: 0.75em; font-weight: bold;">
+                    Estado: ${serv.estado}
+                </div>
             </div>
         `;
 
         // Añadir título emergente con más detalles
-        eventElement.title = `${nombreServicio}
+        listItem.title = `${nombreServicio}
 Cliente: ${nombreCliente}
 Hora: ${hora}
 Estado: ${serv.estado}`;
 
         // ✅ CORRECCIÓN: Capturar el objeto 'serv' en el closure del evento click
-        eventElement.addEventListener('click', (e) => {
+        listItem.addEventListener('click', (e) => {
             e.stopPropagation();
-            openEditServiceModal(serv.idServicio); // Pasar el ID del servicio, no el objeto completo
+            openEditServiceModal(serv.idServicio); // Pasar el ID del servicio
         });
 
-        content.appendChild(eventElement);
+        // ✅ Efecto hover
+        listItem.addEventListener('mouseenter', () => {
+            listItem.style.backgroundColor = '#ebf4ff';
+        });
+        listItem.addEventListener('mouseleave', () => {
+            listItem.style.backgroundColor = '';
+        });
+
+        listContainer.appendChild(listItem);
     });
+
+    content.appendChild(listContainer);
 
     modal.classList.add('show');
 }
