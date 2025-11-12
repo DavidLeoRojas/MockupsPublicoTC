@@ -786,9 +786,6 @@
                     <option value="">Todos los técnicos</option>
                 </select>
                 <button class="btn btn-secondary">📊 Reportes</button>
-                <button class="btn btn-secondary" onclick="probarEstructuraExacta()" style="margin-left: 1rem;">
-    🧪 Probar Estructura Exacta
-</button>
             </div>
         </div>
 
@@ -965,86 +962,84 @@
         </div>
     </div>
 
-<!-- Modal de agregar servicio -->
-<div class="modal" id="addServiceModal">
-    <div class="modal-content">
+    <!-- Modal de agregar servicio -->
+    <div class="modal" id="addServiceModal">
+        <div class="modal-content">
         <div class="modal-header">
             <h2 class="modal-title" id="serviceModalTitle">Programar Nuevo Servicio</h2>
             <button class="close-btn" onclick="closeModal('addServiceModal')">&times;</button>
         </div>
-        <form id="serviceForm">
-            <input type="hidden" id="serviceId">
-            
-            <div class="form-group">
-                <label>Cliente *</label>
-                <select class="form-control" id="clienteId" required>
-                    <option value="">Seleccionar cliente</option>
-                </select>
-            </div>
-            
-            <div class="form-grid-2">
+            <form id="serviceForm">
                 <div class="form-group">
-                    <label>Tipo de Servicio *</label>
-                    <select class="form-control" id="tipoServicioId" required>
-                        <option value="">Seleccionar tipo</option>
+                    <label>Cotización Origen (Opcional)</label>
+                    <select class="form-control" id="cotizacionId">
+                        <option value="">Seleccionar cotización</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>Técnico *</label>
-                    <select class="form-control" id="tecnicoId" required>
-                        <option value="">Seleccionar técnico</option>
+                    <label>Cliente *</label>
+                    <select class="form-control" id="clienteId" required>
+                        <option value="">Seleccionar cliente</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label>Fecha *</label>
-                    <input type="date" class="form-control" id="fecha" required>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Tipo de Servicio *</label>
+                        <select class="form-control" id="tipoServicioId" required>
+                            <option value="">Seleccionar tipo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Técnico *</label>
+                        <select class="form-control" id="tecnicoId" required>
+                            <option value="">Seleccionar técnico</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Fecha *</label>
+                        <input type="date" class="form-control" id="fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hora *</label>
+                        <input type="time" class="form-control" id="hora" required>
+                    </div>
+                </div>
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>Duración Estimada</label>
+                        <input type="text" class="form-control" id="duracionEstimada" placeholder="Ej: 2 horas">
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridad</label>
+                        <select class="form-control" id="prioridad">
+                            <option value="Normal">Normal</option>
+                            <option value="Alta">Alta</option>
+                            <option value="Urgente">Urgente</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>Hora *</label>
-                    <input type="time" class="form-control" id="hora" required>
-                </div>
-            </div>
-            
-            <div class="form-grid-2">
-                <div class="form-group">
-                    <label>Duración Estimada</label>
-                    <input type="text" class="form-control" id="duracionEstimada" placeholder="Ej: 2 horas">
+                    <label>Observaciones</label>
+                    <textarea class="form-control" id="observaciones" rows="3" placeholder="Instrucciones especiales, materiales necesarios, etc."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>Prioridad</label>
-                    <select class="form-control" id="prioridad">
-                        <option value="Normal">Normal</option>
-                        <option value="Alta">Alta</option>
-                        <option value="Urgente">Urgente</option>
+                    <label>Estado</label>
+                    <select class="form-control" id="estado">
+                        <option value="Programado">Programado</option>
+                        <option value="En Progreso">En Progreso</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Cancelado">Cancelado</option>
                     </select>
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label>Observaciones</label>
-                <textarea class="form-control" id="observaciones" rows="3" placeholder="Instrucciones especiales, materiales necesarios, etc."></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label>Estado</label>
-                <select class="form-control" id="estado">
-                    <option value="Programado">Programado</option>
-                    <option value="En Progreso">En Progreso</option>
-                    <option value="Completado">Completado</option>
-                    <option value="Cancelado">Cancelado</option>
-                </select>
-            </div>
-            
-            <div class="form-grid-2" style="margin-top: 2rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">Cancelar</button>
-                <button type="submit" class="btn btn-primary" id="submitBtn">Programar Servicio</button>
-            </div>
-        </form>
+                <div class="form-grid-2" style="margin-top: 2rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Programar Servicio</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
     <!-- ========== MODAL DE ALERTA PERSONALIZADO ========== -->
     <div id="customAlertModal" class="modal-custom-alert">
@@ -1077,6 +1072,7 @@ const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
         let servicios = [];
         let todasLasPersonas = [];
         let todosLosTiposServicio = [];
+        let cotizaciones = [];
         let currentView = 'all';
         let currentEditingId = null;
         let isSubmitting = false;
@@ -1259,150 +1255,91 @@ function navegarAlMesDeServicios() {
         }
 
 
-// ========== CARGA DE DATOS MEJORADA ========== (Línea donde se define loadAgendaData)
+// ========== CARGA DE DATOS ==========
 async function loadAgendaData() {
     console.log("🔄 Iniciando carga de datos de la agenda...");
+    // ✅ 1. Obtener el token JWT del almacenamiento local
     const token = localStorage.getItem('jwtToken');
     if (!token) {
-         // alert('❌ No hay token de autenticación. Por favor, inicie sesión.');
-         showCustomAlert('No hay token de autenticación. Por favor, inicie sesión.', 'Error', 'error');
-         window.location.href = 'login.html'; // Ajusta la ruta a tu página de login
-         return;
+        showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
+        setTimeout(() => {
+            window.location.href = 'index.html'; // Redirige a la página de login
+        }, 2000);
+        return;
     }
-
+    // ✅ 2. Configurar los encabezados con el token de autenticación
+    const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+    };
     try {
-        // Usar Promise.all para cargar todos los datos simultáneamente
-        const [serviciosRes, personasRes, tiposRes, cotizacionesRes] = await Promise.all([
-            fetch(`${API_BASE_URL}/servicios`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP! status: ${response.status}`);
-                }
-                return response.json();
+        const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar servicios');
+                return r.json();
             }),
-            fetch(`${API_BASE_URL}/personas`, {
-                headers: { 'Authorization': 'Bearer ' + token }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP! status: ${response.status}`);
-                }
-                return response.json();
+            fetch(`${API_BASE_URL}/personas`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar personas');
+                return r.json();
             }),
-            fetch(`${API_BASE_URL}/tiposServicio`, { // Asegúrate que la ruta sea correcta
-                headers: { 'Authorization': 'Bearer ' + token }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP! status: ${response.status}`);
-                }
-                return response.json();
+            fetch(`${API_BASE_URL}/tipos-servicio`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar tipos de servicio');
+                return r.json();
             }),
-            fetch(`${API_BASE_URL}/cotizaciones`, { // Asegúrate que la ruta sea correcta
-                headers: { 'Authorization': 'Bearer ' + token }
-            }).then(response => {
-                if (!response.ok) {
-                    throw new Error(`Error HTTP! status: ${response.status}`);
-                }
-                return response.json();
+            fetch(`${API_BASE_URL}/cotizaciones`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar cotizaciones');
+                return r.json();
             })
         ]);
 
-        // Normalizar los datos recibidos
-        servicios = Array.isArray(serviciosRes) ? serviciosRes.map(normalizarServicio) : [];
-        todasLasPersonas = Array.isArray(personasRes) ? personasRes.map(normalizarPersona) : [];
-        todosLosTiposServicio = Array.isArray(tiposRes) ? tiposRes.map(normalizarTipoServicio) : [];
-        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : []; // Puedes normalizar cotizaciones también si es necesario
+        // Filtrar y mapear servicios para manejar posibles variantes de nombre de campos
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.filter(s => {
+            // Intentar obtener la fecha usando las posibles variantes de nombre
+            const fecha = s.fecha || s.fecha_servicio || s.date || s.fechaCreacion || s.fecha_registro;
+            return fecha !== undefined && fecha !== null && fecha !== '';
+        }).map(s => {
+            // Mapear posibles variantes de nombre a los nombres estándar que espera el resto del código
+            return {
+                ...s,
+                fecha: s.fecha || s.fecha_servicio || s.date || s.fechaCreacion || s.fecha_registro,
+                estado: s.estado || s.estado_servicio || s.state,
+                dniCliente: s.dniCliente || s.dni_cliente || s.clientDni,
+                dniEmpleadoAsignado: s.dniEmpleadoAsignado || s.dni_empleado_asignado || s.employeeDni,
+                idTipoServicio: s.idTipoServicio || s.id_tipo_servicio || s.tipoServicioId,
+                hora: s.hora || s.hora_servicio || s.time,
+                observaciones: s.observaciones || s.observaciones_servicio || s.notes,
+                prioridad: s.prioridad || s.prioridad_servicio || s.priority,
+                duracionEstimada: s.duracionEstimada || s.duracion_estimada || s.duration,
+                activo: s.activo !== undefined ? s.activo : s.active, // Manejar booleanos si es necesario
+                servicioSinCotizacion: s.servicioSinCotizacion !== undefined ? s.servicioSinCotizacion : s.standalone,
+                idCotizacion: s.idCotizacion || s.cotizacionId // Asegurar consistencia en ID de cotización también si se usa
+            };
+        }) : [];
 
-        console.log("✅ Datos cargados exitosamente:");
-        console.log("📋 Servicios:", servicios.length);
-        console.log("👥 Personas:", todasLasPersonas.length);
-        console.log("🛠️ Tipos de servicio:", todosLosTiposServicio.length);
-        console.log("💰 Cotizaciones:", cotizaciones.length);
 
-        // Poblar selects
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes : [];
+        // ✅ Filtrar solo tipos de servicio ACTIVOS (en mayúsculas)
+        todosLosTiposServicio = Array.isArray(tiposServRes) ?
+            tiposServRes.filter(t => t.estado && t.estado.toUpperCase() === 'ACTIVO') : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : [];
+        console.log(`✅ Datos cargados exitosamente:`);
+        console.log(`   📋 ${servicios.length} servicios`);
+        console.log(`   👥 ${todasLasPersonas.length} personas`);
+        console.log(`   🛠️ ${todosLosTiposServicio.length} tipos de servicio ACTIVOS`);
+        console.log(`   💰 ${cotizaciones.length} cotizaciones`);
         populateClienteSelect(todasLasPersonas);
         populateTecnicoSelect(todasLasPersonas);
         populateTipoServicioSelect(todosLosTiposServicio);
-
-        // Renderizar calendario
-        console.log("🎨 Renderizando calendario...");
+        populateCotizacionSelect(cotizaciones);
+        populateFilterTecnico(todasLasPersonas);
         renderCalendar(currentMonth, currentYear);
-
-        // Renderizar agenda de hoy
-        console.log("📅 Renderizando agenda de hoy...");
-        renderTodaySchedule();
-
+        renderTodaySchedule(new Date());
+        console.log('✅ Inicialización completada');
     } catch (error) {
-        console.error("❌ Error al cargar la agenda:", error);
-        // alert("Error al cargar la agenda: " + error.message);
+        console.error('❌ Error al cargar datos de agenda:', error);
         showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
     }
 }
-    // FUNCIONES DE NORMALIZACIÓN
-function normalizarServicio(rawServicio) {
-    // Si el servicio tiene cliente o empleado como objeto anidado, extraer solo el DNI
-    const dniCliente = rawServicio.cliente?.dni || rawServicio.dniCliente || rawServicio.dni_cliente || rawServicio.DNI_cliente || '';
-    const dniEmpleadoAsignado = rawServicio.empleadoAsignado?.dni || rawServicio.dniEmpleadoAsignado || rawServicio.dni_empleado_asignado || rawServicio.DNI_empleado_asignado || '';
-
-    return {
-        idServicio: rawServicio.idServicio || rawServicio.id_servicio || rawServicio.id || '', // Añadir 'id' como fallback
-        idCotizacion: rawServicio.idCotizacion || rawServicio.id_cotizacion || rawServicio.id_cotizacion || null,
-        dniCliente: dniCliente,
-        dniEmpleadoAsignado: dniEmpleadoAsignado,
-        idTipoServicio: rawServicio.tipoServicio?.idTipoServicio || rawServicio.idTipoServicio || rawServicio.id_tipo_servicio || rawServicio.id_tipo || '', // Añadir 'id_tipo' como fallback
-        fecha: rawServicio.fecha || '',
-        hora: rawServicio.hora || '',
-        estado: rawServicio.estado || 'Pendiente', // Asegurar valor por defecto
-        prioridad: rawServicio.prioridad || 'Normal', // Asegurar valor por defecto
-        observaciones: rawServicio.observaciones || '', // Asegurar valor por defecto
-        duracionEstimada: rawServicio.duracionEstimada || rawServicio.duracion_estimada || null,
-        servicioSinCotizacion: rawServicio.servicioSinCotizacion || rawServicio.servicio_sin_cotizacion || false,
-        activo: rawServicio.activo !== undefined ? rawServicio.activo : true,
-        // Asegurar campos para compatibilidad con funciones de edición/creación
-        // Si el backend no envía el objeto completo, estos campos deben estar disponibles
-    };
-}
-
-function normalizarPersona(rawPersona) {
-    return {
-        dni: rawPersona.dni || rawPersona.DNI || rawPersona.id || '', // Añadir 'id' como fallback si DNI es el ID
-        nombre: rawPersona.nombre || rawPersona.Nombre || rawPersona.nombreCompleto || rawPersona.name || 'Nombre Desconocido',
-        rol: rawPersona.rol || rawPersona.Rol || rawPersona.tipo || 'Rol Desconocido', // Añadir 'tipo' como fallback
-        // Añadir otros campos si es necesario
-    };
-}
-
-function normalizarTipoServicio(rawTipo) {
-    return {
-        idTipoServicio: rawTipo.idTipoServicio || rawTipo.id_tipo_servicio || rawTipo.id || '', // Añadir 'id' como fallback
-        nombreServicio: rawTipo.nombreServicio || rawTipo.nombre_servicio || rawTipo.nombre || 'Tipo Desconocido', // Añadir 'nombre' como fallback
-        costo: rawTipo.costo || rawTipo.Costo || 0,
-        activo: rawTipo.activo !== undefined ? rawTipo.activo : true,
-        // Añadir otros campos si es necesario
-    };
-}
-
-function normalizarPersona(rawPersona) {
-    return {
-        dni: rawPersona.dni || rawPersona.DNI || rawPersona.id || '', // Añadir 'id' como fallback si DNI es el ID
-        nombre: rawPersona.nombre || rawPersona.Nombre || rawPersona.nombreCompleto || rawPersona.name || 'Nombre Desconocido',
-        rol: rawPersona.rol || rawPersona.Rol || rawPersona.tipo || 'Rol Desconocido', // Añadir 'tipo' como fallback
-        // Añadir otros campos si es necesario
-    };
-}
-
-function normalizarTipoServicio(rawTipo) {
-    return {
-        idTipoServicio: rawTipo.idTipoServicio || rawTipo.id_tipo_servicio || rawTipo.id || '', // Añadir 'id' como fallback
-        nombreServicio: rawTipo.nombreServicio || rawTipo.nombre_servicio || rawTipo.nombre || 'Tipo Desconocido', // Añadir 'nombre' como fallback
-        costo: rawTipo.costo || rawTipo.Costo || 0,
-        activo: rawTipo.activo !== undefined ? rawTipo.activo : true,
-        // Añadir otros campos si es necesario
-    };
-}
-
-
-    
         // ========== POPULATION FUNCTIONS ==========
         function populateClienteSelect(personas) {
             const selects = ['clienteId', 'editClienteId', 'quickCliente'];
@@ -1465,6 +1402,24 @@ function normalizarTipoServicio(rawTipo) {
             });
         }
 
+
+function populateCotizacionSelect(cotizaciones) {
+    const select = document.getElementById('cotizacionId');
+    if (!select) return;
+    select.innerHTML = '<option value="">Seleccionar cotización</option>';
+    
+    // ✅ SOLO mostrar cotizaciones APROBADAS (sin importar si ya se usaron)
+    const cotizacionesAprobadas = cotizaciones.filter(c => c.estado === 'Aprobada');
+    
+    cotizacionesAprobadas.forEach(c => {
+        const clienteNombre = c.cliente?.nombre || c.nombreCliente || 'Cliente desconocido';
+        const option = document.createElement('option');
+        option.value = c.idCotizacion;
+        option.textContent = `#${c.idCotizacion} - ${clienteNombre} - ${c.descripcionProblema || 'Sin descripción'}`;
+        select.appendChild(option);
+    });
+}
+
         function populateFilterTecnico(personas) {
             const select = document.getElementById('filterTecnico');
             if (!select) return;
@@ -1477,12 +1432,11 @@ function normalizarTipoServicio(rawTipo) {
             });
         }
 
-// ========== RENDER CALENDAR CORREGIDO ==========
+        // ========== RENDER CALENDAR ==========
 function renderCalendar(month, year) {
     console.log(`🎯 Renderizando calendario: ${monthNames[month]} ${year}`);
-    console.log(`📊 Servicios disponibles para renderizar: ${servicios.length}`);
     
-    // ACTUALIZAR TÍTULOS
+    // ✅ ACTUALIZAR TODOS LOS ELEMENTOS DEL TÍTULO
     const calendarTitle = document.getElementById('calendarMainTitle');
     const monthYearElement = document.getElementById('calendarMonthYear');
     
@@ -1493,652 +1447,77 @@ function renderCalendar(month, year) {
         monthYearElement.textContent = `${monthNames[month]} ${year}`;
     }
 
-    const calendarGrid = document.getElementById('calendarGrid');
-    if (!calendarGrid) {
-        console.error('❌ No se encontró el elemento calendarGrid');
-        return;
-    }
+            const calendarGrid = document.getElementById('calendarGrid');
+            if (!calendarGrid) return;
 
-    // LIMPIAR CALENDARIO (mantener headers)
-    const headers = calendarGrid.querySelectorAll('.calendar-day-header');
-    calendarGrid.innerHTML = '';
-    headers.forEach(header => calendarGrid.appendChild(header));
+            const headers = calendarGrid.querySelectorAll('.calendar-day-header');
+            calendarGrid.innerHTML = '';
+            headers.forEach(header => calendarGrid.appendChild(header));
 
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDay = firstDay.getDay();
-    const totalDays = lastDay.getDate();
-    const prevLastDay = new Date(year, month, 0).getDate();
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+            const prevLastDay = new Date(year, month, 0).getDate();
 
-    console.log(`📅 Configuración del mes: ${monthNames[month]} ${year}`);
-    console.log(`   Días en el mes: ${totalDays}`);
-    console.log(`   Día de inicio: ${startDay}`);
-
-    // DÍAS DEL MES ANTERIOR
-    for (let i = startDay - 1; i >= 0; i--) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div>`;
-        calendarGrid.appendChild(dayElement);
-    }
-
-    const today = new Date();
-    let serviciosRenderizados = 0;
-
-    // DÍAS DEL MES ACTUAL
-    for (let day = 1; day <= totalDays; day++) {
-        const date = new Date(year, month, day);
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day';
-        
-        // Marcar día actual
-        if (date.getDate() === today.getDate() && 
-            date.getMonth() === today.getMonth() && 
-            date.getFullYear() === today.getFullYear()) {
-            dayElement.classList.add('today');
-        }
-        
-        dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
-
-        // BUSCAR SERVICIOS PARA ESTE DÍA - VERSIÓN CORREGIDA
-        const serviciosDelDia = servicios.filter(serv => {
-            if (!serv.fecha) {
-                return false;
+            for (let i = startDay - 1; i >= 0; i--) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.innerHTML = `<div class="day-number">${prevLastDay - i}</div>`;
+                calendarGrid.appendChild(dayElement);
             }
-            
-            try {
-                // MÚLTIPLES FORMATOS DE FECHA
-                let fechaServicio;
-                
-                // Intentar formato ISO (YYYY-MM-DD)
-                if (serv.fecha.match(/^\d{4}-\d{2}-\d{2}$/)) {
-                    fechaServicio = new Date(serv.fecha + 'T00:00:00');
-                } 
-                // Intentar formato con timestamp
-                else if (serv.fecha.match(/^\d{4}-\d{2}-\d{2}T/)) {
-                    fechaServicio = new Date(serv.fecha);
-                }
-                // Otros formatos
-                else {
-                    fechaServicio = new Date(serv.fecha);
-                }
-                
-                // Verificar si la fecha es válida
-                if (isNaN(fechaServicio.getTime())) {
-                    console.warn(`⚠️ Fecha inválida en servicio ${serv.idServicio}:`, serv.fecha);
-                    return false;
-                }
-                
-                // Comparar día, mes y año
-                const mismoDia = fechaServicio.getDate() === day;
-                const mismoMes = fechaServicio.getMonth() === month;
-                const mismoAño = fechaServicio.getFullYear() === year;
-                
-                if (mismoDia && mismoMes && mismoAño) {
-                    console.log(`✅ Servicio ${serv.idServicio} coincide con día ${day}:`, {
-                        fechaServicio: fechaServicio.toDateString(),
-                        fechaCalendario: date.toDateString()
-                    });
-                    return true;
-                }
-                
-                return false;
-                
-            } catch (error) {
-                console.error(`❌ Error procesando fecha del servicio ${serv.idServicio}:`, error);
-                return false;
-            }
-        });
 
-        console.log(`   📅 Día ${day}: ${serviciosDelDia.length} servicios`);
+            const today = new Date();
+            for (let day = 1; day <= totalDays; day++) {
+                const date = new Date(year, month, day);
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day';
+                if (date.getDate() === today.getDate() && 
+                    date.getMonth() === today.getMonth() && 
+                    date.getFullYear() === today.getFullYear()) {
+                    dayElement.classList.add('today');
+                }
+                dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
 
-        const eventsContainer = dayElement.querySelector('.day-events');
-        
-        serviciosDelDia.forEach(serv => {
-            try {
-                const eventElement = document.createElement('div');
-                eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
-                
-                const nombreCliente = obtenerNombreCliente(serv);
-                const primerNombre = nombreCliente.split(' ')[0];
-                const horaDisplay = serv.hora ? serv.hora.substring(0,5) : '--:--';
-                
-                eventElement.textContent = `${horaDisplay} ${primerNombre}`;
-                eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}\nEstado: ${serv.estado}`;
-                
-                eventElement.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    openEditServiceModal(serv);
+                const serviciosDelDia = servicios.filter(s => {
+                    if (!s.fecha) return false;
+                    const fechaServicio = new Date(s.fecha + 'T00:00:00');
+                    return fechaServicio.getDate() === day && 
+                           fechaServicio.getMonth() === month && 
+                           fechaServicio.getFullYear() === year;
                 });
-                
-                eventsContainer.appendChild(eventElement);
-                serviciosRenderizados++;
-                
-                console.log(`   ✅ Renderizado servicio ${serv.idServicio} en día ${day}`);
-                
-            } catch (error) {
-                console.error('❌ Error renderizando servicio:', serv.idServicio, error);
-            }
-        });
 
-        dayElement.addEventListener('click', () => showDayServices(date));
-        calendarGrid.appendChild(dayElement);
-    }
-
-    // DÍAS DEL MES SIGUIENTE
-    const totalCells = 42;
-    const remaining = totalCells - (startDay + totalDays);
-    for (let day = 1; day <= remaining; day++) {
-        const dayElement = document.createElement('div');
-        dayElement.className = 'calendar-day other-month';
-        dayElement.innerHTML = `<div class="day-number">${day}</div>`;
-        calendarGrid.appendChild(dayElement);
-    }
-
-    console.log(`✅ Calendario renderizado: ${serviciosRenderizados} servicios mostrados de ${servicios.length} totales`);
-}
-// Función para ver todos los servicios con detalles completos
-function verServiciosConDetalles() {
-    console.log('📋 DETALLES COMPLETOS DE TODOS LOS SERVICIOS:');
-    
-    servicios.forEach((servicio, index) => {
-        console.log(`\n${index + 1}. ${servicio.idServicio}:`);
-        console.log('   Fecha:', servicio.fecha);
-        console.log('   Hora:', servicio.hora);
-        console.log('   Estado:', servicio.estado);
-        console.log('   Cliente DNI:', servicio.dniCliente);
-        console.log('   Técnico DNI:', servicio.dniEmpleadoAsignado);
-        console.log('   Tipo Servicio:', servicio.idTipoServicio);
-        
-        // Información derivada
-        console.log('   Cliente Nombre:', obtenerNombreCliente(servicio));
-        console.log('   Técnico Nombre:', obtenerNombreTecnico(servicio));
-        console.log('   Servicio Nombre:', obtenerNombreServicio(servicio));
-        
-        // Procesar fecha
-        if (servicio.fecha) {
-            try {
-                const fecha = new Date(servicio.fecha);
-                console.log('   📅 Fecha procesada:', fecha.toString());
-                console.log('   📅 Año/Mes/Día:', `${fecha.getFullYear()}/${fecha.getMonth() + 1}/${fecha.getDate()}`);
-                
-                // Verificar si está en mes actual
-                const enMesActual = fecha.getMonth() === currentMonth && fecha.getFullYear() === currentYear;
-                console.log('   📍 En mes actual:', enMesActual ? '✅ SÍ' : '❌ NO');
-                
-            } catch (error) {
-                console.error('   ❌ Error procesando fecha:', error.message);
-            }
-        }
-    });
-}
-
-
-// Función para probar un servicio específico en el calendario
-function probarServicioEspecifico() {
-    console.log('🎯 PROBANDO SERVICIO ESPECÍFICO EN CALENDARIO');
-    
-    if (servicios.length === 0) {
-        console.log('❌ No hay servicios para probar');
-        return;
-    }
-    
-    // Tomar el primer servicio
-    const servicio = servicios[0];
-    console.log('🔍 Probando servicio:', servicio.idServicio);
-    console.log('   Fecha:', servicio.fecha);
-    console.log('   Hora:', servicio.hora);
-    
-    // Procesar fecha manualmente
-    if (servicio.fecha) {
-        const fecha = new Date(servicio.fecha);
-        console.log('   📅 Fecha procesada:', fecha.toString());
-        console.log('   📅 Día del mes:', fecha.getDate());
-        console.log('   📅 Mes:', fecha.getMonth() + 1);
-        console.log('   📅 Año:', fecha.getFullYear());
-        
-        // Buscar en el calendario renderizado
-        const calendarGrid = document.getElementById('calendarGrid');
-        if (calendarGrid) {
-            const diaElement = calendarGrid.querySelector(`.calendar-day:not(.other-month) .day-number:contains("${fecha.getDate()}")`);
-            if (diaElement) {
-                console.log('   ✅ Elemento del día encontrado en calendario');
-            } else {
-                console.log('   ❌ Elemento del día NO encontrado en calendario');
-            }
-        }
-    }
-}
-
-// Agregar botones de depuración
-function agregarBotonesDepuracion() {
-    const header = document.querySelector('.header');
-    if (!header) return;
-    
-    const contenedorBotones = header.querySelector('div'); // El div que contiene los botones existentes
-    
-    if (contenedorBotones) {
-        // Botón forzar visualización
-        const botonForzar = document.createElement('button');
-        botonForzar.className = 'btn btn-secondary';
-        botonForzar.innerHTML = '🔧 Forzar Visualización';
-        botonForzar.onclick = forzarVisualizacionServicios;
-        botonForzar.style.marginLeft = '1rem';
-        
-        // Botón depurar fechas
-        const botonFechas = document.createElement('button');
-        botonFechas.className = 'btn btn-secondary';
-        botonFechas.innerHTML = '📅 Depurar Fechas';
-        botonFechas.onclick = depurarProblemaFechas;
-        botonFechas.style.marginLeft = '0.5rem';
-        
-        // Botón ver detalles
-        const botonDetalles = document.createElement('button');
-        botonDetalles.className = 'btn btn-secondary';
-        botonDetalles.innerHTML = '📋 Ver Detalles';
-        botonDetalles.onclick = verServiciosConDetalles;
-        botonDetalles.style.marginLeft = '0.5rem';
-        
-        contenedorBotones.appendChild(botonForzar);
-        contenedorBotones.appendChild(botonFechas);
-        contenedorBotones.appendChild(botonDetalles);
-    }
-}
-
-// Ejecutar después de cargar
-setTimeout(agregarBotonesDepuracion, 2000);
-
-// Función mejorada para depurar problemas de fechas
-function depurarProblemaFechasCompleto() {
-    console.log('🔍 DEPURACIÓN COMPLETA DE FECHAS DE SERVICIOS');
-    
-    if (servicios.length === 0) {
-        console.log('❌ No hay servicios para depurar');
-        return;
-    }
-    
-    let serviciosConProblemas = 0;
-    
-    servicios.forEach((servicio, index) => {
-        console.log(`\n📋 Servicio ${index + 1}: ${servicio.idServicio}`);
-        console.log('   Fecha original:', servicio.fecha);
-        console.log('   Hora:', servicio.hora);
-        console.log('   Estado:', servicio.estado);
-        
-        if (servicio.fecha) {
-            // PROBAR DIFERENTES MÉTODOS DE PARSEO
-            const metodosParseo = [
-                { nombre: 'Con T', fecha: new Date(servicio.fecha + 'T00:00:00') },
-                { nombre: 'Sin T', fecha: new Date(servicio.fecha) },
-                { nombre: 'Con espacio', fecha: new Date(servicio.fecha.replace(' ', 'T')) },
-                { nombre: 'Solo fecha', fecha: new Date(servicio.fecha.split('T')[0]) }
-            ];
-            
-            let fechaValida = null;
-            
-            metodosParseo.forEach(metodo => {
-                const esValida = !isNaN(metodo.fecha.getTime());
-                console.log(`   📅 ${metodo.nombre}: ${metodo.fecha.toString()} → ${esValida ? '✅ VÁLIDA' : '❌ INVÁLIDA'}`);
-                
-                if (esValida && !fechaValida) {
-                    fechaValida = metodo.fecha;
-                }
-            });
-            
-            if (fechaValida) {
-                console.log('   ✅ Usando fecha válida:', fechaValida.toString());
-                console.log('   📍 Año/Mes/Día:', `${fechaValida.getFullYear()}/${fechaValida.getMonth() + 1}/${fechaValida.getDate()}`);
-                
-                // Verificar si está en mes actual
-                const enMesActual = fechaValida.getMonth() === currentMonth && fechaValida.getFullYear() === currentYear;
-                console.log('   📍 En mes actual:', enMesActual ? '✅ SÍ' : '❌ NO');
-                
-                if (!enMesActual) {
-                    serviciosConProblemas++;
-                    console.log('   ⚠️ SERVICIO FUERA DEL MES ACTUAL');
-                }
-            } else {
-                serviciosConProblemas++;
-                console.log('   ❌ TODOS LOS MÉTODOS DE PARSEO FALLARON');
-            }
-        } else {
-            serviciosConProblemas++;
-            console.log('   ❌ SERVICIO SIN FECHA');
-        }
-    });
-    
-    console.log(`\n📊 RESUMEN: ${serviciosConProblemas} de ${servicios.length} servicios con problemas`);
-}
-
-// Función corregida para renderizar eventos en el calendario
-function renderizarEventosCorregido() {
-    console.log('🎯 RENDERIZANDO EVENTOS CORREGIDO');
-    
-    const calendarGrid = document.getElementById('calendarGrid');
-    if (!calendarGrid) {
-        console.error('❌ No se encontró calendarGrid');
-        return;
-    }
-    
-    let eventosRenderizados = 0;
-    
-    servicios.forEach(servicio => {
-        if (!servicio.fecha) {
-            console.warn('⚠️ Servicio sin fecha:', servicio.idServicio);
-            return;
-        }
-        
-        try {
-            // PARSEO ROBUSTO DE FECHA
-            let fechaServicio;
-            if (servicio.fecha.includes('T')) {
-                fechaServicio = new Date(servicio.fecha);
-            } else {
-                fechaServicio = new Date(servicio.fecha + 'T00:00:00');
-            }
-            
-            if (isNaN(fechaServicio.getTime())) {
-                console.error('❌ Fecha inválida:', servicio.idServicio, servicio.fecha);
-                return;
-            }
-            
-            // Verificar si está en el mes actual
-            if (fechaServicio.getMonth() !== currentMonth || fechaServicio.getFullYear() !== currentYear) {
-                console.log(`📅 Servicio ${servicio.idServicio} fuera del mes actual:`, fechaServicio.toString());
-                return;
-            }
-            
-            const dia = fechaServicio.getDate();
-            
-            // Buscar el elemento del día en el calendario
-            const dias = calendarGrid.querySelectorAll('.calendar-day:not(.other-month)');
-            const diaElement = Array.from(dias).find(diaElem => {
-                const dayNumber = diaElem.querySelector('.day-number');
-                return dayNumber && parseInt(dayNumber.textContent) === dia;
-            });
-            
-            if (diaElement) {
-                const eventsContainer = diaElement.querySelector('.day-events');
-                if (eventsContainer) {
+                const eventsContainer = dayElement.querySelector('.day-events');
+                serviciosDelDia.forEach(serv => {
                     const eventElement = document.createElement('div');
-                    eventElement.className = `event-item ${getEventTypeClass(servicio)} ${getEstadoClass(servicio.estado)}`;
-                    
-                    const nombreCliente = obtenerNombreCliente(servicio);
+                    // --- MODIFICACIÓN AQUÍ ---
+                    // Se añade la clase del estado del servicio a la clase del tipo
+                    eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+                    // --- FIN MODIFICACIÓN ---
+                    const nombreCliente = obtenerNombreCliente(serv);
                     const primerNombre = nombreCliente.split(' ')[0];
-                    const horaDisplay = servicio.hora ? servicio.hora.substring(0,5) : '--:--';
-                    
-                    eventElement.textContent = `${horaDisplay} ${primerNombre}`;
-                    eventElement.title = `${obtenerNombreServicio(servicio)}\nCliente: ${nombreCliente}\nHora: ${servicio.hora || 'No definida'}\nEstado: ${servicio.estado}`;
-                    
-                    // ✅ CORRECCIÓN CRÍTICA: Pasar el objeto servicio completo, no solo el ID
+                    eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
+                    eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
                     eventElement.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        console.log('🖱️ Click en servicio:', servicio.idServicio);
-                        openEditServiceModal(servicio); // Pasar el objeto completo
+                        openEditServiceModal(serv); // Asegúrate de que esta función exista y funcione como esperas
                     });
-                    
                     eventsContainer.appendChild(eventElement);
-                    eventosRenderizados++;
-                    
-                    console.log(`✅ Renderizado servicio ${servicio.idServicio} en día ${dia}`);
-                }
-            } else {
-                console.warn(`⚠️ No se encontró el día ${dia} en el calendario para servicio ${servicio.idServicio}`);
+                });
+
+                dayElement.addEventListener('click', () => showDayServices(date));
+                calendarGrid.appendChild(dayElement);
             }
-            
-        } catch (error) {
-            console.error('❌ Error renderizando servicio:', servicio.idServicio, error);
-        }
-    });
-    
-    console.log(`🎉 Eventos renderizados: ${eventosRenderizados} de ${servicios.length} servicios`);
-}
 
-// ========== EDIT SERVICE MODAL CORREGIDO ==========
-function openEditServiceModal(servicioObj) {
-    console.log('🔍 Abriendo modal de edición para servicio:', servicioObj);
-    
-    // ✅ ACEPTAR TANTO OBJETO COMO ID
-    let servicio;
-    if (typeof servicioObj === 'string') {
-        // Si se pasa un ID, buscar el servicio
-        servicio = servicios.find(s => s.idServicio === servicioObj);
-        if (!servicio) {
-            console.error('❌ Servicio no encontrado con ID:', servicioObj);
-            showCustomAlert("Servicio no encontrado. Por favor, recargue la página.", 'Error', 'error');
-            return;
-        }
-    } else {
-        // Si se pasa el objeto completo, usarlo directamente
-        servicio = servicioObj;
-    }
-
-    console.log('📋 Servicio a editar:', servicio);
-
-    const dniCliente = obtenerDNICliente(servicio);
-    const dniTecnico = obtenerDNITecnico(servicio);
-    const idTipoServ = obtenerIDTipoServicio(servicio);
-
-    console.log('📝 Valores extraídos:', { dniCliente, dniTecnico, idTipoServ });
-
-    if (!dniCliente || !dniTecnico || !idTipoServ) {
-        const faltantes = [];
-        if (!dniCliente) faltantes.push('Cliente');
-        if (!dniTecnico) faltantes.push('Técnico');
-        if (!idTipoServ) faltantes.push('Tipo de servicio');
-        
-        showCustomAlert(`⚠️ Este servicio tiene datos incompletos:\n\n• ${faltantes.join('\n• ')}\n\nPor favor, complete estos datos antes de guardar.`, 'Advertencia', 'warning');
-    }
-
-    // Llenar formulario
-    document.getElementById('editClienteId').value = dniCliente || '';
-    document.getElementById('editTecnicoId').value = dniTecnico || '';
-    document.getElementById('editTipoServicioId').value = idTipoServ || '';
-    document.getElementById('editFecha').value = servicio.fecha || '';
-    document.getElementById('editHora').value = servicio.hora ? servicio.hora.substring(0, 5) : '';
-    document.getElementById('editPrioridad').value = servicio.prioridad || 'Normal';
-    document.getElementById('editObservaciones').value = servicio.observaciones || '';
-    
-    // Normalizar estado para el select
-    const estadoNormalizado = servicio.estado ? servicio.estado.replace('_', ' ') : 'Programado';
-    document.getElementById('editEstado').value = estadoNormalizado;
-    
-    document.getElementById('editServiceId').value = servicio.idServicio;
-
-    closeModal('dayServicesModal');
-    document.getElementById('editServiceModal').classList.add('show');
-    
-    console.log('✅ Modal de edición abierto correctamente');
-}
-
-// Función para forzar re-renderizado completo
-function forzarRenderizadoCompleto() {
-    console.log('🔄 FORZANDO RE-RENDERIZADO COMPLETO');
-    
-    // 1. Limpiar calendario completamente
-    const calendarGrid = document.getElementById('calendarGrid');
-    if (calendarGrid) {
-        const headers = calendarGrid.querySelectorAll('.calendar-day-header');
-        calendarGrid.innerHTML = '';
-        headers.forEach(header => calendarGrid.appendChild(header));
-    }
-    
-    // 2. Re-renderizar calendario base
-    renderCalendar(currentMonth, currentYear);
-    
-    // 3. Re-renderizar eventos corregidos
-    setTimeout(() => {
-        renderizarEventosCorregido();
-    }, 100);
-    
-    // 4. Mostrar diagnóstico
-    setTimeout(() => {
-        depurarProblemaFechasCompleto();
-    }, 500);
-}
-
-// Agregar botones de depuración mejorados
-function agregarBotonesDepuracionCompletos() {
-    const header = document.querySelector('.header');
-    if (!header) return;
-    
-    const contenedorBotones = header.querySelector('div');
-    
-    if (contenedorBotones) {
-        // Limpiar botones anteriores si existen
-        const botonesExistentes = contenedorBotones.querySelectorAll('.btn-depuracion');
-        botonesExistentes.forEach(boton => boton.remove());
-        
-        // Botón forzar renderizado completo
-        const botonForzar = document.createElement('button');
-        botonForzar.className = 'btn btn-secondary btn-depuracion';
-        botonForzar.innerHTML = '🔧 Forzar Renderizado';
-        botonForzar.onclick = forzarRenderizadoCompleto;
-        botonForzar.style.marginLeft = '1rem';
-        
-        // Botón depurar fechas completo
-        const botonFechas = document.createElement('button');
-        botonFechas.className = 'btn btn-secondary btn-depuracion';
-        botonFechas.innerHTML = '📅 Depurar Fechas';
-        botonFechas.onclick = depurarProblemaFechasCompleto;
-        botonFechas.style.marginLeft = '0.5rem';
-        
-        // Botón renderizar eventos
-        const botonEventos = document.createElement('button');
-        botonEventos.className = 'btn btn-secondary btn-depuracion';
-        botonEventos.innerHTML = '🎯 Renderizar Eventos';
-        botonEventos.onclick = renderizarEventosCorregido;
-        botonEventos.style.marginLeft = '0.5rem';
-        
-        contenedorBotones.appendChild(botonForzar);
-        contenedorBotones.appendChild(botonFechas);
-        contenedorBotones.appendChild(botonEventos);
-    }
-}
-// Función para forzar la visualización de servicios
-function forzarVisualizacionServicios() {
-    console.log('🔧 FORZANDO VISUALIZACIÓN DE SERVICIOS');
-    
-    if (servicios.length === 0) {
-        console.log('❌ No hay servicios para mostrar');
-        return;
-    }
-    
-    // Verificar cada servicio individualmente
-    servicios.forEach(servicio => {
-        console.log(`🔍 Verificando servicio ${servicio.idServicio}:`);
-        console.log(`   Fecha: ${servicio.fecha}`);
-        console.log(`   Hora: ${servicio.hora}`);
-        console.log(`   Estado: ${servicio.estado}`);
-        console.log(`   Cliente DNI: ${servicio.dniCliente}`);
-        console.log(`   Técnico DNI: ${servicio.dniEmpleadoAsignado}`);
-        console.log(`   Tipo Servicio: ${servicio.idTipoServicio}`);
-        
-        // Verificar si la fecha es válida
-        if (servicio.fecha) {
-            try {
-                const fecha = new Date(servicio.fecha + 'T00:00:00');
-                console.log(`   📅 Fecha parseada: ${fecha.toDateString()}`);
-                console.log(`   📅 Año: ${fecha.getFullYear()}, Mes: ${fecha.getMonth() + 1}, Día: ${fecha.getDate()}`);
-                
-                // Verificar si está en el mes actual
-                const enMesActual = fecha.getMonth() === currentMonth && fecha.getFullYear() === currentYear;
-                console.log(`   📍 En mes actual (${currentMonth + 1}/${currentYear}): ${enMesActual ? '✅ SÍ' : '❌ NO'}`);
-                
-            } catch (error) {
-                console.error(`   ❌ Error parseando fecha: ${error.message}`);
+            const totalCells = 42;
+            const remaining = totalCells - (startDay + totalDays);
+            for (let day = 1; day <= remaining; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'calendar-day other-month';
+                dayElement.innerHTML = `<div class="day-number">${day}</div>`;
+                calendarGrid.appendChild(dayElement);
             }
-        } else {
-            console.log('   ❌ SERVICIO SIN FECHA');
         }
-    });
-    
-    // Re-renderizar el calendario
-    console.log('🔄 Re-renderizando calendario...');
-    renderCalendar(currentMonth, currentYear);
-}
-
-// Agrega un botón para forzar visualización
-function agregarBotonForzarVisualizacion() {
-    const header = document.querySelector('.header');
-    if (header) {
-        const boton = document.createElement('button');
-        boton.className = 'btn btn-secondary';
-        boton.innerHTML = '🔧 Forzar Visualización';
-        boton.onclick = forzarVisualizacionServicios;
-        boton.style.marginLeft = '1rem';
-        
-        const acciones = header.querySelector('div'); // El div que contiene los botones
-        if (acciones) {
-            acciones.appendChild(boton);
-        }
-    }
-}
-// Función para ver todos los servicios en consola
-function verServiciosEnConsola() {
-    console.log('📋 TODOS LOS SERVICIOS EN CONSOLA:');
-    console.table(servicios.map(serv => ({
-        ID: serv.idServicio,
-        Fecha: serv.fecha,
-        Hora: serv.hora,
-        Estado: serv.estado,
-        Cliente: obtenerNombreCliente(serv),
-        Técnico: obtenerNombreTecnico(serv),
-        Servicio: obtenerNombreServicio(serv)
-    })));
-}
-// Función para depurar problemas de fechas
-function depurarProblemaFechas() {
-    console.log('🔍 DEPURACIÓN DE FECHAS DE SERVICIOS');
-    
-    if (servicios.length === 0) {
-        console.log('❌ No hay servicios para depurar');
-        return;
-    }
-    
-    servicios.forEach((servicio, index) => {
-        console.log(`\n📋 Servicio ${index + 1}: ${servicio.idServicio}`);
-        console.log('   Fecha original:', servicio.fecha);
-        console.log('   Hora:', servicio.hora);
-        
-        // Verificar formato de fecha
-        if (servicio.fecha) {
-            try {
-                // Intentar diferentes formatos de fecha
-                const fechaConT = new Date(servicio.fecha + 'T00:00:00');
-                const fechaSinT = new Date(servicio.fecha);
-                const fechaConEspacio = new Date(servicio.fecha.replace(' ', 'T'));
-                
-                console.log('   📅 Fecha con T:', fechaConT.toString());
-                console.log('   📅 Fecha sin T:', fechaSinT.toString());
-                console.log('   📅 Fecha con espacio:', fechaConEspacio.toString());
-                
-                // Verificar si es fecha válida
-                console.log('   ✅ Fecha con T válida:', !isNaN(fechaConT.getTime()));
-                console.log('   ✅ Fecha sin T válida:', !isNaN(fechaSinT.getTime()));
-                console.log('   ✅ Fecha con espacio válida:', !isNaN(fechaConEspacio.getTime()));
-                
-                // Verificar mes y año
-                if (!isNaN(fechaConT.getTime())) {
-                    console.log('   📍 Año:', fechaConT.getFullYear(), 'Mes:', fechaConT.getMonth() + 1, 'Día:', fechaConT.getDate());
-                    console.log('   📍 Coincide con calendario actual:', 
-                        fechaConT.getMonth() === currentMonth && 
-                        fechaConT.getFullYear() === currentYear ? '✅ SÍ' : '❌ NO');
-                }
-                
-            } catch (error) {
-                console.error('   ❌ Error procesando fecha:', error.message);
-            }
-        } else {
-            console.log('   ❌ SERVICIO SIN FECHA');
-        }
-    });
-}
-
-// Ejecutar inmediatamente
-setTimeout(depurarProblemaFechas, 1000);
-// Ejecutar después de cargar
-setTimeout(agregarBotonForzarVisualizacion, 3000);
         // ========== FUNCIONES DE ESTADO ==========
         function getEstadoClass(estado) {
             // Normalizar el estado: convertir a string, trim, reemplazar espacios por _, y a minúsculas
@@ -2611,43 +1990,6 @@ async function viewInvoice(id) {
         alert("❌ Error al generar el PDF: " + error.message);
     }
 }
-
-
-// Función para diagnosticar el endpoint del backend
-async function diagnosticarBackend() {
-    console.log('🔧 DIAGNOSTICANDO BACKEND...');
-    
-    const token = localStorage.getItem('jwtToken');
-    const headers = {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-    };
-
-    try {
-        // 1. Verificar que el endpoint existe
-        console.log('1. Verificando endpoint /servicios...');
-        const response = await fetch(`${API_BASE_URL}/servicios`, { headers });
-        console.log('   Status:', response.status);
-        console.log('   OK:', response.ok);
-        
-        if (response.ok) {
-            const servicios = await response.json();
-            console.log('   Servicios obtenidos:', servicios.length);
-        }
-
-        // 2. Verificar métodos disponibles
-        console.log('2. Verificando métodos HTTP...');
-        const optionsResponse = await fetch(`${API_BASE_URL}/servicios`, { 
-            method: 'OPTIONS',
-            headers: headers
-        });
-        console.log('   OPTIONS Status:', optionsResponse.status);
-        console.log('   OPTIONS Headers:', optionsResponse.headers);
-
-    } catch (error) {
-        console.error('❌ Error en diagnóstico:', error);
-    }
-}
         // ========== EDIT SERVICE ==========
         function openEditServiceModal(id) {
             console.log('🔍 Abriendo modal de edición para servicio:', id);
@@ -3016,339 +2358,132 @@ function openAddServiceModal(date = null) {
             }
         }
 
-
-        // Función para analizar servicios existentes y entender la estructura correcta
-function analizarServiciosExistentes() {
-    console.log('🔍 ANALIZANDO ESTRUCTURA DE SERVICIOS EXISTENTES:');
-    
-    if (servicios.length === 0) {
-        console.log('❌ No hay servicios para analizar');
-        return;
-    }
-    
-    servicios.forEach((servicio, index) => {
-        console.log(`\n📋 Servicio ${index + 1} (${servicio.idServicio}):`);
-        console.log('   Estructura completa:', JSON.stringify(servicio, null, 2));
-        console.log('   Campos principales:', {
-            idServicio: servicio.idServicio,
-            idCotizacion: servicio.idCotizacion,
-            dniCliente: servicio.dniCliente,
-            dniEmpleadoAsignado: servicio.dniEmpleadoAsignado,
-            idTipoServicio: servicio.idTipoServicio,
-            fecha: servicio.fecha,
-            hora: servicio.hora,
-            estado: servicio.estado,
-            prioridad: servicio.prioridad,
-            observaciones: servicio.observaciones,
-            duracionEstimada: servicio.duracionEstimada,
-            servicioSinCotizacion: servicio.servicioSinCotizacion,
-            activo: servicio.activo
-        });
-    });
-    
-    // Mostrar la estructura del primer servicio como ejemplo
-    const primerServicio = servicios[0];
-    console.log('\n🎯 ESTRUCTURA EJEMPLO DEL PRIMER SERVICIO:');
-    console.log(JSON.stringify(primerServicio, null, 2));
-}
-
-// Ejecutar después de cargar los datos
-setTimeout(analizarServiciosExistentes, 3000);
-// Función para agregar servicio - VERSIÓN CORREGIDA CON ESTRUCTURA EXACTA
-// Función para agregar servicio - VERSIÓN CORREGIDA CON ESTRUCTURA EXACTA
+// Función para agregar un nuevo servicio
 async function addService(event) {
     event.preventDefault();
-    
-    if (isSubmitting) {
-        console.log('⏳ Ya se está enviando un servicio, esperando...');
+    if (isSubmitting) return;
+    isSubmitting = true;
+
+    console.log('🔄 INICIANDO PROCESO DE AGREGAR SERVICIO...');
+    const form = event.target;
+    if (!form) {
+        console.error('❌ Formulario no encontrado en evento submit');
+        showCustomAlert('Error interno: formulario no detectado.', 'Error', 'error');
+        isSubmitting = false;
         return;
     }
-    
-    isSubmitting = true;
-    
     try {
-        console.log('🔄 INICIANDO PROCESO DE AGREGAR SERVICIO...');
-        
-        // 1. Verificar autenticación
+        // Verificar autenticación
         const token = localStorage.getItem('jwtToken');
         if (!token) {
             throw new Error('No hay token de autenticación. Por favor, inicie sesión nuevamente.');
         }
 
-        // 2. Obtener datos del formulario
+        // Obtener datos del formulario
         const formData = {
             dniCliente: document.getElementById('clienteId').value.trim(),
             dniEmpleadoAsignado: document.getElementById('tecnicoId').value.trim(),
             idTipoServicio: document.getElementById('tipoServicioId').value.trim(),
             fecha: document.getElementById('fecha').value,
             hora: document.getElementById('hora').value,
-            duracionEstimada: document.getElementById('duracionEstimada')?.value.trim() || null,
-            observaciones: document.getElementById('observaciones')?.value.trim() || null,
-            prioridad: document.getElementById('prioridad')?.value || 'Normal',
-            estado: document.getElementById('estado')?.value || 'Programado'
+            observaciones: document.getElementById('observaciones').value.trim() || '',
+            prioridad: document.getElementById('prioridad').value,
+            estado: 'Programado',
+            servicioSinCotizacion: true
         };
 
-        console.log('📋 DATOS DEL FORMULARIO RECOLECTADOS:', formData);
+        console.log('📋 DATOS DEL FORMULARIO:', formData);
 
-        // 3. Validaciones
+        // Validaciones
         const camposRequeridos = [
             { campo: 'Cliente', valor: formData.dniCliente },
             { campo: 'Técnico', valor: formData.dniEmpleadoAsignado },
-            { campo: 'Tipo de Servicio', valor: formData.idTipoServicio },
+            { campo: 'Tipo Servicio', valor: formData.idTipoServicio },
             { campo: 'Fecha', valor: formData.fecha },
             { campo: 'Hora', valor: formData.hora }
         ];
 
         const camposFaltantes = camposRequeridos.filter(c => !c.valor);
         if (camposFaltantes.length > 0) {
-            const mensajeError = `Campos obligatorios faltantes:\n${camposFaltantes.map(c => `• ${c.campo}`).join('\n')}`;
-            throw new Error(mensajeError);
+            throw new Error(`Campos obligatorios faltantes:\n${camposFaltantes.map(c => `• ${c.campo}`).join('\n')}`);
         }
 
-        // 4. Validar que los valores existan
-        const clienteExiste = todasLasPersonas.find(p => p.dni === formData.dniCliente && p.rol === 'Cliente');
-        const tecnicoExiste = todasLasPersonas.find(p => p.dni === formData.dniEmpleadoAsignado && p.rol === 'Empleado');
-        const tipoServicioExiste = todosLosTiposServicio.find(t => t.idTipoServicio === formData.idTipoServicio);
-
-        if (!clienteExiste) throw new Error(`El cliente seleccionado no existe`);
-        if (!tecnicoExiste) throw new Error(`El técnico seleccionado no existe`);
-        if (!tipoServicioExiste) throw new Error(`El tipo de servicio seleccionado no existe`);
-
-        // 5. Validar fecha y hora futuras
-        const fechaHoraServicio = new Date(`${formData.fecha}T${formData.hora}`);
+        // Validar fecha futura
+        const fechaServicio = new Date(formData.fecha + 'T' + formData.hora);
         const ahora = new Date();
-        if (fechaHoraServicio <= ahora) {
+        if (fechaServicio < ahora) {
             throw new Error('No puede programar un servicio en fecha u hora pasada.');
         }
 
-        // 6. PREPARAR DATOS SEGÚN ESTRUCTURA EXACTA DEL BACKEND
-        // BASADO EN EL ANÁLISIS DE SERVICIOS EXISTENTES:
+        // Preparar datos para enviar (asegurar formato correcto)
         const servicioData = {
             dniCliente: formData.dniCliente,
             dniEmpleadoAsignado: formData.dniEmpleadoAsignado,
             idTipoServicio: formData.idTipoServicio,
             fecha: formData.fecha,
-            hora: formData.hora + ':00', // Formato HH:MM:SS
-            estado: formData.estado.toUpperCase(), // IMPORTANTE: En mayúsculas como los existentes
-            prioridad: formData.prioridad,
+            hora: formData.hora + ':00', // Asegurar formato HH:MM:SS
+            estado: 'Programado',
             observaciones: formData.observaciones,
-            duracionEstimada: formData.duracionEstimada,
-            // CORRECCIÓN CRÍTICA: Seguir la estructura exacta de servicios existentes
-            servicioSinCotizacion: false, // ❌ CAMBIO: Todos los existentes tienen false
-            idCotizacion: null, // Mantener null para servicios sin cotización
-            activo: null // ❌ CAMBIO: Los existentes tienen null, no true
-            // NOTA: No incluir campos que no están en los servicios existentes
+            prioridad: formData.prioridad,
+            servicioSinCotizacion: true,
+            idCotizacion: null,
+            servicioSinCotizacion: true
         };
 
-        console.log('🚀 DATOS A ENVIAR AL BACKEND (ESTRUCTURA EXACTA):', JSON.stringify(servicioData, null, 2));
+        console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
 
-        // 7. Configurar headers
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
 
-        // 8. Enviar petición
-        console.log('📨 Enviando petición POST...');
-        
+        // Hacer la petición
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(servicioData)
         });
 
-        console.log('📩 Respuesta del servidor - Status:', response.status);
+        console.log('📨 RESPUESTA DEL SERVIDOR:', {
+            status: response.status,
+            statusText: response.statusText,
+            ok: response.ok
+        });
 
-        // 9. Manejar respuesta
         if (!response.ok) {
-            let errorMessage = `Error ${response.status}`;
-            let errorDetails = '';
-            
+            let errorMessage = `Error ${response.status}: ${response.statusText}`;
             try {
+                const errorData = await response.json();
+                console.error('❌ ERROR DEL SERVIDOR:', errorData);
+                errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
+            } catch (e) {
                 const errorText = await response.text();
-                console.error('❌ ERROR TEXT DEL SERVIDOR:', errorText);
-                
-                try {
-                    const errorData = JSON.parse(errorText);
-                    errorDetails = errorData.message || errorData.error || JSON.stringify(errorData);
-                    console.error('❌ ERROR JSON DEL SERVIDOR:', errorData);
-                } catch (e) {
-                    errorDetails = errorText;
-                }
-                
-                errorMessage = errorDetails || errorMessage;
-            } catch (parseError) {
-                console.error('❌ ERROR AL PROCESAR RESPUESTA:', parseError);
-                errorMessage = `Error ${response.status}: No se pudo obtener detalles`;
+                errorMessage = errorText || errorMessage;
             }
-            
             throw new Error(errorMessage);
         }
 
-        // 10. Procesar respuesta exitosa
-        const resultado = await response.json();
-        console.log('✅ SERVICIO CREADO EXITOSAMENTE:', resultado);
+        const result = await response.json();
+        console.log('✅ SERVICIO CREADO EXITOSAMENTE:', result);
 
-        showCustomAlert('¡Servicio programado exitosamente!', 'Éxito', 'success');
+        showCustomAlert('Servicio programado exitosamente', 'Éxito', 'success');
         closeModal('addServiceModal');
         
-        // Recargar datos
+        // Recargar datos después de un breve delay
         setTimeout(async () => {
+            console.log('🔄 Recargando datos después de agregar servicio...');
             await loadAgendaData();
-        }, 1000);
+        }, 1500);
 
     } catch (error) {
-        console.error('❌ ERROR AL CREAR SERVICIO:', error);
+        console.error('❌ ERROR COMPLETO AL CREAR SERVICIO:', error);
         showCustomAlert(`Error al crear servicio:\n\n${error.message}`, 'Error', 'error');
     } finally {
         isSubmitting = false;
     }
 }
 
-// Función para probar con estructura IDÉNTICA a servicios existentes
-async function probarEstructuraExacta() {
-    console.log('🧪 PROBANDO CON ESTRUCTURA IDÉNTICA A EXISTENTES');
-    
-    // ESTRUCTURA EXACTA basada en el análisis de servicios existentes
-    const servicioPrueba = {
-        dniCliente: "333444555", // Lucía Gómez
-        dniEmpleadoAsignado: "987654321", // María López  
-        idTipoServicio: "TPS001", // Fumigación General
-        fecha: "2025-11-15", // Fecha futura
-        hora: "10:00:00", // Formato exacto HH:MM:SS
-        estado: "PROGRAMADO", // IMPORTANTE: En mayúsculas
-        prioridad: "Normal",
-        observaciones: "Prueba con estructura exacta",
-        duracionEstimada: "2 horas",
-        // ESTRUCTURA CRÍTICA: Igual a servicios existentes
-        servicioSinCotizacion: false, // ❌ TODOS los existentes tienen false
-        idCotizacion: null,
-        activo: null // ❌ Los existentes tienen null
-    };
-
-    console.log('🎯 ESTRUCTURA DE PRUEBA (EXACTA):', JSON.stringify(servicioPrueba, null, 2));
-
-    const token = localStorage.getItem('jwtToken');
-    const headers = {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json'
-    };
-
-    try {
-        const response = await fetch(`${API_BASE_URL}/servicios`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(servicioPrueba)
-        });
-
-        console.log('📩 RESPUESTA:', {
-            status: response.status,
-            ok: response.ok
-        });
-
-        if (response.ok) {
-            const resultado = await response.json();
-            console.log('✅ ÉXITO:', resultado);
-            showCustomAlert('Servicio de prueba creado exitosamente!', 'Éxito', 'success');
-            
-            // Recargar datos
-            setTimeout(async () => {
-                await loadAgendaData();
-            }, 1000);
-        } else {
-            const errorText = await response.text();
-            console.error('❌ ERROR:', errorText);
-            
-            // Intentar obtener más detalles del error
-            try {
-                const errorData = JSON.parse(errorText);
-                console.error('❌ ERROR DETALLADO:', errorData);
-                showCustomAlert(`Error del servidor:\n\n${JSON.stringify(errorData, null, 2)}`, 'Error', 'error');
-            } catch (e) {
-                showCustomAlert(`Error: ${errorText}`, 'Error', 'error');
-            }
-        }
-    } catch (error) {
-        console.error('❌ EXCEPCIÓN:', error);
-        showCustomAlert(`Excepción: ${error.message}`, 'Error', 'error');
-    }
-}
-
-// Función de diagnóstico completo
-function diagnosticoCompleto() {
-    console.log('🔍 DIAGNÓSTICO COMPLETO DEL SISTEMA');
-    console.log('📅 Fecha del sistema:', new Date().toString());
-    console.log('📅 Calendario configurado:', currentMonth + 1, currentYear);
-    
-    console.log('\n📊 DATOS CARGADOS:');
-    console.log('   Servicios:', servicios.length);
-    console.log('   Personas:', todasLasPersonas.length);
-    console.log('   Tipos de servicio:', todosLosTiposServicio.length);
-    
-    console.log('\n🔧 ESTADO DE LOS SERVICIOS:');
-    if (servicios.length === 0) {
-        console.log('   ❌ No hay servicios en la variable servicios');
-    } else {
-        servicios.forEach((serv, index) => {
-            console.log(`   ${index + 1}. ID: ${serv.idServicio}, Fecha: ${serv.fecha}, Estado: ${serv.estado}`);
-        });
-    }
-    
-    console.log('\n🎯 RENDERIZACIÓN DEL CALENDARIO:');
-    const calendarGrid = document.getElementById('calendarGrid');
-    if (calendarGrid) {
-        const dias = calendarGrid.querySelectorAll('.calendar-day:not(.other-month)');
-        console.log(`   Días renderizados: ${dias.length}`);
-        
-        // Verificar si hay eventos en los días
-        let eventosEncontrados = 0;
-        dias.forEach(dia => {
-            const eventos = dia.querySelectorAll('.event-item');
-            eventosEncontrados += eventos.length;
-        });
-        console.log(`   Eventos encontrados en calendario: ${eventosEncontrados}`);
-    }
-    
-    console.log('\n👥 DATOS DE PERSONAS:');
-    const clientes = todasLasPersonas.filter(p => p.rol === 'Cliente');
-    const tecnicos = todasLasPersonas.filter(p => p.rol === 'Empleado');
-    console.log(`   Clientes: ${clientes.length}`);
-    console.log(`   Técnicos: ${tecnicos.length}`);
-    
-    console.log('\n🛠️ TIPOS DE SERVICIO ACTIVOS:');
-    const tiposActivos = todosLosTiposServicio.filter(t => t.estado === 'ACTIVO');
-    console.log(`   Tipos activos: ${tiposActivos.length}`);
-}
-
-// Ejecutar diagnóstico después de cargar
-setTimeout(diagnosticoCompleto, 2000);
-// Función para verificar el estado de los datos
-function verificarEstadoDatos() {
-    console.log('🔍 VERIFICANDO ESTADO DE DATOS:');
-    console.log('👥 Total personas cargadas:', todasLasPersonas.length);
-    console.log('🛠️ Total tipos de servicio:', todosLosTiposServicio.length);
-    console.log('📋 Total servicios:', servicios.length);
-    
-    // Verificar selects
-    const clienteSelect = document.getElementById('clienteId');
-    const tecnicoSelect = document.getElementById('tecnicoId');
-    const tipoSelect = document.getElementById('tipoServicioId');
-    
-    console.log('📝 Select cliente options:', clienteSelect ? clienteSelect.options.length : 'NO ENCONTRADO');
-    console.log('📝 Select técnico options:', tecnicoSelect ? tecnicoSelect.options.length : 'NO ENCONTRADO');
-    console.log('📝 Select tipo servicio options:', tipoSelect ? tipoSelect.options.length : 'NO ENCONTRADO');
-    
-    // Mostrar algunos datos de ejemplo
-    if (todasLasPersonas.length > 0) {
-        console.log('👤 Primer cliente:', todasLasPersonas.find(p => p.rol === 'Cliente'));
-        console.log('🔧 Primer técnico:', todasLasPersonas.find(p => p.rol === 'Empleado'));
-    }
-    
-    if (todosLosTiposServicio.length > 0) {
-        console.log('🛠️ Primer tipo servicio:', todosLosTiposServicio[0]);
-    }
-}
 // Función para diagnosticar por qué no se muestran los servicios
 function diagnosticarProblemaVisualizacion() {
     console.log('🔍 DIAGNÓSTICO DE VISUALIZACIÓN');
@@ -3552,33 +2687,40 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Iniciando aplicación de Agenda...');
     console.log('🔗 API Base URL:', API_BASE_URL);
 
-    // Configurar event listeners
+    // ✅ Registramos los listeners SOLO cuando el DOM esté listo
     const serviceForm = document.getElementById('serviceForm');
     const editForm = document.getElementById('editServiceForm');
     
     if (serviceForm) {
         serviceForm.addEventListener('submit', addService);
-        console.log('✅ Event listener para serviceForm configurado');
     } else {
         console.error('❌ Formulario serviceForm NO encontrado en DOM');
     }
 
     if (editForm) {
         editForm.addEventListener('submit', updateService);
-        console.log('✅ Event listener para editServiceForm configurado');
     } else {
         console.error('❌ Formulario editServiceForm NO encontrado en DOM');
     }
 
-    // Cargar datos y verificar estado
-    loadAgendaData().then(() => {
-        setTimeout(verificarEstadoDatos, 1000);
-    });
+    loadAgendaData();
 });
-
         document.getElementById('editServiceForm').addEventListener('submit', updateService);
 
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Iniciando aplicación de Agenda...');
+            console.log('🔗 API Base URL:', API_BASE_URL);
+            loadAgendaData();
+        });
 
+        // ========== FUNCIONES PARA MODAL DE ALERTA PERSONALIZADO ==========
+
+        /**
+         * Muestra un modal de alerta personalizado.
+         * @param {string} message - El mensaje a mostrar.
+         * @param {string} [title='Información'] - El título del modal.
+         * @param {string} [type='info'] - Tipo de alerta: 'info', 'success', 'warning', 'error'.
+         */
         function showCustomAlert(message, title = 'Información', type = 'info') {
             const modal = document.getElementById('customAlertModal');
             const titleElement = document.getElementById('customAlertTitle');
