@@ -1489,19 +1489,31 @@ function renderCalendar(month, year) {
 
                 const eventsContainer = dayElement.querySelector('.day-events');
                 serviciosDelDia.forEach(serv => {
-                    const eventElement = document.createElement('div');
-                    // --- MODIFICACIÓN AQUÍ ---
-                    // Se añade la clase del estado del servicio a la clase del tipo
-                    eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
-                    // --- FIN MODIFICACIÓN ---
-                    const nombreCliente = obtenerNombreCliente(serv);
-                    const primerNombre = nombreCliente.split(' ')[0];
-                    eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
-                    eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}`;
-                    eventElement.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openEditServiceModal(serv); // Asegúrate de que esta función exista y funcione como esperas
-                    });
+                   const eventElement = document.createElement('div');
+eventElement.className = `calendar-event ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+eventElement.textContent = `${hora} ${nombreCliente}`;
+
+// ✅ Almacenar la fecha y hora del servicio en el elemento
+eventElement.dataset.fecha = serv.fecha;
+eventElement.dataset.hora = serv.hora;
+
+// ✅ Al hacer clic, buscar el servicio en la lista global 'servicios' usando fecha y hora
+eventElement.addEventListener('click', () => {
+    const fechaEvento = eventElement.dataset.fecha;
+    const horaEvento = eventElement.dataset.hora;
+
+    // Buscar el servicio en la lista global 'servicios' usando la fecha y hora
+    const servicioEncontrado = servicios.find(s => s.fecha === fechaEvento && s.hora === horaEvento);
+
+    if (!servicioEncontrado) {
+        console.error('❌ Servicio no encontrado por fecha y hora:', fechaEvento, horaEvento);
+        showCustomAlert("Servicio no encontrado. Por favor, recargue la página.", 'Error', 'error');
+        return;
+    }
+
+    // ✅ Abrir el modal de edición con el ID del servicio encontrado
+    openEditServiceModal(servicioEncontrado.idServicio);
+});
                     eventsContainer.appendChild(eventElement);
                 });
 
