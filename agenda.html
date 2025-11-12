@@ -1479,7 +1479,7 @@ for (let day = 1; day <= totalDays; day++) {
     dayElement.innerHTML = `<div class="day-number">${day}</div><div class="day-events"></div>`;
     // ... (código para poblar los eventos del día en 'day-events') ...
     // ----> ESTA ES LA LÍNEA A MODIFICAR <----
-    dayElement.addEventListener('click', () => showDayServices(date));
+   dayElement.addEventListener('click', () => openAddServiceModal(date));
     // ----> FIN DE LA LÍNEA A MODIFICAR <----
     calendarGrid.appendChild(dayElement);
 }
