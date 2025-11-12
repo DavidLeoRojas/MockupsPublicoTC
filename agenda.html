@@ -1549,7 +1549,7 @@ function renderCalendar(month, year) {
             return 'control-plagas';
         }
 
-// ========== SHOW DAY SERVICES ========== (CORREGIDA)
+// ========== SHOW DAY SERVICES ========== (CORREGIDA Y MEJORADA VISUALMENTE)
 function showDayServices(date) {
     selectedDate = date; // Guardar la fecha seleccionada
 
@@ -1562,7 +1562,6 @@ function showDayServices(date) {
     const day = date.getDate();
 
     // ✅ CORRECCIÓN: Usar la variable global 'servicios' que se carga en loadAgendaData
-    // Asegurarse de que la variable 'servicios' ya esté llena antes de llamar a esta función
     const serviciosDelDia = servicios.filter(s => {
         if (!s.fecha) return false;
         const fechaServicio = new Date(s.fecha); // Asumiendo formato YYYY-MM-DD
@@ -1583,15 +1582,29 @@ function showDayServices(date) {
     }
 
     serviciosDelDia.forEach(serv => {
+        // ✅ MEJORA VISUAL: Crear un contenedor más estructurado para cada evento
         const eventElement = document.createElement('div');
         eventElement.className = `event-item ${getEventTypeClass(serv)} ${getEstadoClass(serv.estado)}`;
+
+        // Extraer información
+        const hora = serv.hora ? serv.hora.substring(0, 5) : 'N/A';
         const nombreCliente = obtenerNombreCliente(serv);
         const primerNombre = nombreCliente.split(' ')[0];
-        eventElement.textContent = `${serv.hora ? serv.hora.substring(0,5) : ''} ${primerNombre}`;
+        const nombreServicio = obtenerNombreServicio(serv);
 
-        eventElement.title = `${obtenerNombreServicio(serv)}
+        // Asignar contenido HTML estructurado
+        eventElement.innerHTML = `
+            <div class="event-time">${hora}</div>
+            <div class="event-details">
+                <div class="event-service">${nombreServicio}</div>
+                <div class="event-client">Cliente: ${primerNombre}</div>
+            </div>
+        `;
+
+        // Añadir título emergente con más detalles
+        eventElement.title = `${nombreServicio}
 Cliente: ${nombreCliente}
-Hora: ${serv.hora || 'No definida'}
+Hora: ${hora}
 Estado: ${serv.estado}`;
 
         // ✅ CORRECCIÓN: Capturar el objeto 'serv' en el closure del evento click
@@ -1604,7 +1617,7 @@ Estado: ${serv.estado}`;
     });
 
     modal.classList.add('show');
-}
+}   
 
 // ========== EDIT SERVICE ========== (CORREGIDA para recibir objeto directamente)
 function openEditServiceModal(servicioRecibido) {
@@ -2395,7 +2408,7 @@ function openAddServiceModal(date = null) {
             }
         }
 
-// ========== ADD SERVICE ========== (CORREGIDA Y MEJORADA)
+// ========== ADD SERVICE ========== (CORREGIDA: Incluye Token JWT)
 async function addService(event) {
     event.preventDefault();
     if (isSubmitting) return;
