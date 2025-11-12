@@ -1257,8 +1257,53 @@ function navegarAlMesDeServicios() {
             console.error('❌ No se pudo obtener tipo de servicio');
             return '⚠️ Servicio Desconocido';
         }
-    
 
+
+// ========== CARGA DE DATOS MEJORADA ==========
+async function loadAgendaData() {
+    console.log("🔄 Iniciando carga de datos de la agenda...");
+    
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+        showCustomAlert('Sesión expirada. Por favor, inicia sesión nuevamente.', 'Error', 'error');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
+        return;
+    }
+    
+    const headers = {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json'
+    };
+
+    try {
+        console.log('📡 Solicitando datos al backend...');
+        
+        const [serviciosRes, personasRes, tiposServRes, cotizacionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/servicios`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar servicios');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/personas`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar personas');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/tipos-servicio`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar tipos de servicio');
+                return r.json();
+            }),
+            fetch(`${API_BASE_URL}/cotizaciones`, { headers }).then(r => {
+                if (!r.ok) throw new Error('Error al cargar cotizaciones');
+                return r.json();
+            })
+        ]);
+
+        console.log('✅ Datos recibidos del backend:');
+        console.log('   Servicios:', serviciosRes.length);
+        console.log('   Personas:', personasRes.length);
+        console.log('   Tipos servicio:', tiposServRes.length);
+        console.log('   Cotizaciones:', cotizacionesRes.length);
 
     // FUNCIONES DE NORMALIZACIÓN
 function normalizarServicio(rawServicio) {
@@ -1304,6 +1349,86 @@ function normalizarTipoServicio(rawTipo) {
     };
 }
 
+
+// ========== CARGA DE DATOS MEJORADA ========== (Línea donde se define loadAgendaData)
+async function loadAgendaData() {
+    console.log("🔄 Iniciando carga de datos de la agenda...");
+    const token = localStorage.getItem('jwtToken');
+    if (!token) {
+         // alert('❌ No hay token de autenticación. Por favor, inicie sesión.');
+         showCustomAlert('No hay token de autenticación. Por favor, inicie sesión.', 'Error', 'error');
+         window.location.href = 'login.html'; // Ajusta la ruta a tu página de login
+         return;
+    }
+
+    try {
+        // Usar Promise.all para cargar todos los datos simultáneamente
+        const [serviciosRes, personasRes, tiposRes, cotizacionesRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/servicios`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/personas`, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/tiposServicio`, { // Asegúrate que la ruta sea correcta
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            }),
+            fetch(`${API_BASE_URL}/cotizaciones`, { // Asegúrate que la ruta sea correcta
+                headers: { 'Authorization': 'Bearer ' + token }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Error HTTP! status: ${response.status}`);
+                }
+                return response.json();
+            })
+        ]);
+
+        // Normalizar los datos recibidos
+        servicios = Array.isArray(serviciosRes) ? serviciosRes.map(normalizarServicio) : [];
+        todasLasPersonas = Array.isArray(personasRes) ? personasRes.map(normalizarPersona) : [];
+        todosLosTiposServicio = Array.isArray(tiposRes) ? tiposRes.map(normalizarTipoServicio) : [];
+        cotizaciones = Array.isArray(cotizacionesRes) ? cotizacionesRes : []; // Puedes normalizar cotizaciones también si es necesario
+
+        console.log("✅ Datos cargados exitosamente:");
+        console.log("📋 Servicios:", servicios.length);
+        console.log("👥 Personas:", todasLasPersonas.length);
+        console.log("🛠️ Tipos de servicio:", todosLosTiposServicio.length);
+        console.log("💰 Cotizaciones:", cotizaciones.length);
+
+        // Poblar selects
+        populateClienteSelect(todasLasPersonas);
+        populateTecnicoSelect(todasLasPersonas);
+        populateTipoServicioSelect(todosLosTiposServicio);
+
+        // Renderizar calendario
+        console.log("🎨 Renderizando calendario...");
+        renderCalendar(currentMonth, currentYear);
+
+        // Renderizar agenda de hoy
+        console.log("📅 Renderizando agenda de hoy...");
+        renderTodaySchedule();
+
+    } catch (error) {
+        console.error("❌ Error al cargar la agenda:", error);
+        // alert("Error al cargar la agenda: " + error.message);
+        showCustomAlert('Error al cargar la agenda: ' + error.message, 'Error', 'error');
+    }
+}
 function normalizarPersona(rawPersona) {
     return {
         dni: rawPersona.dni || rawPersona.DNI || rawPersona.id || '', // Añadir 'id' como fallback si DNI es el ID
@@ -1638,11 +1763,11 @@ function renderCalendar(month, year) {
                 
                 eventElement.textContent = `${horaDisplay} ${primerNombre}`;
                 eventElement.title = `${obtenerNombreServicio(serv)}\nCliente: ${nombreCliente}\nHora: ${serv.hora || 'No definida'}\nEstado: ${serv.estado}`;
-eventElement.addEventListener('click', (e) => {
-    e.stopPropagation();
-    console.log('🖱️ Click en servicio:', servicio.idServicio);
-    openEditServiceModal(servicio); // Pasar el objeto completo
-});
+                
+                eventElement.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openEditServiceModal(serv);
+                });
                 
                 eventsContainer.appendChild(eventElement);
                 serviciosRenderizados++;
