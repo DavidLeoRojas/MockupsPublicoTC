@@ -1561,8 +1561,8 @@ function showDayServices(date) {
     const month = date.getMonth();
     const day = date.getDate();
 
-    // ✅ CORRECCIÓN: Filtrar por fecha usando una comparación segura
-    // Convertir la fecha del servicio a formato YYYY-MM-DD para comparar
+    // ✅ CORRECCIÓN: Filtrar por fecha usando una comparación segura (sin depender de new Date)
+    // Convertir la fecha del servicio a formato YYYY-MM-DD y comparar directamente
     const serviciosDelDia = servicios.filter(s => {
         if (!s.fecha) return false;
 
@@ -2079,11 +2079,11 @@ async function viewInvoice(id) {
         alert("❌ Error al generar el PDF: " + error.message);
     }
 }
-// ========== EDIT SERVICE ========== (CORREGIDA Y MEJORADA VISUALMENTE)
+// ========== EDIT SERVICE ========== (CORREGIDA)
 function openEditServiceModal(id) {
     console.log('🔍 Abriendo modal de edición para servicio:', id);
 
-    // ✅ CORRECCIÓN: Buscar el servicio en la variable global 'servicios' (que se carga en loadAgendaData)
+    // ✅ CORRECCIÓN: Buscar el servicio en la variable global 'servicios'
     const servicio = servicios.find(s => s.idServicio === id);
 
     if (!servicio) {
