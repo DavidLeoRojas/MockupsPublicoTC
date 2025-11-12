@@ -962,79 +962,86 @@
         </div>
     </div>
 
-    <!-- Modal de agregar servicio -->
-    <div class="modal" id="addServiceModal">
-        <div class="modal-content">
+<!-- Modal de agregar servicio -->
+<div class="modal" id="addServiceModal">
+    <div class="modal-content">
         <div class="modal-header">
             <h2 class="modal-title" id="serviceModalTitle">Programar Nuevo Servicio</h2>
             <button class="close-btn" onclick="closeModal('addServiceModal')">&times;</button>
         </div>
-            <form id="serviceForm">
-
+        <form id="serviceForm">
+            <input type="hidden" id="serviceId">
+            
+            <div class="form-group">
+                <label>Cliente *</label>
+                <select class="form-control" id="clienteId" required>
+                    <option value="">Seleccionar cliente</option>
+                </select>
+            </div>
+            
+            <div class="form-grid-2">
                 <div class="form-group">
-                    <label>Cliente *</label>
-                    <select class="form-control" id="clienteId" required>
-                        <option value="">Seleccionar cliente</option>
+                    <label>Tipo de Servicio *</label>
+                    <select class="form-control" id="tipoServicioId" required>
+                        <option value="">Seleccionar tipo</option>
                     </select>
                 </div>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Tipo de Servicio *</label>
-                        <select class="form-control" id="tipoServicioId" required>
-                            <option value="">Seleccionar tipo</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Técnico *</label>
-                        <select class="form-control" id="tecnicoId" required>
-                            <option value="">Seleccionar técnico</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Fecha *</label>
-                        <input type="date" class="form-control" id="fecha" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Hora *</label>
-                        <input type="time" class="form-control" id="hora" required>
-                    </div>
-                </div>
-                <div class="form-grid-2">
-                    <div class="form-group">
-                        <label>Duración Estimada</label>
-                        <input type="text" class="form-control" id="duracionEstimada" placeholder="Ej: 2 horas">
-                    </div>
-                    <div class="form-group">
-                        <label>Prioridad</label>
-                        <select class="form-control" id="prioridad">
-                            <option value="Normal">Normal</option>
-                            <option value="Alta">Alta</option>
-                            <option value="Urgente">Urgente</option>
-                        </select>
-                    </div>
-                </div>
                 <div class="form-group">
-                    <label>Observaciones</label>
-                    <textarea class="form-control" id="observaciones" rows="3" placeholder="Instrucciones especiales, materiales necesarios, etc."></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Estado</label>
-                    <select class="form-control" id="estado">
-                        <option value="Programado">Programado</option>
-                        <option value="En Progreso">En Progreso</option>
-                        <option value="Completado">Completado</option>
-                        <option value="Cancelado">Cancelado</option>
+                    <label>Técnico *</label>
+                    <select class="form-control" id="tecnicoId" required>
+                        <option value="">Seleccionar técnico</option>
                     </select>
                 </div>
-                <div class="form-grid-2" style="margin-top: 2rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Programar Servicio</button>
+            </div>
+            
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" class="form-control" id="fecha" required>
                 </div>
-            </form>
-        </div>
+                <div class="form-group">
+                    <label>Hora *</label>
+                    <input type="time" class="form-control" id="hora" required>
+                </div>
+            </div>
+            
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label>Duración Estimada</label>
+                    <input type="text" class="form-control" id="duracionEstimada" placeholder="Ej: 2 horas">
+                </div>
+                <div class="form-group">
+                    <label>Prioridad</label>
+                    <select class="form-control" id="prioridad">
+                        <option value="Normal">Normal</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Urgente">Urgente</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Observaciones</label>
+                <textarea class="form-control" id="observaciones" rows="3" placeholder="Instrucciones especiales, materiales necesarios, etc."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Estado</label>
+                <select class="form-control" id="estado">
+                    <option value="Programado">Programado</option>
+                    <option value="En Progreso">En Progreso</option>
+                    <option value="Completado">Completado</option>
+                    <option value="Cancelado">Cancelado</option>
+                </select>
+            </div>
+            
+            <div class="form-grid-2" style="margin-top: 2rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addServiceModal')">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Programar Servicio</button>
+            </div>
+        </form>
     </div>
+</div>
 
     <!-- ========== MODAL DE ALERTA PERSONALIZADO ========== -->
     <div id="customAlertModal" class="modal-custom-alert">
@@ -2332,131 +2339,176 @@ function openAddServiceModal(date = null) {
             }
         }
 
-// Función para agregar un nuevo servicio
+// Función para agregar un nuevo servicio - VERSIÓN MEJORADA
 async function addService(event) {
     event.preventDefault();
-    if (isSubmitting) return;
-    isSubmitting = true;
-
-    console.log('🔄 INICIANDO PROCESO DE AGREGAR SERVICIO...');
-    const form = event.target;
-    if (!form) {
-        console.error('❌ Formulario no encontrado en evento submit');
-        showCustomAlert('Error interno: formulario no detectado.', 'Error', 'error');
-        isSubmitting = false;
+    
+    if (isSubmitting) {
+        console.log('⏳ Ya se está enviando un servicio, esperando...');
         return;
     }
+    
+    isSubmitting = true;
+    
     try {
-        // Verificar autenticación
+        console.log('🔄 INICIANDO PROCESO DE AGREGAR SERVICIO...');
+        
+        // 1. Verificar autenticación
         const token = localStorage.getItem('jwtToken');
         if (!token) {
             throw new Error('No hay token de autenticación. Por favor, inicie sesión nuevamente.');
         }
 
-        // Obtener datos del formulario
+        // 2. Obtener datos del formulario
         const formData = {
             dniCliente: document.getElementById('clienteId').value.trim(),
             dniEmpleadoAsignado: document.getElementById('tecnicoId').value.trim(),
             idTipoServicio: document.getElementById('tipoServicioId').value.trim(),
             fecha: document.getElementById('fecha').value,
             hora: document.getElementById('hora').value,
-            observaciones: document.getElementById('observaciones').value.trim() || '',
+            duracionEstimada: document.getElementById('duracionEstimada').value.trim() || null,
+            observaciones: document.getElementById('observaciones').value.trim() || null,
             prioridad: document.getElementById('prioridad').value,
-            estado: 'Programado',
-
+            estado: document.getElementById('estado').value
         };
 
-        console.log('📋 DATOS DEL FORMULARIO:', formData);
+        console.log('📋 DATOS DEL FORMULARIO RECOLECTADOS:', formData);
 
-        // Validaciones
+        // 3. Validaciones básicas
         const camposRequeridos = [
             { campo: 'Cliente', valor: formData.dniCliente },
             { campo: 'Técnico', valor: formData.dniEmpleadoAsignado },
-            { campo: 'Tipo Servicio', valor: formData.idTipoServicio },
+            { campo: 'Tipo de Servicio', valor: formData.idTipoServicio },
             { campo: 'Fecha', valor: formData.fecha },
             { campo: 'Hora', valor: formData.hora }
         ];
 
         const camposFaltantes = camposRequeridos.filter(c => !c.valor);
         if (camposFaltantes.length > 0) {
-            throw new Error(`Campos obligatorios faltantes:\n${camposFaltantes.map(c => `• ${c.campo}`).join('\n')}`);
+            const mensajeError = `Campos obligatorios faltantes:\n${camposFaltantes.map(c => `• ${c.campo}`).join('\n')}`;
+            throw new Error(mensajeError);
         }
 
-        // Validar fecha futura
-        const fechaServicio = new Date(formData.fecha + 'T' + formData.hora);
+        // 4. Validar fecha y hora futuras
+        const fechaHoraServicio = new Date(`${formData.fecha}T${formData.hora}`);
         const ahora = new Date();
-        if (fechaServicio < ahora) {
-            throw new Error('No puede programar un servicio en fecha u hora pasada.');
+        
+        if (fechaHoraServicio <= ahora) {
+            throw new Error('No puede programar un servicio en fecha u hora pasada. Por favor, seleccione una fecha y hora futuras.');
         }
 
-        // Preparar datos para enviar (asegurar formato correcto)
+        // 5. Preparar datos para enviar al backend
         const servicioData = {
             dniCliente: formData.dniCliente,
             dniEmpleadoAsignado: formData.dniEmpleadoAsignado,
             idTipoServicio: formData.idTipoServicio,
             fecha: formData.fecha,
-            hora: formData.hora + ':00', // Asegurar formato HH:MM:SS
-            estado: 'Programado',
+            hora: formData.hora + ':00', // Formato HH:MM:SS
+            duracionEstimada: formData.duracionEstimada,
             observaciones: formData.observaciones,
             prioridad: formData.prioridad,
-            idCotizacion: null,
-
+            estado: formData.estado,
+            servicioSinCotizacion: true, // Asumiendo que no viene de cotización
+            activo: true
         };
 
-        console.log('🚀 ENVIANDO AL BACKEND:', servicioData);
+        console.log('🚀 DATOS A ENVIAR AL BACKEND:', servicioData);
 
+        // 6. Configurar headers con autenticación
         const headers = {
             'Authorization': 'Bearer ' + token,
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
 
-        // Hacer la petición
+        // 7. Enviar petición al backend
+        console.log('📨 Enviando petición POST a:', `${API_BASE_URL}/servicios`);
+        
         const response = await fetch(`${API_BASE_URL}/servicios`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(servicioData)
         });
 
-        console.log('📨 RESPUESTA DEL SERVIDOR:', {
+        console.log('📩 Respuesta del servidor:', {
             status: response.status,
             statusText: response.statusText,
             ok: response.ok
         });
 
+        // 8. Manejar respuesta
         if (!response.ok) {
             let errorMessage = `Error ${response.status}: ${response.statusText}`;
+            
             try {
                 const errorData = await response.json();
-                console.error('❌ ERROR DEL SERVIDOR:', errorData);
+                console.error('❌ ERROR DETALLADO DEL SERVIDOR:', errorData);
                 errorMessage = errorData.message || errorData.error || JSON.stringify(errorData);
-            } catch (e) {
+            } catch (parseError) {
                 const errorText = await response.text();
                 errorMessage = errorText || errorMessage;
+                console.error('❌ ERROR DE TEXTO DEL SERVIDOR:', errorText);
             }
+            
             throw new Error(errorMessage);
         }
 
-        const result = await response.json();
-        console.log('✅ SERVICIO CREADO EXITOSAMENTE:', result);
+        // 9. Procesar respuesta exitosa
+        const resultado = await response.json();
+        console.log('✅ SERVICIO CREADO EXITOSAMENTE:', resultado);
 
-        showCustomAlert('Servicio programado exitosamente', 'Éxito', 'success');
+        // 10. Mostrar confirmación y limpiar
+        showCustomAlert('¡Servicio programado exitosamente!', 'Éxito', 'success');
+        
+        // Cerrar modal
         closeModal('addServiceModal');
         
         // Recargar datos después de un breve delay
         setTimeout(async () => {
-            console.log('🔄 Recargando datos después de agregar servicio...');
+            console.log('🔄 Recargando datos de agenda...');
             await loadAgendaData();
-        }, 1500);
+        }, 1000);
 
     } catch (error) {
         console.error('❌ ERROR COMPLETO AL CREAR SERVICIO:', error);
-        showCustomAlert(`Error al crear servicio:\n\n${error.message}`, 'Error', 'error');
+        
+        let mensajeError = error.message;
+        if (error.message.includes('JSON') || error.message.includes('parse')) {
+            mensajeError = 'Error en el formato de datos. Verifique que todos los campos sean válidos.';
+        }
+        
+        showCustomAlert(`Error al crear servicio:\n\n${mensajeError}`, 'Error', 'error');
     } finally {
         isSubmitting = false;
+        console.log('🏁 Proceso de envío finalizado');
     }
 }
-
+// Función para verificar el estado de los datos
+function verificarEstadoDatos() {
+    console.log('🔍 VERIFICANDO ESTADO DE DATOS:');
+    console.log('👥 Total personas cargadas:', todasLasPersonas.length);
+    console.log('🛠️ Total tipos de servicio:', todosLosTiposServicio.length);
+    console.log('📋 Total servicios:', servicios.length);
+    
+    // Verificar selects
+    const clienteSelect = document.getElementById('clienteId');
+    const tecnicoSelect = document.getElementById('tecnicoId');
+    const tipoSelect = document.getElementById('tipoServicioId');
+    
+    console.log('📝 Select cliente options:', clienteSelect ? clienteSelect.options.length : 'NO ENCONTRADO');
+    console.log('📝 Select técnico options:', tecnicoSelect ? tecnicoSelect.options.length : 'NO ENCONTRADO');
+    console.log('📝 Select tipo servicio options:', tipoSelect ? tipoSelect.options.length : 'NO ENCONTRADO');
+    
+    // Mostrar algunos datos de ejemplo
+    if (todasLasPersonas.length > 0) {
+        console.log('👤 Primer cliente:', todasLasPersonas.find(p => p.rol === 'Cliente'));
+        console.log('🔧 Primer técnico:', todasLasPersonas.find(p => p.rol === 'Empleado'));
+    }
+    
+    if (todosLosTiposServicio.length > 0) {
+        console.log('🛠️ Primer tipo servicio:', todosLosTiposServicio[0]);
+    }
+}
 // Función para diagnosticar por qué no se muestran los servicios
 function diagnosticarProblemaVisualizacion() {
     console.log('🔍 DIAGNÓSTICO DE VISUALIZACIÓN');
@@ -2660,40 +2712,33 @@ document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 Iniciando aplicación de Agenda...');
     console.log('🔗 API Base URL:', API_BASE_URL);
 
-    // ✅ Registramos los listeners SOLO cuando el DOM esté listo
+    // Configurar event listeners
     const serviceForm = document.getElementById('serviceForm');
     const editForm = document.getElementById('editServiceForm');
     
     if (serviceForm) {
         serviceForm.addEventListener('submit', addService);
+        console.log('✅ Event listener para serviceForm configurado');
     } else {
         console.error('❌ Formulario serviceForm NO encontrado en DOM');
     }
 
     if (editForm) {
         editForm.addEventListener('submit', updateService);
+        console.log('✅ Event listener para editServiceForm configurado');
     } else {
         console.error('❌ Formulario editServiceForm NO encontrado en DOM');
     }
 
-    loadAgendaData();
+    // Cargar datos y verificar estado
+    loadAgendaData().then(() => {
+        setTimeout(verificarEstadoDatos, 1000);
+    });
 });
+
         document.getElementById('editServiceForm').addEventListener('submit', updateService);
 
-        document.addEventListener('DOMContentLoaded', function () {
-            console.log('🚀 Iniciando aplicación de Agenda...');
-            console.log('🔗 API Base URL:', API_BASE_URL);
-            loadAgendaData();
-        });
-
-        // ========== FUNCIONES PARA MODAL DE ALERTA PERSONALIZADO ==========
-
-        /**
-         * Muestra un modal de alerta personalizado.
-         * @param {string} message - El mensaje a mostrar.
-         * @param {string} [title='Información'] - El título del modal.
-         * @param {string} [type='info'] - Tipo de alerta: 'info', 'success', 'warning', 'error'.
-         */
+            
         function showCustomAlert(message, title = 'Información', type = 'info') {
             const modal = document.getElementById('customAlertModal');
             const titleElement = document.getElementById('customAlertTitle');
