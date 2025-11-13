@@ -21,112 +21,111 @@
             font-family: 'Poppins', sans-serif;
         }
 
- 
+        /* Menú más compacto */
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem; /* REDUCIDO el espacio entre items */
+        }
 
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-1px); /* EFECTO MÁS SUTIL */
+        }
 
+        /* ESTILOS UNIFICADOS PARA HEADER */
+        .header {
+            background: 
+                linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url('docs/assets/img/bg.png') no-repeat center center;
+            background-size: cover;
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky; /* O relative, elige uno */
+            top: 0;
+            z-index: 1000;
+        }
 
-/* Menú más compacto */
-.nav-menu {
-    display: flex;
-    list-style: none;
-    gap: 1.5rem; /* REDUCIDO el espacio entre items */
-}
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem; /* Valor consistente */
+        }
 
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.4rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 0.95em; /* Tamaño consistente */
+        }
 
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3); /* Overlay oscuro para mejorar la legibilidad */
+            z-index: 1;
+        }
 
-.nav-menu a:hover,
-.nav-menu a.active {
-    background: rgba(255,255,255,0.15);
-    transform: translateY(-1px); /* EFECTO MÁS SUTIL */
-}
-/* ESTILOS UNIFICADOS PARA HEADER */
-.header {
-    background: 
-        linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-        url('docs/assets/img/bg.png') no-repeat center center;
-    background-size: cover;
-    color: white;
-    padding: 1rem 0;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    position: sticky; /* O relative, elige uno */
-    top: 0;
-    z-index: 1000;
-}
+        .header > * {
+            position: relative;
+            z-index: 2;
+        }
 
-.nav-menu {
-    display: flex;
-    list-style: none;
-    gap: 1.5rem; /* Valor consistente */
-}
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.nav-menu a {
-    color: white;
-    text-decoration: none;
-    padding: 0.4rem 1rem;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    font-size: 0.95em; /* Tamaño consistente */
-}
-.header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3); /* Overlay oscuro para mejorar la legibilidad */
-    z-index: 1;
-}
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
 
-.header > * {
-    position: relative;
-    z-index: 2;
-}
+        .logo-img {
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #2c5f41;
+        }
 
-.nav-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
 
-.logo-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-.logo-img {
-    width: 50px;
-    height: 50px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 24px;
-    color: #2c5f41;
-}
-.logo-text {
-    font-size: 1.5em;
-    font-weight: bold;
-}
+        .nav-menu a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-size: 0.7em;
+        }
 
-.nav-menu a {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    font-size: 0.7em;
-}
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
 
-.nav-menu a:hover,
-.nav-menu a.active {
-    background: rgba(255,255,255,0.2);
-    transform: translateY(-2px);
-}
         .admin-btn {
             background: #5cda7a;
             color: white;
@@ -140,46 +139,47 @@
             background: #036b35;
             transform: translateY(-2px);
         }
-       /* Hero Section más compacta */
-.hero {
-    background: 
-        linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)),
-        url('docs/assets/img/bg.png') no-repeat center center;
-    background-size: cover;
-    padding: 4rem 0; /* REDUCIDO de 6rem/8rem */
-    text-align: center;
-    color: white;
-    position: relative;
-}
 
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: 1;
-}
+        /* Hero Section más compacta */
+        .hero {
+            background: 
+                linear-gradient(rgba(44,95,65,0.8), rgba(44,95,65,0.8)),
+                url('docs/assets/img/bg.png') no-repeat center center;
+            background-size: cover;
+            padding: 4rem 0; /* REDUCIDO de 6rem/8rem */
+            text-align: center;
+            color: white;
+            position: relative;
+        }
 
-.hero > * {
-    position: relative;
-    z-index: 2;
-}
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
 
-.hero h1 {
-    font-size: 2.8em; /* REDUCIDO de 3.5em/4em */
-    margin-bottom: 1rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
+        .hero > * {
+            position: relative;
+            z-index: 2;
+        }
 
-.hero p {
-    font-size: 1    .1em; /* REDUCIDO de 1.3em/1.5em */
-    max-width: 800px;
-    margin: 0 auto 2rem;
-    line-height: 1.6;
-}
+        .hero h1 {
+            font-size: 2.8em; /* REDUCIDO de 3.5em/4em */
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .hero p {
+            font-size: 1.1em; /* REDUCIDO de 1.3em/1.5em */
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
 
         /* Container */
         .container {
@@ -469,211 +469,354 @@
                 font-size: 2em;
             }
         }
+
+        /* SISTEMA DE RESEÑAS */
+        .reviews-section {
+            background: #f8f9fa;
+            padding: 4rem 0;
+        }
+
+        .reviews-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .rating-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .average-rating {
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .average-score {
+            font-size: 4.5em;
+            font-weight: bold;
+            color: #2c5f41;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+            animation: fadeIn 1s ease;
+        }
+
+        .stars-large {
+            font-size: 2em;
+            color: #ffc107;
+            margin-bottom: 1rem;
+        }
+
+        .total-reviews {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .rating-stats {
+            flex: 2;
+            min-width: 300px;
+        }
+
+        .rating-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.8rem;
+        }
+
+        .rating-label {
+            width: 80px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .bar-container {
+            flex: 1;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 0 1rem;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: #ffc107;
+            border-radius: 5px;
+            width: 0%;
+            transition: width 1.5s ease-in-out;
+        }
+
+        .rating-count {
+            width: 40px;
+            font-size: 0.9em;
+            color: #666;
+            text-align: right;
+        }
+
+        .add-review {
+            background: white;
+            border-radius: 15px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 3rem;
+        }
+
+        .add-review h3 {
+            color: #2c5f41;
+            margin-bottom: 1.5rem;
+            font-size: 1.5em;
+        }
+
+        .star-rating-input {
+            margin-bottom: 1.5rem;
+        }
+
+        .star-rating-input p {
+            margin-bottom: 0.5rem;
+            color: #666;
+        }
+
+        .stars-input {
+            display: flex;
+            gap: 0.3rem;
+            margin-bottom: 1rem;
+        }
+
+        .star-input {
+            font-size: 2em;
+            color: #ddd;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .star-input:hover,
+        .star-input.active {
+            color: #ffc107;
+            transform: scale(1.1);
+        }
+
+        .review-form textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Open Sans', sans-serif;
+            font-size: 1em;
+            resize: vertical;
+            min-height: 120px;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.3s;
+        }
+
+        .review-form textarea:focus {
+            border-color: #4a8b64;
+            outline: none;
+        }
+
+        .review-form button {
+            background: #4a8b64;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .review-form button:hover {
+            background: #2c5f41;
+            transform: translateY(-2px);
+        }
+
+        .reviews-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .review-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.5s ease;
+        }
+
+        .review-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .reviewer-info h4 {
+            color: #2c5f41;
+            margin-bottom: 0.3rem;
+        }
+
+        .review-date {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .review-stars {
+            color: #ffc107;
+            font-size: 1.2em;
+        }
+
+        .review-content {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes growWidth {
+            from { width: 0%; }
+            to { width: var(--target-width); }
+        }
     </style>
 </head>
 <body>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Open+Sans&display=swap" rel="stylesheet">
+    
     <!-- Header -->
-   <header class="header">
-    <div class="nav-container">
-        <div class="logo-section">
-            <img src="LogoMenu.png" width="150" height="40" alt="Logo">
+    <header class="header">
+        <div class="nav-container">
+            <div class="logo-section">
+                <img src="LogoMenu.png" width="150" height="40" alt="Logo">
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="acerca.html">Acerca de</a></li>
+                    <li><a href="testimonios.html" class="active">Testimonios</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                </ul>
+            </nav>
+            <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
         </div>
-        <nav>
-            <ul class="nav-menu">
-                <li><a href="index.html">Inicio</a></li>
-                <li><a href="acerca.html" >Acerca de</a></li>
-                <li><a href="testimonios.html"class="active">Testimonios</a></li>
-                <li><a href="contacto.html">Contacto</a></li>
-            </ul>
-        </nav>
-        <a href="inicio-sesion.html" class="admin-btn">Administrador</a>
-    </div>
     </header>
 
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
-            <h1>Acerca de Gemini Ambiental</h1>
-            <p>Más de 5 años de experiencia brindando soluciones profesionales en control de plagas y saneamiento ambiental</p>
+            <h1>Testimonios de Clientes</h1>
+            <p>Descubre lo que nuestros clientes opinan sobre nuestros servicios de control de plagas y saneamiento ambiental</p>
         </div>
     </section>
 
-    <!-- Quiénes Somos -->
-    <section class="section">
-        <div class="container">
-            <div class="content-grid">
-                <div class="content-text">
-                    <h3>¿Quiénes Somos?</h3>
-                    <p>Gemini Ambiental S.A.S. es una empresa líder en servicios de control de plagas y saneamiento ambiental en Boyacá, especializada en el sector alimentario, educativo y hotelero.</p>
-                    <p>Fundada en 2020, hemos construido una sólida reputación basada en la calidad de nuestros servicios, el cumplimiento normativo y la satisfacción del cliente.</p>
-                    <p>Nuestro equipo de profesionales certificados está comprometido con brindar soluciones efectivas y personalizadas para cada uno de nuestros clientes.</p>
-                </div>
-                <div class="content-visual">
-                    <img src="docs/assets/img/about-team.jpg" alt="Nuestro equipo de trabajo" style="background: linear-gradient(135deg, #4a8b64, #2c5f41); height: 400px; object-fit: cover;">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Stats Section -->
-    <section class="stats-section">
-        <div class="container">
-            <h2 style="margin-bottom: 3rem; font-size: 2.5em;">Nuestros Logros</h2>
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-number">100+</span>
-                    <div class="stat-label">Clientes Satisfechos</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">5+</span>
-                    <div class="stat-label">Años de Experiencia</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">500+</span>
-                    <div class="stat-label">Proyectos Completados</div>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-number">100%</span>
-                    <div class="stat-label">Clientes Satisfechos</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Misión y Visión -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2 class="section-title">Nuestra Misión y Visión</h2>
-            <div class="values-grid">
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-bullseye"></i>
+    <!-- Sistema de Reseñas -->
+    <section class="reviews-section">
+        <div class="reviews-container">
+            <h2 class="section-title">Opiniones de Clientes</h2>
+            
+            <!-- Resumen de Calificaciones -->
+            <div class="rating-summary">
+                <div class="average-rating">
+                    <div class="average-score" id="average-rating">4.8</div>
+                    <div class="stars-large">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
                     </div>
-                    <h3>Misión</h3>
-                    <p>Brindar soluciones integrales en control de plagas y saneamiento ambiental, garantizando ambientes seguros y saludables para nuestros clientes, cumpliendo con los más altos estándares de calidad y normatividad vigente.</p>
+                    <div class="total-reviews">Basado en <span id="total-reviews">24</span> reseñas</div>
                 </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-eye"></i>
+                
+                <div class="rating-stats">
+                    <div class="rating-bar">
+                        <div class="rating-label">5 estrellas</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-5" style="--target-width: 75%"></div>
+                        </div>
+                        <div class="rating-count" id="count-5">18</div>
                     </div>
-                    <h3>Visión</h3>
-                    <p>Ser la empresa líder en servicios ambientales en la región andina, reconocida por nuestra excelencia técnica, innovación constante y compromiso con la sostenibilidad ambiental.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Valores -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">Nuestros Valores</h2>
-            <div class="values-grid">
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-check-circle"></i>
+                    <div class="rating-bar">
+                        <div class="rating-label">4 estrellas</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-4" style="--target-width: 17%"></div>
+                        </div>
+                        <div class="rating-count" id="count-4">4</div>
                     </div>
-                    <h3>Calidad</h3>
-                    <p>Comprometidos con la excelencia en cada servicio que brindamos, superando las expectativas de nuestros clientes.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-shield-alt"></i>
+                    <div class="rating-bar">
+                        <div class="rating-label">3 estrellas</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-3" style="--target-width: 4%"></div>
+                        </div>
+                        <div class="rating-count" id="count-3">1</div>
                     </div>
-                    <h3>Confianza</h3>
-                    <p>Construimos relaciones duraderas basadas en la transparencia, honestidad y cumplimiento de nuestras promesas.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-leaf"></i>
+                    <div class="rating-bar">
+                        <div class="rating-label">2 estrellas</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-2" style="--target-width: 0%"></div>
+                        </div>
+                        <div class="rating-count" id="count-2">0</div>
                     </div>
-                    <h3>Sostenibilidad</h3>
-                    <p>Cuidamos el medio ambiente en todos nuestros procesos, utilizando productos y métodos eco-amigables.</p>
-                </div>
-                <div class="value-card">
-                    <div class="value-icon">
-                        <i class="fas fa-graduation-cap"></i>
-                    </div>
-                    <h3>Innovación</h3>
-                    <p>Adoptamos las mejores tecnologías y métodos del sector para ofrecer soluciones vanguardistas y efectivas.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Equipo -->
-    <section class="section section-alt">
-        <div class="container">
-            <h2 class="section-title">Nuestro Equipo</h2>
-            <div class="team-grid">
-                <div class="team-card">
-                    <div class="team-photo">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <div class="team-info">
-                        <h3>Carlos Rodríguez</h3>
-                        <p>Director General</p>
-                        <p>Ing. Ambiental - 20+ años experiencia</p>
-                    </div>
-                </div>
-                <div class="team-card">
-                    <div class="team-photo">
-                        <i class="fas fa-user-md"></i>
-                    </div>
-                    <div class="team-info">
-                        <h3>María González</h3>
-                        <p>Jefe Técnico</p>
-                        <p>Bióloga - Especialista en Control de Plagas</p>
-                    </div>
-                </div>
-                <div class="team-card">
-                    <div class="team-photo">
-                        <i class="fas fa-user-cog"></i>
-                    </div>
-                    <div class="team-info">
-                        <h3>Juan Pérez</h3>
-                        <p>Técnico Senior</p>
-                        <p>15 años de experiencia en campo</p>
+                    <div class="rating-bar">
+                        <div class="rating-label">1 estrella</div>
+                        <div class="bar-container">
+                            <div class="bar-fill" id="bar-1" style="--target-width: 4%"></div>
+                        </div>
+                        <div class="rating-count" id="count-1">1</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- Certificaciones -->
-    <section class="section">
-        <div class="container">
-            <h2 class="section-title">Certificaciones y Registros</h2>
-            <div class="certifications">
-                <div class="cert-card">
-                    <div class="cert-icon">
-                        <i class="fas fa-file-certificate"></i>
+            
+            <!-- Formulario para agregar reseña -->
+            <div class="add-review">
+                <h3>Deja tu reseña</h3>
+                <form class="review-form" id="review-form">
+                    <div class="star-rating-input">
+                        <p>¿Cómo calificarías nuestro servicio?</p>
+                        <div class="stars-input" id="stars-input">
+                            <span class="star-input" data-rating="1"><i class="far fa-star"></i></span>
+                            <span class="star-input" data-rating="2"><i class="far fa-star"></i></span>
+                            <span class="star-input" data-rating="3"><i class="far fa-star"></i></span>
+                            <span class="star-input" data-rating="4"><i class="far fa-star"></i></span>
+                            <span class="star-input" data-rating="5"><i class="far fa-star"></i></span>
+                        </div>
+                        <div id="rating-text">Selecciona una calificación</div>
                     </div>
-                    <h3>INVIMA</h3>
-                    <p>Registro Sanitario Vigente</p>
-                </div>
-                <div class="cert-card">
-                    <div class="cert-icon">
-                        <i class="fas fa-award"></i>
-                    </div>
-                    <h3>ISO 9001</h3>
-                    <p>Gestión de Calidad</p>
-                </div>
-                <div class="cert-card">
-                    <div class="cert-icon">
-                        <i class="fas fa-seedling"></i>
-                    </div>
-                    <h3>ISO 14001</h3>
-                    <p>Gestión Ambiental</p>
-                </div>
-                <div class="cert-card">
-                    <div class="cert-icon">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <h3>OHSAS 18001</h3>
-                    <p>Seguridad y Salud Ocupacional</p>
-                </div>
+                    <textarea placeholder="Comparte tu experiencia con nuestros servicios..." id="review-text"></textarea>
+                    <button type="submit">Enviar reseña</button>
+                </form>
+            </div>
+            
+            <!-- Lista de reseñas -->
+            <div class="reviews-list" id="reviews-list">
+                <!-- Las reseñas se cargarán aquí dinámicamente -->
             </div>
         </div>
     </section>
@@ -683,7 +826,7 @@
         <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="90">
     </a>
 
-       <!-- Footer -->
+    <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
             <div class="footer-section">
@@ -695,9 +838,9 @@
             <div class="footer-section">
                 <h3>Contacto</h3>
                 <p>📍 Tunja, Boyacá - Colombia</p>
-                <p><a href="https://wa.me/573001234567"  target="_blank">
-                <img src="docs/assets/img/whatsapp-icon.png  " alt="WhatsApp" width="30">
-</a> (+57) 3107573564 o 3504026272</p>
+                <p><a href="https://wa.me/573001234567" target="_blank">
+                    <img src="docs/assets/img/whatsapp-icon.png" alt="WhatsApp" width="30">
+                </a> (+57) 3107573564 o 3504026272</p>
                 <p>✉️ info@geminiambiental.com</p>
                 <p>🌐 www.geminiambiental.com</p>
             </div>
@@ -726,8 +869,237 @@
             </div>
         </div>
     </footer>
+
     <script>
-        // Animación simple para números de estadísticas
+        // Datos de ejemplo para las reseñas
+        const sampleReviews = [
+            { id: 1, name: "María González", rating: 5, date: "2025-02-10", content: "Excelente servicio. El equipo de Gemini Ambiental resolvió nuestro problema de plagas de manera rápida y profesional. Muy recomendados." },
+            { id: 2, name: "Carlos Rodríguez", rating: 5, date: "2025-01-28", content: "Contraté sus servicios para mi restaurante y quedé muy satisfecho. Cumplen con todos los protocolos de seguridad alimentaria." },
+            { id: 3, name: "Ana Martínez", rating: 4, date: "2025-01-15", content: "Buen servicio, puntuales y profesionales. El único detalle fue que no pudieron venir el día que originalmente habíamos acordado, pero se comunicaron con anticipación." },
+            { id: 4, name: "José López", rating: 5, date: "2024-12-05", content: "Llevo más de dos años trabajando con Gemini Ambiental y siempre han sido muy confiables. Su equipo técnico es muy conocedor." },
+            { id: 5, name: "Laura Sánchez", rating: 3, date: "2024-11-20", content: "El servicio fue aceptable, pero esperaba más detalles en el informe final. En general, cumplieron con lo acordado." },
+            { id: 6, name: "Roberto Díaz", rating: 5, date: "2024-11-10", content: "Muy profesionales y eficientes. Resolvieron nuestro problema de roedores en menos tiempo del estimado. Los recomiendo ampliamente." }
+        ];
+
+        // Variables globales
+        let currentRating = 0;
+        let reviews = [...sampleReviews];
+
+        // Inicializar el sistema de reseñas
+        document.addEventListener('DOMContentLoaded', function() {
+            initReviews();
+            initStarRating();
+            initReviewForm();
+            animateBars();
+        });
+
+        // Inicializar las reseñas
+        function initReviews() {
+            displayReviews();
+            updateRatingSummary();
+        }
+
+        // Mostrar las reseñas en la lista
+        function displayReviews() {
+            const reviewsList = document.getElementById('reviews-list');
+            reviewsList.innerHTML = '';
+
+            // Ordenar reseñas por fecha (más recientes primero)
+            reviews.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            reviews.forEach(review => {
+                const reviewCard = document.createElement('div');
+                reviewCard.className = 'review-card';
+                
+                // Crear estrellas según la calificación
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= review.rating) {
+                        starsHtml += '<i class="fas fa-star"></i>';
+                    } else {
+                        starsHtml += '<i class="far fa-star"></i>';
+                    }
+                }
+
+                reviewCard.innerHTML = `
+                    <div class="review-header">
+                        <div class="reviewer-info">
+                            <h4>${review.name}</h4>
+                            <div class="review-date">${formatDate(review.date)}</div>
+                        </div>
+                        <div class="review-stars">${starsHtml}</div>
+                    </div>
+                    <div class="review-content">${review.content}</div>
+                `;
+                
+                reviewsList.appendChild(reviewCard);
+            });
+        }
+
+        // Actualizar el resumen de calificaciones
+        function updateRatingSummary() {
+            const totalReviews = reviews.length;
+            document.getElementById('total-reviews').textContent = totalReviews;
+            
+            // Calcular promedio
+            const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+            const averageRating = totalRating / totalReviews;
+            document.getElementById('average-rating').textContent = averageRating.toFixed(1);
+            
+            // Contar calificaciones por estrella
+            const ratingCounts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+            reviews.forEach(review => {
+                ratingCounts[review.rating]++;
+            });
+            
+            // Actualizar contadores
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`count-${i}`).textContent = ratingCounts[i];
+            }
+        }
+
+        // Inicializar el sistema de calificación por estrellas
+        function initStarRating() {
+            const stars = document.querySelectorAll('.star-input');
+            const ratingText = document.getElementById('rating-text');
+            
+            stars.forEach(star => {
+                star.addEventListener('mouseover', function() {
+                    const rating = parseInt(this.getAttribute('data-rating'));
+                    highlightStars(rating);
+                    updateRatingText(rating);
+                });
+                
+                star.addEventListener('click', function() {
+                    currentRating = parseInt(this.getAttribute('data-rating'));
+                    highlightStars(currentRating);
+                    updateRatingText(currentRating);
+                });
+            });
+            
+            // Restablecer cuando el mouse sale del contenedor de estrellas
+            document.getElementById('stars-input').addEventListener('mouseleave', function() {
+                if (currentRating === 0) {
+                    resetStars();
+                    ratingText.textContent = 'Selecciona una calificación';
+                } else {
+                    highlightStars(currentRating);
+                    updateRatingText(currentRating);
+                }
+            });
+        }
+
+        // Resaltar estrellas según la calificación
+        function highlightStars(rating) {
+            const stars = document.querySelectorAll('.star-input');
+            stars.forEach(star => {
+                const starRating = parseInt(star.getAttribute('data-rating'));
+                if (starRating <= rating) {
+                    star.innerHTML = '<i class="fas fa-star"></i>';
+                    star.classList.add('active');
+                } else {
+                    star.innerHTML = '<i class="far fa-star"></i>';
+                    star.classList.remove('active');
+                }
+            });
+        }
+
+        // Restablecer estrellas
+        function resetStars() {
+            const stars = document.querySelectorAll('.star-input');
+            stars.forEach(star => {
+                star.innerHTML = '<i class="far fa-star"></i>';
+                star.classList.remove('active');
+            });
+        }
+
+        // Actualizar texto de calificación
+        function updateRatingText(rating) {
+            const ratingText = document.getElementById('rating-text');
+            const texts = {
+                1: "Pésimo - No recomiendo",
+                2: "Malo - Necesita mejorar",
+                3: "Regular - Aceptable",
+                4: "Bueno - Recomendado",
+                5: "Excelente - Altamente recomendado"
+            };
+            ratingText.textContent = texts[rating] || 'Selecciona una calificación';
+        }
+
+        // Inicializar el formulario de reseñas
+        function initReviewForm() {
+            const form = document.getElementById('review-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (currentRating === 0) {
+                    alert('Por favor, selecciona una calificación con estrellas');
+                    return;
+                }
+                
+                const reviewText = document.getElementById('review-text').value.trim();
+                if (!reviewText) {
+                    alert('Por favor, escribe tu reseña');
+                    return;
+                }
+                
+                // Crear nueva reseña
+                const newReview = {
+                    id: reviews.length + 1,
+                    name: "Usuario Anónimo", // En una implementación real, usarías el nombre del usuario autenticado
+                    rating: currentRating,
+                    date: new Date().toISOString().split('T')[0],
+                    content: reviewText
+                };
+                
+                // Agregar la nueva reseña
+                reviews.unshift(newReview);
+                
+                // Actualizar la interfaz
+                displayReviews();
+                updateRatingSummary();
+                animateBars();
+                
+                // Restablecer el formulario
+                form.reset();
+                currentRating = 0;
+                resetStars();
+                document.getElementById('rating-text').textContent = 'Selecciona una calificación';
+                
+                // Mostrar mensaje de éxito
+                alert('¡Gracias por tu reseña!');
+            });
+        }
+
+        // Animar las barras de porcentaje
+        function animateBars() {
+            // Contar calificaciones por estrella
+            const ratingCounts = {5: 0, 4: 0, 3: 0, 2: 0, 1: 0};
+            reviews.forEach(review => {
+                ratingCounts[review.rating]++;
+            });
+            
+            // Calcular porcentajes
+            const totalReviews = reviews.length;
+            for (let i = 1; i <= 5; i++) {
+                const percentage = totalReviews > 0 ? (ratingCounts[i] / totalReviews) * 100 : 0;
+                const bar = document.getElementById(`bar-${i}`);
+                bar.style.width = '0%';
+                
+                // Usar setTimeout para animar después de un pequeño retraso
+                setTimeout(() => {
+                    bar.style.width = `${percentage}%`;
+                }, 100 * i);
+            }
+        }
+
+        // Formatear fecha
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('es-ES', options);
+        }
+
+        // Animación simple para números de estadísticas (manteniendo la existente)
         document.addEventListener('DOMContentLoaded', function() {
             const statNumbers = document.querySelectorAll('.stat-number');
             
