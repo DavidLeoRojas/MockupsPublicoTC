@@ -1783,7 +1783,7 @@ function renderDetalleFactura() {
         ` : ''}
         <div style="display: flex; justify-content: space-between; border-top: 1px solid #e2e8f0; padding-top: 0.5rem; font-size: 1.1em;">
             <strong>Total:</strong>
-            <strong style="color: #2c5f41;">${formatCurrency(totalProductos + valorServicio)}</strong>
+            <strong style="color: #2c5f41;">${formatCurrency(montoTotal)}</strong>
         </div>
     `;
     container.appendChild(resumenDiv);
