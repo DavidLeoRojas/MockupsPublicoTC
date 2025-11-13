@@ -1505,7 +1505,11 @@ eventElement.addEventListener('click', (e) => {
 eventsContainer.appendChild(eventElement);
 });
 
-                dayElement.addEventListener('click', () => openAddServiceModal());
+                //dayElement.addEventListener('click', () => openAddServiceModal());
+                dayElement.addEventListener('click', () => {
+                const clickedDate = new Date(year, month, day); // Crear objeto Date con la fecha del día clicado
+                showDayServices(clickedDate); // Llamar a la función con la fecha
+            });
                 calendarGrid.appendChild(dayElement);
             }
 
@@ -1653,6 +1657,30 @@ Estado: ${estado}`;
         listContainer.appendChild(listItem);
     });
 
+    // ... (dentro de showDayServices, después de llenar listContainer y antes de modal.classList.add('show');)
+// Añadir botón para agregar nuevo servicio en esta fecha
+const addNewButtonContainer = document.createElement('div');
+addNewButtonContainer.style.marginTop = '1.5rem'; // Espacio superior
+addNewButtonContainer.style.paddingTop = '1.5rem'; // Espacio superior
+addNewButtonContainer.style.borderTop = '2px solid #e2e8f0'; // Separador
+addNewButtonContainer.style.textAlign = 'center'; // Centrar el botón
+
+const addNewButton = document.createElement('button');
+addNewButton.className = 'btn btn-primary'; // Usar clase CSS existente
+addNewButton.textContent = '➕ Agregar Nuevo Servicio en Esta Fecha';
+addNewButton.style.width = '100%'; // Ancho completo
+
+// Asociar evento click para abrir el modal de agregar servicio con la fecha preseleccionada
+addNewButton.addEventListener('click', () => {
+    closeModal('dayServicesModal'); // Cerrar el modal actual
+    openAddServiceModal(date); // Abrir el modal de agregar y pasar la fecha
+});
+
+addNewButtonContainer.appendChild(addNewButton);
+content.appendChild(addNewButtonContainer); // Añadir el botón al contenido del modal
+
+modal.classList.add('show'); // Mostrar el modal
+// ...
     content.appendChild(listContainer);
 
     modal.classList.add('show');
@@ -2415,7 +2443,8 @@ async function verificarAutenticacion() {
         }
 
 // ========== MODAL FUNCTIONS ==========
-function openAddServiceModal(date = null) {
+// Modificar openAddServiceModal para aceptar una fecha opcional
+function openAddServiceModal(date = null) { // <-- Añadir parámetro date
     const serviceForm = document.getElementById('serviceForm');
     if (serviceForm) {
         serviceForm.reset();
@@ -2425,12 +2454,13 @@ function openAddServiceModal(date = null) {
     if (titleElement) {
         titleElement.textContent = 'Programar Nuevo Servicio';
     }
-    const submitBtn = document.getElementById('submitBtn');
+    const submitBtn = document.querySelector('#addServiceModal .btn-primary'); // Seleccionar botón dentro del modal específico
     if (submitBtn) {
         submitBtn.textContent = 'Programar Servicio';
     }
     // ✅ CORREGIDO: Poner la fecha si se pasa
     if (date) {
+        // Formatear la fecha a YYYY-MM-DD
         const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD
         const fechaInput = document.getElementById('fecha');
         if (fechaInput) {
