@@ -1505,11 +1505,11 @@ eventElement.addEventListener('click', (e) => {
 eventsContainer.appendChild(eventElement);
 });
 
-                //dayElement.addEventListener('click', () => openAddServiceModal());
-                dayElement.addEventListener('click', () => {
+              dayElement.addEventListener('click', () => {
                 const clickedDate = new Date(year, month, day); // Crear objeto Date con la fecha del día clicado
-                showDayServices(clickedDate); // Llamar a la función con la fecha
+                handleDayClick(clickedDate); // Llamar a la nueva función
             });
+
                 calendarGrid.appendChild(dayElement);
             }
 
@@ -1522,6 +1522,28 @@ eventsContainer.appendChild(eventElement);
                 calendarGrid.appendChild(dayElement);
             }
         }
+        // ========== NUEVA FUNCIÓN PARA MANEJAR EL CLICK EN EL DÍA ==========
+function handleDayClick(date) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+    const day = date.getDate();
+
+    // Filtrar servicios para la fecha específica (misma lógica que en showDayServices)
+    const serviciosDelDia = servicios.filter(s => {
+        if (!s.fecha) return false;
+        const [servYear, servMonth, servDay] = s.fecha.split('-').map(Number);
+        return servYear === year && servMonth === (month + 1) && servDay === day;
+    });
+
+    if (serviciosDelDia.length > 0) {
+        // Si hay servicios, mostrar el modal con la lista
+        showDayServices(date);
+    } else {
+        // Si no hay servicios, abrir directamente el modal de agregar con la fecha prellenada
+        openAddServiceModal(date);
+    }
+}
+// ========== FIN NUEVA FUNCIÓN ==========
         // ========== FUNCIONES DE ESTADO ==========
         function getEstadoClass(estado) {
             // Normalizar el estado: convertir a string, trim, reemplazar espacios por _, y a minúsculas
